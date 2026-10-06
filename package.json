@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview --port 4174",
     "validate": "node scripts/validate-sites.mjs",
-    "land": "node scripts/build-land-hex.mjs",
+    "geo": "node scripts/build-land-hex.mjs && node scripts/build-borders.mjs",
     "prebuild": "npm run validate",
     "test": "vitest run"
   },
@@ -27,6 +27,7 @@
     "@vitejs/plugin-react": "^6.1.2",
     "h3-js": "^4.5.0",
     "topojson-client": "^3.1.0",
+    "us-atlas": "^3.0.1",
     "vite": "^8.3.2",
     "vitest": "^5.0.3",
     "world-atlas": "^2.0.2"

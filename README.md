@@ -44,19 +44,21 @@ npm run build      # validate → 빌드 (dist/)
 
 Vite 8 · React 19 · @react-three/fiber 9 · @react-three/drei 10 · three 0.186 · zustand 5 · zod 4 · lucide-react
 
-육지 타일은 `npm run land`(h3-js + Natural Earth 110m)로 미리 계산해 `public/data/land-hex.json` 에 저장합니다.
+육지 타일과 경계선은 `npm run geo`(h3-js + Natural Earth 110m + us-atlas)로 미리 계산해 `public/data/land-hex.json`, `borders.json` 에 저장합니다.
+사이트 주변 반경 6도는 더 작은 육각형(h3 해상도 4)으로 그립니다. 사이트를 추가했다면 `npm run geo` 를 다시 실행하세요.
 브라우저 번들에는 h3/지도 라이브러리가 들어가지 않습니다.
 
 ## 폴더
 
 ```
 public/data/sites.json      사이트 현황 (유일한 진실)
-public/data/land-hex.json   지구본 육지 타일 (npm run land 로 생성)
+public/data/land-hex.json   지구본 육지 타일 (npm run geo 로 생성)
+public/data/borders.json    국경·해안선·미국 주 경계 (npm run geo 로 생성)
 src/data/                   스키마(zod), 로더·KPI 계산, 상태 색상표
 src/scene/                  3D: GlobeView, SiteView, CameraRig, layoutCampus, buildings/
 src/ui/                     HTML 오버레이 패널들
 src/i18n/                   한/영 문자열
-scripts/                    validate-sites, build-land-hex
+scripts/                    validate-sites, build-land-hex, build-borders
 docs/research-brief.md      참고 사례·코드·데이터 출처 리서치
 ```
 

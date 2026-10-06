@@ -1,45 +1,36 @@
 // =============================================================
 // 육지 육각형 타일 미리 계산 스크립트
-// 사용법: npm run land   (결과: public/data/land-hex.json)
+// 사용법: npm run geo   (결과: public/data/land-hex.json)
 // -------------------------------------------------------------
 // 브라우저에서 매번 h3 로 나라 경계를 육각형으로 바꾸면 1~2초 멈추고 번들도 커집니다.
 // 그래서 개발할 때 한 번만 계산해 "육각형 중심 좌표 목록"을 JSON 으로 저장합니다.
+//
+// 두 가지 크기를 섞습니다.
+//   - 기본: 해상도 3 (한 변 약 60km) — 지구 전체
+//   - 사이트 주변(반경 FINE_DEG 도): 해상도 4 (한 변 약 23km) — 해안선·지형이 덜 거칠게
 // =============================================================
 import { readFileSync, writeFileSync } from 'node:fs'
-import { polygonToCells, cellToLatLng, latLngToCell } from 'h3-js'
+import { polygonToCells, cellToLatLng, latLngToCell, greatCircleDistance } from 'h3-js'
 import { feature } from 'topojson-client'
 
-const RES = 3 // h3 해상도: 3 = 육각형 한 변 약 60km (작을수록 큼직한 저폴리 타일)
+const RES = 3      // 기본 해상도 (작을수록 큼직한 저폴리 타일)
+const FINE_RES = 4 // 사이트 주변 해상도
+const FINE_DEG = 6 // 사이트 주변 반경 (도). 1도 ≈ 111km
 // IREN 사이트가 있는 나라 (민트색 강조): 미국, 캐나다, 호주, 스페인
 const HOME = new Set(['840', '124', '036', '724'])
 
-const topo = JSON.parse(readFileSync(new URL('../node_modules/world-atlas/countries-110m.json', import.meta.url), 'utf8'))
+const read = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8'))
+const topo = read('../node_modules/world-atlas/countries-110m.json')
 const countries = feature(topo, topo.objects.countries).features
+const sites = read('../public/data/sites.json').sites
 
-const cells = new Map() // 셀 id → home 여부 (같은 셀이 두 나라에 걸치면 home 우선)
-let skipped = []
-for (const f of countries) {
-  if (f.id === '010') continue // 남극은 화면에서 거의 안 보이고 타일 수만 많아 제외
-  const polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates
-  try {
-    for (const p of polys) {
-      for (const c of polygonToCells(p, RES, true)) {
-        const home = HOME.has(String(f.id))
-        if (!cells.has(c) || home) cells.set(c, home)
-      }
-    }
-  } catch {
-    // 110m 데이터에서 h3 변환이 실패하는 폴리곤(예: 북한)은
-    // 0.2도 격자로 점을 찍어 "폴리곤 안에 있는 점"의 셀을 모으는 방식으로 대신 채웁니다.
-    for (const p of polys) for (const c of sampleCells(p[0])) {
-      const home = HOME.has(String(f.id))
-      if (!cells.has(c) || home) cells.set(c, home)
-    }
-    skipped.push(`${f.properties.name}(격자 대체)`)
-  }
+// 사이트 반경 안인지: 대권 거리(km) 기준
+const FINE_KM = FINE_DEG * 111.2
+function nearSite(lat, lng) {
+  return sites.some((s) => greatCircleDistance([lat, lng], [s.lat, s.lng], 'km') < FINE_KM)
 }
 
-// 점이 다각형 안에 있는지 (ray casting)
+// 점이 다각형 안에 있는지 (ray casting) — h3 변환 실패 시 대체용
 function inside(lng, lat, ring) {
   let ins = false
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
@@ -48,21 +39,70 @@ function inside(lng, lat, ring) {
   }
   return ins
 }
-function sampleCells(ring) {
+function sampleCells(ring, res) {
   const lngs = ring.map((p) => p[0]), lats = ring.map((p) => p[1])
+  const step = res >= 4 ? 0.08 : 0.2
   const out = new Set()
-  for (let lat = Math.min(...lats); lat <= Math.max(...lats); lat += 0.2)
-    for (let lng = Math.min(...lngs); lng <= Math.max(...lngs); lng += 0.2)
-      if (inside(lng, lat, ring)) out.add(latLngToCell(lat, lng, RES))
+  for (let lat = Math.min(...lats); lat <= Math.max(...lats); lat += step)
+    for (let lng = Math.min(...lngs); lng <= Math.max(...lngs); lng += step)
+      if (inside(lng, lat, ring)) out.add(latLngToCell(lat, lng, res))
   return out
 }
 
-// [위도, 경도, home(1/0)] 를 평평한 숫자 배열로 저장 → 파일 크기 최소화
-const flat = []
-for (const [c, home] of cells) {
-  const [lat, lng] = cellToLatLng(c)
-  flat.push(Math.round(lat * 100) / 100, Math.round(lng * 100) / 100, home ? 1 : 0)
+// 나라 하나를 주어진 해상도의 셀 집합으로 (실패하면 격자 샘플링)
+function cellsOf(f, res) {
+  const polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates
+  try {
+    const out = new Set()
+    for (const p of polys) for (const c of polygonToCells(p, res, true)) out.add(c)
+    return { cells: out, fallback: false }
+  } catch {
+    // 110m 데이터에서 h3 변환이 실패하는 폴리곤(예: 북한)은 격자로 점을 찍어 대신 채움
+    const out = new Set()
+    for (const p of polys) for (const c of sampleCells(p[0], res)) out.add(c)
+    return { cells: out, fallback: true }
+  }
 }
-const out = new URL('../public/data/land-hex.json', import.meta.url)
-writeFileSync(out, JSON.stringify({ res: RES, stride: 3, cells: flat }))
-console.log(`✅ land-hex.json — 육각형 ${cells.size.toLocaleString()}개 (대체 처리: ${skipped.join(', ') || '없음'})`)
+
+const cells = new Map() // 셀 id → { home, res }
+const fallbacks = []
+const put = (c, home, res) => {
+  const prev = cells.get(c)
+  if (!prev || (home && !prev.home)) cells.set(c, { home, res })
+}
+
+for (const f of countries) {
+  if (f.id === '010') continue // 남극 제외 (화면에 거의 안 보이고 타일 수만 많음)
+  const home = HOME.has(String(f.id))
+
+  // 1) 기본 해상도: 사이트 반경 밖의 셀만
+  const coarse = cellsOf(f, RES)
+  if (coarse.fallback) fallbacks.push(f.properties.name)
+  for (const c of coarse.cells) {
+    const [lat, lng] = cellToLatLng(c)
+    if (!nearSite(lat, lng)) put(c, home, RES)
+  }
+
+  // 2) 사이트 근처 나라만: 고해상도로 반경 안의 셀
+  const touches = sites.some((s) => {
+    const polys = f.geometry.type === 'Polygon' ? [f.geometry.coordinates] : f.geometry.coordinates
+    return polys.some((p) => p[0].some(([lng, lat]) => Math.abs(lat - s.lat) < FINE_DEG * 2 && Math.abs(lng - s.lng) < FINE_DEG * 3))
+  })
+  if (!touches) continue
+  for (const c of cellsOf(f, FINE_RES).cells) {
+    const [lat, lng] = cellToLatLng(c)
+    if (nearSite(lat, lng)) put(c, home, FINE_RES)
+  }
+}
+
+// [위도, 경도, home(1/0), 고해상도(1/0)] 를 평평한 숫자 배열로 → 파일 크기 최소화
+const flat = []
+let fine = 0
+for (const [c, v] of cells) {
+  const [lat, lng] = cellToLatLng(c)
+  const isFine = v.res === FINE_RES
+  if (isFine) fine++
+  flat.push(Math.round(lat * 100) / 100, Math.round(lng * 100) / 100, v.home ? 1 : 0, isFine ? 1 : 0)
+}
+writeFileSync(new URL('../public/data/land-hex.json', import.meta.url), JSON.stringify({ res: RES, fineRes: FINE_RES, stride: 4, cells: flat }))
+console.log(`✅ land-hex.json — 육각형 ${cells.size.toLocaleString()}개 (사이트 주변 고해상도 ${fine.toLocaleString()}개, 격자 대체: ${fallbacks.join(', ') || '없음'})`)

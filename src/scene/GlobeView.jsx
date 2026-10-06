@@ -8,8 +8,8 @@
 // =============================================================
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html } from '@react-three/drei'
-import { BackSide, AdditiveBlending, Color, Object3D, Quaternion, Vector3 } from 'three'
+import { Html, Line } from '@react-three/drei'
+import { BackSide, AdditiveBlending, BufferGeometry, Color, Float32BufferAttribute, Object3D, Quaternion, Vector3 } from 'three'
 import { useAppStore, isStatusActive } from '../store/useAppStore.js'
 import { styleOf } from '../data/statusStyle.js'
 import { GLOBE_RADIUS, latLngToVec3, spreadPins, fmtMw } from './geo.js'
@@ -32,7 +32,9 @@ export default function GlobeView({ visible }) {
         <meshLambertMaterial color={OCEAN} />
       </mesh>
       <LandHexes />
+      <Borders />
       <Atmosphere />
+      {visible && <CityLabels />}
       {visible && sites.map((s) => <GlobePin key={s.id} site={s} pos={display[s.id]} rank={ranks[s.id]} />)}
     </group>
   )
@@ -41,18 +43,18 @@ export default function GlobeView({ visible }) {
 // 가까이 모인 사이트(예: 텍사스 4곳)를 무리로 묶습니다.
 // 멀리서 볼 때는 무리의 대표(가장 큰 사이트) 라벨만 "+N" 과 함께 보여 겹침을 막고,
 // 가까이 줌하거나 호버하면 모든 라벨을 펼칩니다.
-function labelRanks(sites, nearDeg = 4) {
+function labelRanks(sites, nearDeg = 5.5) {
   const leads = []
   const ranks = {}
   // 계통 전력이 큰 사이트가 대표가 되도록 큰 순서로 처리
   for (const s of [...sites].sort((a, b) => b.grid_mw - a.grid_mw)) {
     const lead = leads.find((l) => Math.hypot(l.lat - s.lat, (l.lng - s.lng) * Math.cos((s.lat * Math.PI) / 180)) < nearDeg)
     if (lead) {
-      ranks[s.id] = { lead: false, more: 0 }
-      ranks[lead.id].more += 1
+      ranks[s.id] = { lead: false, members: [] }
+      ranks[lead.id].members.push(s)
     } else {
       leads.push(s)
-      ranks[s.id] = { lead: true, more: 0 }
+      ranks[s.id] = { lead: true, members: [] }
     }
   }
   return ranks
@@ -68,11 +70,11 @@ function LandHexes() {
   useEffect(() => {
     fetch('/data/land-hex.json')
       .then((r) => r.json())
-      .then((d) => setCells(d.cells))
+      .then((d) => setCells({ data: d.cells, stride: d.stride ?? 3 }))
       .catch(() => setCells([]))
   }, [])
 
-  const count = cells ? cells.length / 3 : 0
+  const count = cells ? cells.data.length / cells.stride : 0
 
   // 인스턴스마다 위치·방향·높이·색을 한 번만 계산해 넣습니다
   useLayoutEffect(() => {
@@ -81,13 +83,17 @@ function LandHexes() {
     const dummy = new Object3D()
     const up = new Vector3(0, 1, 0)
     const color = new Color()
+    const { data, stride } = cells
     for (let i = 0; i < count; i++) {
-      const lat = cells[i * 3], lng = cells[i * 3 + 1], home = cells[i * 3 + 2] === 1
+      const lat = data[i * stride], lng = data[i * stride + 1], home = data[i * stride + 2] === 1
+      // 사이트 주변 고해상도(h3 해상도4) 타일은 면적이 1/7 → 반지름은 √(1/7) ≈ 0.378배
+      const fine = stride > 3 && data[i * stride + 3] === 1
+      const r = fine ? 0.378 : 1
       const h = home ? 1.3 : 0.7 // 홈 국가는 살짝 더 솟게
       const n = latLngToVec3(lat, lng, 0).normalize()
       dummy.position.copy(n).multiplyScalar(GLOBE_RADIUS + h / 2 - 0.2)
       dummy.quaternion.setFromUnitVectors(up, n)
-      dummy.scale.set(1, h, 1)
+      dummy.scale.set(r, h, r)
       dummy.updateMatrix()
       mesh.setMatrixAt(i, dummy.matrix)
       // 결정적 미세 명암 변화 → 타일 질감 (같은 타일은 항상 같은 색)
@@ -107,6 +113,121 @@ function LandHexes() {
       <cylinderGeometry args={[0.95, 0.95, 1, 6]} />
       <meshLambertMaterial />
     </instancedMesh>
+  )
+}
+
+// ---------- 경계선: 국경·해안선, 미국 주 경계, 사이트가 있는 주 강조 ----------
+const LINE_RADIUS = GLOBE_RADIUS + 1.25 // 홈 국가 타일(높이 1.3) 윗면보다 살짝 위
+
+// [경도, 위도, ...] 선 → 지구본 표면을 따라가는 3D 점 목록
+// 점 사이가 1도보다 멀면 중간점을 끼워 넣어야 선이 지구 속으로 파고들지 않습니다
+function toSpherePoints(flat) {
+  const pts = []
+  for (let i = 0; i < flat.length; i += 2) {
+    const lng = flat[i], lat = flat[i + 1]
+    if (i > 0) {
+      const plng = flat[i - 2], plat = flat[i - 1]
+      // 날짜변경선(경도 ±180)을 건너뛰는 구간은 선을 끊음 (지구를 가로지르는 선 방지)
+      if (Math.abs(lng - plng) > 180) { pts.push(null); pts.push(latLngToVec3(lat, lng, LINE_RADIUS / GLOBE_RADIUS - 1)); continue }
+      const steps = Math.floor(Math.max(Math.abs(lng - plng), Math.abs(lat - plat)) / 1)
+      for (let k = 1; k < steps; k++) {
+        const t = k / steps
+        pts.push(latLngToVec3(plat + (lat - plat) * t, plng + (lng - plng) * t, LINE_RADIUS / GLOBE_RADIUS - 1))
+      }
+    }
+    pts.push(latLngToVec3(lat, lng, LINE_RADIUS / GLOBE_RADIUS - 1))
+  }
+  return pts
+}
+// 여러 선을 한 번에 그리는 LineSegments 용 지오메트리 (드로우콜 1회)
+function segmentsGeometry(lines) {
+  const pos = []
+  for (const flat of lines) {
+    const pts = toSpherePoints(flat)
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1], b = pts[i]
+      if (!a || !b) continue // 끊긴 구간
+      pos.push(a.x, a.y, a.z, b.x, b.y, b.z)
+    }
+  }
+  const g = new BufferGeometry()
+  g.setAttribute('position', new Float32BufferAttribute(pos, 3))
+  return g
+}
+
+function Borders() {
+  const [data, setData] = useState(null)
+  useEffect(() => {
+    fetch('/data/borders.json').then((r) => r.json()).then(setData).catch(() => {})
+  }, [])
+  const geo = useMemo(() => {
+    if (!data) return null
+    return {
+      countries: segmentsGeometry(data.countries),
+      states: segmentsGeometry(data.states),
+      focus: data.focus.map(toSpherePoints),
+    }
+  }, [data])
+  if (!geo) return null
+  return (
+    <group>
+      <lineSegments geometry={geo.countries}>
+        <lineBasicMaterial color="#7d8db0" transparent opacity={0.6} />
+      </lineSegments>
+      <lineSegments geometry={geo.states}>
+        <lineBasicMaterial color="#7d8db0" transparent opacity={0.3} />
+      </lineSegments>
+      {/* 사이트가 있는 주(텍사스·오클라호마)는 굵은 선으로 */}
+      {geo.focus.map((pts, i) => (
+        <Line key={i} points={pts} color="#4f6390" lineWidth={1.6} transparent opacity={0.85} />
+      ))}
+    </group>
+  )
+}
+
+// ---------- 기준 도시 라벨: "이 사이트가 어디쯤인지" 감을 주는 큰 도시 ----------
+const CITIES = [
+  { ko: '댈러스', en: 'Dallas', lat: 32.78, lng: -96.8 },
+  { ko: '애머릴로', en: 'Amarillo', lat: 35.22, lng: -101.83 },
+  { ko: '오클라호마시티', en: 'Oklahoma City', lat: 35.47, lng: -97.52 },
+  { ko: '밴쿠버', en: 'Vancouver', lat: 49.28, lng: -123.12 },
+  { ko: '캘거리', en: 'Calgary', lat: 51.05, lng: -114.07 },
+  { ko: '시애틀', en: 'Seattle', lat: 47.61, lng: -122.33 },
+  { ko: '애들레이드', en: 'Adelaide', lat: -34.93, lng: 138.6 },
+  { ko: '시드니 (IREN 본사)', en: 'Sydney (IREN HQ)', lat: -33.87, lng: 151.21 },
+  { ko: '마드리드', en: 'Madrid', lat: 40.42, lng: -3.7 },
+  { ko: '리스본', en: 'Lisbon', lat: 38.72, lng: -9.14 },
+]
+const CITY_SHOW_DISTANCE = 420 // 이보다 가까이 줌하면 도시 이름 표시
+
+function CityLabels() {
+  const lang = useAppStore((s) => s.lang)
+  return CITIES.map((c) => <City key={c.en} city={c} name={lang === 'ko' ? c.ko : c.en} />)
+}
+
+function City({ city, name }) {
+  const ref = useRef()
+  const { position, normal } = useMemo(() => {
+    const p = latLngToVec3(city.lat, city.lng, 0.014)
+    return { position: p, normal: p.clone().normalize() }
+  }, [city])
+  const tmp = useMemo(() => new Vector3(), [])
+  useFrame(({ camera }) => {
+    if (!ref.current) return
+    tmp.copy(camera.position).sub(position).normalize()
+    const show = tmp.dot(normal) > 0.2 && camera.position.length() < CITY_SHOW_DISTANCE
+    ref.current.style.opacity = show ? 1 : 0
+  })
+  return (
+    <group position={position}>
+      <mesh>
+        <sphereGeometry args={[0.32, 8, 6]} />
+        <meshBasicMaterial color="#55627f" />
+      </mesh>
+      <Html center zIndexRange={[5, 0]} style={{ pointerEvents: 'none' }}>
+        <div ref={ref} className="city-label">{name}</div>
+      </Html>
+    </group>
   )
 }
 
@@ -151,7 +272,7 @@ function Atmosphere() {
 
 const UP = new Vector3(0, 1, 0)
 
-function GlobePin({ site, pos, rank = { lead: true, more: 0 } }) {
+function GlobePin({ site, pos, rank = { lead: true, members: [] } }) {
   const lang = useAppStore((s) => s.lang)
   const hoverId = useAppStore((s) => s.hoverId)
   const setHover = useAppStore((s) => s.setHover)
@@ -189,8 +310,8 @@ function GlobePin({ site, pos, rank = { lead: true, more: 0 } }) {
       tmp.copy(camera.position).sub(position).normalize()
       const facing = tmp.dot(normal)
       const near = camera.position.length() < EXPAND_DISTANCE
-      // 지구 앞면에 있고 + (무리 대표이거나 / 가까이 줌했거나 / 호버 중) 일 때만 보임
-      const show = facing > 0.15 && (rank.lead || near || useAppStore.getState().hoverId === site.id)
+      // 무리 대표 라벨만 그립니다. 가까이 줌하면 무리 구성원 목록이 펼쳐집니다.
+      const show = facing > 0.15
       labelRef.current.dataset.expanded = near ? '1' : '0'
       labelRef.current.style.opacity = show ? (active ? 1 : 0.35) : 0
       labelRef.current.style.pointerEvents = show ? 'auto' : 'none'
@@ -219,21 +340,30 @@ function GlobePin({ site, pos, rank = { lead: true, more: 0 } }) {
         <ringGeometry args={[1.8, 2.5, 32]} />
         <meshBasicMaterial color={style.color} transparent depthWrite={false} />
       </mesh>
-      {/* 이름·MW 라벨 (HTML) */}
-      <Html position={[0, h + 3.2, 0]} center zIndexRange={[20, 0]}>
-        <button
-          ref={labelRef}
-          className={`pin-label${hovered ? ' is-hover' : ''}`}
-          onPointerEnter={() => setHover(site.id)}
-          onPointerLeave={() => setHover(null)}
-          onClick={() => requestSite(site.id)}
-        >
-          <span className="dot" style={{ background: style.color }} />
-          <span className="name">{pickName(site, lang)}</span>
-          <span className="mw">{fmtMw(site.grid_mw)}</span>
-          {rank.more > 0 && <span className="more">+{rank.more}</span>}
-        </button>
-      </Html>
+      {/* 이름·MW 라벨 (HTML) — 무리 대표만. 구성원은 대표 라벨 아래 목록으로 */}
+      {rank.lead && (
+        <Html position={[0, h + 3.2, 0]} center zIndexRange={[20, 0]}>
+          <div ref={labelRef} className="pin-cluster" data-expanded="0">
+            {[site, ...rank.members].map((m, i) => {
+              const ms = styleOf(m.status)
+              return (
+                <button
+                  key={m.id}
+                  className={`pin-label${hoverId === m.id ? ' is-hover' : ''}${i > 0 ? ' member' : ''}`}
+                  onPointerEnter={() => setHover(m.id)}
+                  onPointerLeave={() => setHover(null)}
+                  onClick={() => requestSite(m.id)}
+                >
+                  <span className="dot" style={{ background: ms.color }} />
+                  <span className="name">{pickName(m, lang)}</span>
+                  <span className="mw">{fmtMw(m.grid_mw)}</span>
+                  {i === 0 && rank.members.length > 0 && <span className="more">+{rank.members.length}</span>}
+                </button>
+              )
+            })}
+          </div>
+        </Html>
+      )}
     </group>
   )
 }

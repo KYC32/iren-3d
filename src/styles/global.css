@@ -203,4 +203,16 @@ button { font: inherit; cursor: pointer; }
   .fade { transition: none; }
 }
 .pin-label .more { font-size: 10.5px; font-weight: 700; color: #fff; background: var(--accent); border-radius: 999px; padding: 1px 6px; }
-.pin-label[data-expanded="1"] .more { display: none; } /* 펼쳐지면 +N 배지 숨김 */
+/* 무리 라벨: 멀리서는 대표 한 줄 + "+N", 가까이 줌하면 구성원 목록이 펼쳐짐 */
+.pin-cluster { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; transition: opacity 200ms; }
+.pin-cluster[data-expanded="0"] .member { display: none; }
+.pin-cluster[data-expanded="1"] .more { display: none; }
+.pin-cluster:hover .member { display: flex; } /* 마우스를 올려도 펼침 */
+.pin-cluster:hover .more { display: none; }
+/* 지구본 기준 도시 이름: 점 오른쪽에 작은 회색 글씨 */
+.city-label {
+  transform: translateX(calc(50% + 8px));
+  white-space: nowrap; font-size: 10.5px; font-weight: 600; color: #55627f;
+  text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 6px #fff;
+  transition: opacity 250ms; opacity: 0;
+}
