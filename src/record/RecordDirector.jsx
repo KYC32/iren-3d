@@ -54,6 +54,15 @@ export default function RecordDirector() {
     const display = spreadPins(sites)
     const ranks = labelRanks(sites)
     const layouts = Object.fromEntries(sites.map((s) => [s.id, layoutCampus(s)]))
+    // 캠퍼스에서 카메라가 바라볼 곳: 실제 건물(빈 부지 제외)과 변전소의 중심
+    const focusOf = Object.fromEntries(
+      Object.entries(layouts).map(([id, L]) => {
+        const pts = [...L.blocks.filter((b) => b.kind !== 'lot').map((b) => [b.x, b.z]), [L.substation.x, L.substation.z]]
+        const cx = pts.reduce((n, p) => n + p[0], 0) / pts.length
+        const cz = pts.reduce((n, p) => n + p[1], 0) / pts.length
+        return [id, new Vector3(cx, 0, cz)]
+      }),
+    )
     const name = (o) => (lang === 'ko' && o.name_ko ? o.name_ko : o.name)
     const v = new Vector3()
 
@@ -94,12 +103,22 @@ export default function RecordDirector() {
         // 캠퍼스 주위를 천천히 돌며 살짝 다가감
         const L = layouts[shot.site]
         const o = shot.orbit
-        const R = L.side * 2.3 * lerp(o.dist0, o.dist1, e) * (aspect < 1 ? 1.75 : 1)
+        const R = L.side * 2.3 * lerp(o.dist0, o.dist1, e) * (aspect < 1 ? 1.45 : 1)
+        // 가로 영상은 부지 중심, 세로 영상은 실제 건물 중심을 바라봄 (좁은 화면에 빈 부지보다 건물을)
+        const target = aspect < 1 ? focusOf[shot.site] : new Vector3()
         const az = lerp(o.az0, o.az1, e)
         const polar = lerp(o.polar0, o.polar1, e)
-        camera.position.set(R * Math.sin(polar) * Math.sin(az), R * Math.cos(polar), R * Math.sin(polar) * Math.cos(az))
-        camera.lookAt(0, 0, 0)
+        camera.position.set(
+          target.x + R * Math.sin(polar) * Math.sin(az),
+          R * Math.cos(polar),
+          target.z + R * Math.sin(polar) * Math.cos(az),
+        )
+        camera.lookAt(target)
       }
+      // 세로 영상의 캠퍼스 장면: 자막(화면 62% 높이) 위쪽에 캠퍼스가 오도록 화면 프레임을 아래로 12% 밀기
+      const fw = gl.domElement.width, fh = gl.domElement.height
+      if (aspect < 1 && shot.type === 'site') camera.setViewOffset(fw, fh, 0, fh * 0.12, fw, fh)
+      else if (camera.view?.enabled) camera.clearViewOffset()
       camera.updateMatrixWorld()
     }
 
@@ -112,7 +131,8 @@ export default function RecordDirector() {
 
     // ---------- 4) 3D 라벨을 2D 로 ----------
     function drawLabels(o, shot, time) {
-      const u = Math.min(W, H) / 1080
+      // 세로 영상은 휴대폰에서 보므로 라벨을 더 크게
+      const u = (Math.min(W, H) / 1080) * (aspect < 1 ? 1.35 : 1)
       // 아웃트로 정리 카드가 떠 있는 동안은 라벨을 그리지 않음 (카드 뒤로 비치지 않게)
       if (CARDS[lang].some((c) => c.kind === 'outro' && time >= c.t0)) return
       if (shot.type === 'globe') {

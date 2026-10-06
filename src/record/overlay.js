@@ -30,7 +30,10 @@ export function drawPill(o, x, y, u, { color, text, sub, alpha = 1 }) {
   const sw = sub ? o.measureText(sub).width + 8 * u : 0
   const w = tw + sw + 34 * u
   const h = 30 * u
-  const left = x - w / 2, top = y - h / 2
+  // 화면 가장자리에서 잘리지 않게 안쪽으로 붙임
+  const margin = 12 * u
+  const left = Math.min(Math.max(x - w / 2, margin), o.canvas.width - w - margin)
+  const top = y - h / 2
   o.shadowColor = 'rgba(30,45,90,0.16)'
   o.shadowBlur = 10 * u
   o.shadowOffsetY = 3 * u

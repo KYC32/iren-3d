@@ -86,9 +86,24 @@ http
     const url = new URL(req.url, `http://localhost:${PORT}`)
     const fmt = url.searchParams.get('fmt') === 'shorts' ? 'shorts' : 'x'
 
+    // 보안: 저장 요청(POST)은 이 서버가 띄운 녹화 페이지에서 온 것만 받습니다.
+    // (녹화 중 브라우저로 연 다른 웹사이트가 localhost 로 요청을 보내는 것을 차단)
+    if (req.method === 'POST') {
+      const origin = req.headers.origin
+      if (origin && origin !== `http://localhost:${PORT}` && origin !== `http://127.0.0.1:${PORT}`) {
+        res.statusCode = 403
+        return res.end('forbidden origin')
+      }
+    }
+
     // 프레임 한 장 저장: POST /frame?fmt=x&i=번호
     if (req.method === 'POST' && url.pathname === '/frame') {
-      const i = url.searchParams.get('i')
+      const i = url.searchParams.get('i') ?? ''
+      // 보안: 프레임 번호는 숫자, 미리보기는 "preview-12.5" 형식만 허용 → 파일 이름에 ../ 같은 경로가 끼어들 수 없음
+      if (!/^\d{1,5}$/.test(i) && !/^preview-\d{1,3}(\.\d)?$/.test(i)) {
+        res.statusCode = 400
+        return res.end('bad frame id')
+      }
       const chunks = []
       req.on('data', (c) => chunks.push(c))
       req.on('end', () => {
