@@ -1,0 +1,31 @@
+{
+  "name": "iren-3d",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "IREN 데이터센터 현황을 전략게임풍 3D로 보여주는 비공식 대시보드",
+  "scripts": {
+    "dev": "vite --port 5173 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --port 4174",
+    "validate": "node scripts/validate-sites.mjs",
+    "prebuild": "npm run validate",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@react-three/drei": "^10.7.9",
+    "@react-three/fiber": "^9.8.1",
+    "lucide-react": "^1.52.0",
+    "react": "~19.3.0",
+    "react-dom": "~19.3.0",
+    "three": "^0.186.1",
+    "three-globe": "^2.45.3",
+    "zod": "^4.6.5",
+    "zustand": "^5.0.15"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.1.2",
+    "vite": "^8.3.2",
+    "vitest": "^5.0.3"
+  }
+}

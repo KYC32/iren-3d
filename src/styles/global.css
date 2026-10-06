@@ -1,0 +1,28 @@
+/* 전역 스타일: 폰트, 리셋, 색상 토큰 */
+:root {
+  /* 배경/바닥 — Dilum WareTrack 룩의 밝은 라벤더-그레이 */
+  --bg: #eceffa;
+  --panel: rgba(255, 255, 255, 0.82);
+  --panel-border: rgba(20, 30, 60, 0.08);
+  --text: #16213a;
+  --text-muted: #6b7591;
+  /* 상태 색 (기존 X 카드 의미 체계 유지, 파스텔 톤 보정) */
+  --c-operating: #2ea88a;
+  --c-commissioning: #3fbf96;
+  --c-construction: #e8825a;
+  --c-planned: #9aa6bd;
+  --c-pending: #f5c518;
+  --c-decom: #b9bfcc;
+  --accent: #2f6bed;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body, #root { height: 100%; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Pretendard", "Apple SD Gothic Neo", -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden; /* 3D 캔버스가 화면을 꽉 채우므로 스크롤 금지 */
+}
+a { color: var(--accent); }
+button { font: inherit; cursor: pointer; }
