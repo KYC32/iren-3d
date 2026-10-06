@@ -216,3 +216,7 @@ button { font: inherit; cursor: pointer; }
   text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 6px #fff;
   transition: opacity 250ms; opacity: 0;
 }
+
+/* 녹화 모드: 3D 위 HTML 라벨은 영상에 안 찍히므로 숨김 (영상용 라벨은 2D 캔버스에 따로 그림) */
+.record .pin-cluster, .record .bld-label, .record .tag, .record .city-label { display: none; }
+.record .canvas-wrap { position: absolute; left: 0; top: 0; }

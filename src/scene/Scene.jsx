@@ -10,10 +10,11 @@ import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import GlobeView from './GlobeView.jsx'
 import SiteView from './SiteView.jsx'
 import CameraRig from './CameraRig.jsx'
+import RecordDirector from '../record/RecordDirector.jsx'
 
 const BG = '#eceffa' // 배경 = 안개 색 (지평선이 자연스럽게 사라짐)
 
-export default function Scene() {
+export default function Scene({ record = false }) {
   const view = useAppStore((s) => s.view)
   const site = useAppStore(selectSelectedSite)
   // 성능이 떨어지면 해상도(DPR)를 자동으로 낮춥니다
@@ -22,7 +23,9 @@ export default function Scene() {
   return (
     <Canvas
       shadows
-      dpr={[1, dpr]}
+      // 녹화 모드: 자동 렌더를 끄고(never) RecordDirector 가 한 프레임씩 직접 그림
+      frameloop={record ? 'never' : 'always'}
+      dpr={record ? 1 : [1, dpr]}
       camera={{ fov: 30, near: 0.5, far: 3000, position: [200, 150, 200] }}
       gl={{ antialias: true }}
       onCreated={(state) => {
@@ -32,7 +35,7 @@ export default function Scene() {
       }}
       onPointerMissed={() => useAppStore.getState().setHover(null)}
     >
-      <PerformanceMonitor onDecline={() => setDpr(1)} onIncline={() => setDpr(1.5)} />
+      {!record && <PerformanceMonitor onDecline={() => setDpr(1)} onIncline={() => setDpr(1.5)} />}
       <color attach="background" args={[BG]} />
       {view === 'site' && <fog attach="fog" args={[BG, 140, 320]} />}
 
@@ -57,7 +60,7 @@ export default function Scene() {
         <GlobeView visible={view === 'globe'} />
         {view === 'site' && site && <SiteView key={site.id} site={site} />}
       </Suspense>
-      <CameraRig />
+      {record ? <RecordDirector /> : <CameraRig />}
     </Canvas>
   )
 }

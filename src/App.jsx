@@ -13,6 +13,7 @@ import Legend from './ui/Legend.jsx'
 import SiteList from './ui/SiteList.jsx'
 import SitePanel from './ui/SitePanel.jsx'
 import Footer from './ui/Footer.jsx'
+import { RECORD } from './record/recordMode.js'
 
 export default function App() {
   const t = useT()
@@ -43,6 +44,17 @@ export default function App() {
 
   // html lang 속성도 언어에 맞춤 (스크린리더용)
   useEffect(() => { document.documentElement.lang = lang }, [lang])
+
+  // 녹화 모드: HTML UI 없이 영상 크기(2배)의 캔버스만 렌더링
+  if (RECORD) {
+    return (
+      <div className="app record">
+        <div className="canvas-wrap" style={{ width: RECORD.W * RECORD.SS, height: RECORD.H * RECORD.SS }}>
+          {data && <Scene record />}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className={`app view-${view}`}>

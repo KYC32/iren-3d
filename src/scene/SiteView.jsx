@@ -27,7 +27,7 @@ export default function SiteView({ site }) {
   const flowTargets = L.blocks.filter((b) => b.isAnchor && (b.status === 'operating' || b.status === 'commissioning'))
 
   return (
-    <group>
+    <group name={`site-${site.id}`}>
       {/* 넓은 바닥 (그림자 받기) */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.32, 0]} receiveShadow>
         <circleGeometry args={[L.side * 3, 48]} />

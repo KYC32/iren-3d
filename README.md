@@ -34,6 +34,23 @@ npm run build      # validate → 빌드 (dist/)
 2. `npm run validate` 로 검사합니다. 스키마 오류·전력 합계 초과·중복 id 를 잡아 줍니다.
 3. `git commit` → `git push` 하면 Vercel 이 자동으로 다시 배포합니다.
 
+## 영상 만들기 (X·쇼츠용)
+
+같은 스토리보드로 16:9(1920×1080)와 9:16(1080×1920) 영상을 자동으로 만듭니다.
+헤드리스 Chrome(임시 프로필)이 화면을 한 프레임씩 그려 PNG 로 저장하고, 끝나면 ffmpeg 가 mp4 로 합칩니다.
+
+```bash
+npm run build
+node scripts/record-server.mjs all              # 16:9 + 9:16 → video/iren-x-ko.mp4, video/iren-shorts-ko.mp4
+node scripts/record-server.mjs x --lang=en      # 영어 자막 16:9
+node scripts/record-server.mjs shorts --only=3,13,25   # 그 시점만 미리보기 PNG (video/preview-*.png)
+```
+
+- 장면 순서·카메라 동선·자막은 `src/record/storyboard.js` 의 시간표만 고치면 됩니다.
+- 영상 위 라벨·자막은 `src/record/overlay.js` 가 2D 캔버스에 직접 그립니다 (HTML 라벨은 캡처되지 않음).
+- 렌더 루프를 멈추고 프레임마다 시각을 지정하므로, 컴퓨터 속도와 상관없이 정확히 30fps 로 찍힙니다.
+- 필요 조건: Google Chrome, ffmpeg (`brew install ffmpeg`). 결과물 `video/` 폴더는 git 에 올리지 않습니다.
+
 ## 배포 (Vercel)
 
 1. https://vercel.com 에 GitHub 계정으로 로그인 → **Add New → Project** → `KYC32/iren-3d` Import

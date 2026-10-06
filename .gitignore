@@ -4,3 +4,4 @@ dist
 *.local
 .vercel
 scripts/.cache
+video

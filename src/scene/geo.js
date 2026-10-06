@@ -42,3 +42,29 @@ export function fmtMw(mw, digits = 1) {
   if (mw >= 1000) return `${(mw / 1000).toFixed(digits).replace(/\.0$/, '')} GW`
   return `${Math.round(mw).toLocaleString()} MW`
 }
+
+// 가까이 모인 사이트(예: 텍사스 4곳)를 무리로 묶습니다.
+// 멀리서 볼 때는 무리의 대표(가장 큰 사이트) 라벨만 "+N" 과 함께 보여 겹침을 막고,
+// 가까이 줌하거나 호버하면 모든 라벨을 펼칩니다.
+export function labelRanks(sites, nearDeg = 5.5) {
+  const leads = []
+  const ranks = {}
+  // 계통 전력이 큰 사이트가 대표가 되도록 큰 순서로 처리
+  for (const s of [...sites].sort((a, b) => b.grid_mw - a.grid_mw)) {
+    const lead = leads.find((l) => Math.hypot(l.lat - s.lat, (l.lng - s.lng) * Math.cos((s.lat * Math.PI) / 180)) < nearDeg)
+    if (lead) {
+      ranks[s.id] = { lead: false, members: [] }
+      ranks[lead.id].members.push(s)
+    } else {
+      leads.push(s)
+      ranks[s.id] = { lead: true, members: [] }
+    }
+  }
+  return ranks
+}
+
+
+// 지구본 핀 막대 높이 ∝ √MW (면적 감각에 가깝게): 30MW ≈ 5, 1,600MW ≈ 21
+export function pinHeight(mw) {
+  return 3 + Math.sqrt(mw) * 0.45
+}

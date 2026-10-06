@@ -12,7 +12,7 @@ import { Html, Line } from '@react-three/drei'
 import { BackSide, AdditiveBlending, BufferGeometry, Color, Float32BufferAttribute, Object3D, Quaternion, Vector3 } from 'three'
 import { useAppStore, isStatusActive } from '../store/useAppStore.js'
 import { styleOf } from '../data/statusStyle.js'
-import { GLOBE_RADIUS, latLngToVec3, spreadPins, fmtMw } from './geo.js'
+import { GLOBE_RADIUS, latLngToVec3, spreadPins, fmtMw, labelRanks, pinHeight } from './geo.js'
 import { pickName } from '../i18n/useT.js'
 
 const OCEAN = '#a8c3ef'      // 파스텔 바다
@@ -38,26 +38,6 @@ export default function GlobeView({ visible }) {
       {visible && sites.map((s) => <GlobePin key={s.id} site={s} pos={display[s.id]} rank={ranks[s.id]} />)}
     </group>
   )
-}
-
-// 가까이 모인 사이트(예: 텍사스 4곳)를 무리로 묶습니다.
-// 멀리서 볼 때는 무리의 대표(가장 큰 사이트) 라벨만 "+N" 과 함께 보여 겹침을 막고,
-// 가까이 줌하거나 호버하면 모든 라벨을 펼칩니다.
-function labelRanks(sites, nearDeg = 5.5) {
-  const leads = []
-  const ranks = {}
-  // 계통 전력이 큰 사이트가 대표가 되도록 큰 순서로 처리
-  for (const s of [...sites].sort((a, b) => b.grid_mw - a.grid_mw)) {
-    const lead = leads.find((l) => Math.hypot(l.lat - s.lat, (l.lng - s.lng) * Math.cos((s.lat * Math.PI) / 180)) < nearDeg)
-    if (lead) {
-      ranks[s.id] = { lead: false, members: [] }
-      ranks[lead.id].members.push(s)
-    } else {
-      leads.push(s)
-      ranks[s.id] = { lead: true, members: [] }
-    }
-  }
-  return ranks
 }
 
 const EXPAND_DISTANCE = 300 // 카메라가 이보다 가까우면 무리 라벨을 모두 펼침
@@ -108,7 +88,7 @@ function LandHexes() {
 
   if (!count) return null
   return (
-    <instancedMesh ref={ref} args={[null, null, count]} frustumCulled={false}>
+    <instancedMesh ref={ref} name="land-hexes" args={[null, null, count]} frustumCulled={false}>
       {/* 반지름 0.95: h3 해상도3 육각형(약 1.08)보다 조금 작게 → 타일 사이 틈 */}
       <cylinderGeometry args={[0.95, 0.95, 1, 6]} />
       <meshLambertMaterial />
@@ -170,7 +150,7 @@ function Borders() {
   }, [data])
   if (!geo) return null
   return (
-    <group>
+    <group name="borders">
       <lineSegments geometry={geo.countries}>
         <lineBasicMaterial color="#7d8db0" transparent opacity={0.6} />
       </lineSegments>
@@ -248,14 +228,14 @@ const atmoFragment = /* glsl */ `
   varying vec3 vView;
   void main() {
     // 뒷면을 그리므로 법선을 뒤집어 계산. 시선과 수직인 가장자리일수록 밝게
-    float rim = pow(1.0 - abs(dot(-vNormal, vView)), 3.0);
-    gl_FragColor = vec4(uColor, rim * 0.9);
+    float rim = pow(1.0 - abs(dot(-vNormal, vView)), 6.0);
+    gl_FragColor = vec4(uColor, rim * 0.45);
   }
 `
 function Atmosphere() {
   const uniforms = useMemo(() => ({ uColor: { value: new Color('#b3c2ff') } }), [])
   return (
-    <mesh scale={1.12}>
+    <mesh scale={1.08}>
       <sphereGeometry args={[GLOBE_RADIUS, 48, 32]} />
       <shaderMaterial
         vertexShader={atmoVertex}
@@ -291,7 +271,7 @@ function GlobePin({ site, pos, rank = { lead: true, members: [] } }) {
   }, [pos.lat, pos.lng])
 
   // 막대 높이 ∝ √MW (면적 감각에 가깝게): 30MW ≈ 5, 1,600MW ≈ 21
-  const h = 3 + Math.sqrt(site.grid_mw) * 0.45
+  const h = pinHeight(site.grid_mw)
   const ringRef = useRef()
   const labelRef = useRef()
   const tmp = useMemo(() => new Vector3(), [])
