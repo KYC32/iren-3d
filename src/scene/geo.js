@@ -1,8 +1,8 @@
 // 지구본 좌표 유틸
-// three-globe 내부와 똑같은 공식(polar2Cartesian)을 써야 핀이 육지 위 정확한 위치에 섭니다.
+// 육지 타일(land-hex.json)과 핀이 모두 이 공식 하나로 위치를 계산해야 정확히 겹칩니다.
 import { Vector3 } from 'three'
 
-export const GLOBE_RADIUS = 100 // three-globe 의 기본 반지름
+export const GLOBE_RADIUS = 100 // 지구본 반지름 (3D 단위)
 
 // 위도·경도(+고도 비율) → 3D 좌표
 export function latLngToVec3(lat, lng, alt = 0) {

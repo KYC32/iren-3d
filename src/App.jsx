@@ -1,30 +1,72 @@
-// 1단계(Hello 3D) 확인용 임시 App. 이후 단계에서 실제 화면으로 교체됩니다.
-import { Canvas, useFrame } from '@react-three/fiber'
-import { useRef } from 'react'
-
-function SpinningBox() {
-  const ref = useRef()
-  // useFrame: 매 프레임마다 호출됩니다. 여기서는 박스를 천천히 돌립니다.
-  useFrame((_, delta) => {
-    ref.current.rotation.y += delta * 0.8
-    ref.current.rotation.x += delta * 0.3
-  })
-  return (
-    <mesh ref={ref}>
-      <boxGeometry args={[1.5, 1.5, 1.5]} />
-      <meshStandardMaterial color="#2EA88A" />
-    </mesh>
-  )
-}
+// =============================================================
+// App — 3D 캔버스(뒤) + HTML 오버레이(앞)
+// 오버레이 전체는 pointer-events:none 이고 패널만 클릭을 받습니다.
+// =============================================================
+import { useEffect } from 'react'
+import { useAppStore } from './store/useAppStore.js'
+import { loadSites } from './data/loadSites.js'
+import { useT } from './i18n/useT.js'
+import Scene from './scene/Scene.jsx'
+import TopBar from './ui/TopBar.jsx'
+import KpiBar from './ui/KpiBar.jsx'
+import Legend from './ui/Legend.jsx'
+import SiteList from './ui/SiteList.jsx'
+import SitePanel from './ui/SitePanel.jsx'
+import Footer from './ui/Footer.jsx'
 
 export default function App() {
+  const t = useT()
+  const data = useAppStore((s) => s.data)
+  const loadError = useAppStore((s) => s.loadError)
+  const view = useAppStore((s) => s.view)
+  const transitioning = useAppStore((s) => s.transitioning)
+  const lang = useAppStore((s) => s.lang)
+
+  // 처음 한 번 sites.json 로드
+  useEffect(() => {
+    loadSites()
+      .then((d) => useAppStore.getState().setData(d))
+      .catch((e) => useAppStore.getState().setLoadError(e.message))
+  }, [])
+
+  // 주소창의 #site=... 가 바뀌면(링크 공유·직접 입력) 해당 사이트로 전환
+  useEffect(() => {
+    const onHash = () => {
+      const m = window.location.hash.match(/site=([a-z0-9-]+)/)
+      const st = useAppStore.getState()
+      if (m && m[1] !== st.selectedSiteId) st.requestSite(m[1])
+      if (!m && st.view === 'site') st.requestGlobe()
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  // html lang 속성도 언어에 맞춤 (스크린리더용)
+  useEffect(() => { document.documentElement.lang = lang }, [lang])
+
   return (
-    <div style={{ width: '100vw', height: '100dvh', background: '#eceffa' }}>
-      <Canvas camera={{ position: [3, 3, 3], fov: 40 }}>
-        <ambientLight intensity={1.2} />
-        <directionalLight position={[5, 8, 4]} intensity={1.5} />
-        <SpinningBox />
-      </Canvas>
+    <div className={`app view-${view}`}>
+      <div className="canvas-wrap">{data && <Scene />}</div>
+
+      {/* 뷰 전환 시 덮는 페이드 막 */}
+      <div className={`fade${transitioning ? ' on' : ''}`} />
+
+      <div className="overlay">
+        <TopBar />
+        {data && <KpiBar />}
+        <div className="middle">
+          {data && view === 'globe' && <SiteList />}
+          <div className="spacer" />
+          {data && view === 'site' && <SitePanel />}
+        </div>
+        <div className="bottom">
+          {data && <Legend />}
+          <Footer />
+        </div>
+      </div>
+
+      {!data && !loadError && <div className="center-msg">{t.loading}</div>}
+      {loadError && <pre className="center-msg error">{loadError}</pre>}
     </div>
   )
 }
