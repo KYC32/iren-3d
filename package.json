@@ -10,6 +10,7 @@
     "preview": "vite preview --port 4174",
     "validate": "node scripts/validate-sites.mjs",
     "geo": "node scripts/build-land-hex.mjs && node scripts/build-borders.mjs",
+    "geo:fetch": "node scripts/fetch-natural-earth.mjs",
     "prebuild": "npm run validate",
     "test": "vitest run"
   },

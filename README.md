@@ -46,6 +46,10 @@ Vite 8 · React 19 · @react-three/fiber 9 · @react-three/drei 10 · three 0.18
 
 육지 타일과 경계선은 `npm run geo`(h3-js + Natural Earth 110m + us-atlas)로 미리 계산해 `public/data/land-hex.json`, `borders.json` 에 저장합니다.
 사이트 주변 반경 6도는 더 작은 육각형(h3 해상도 4)으로 그립니다. 사이트를 추가했다면 `npm run geo` 를 다시 실행하세요.
+
+캐나다·호주 주 경계(BC주·남호주 강조 포함)는 Natural Earth 50m 원본에서 가져옵니다.
+처음 한 번 `npm run geo:fetch` 로 원본(2.3MB)을 `scripts/.cache/` 에 받아 두면 됩니다. 이 폴더는 git 에 올리지 않습니다.
+캐시가 없으면 `npm run geo` 는 그 부분만 건너뛰고 나머지를 정상 생성합니다.
 브라우저 번들에는 h3/지도 라이브러리가 들어가지 않습니다.
 
 ## 폴더
@@ -61,6 +65,12 @@ src/i18n/                   한/영 문자열
 scripts/                    validate-sites, build-land-hex, build-borders
 docs/research-brief.md      참고 사례·코드·데이터 출처 리서치
 ```
+
+## 지도 데이터 출처
+
+- Natural Earth (퍼블릭 도메인): 국경·해안선 110m(world-atlas 경유), 주·도 경계 50m — https://www.naturalearthdata.com
+- us-atlas: 미국 주 경계 (U.S. Census Bureau 자료 기반)
+- h3-js: 육각 격자 (Uber H3)
 
 ## 참고한 사례
 
