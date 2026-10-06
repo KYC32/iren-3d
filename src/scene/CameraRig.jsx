@@ -31,7 +31,10 @@ function globeAlt() {
 
 // 캠퍼스 기본 시점: 부지 크기에 맞춰 대각선 위에서 내려다봄 (준아이소메트릭)
 function campusHome(side) {
-  const d = side * 1.32
+  // 세로로 긴 화면(모바일)은 가로 시야가 좁으므로 그만큼 멀리서 봅니다
+  const aspect = window.innerWidth / Math.max(1, window.innerHeight)
+  const k = aspect < 1 ? Math.min(2.5, 1.05 / aspect) : 1
+  const d = side * 1.32 * Math.max(1, k)
   return [d, d * 0.95, d, 0, 0, 0]
 }
 
@@ -41,8 +44,8 @@ function applyFocalOffset(c, view, side, transition) {
   const mobile = window.innerWidth < 768
   // 지구본: 데스크톱에서는 왼쪽 사이트 목록을 피해 지구본을 오른쪽으로
   if (view !== 'site') return c.setFocalOffset(mobile ? 0 : -28, 0, 0, transition)
-  if (mobile) return c.setFocalOffset(0, -side * 0.22, 0, transition) // 바텀시트 → 위로
-  return c.setFocalOffset(side * 0.22, side * 0.05, 0, transition)    // 오른쪽 패널 → 왼쪽으로, 상단 KPI → 살짝 아래로
+  if (mobile) return c.setFocalOffset(0, side * 0.3, 0, transition) // 바텀시트(화면 아래 42%) → 캠퍼스를 위로 (+y = 화면 위)
+  return c.setFocalOffset(side * 0.22, -side * 0.05, 0, transition)   // 오른쪽 패널 → 왼쪽으로, 상단 KPI → 살짝 아래로
 }
 
 // 뷰별 카메라 제약
@@ -56,7 +59,7 @@ function applyLimits(c, view, side = 30) {
     c.dollySpeed = 0.6
   } else {
     c.minDistance = side * 0.9
-    c.maxDistance = side * 4.5
+    c.maxDistance = side * 7
     c.minPolarAngle = 0.35 // 너무 위에서 수직으로 내려다보지 않게
     c.maxPolarAngle = 1.2  // 바닥 아래로 들어가지 않게
     c.truckSpeed = 1

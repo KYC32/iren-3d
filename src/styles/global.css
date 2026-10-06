@@ -2,7 +2,7 @@
 :root {
   /* 배경/바닥 — Dilum WareTrack 룩의 밝은 라벤더-그레이 */
   --bg: #eceffa;
-  --panel: rgba(255, 255, 255, 0.82);
+  --panel: rgba(255, 255, 255, 0.96); /* 거의 불투명: 뒤의 3D 라벨이 비치지 않게 */
   --panel-border: rgba(20, 30, 60, 0.08);
   --text: #16213a;
   --text-muted: #6b7591;
@@ -186,12 +186,18 @@ button { font: inherit; cursor: pointer; }
   .site-panel {
     position: fixed; left: 8px; right: 8px; bottom: 8px; width: auto;
     max-height: 42dvh; z-index: 65; border-radius: 16px 16px 12px 12px;
+    background: #fff; /* 뒤의 3D 라벨이 비치지 않게 불투명 */
   }
   .view-site .bottom { display: none; } /* 바텀시트가 하단을 차지 */
   .legend { min-width: 0; padding: 7px 9px; }
   .legend-hint, .legend-item.static { display: none; }
   .disclaimer { font-size: 9.5px; max-width: 60vw; }
   .hint { display: none; }
+  /* 좁은 화면에서는 3D 라벨을 작게, 고객 배지는 숨겨 혼잡을 줄임 (패널에 고객 정보가 있음) */
+  .bld-label .row { font-size: 9.5px; padding: 1px 6px; }
+  .bld-label .customer { display: none; }
+  .tag { font-size: 9px; }
+  .pin-label { font-size: 11px; padding: 3px 8px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .fade { transition: none; }
