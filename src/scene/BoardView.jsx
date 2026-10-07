@@ -215,7 +215,7 @@ function BoardPins() {
   const sites = useAppStore((s) => s.data?.sites ?? EMPTY)
   const positions = useMemo(() => boardPinPositions(sites), [sites])
   // 가까운 사이트(예: 스위트워터 1·2·칠드레스)는 무리로 묶어 라벨 하나로
-  const ranks = useMemo(() => labelRanks(sites, 2.2), [sites])
+  const ranks = useMemo(() => labelRanks(sites, 3.8), [sites]) // 3.8°: 칠드레스·스위트워터 1·2·카이오와를 한 무리로
   return sites
     .filter((s) => positions[s.id])
     .map((s) => <BoardPin key={s.id} site={s} pos={positions[s.id]} rank={ranks[s.id]} />)
@@ -378,7 +378,12 @@ function Contract({ contract: k, anchor, positions, sites, slot }) {
             <Html position={end} center zIndexRange={[19, 0]} style={{ pointerEvents: 'none' }}>
               <div className={`contract-end${dim ? ' dim' : ''}`} style={{ borderColor: k.color }}>
                 {k.logo ? <CustomerLogo name={k.logo} size={12} /> : <span className="ce-dot" style={{ background: k.color }} />}
-                {bs.length > 0 && <span>{bs.length > 1 ? `${pickName(bs[0], lang)}–${bs.at(-1).name.replace(/^\D+/, '')}` : pickName(bs[0], lang)}</span>}
+                {/* 짧은 대상 이름: 데이터의 scope 우선, 없으면 건물 이름 */}
+                {(lang === 'ko' ? k.scope_ko : k.scope_en) ? (
+                  <span>{lang === 'ko' ? k.scope_ko : k.scope_en}</span>
+                ) : bs.length > 0 && (
+                  <span>{bs.length > 1 ? `${pickName(bs[0], lang)}–${bs.at(-1).name.replace(/^\D+/, '')}` : pickName(bs[0], lang)}</span>
+                )}
               </div>
             </Html>
           </group>

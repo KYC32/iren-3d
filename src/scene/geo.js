@@ -46,11 +46,15 @@ export function fmtMw(mw, digits = 1) {
 // 가까이 모인 사이트(예: 텍사스 4곳)를 무리로 묶습니다.
 // 멀리서 볼 때는 무리의 대표(가장 큰 사이트) 라벨만 "+N" 과 함께 보여 겹침을 막고,
 // 가까이 줌하거나 호버하면 모든 라벨을 펼칩니다.
+const LEAD_ORDER = ['operating', 'commissioning', 'under_construction', 'planned', 'decommissioning']
+
 export function labelRanks(sites, nearDeg = 5.5) {
   const leads = []
   const ranks = {}
-  // 계통 전력이 큰 사이트가 대표가 되도록 큰 순서로 처리
-  for (const s of [...sites].sort((a, b) => b.grid_mw - a.grid_mw)) {
+  // 대표 선정: 상태가 앞선 사이트(가동 > 시운전 > 건설 > 계획 > 폐쇄중) 먼저, 같으면 계통 전력이 큰 순서
+  // → 예) 텍사스 무리는 1.4GW 건설중인 스위트워터 1보다 가동중인 칠드레스가 대표
+  const rank = (s) => LEAD_ORDER.indexOf(s.status) === -1 ? 9 : LEAD_ORDER.indexOf(s.status)
+  for (const s of [...sites].sort((a, b) => rank(a) - rank(b) || b.grid_mw - a.grid_mw)) {
     const lead = leads.find((l) => Math.hypot(l.lat - s.lat, (l.lng - s.lng) * Math.cos((s.lat * Math.PI) / 180)) < nearDeg)
     if (lead) {
       ranks[s.id] = { lead: false, members: [] }

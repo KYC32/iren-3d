@@ -88,7 +88,9 @@
           "note_ko": "GB300 NVL72, 선급금 20%, Horizon 1~4 단계 인도",
           "note_en": "GB300 NVL72, 20% prepayment, Horizon 1–4 delivered in tranches",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036125040072/ef20058139_ex99-1.htm",
-          "logo": "microsoft"
+          "logo": "microsoft",
+          "scope_ko": "Horizon 1–4",
+          "scope_en": "Horizon 1–4"
         },
         {
           "id": "nvidia-2026",
@@ -107,7 +109,9 @@
           "note_ko": "공랭 Blackwell 관리형 GPU 클라우드, 2027년 초 가동 목표",
           "note_en": "Managed air-cooled Blackwell GPU cloud, targeted early 2027",
           "source": "https://www.globenewswire.com/news-release/2026/05/07/3290760/0/en/iren-secures-3-4bn-ai-cloud-contract-with-nvidia.html",
-          "logo": "nvidia"
+          "logo": "nvidia",
+          "scope_ko": "공랭 Blackwell 홀",
+          "scope_en": "Air-cooled Blackwell"
         },
         {
           "id": "ai-developers-2026",

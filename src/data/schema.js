@@ -66,6 +66,8 @@ const Contract = z.object({
   it_mw: z.number().positive().nullable(),  // 계약 IT 용량 (미공개면 null)
   sites: z.array(Id),                       // 연결할 사이트 (미공개면 빈 배열)
   buildings: z.array(Id).optional(),        // 연결할 건물 (있으면 패널에 표시)
+  scope_ko: z.string().optional(),          // 지도 칩에 쓸 짧은 대상 이름 (예: 'Horizon 1–4')
+  scope_en: z.string().optional(),
   color: Hex,                               // 연결선·배지 색 (가능하면 고객 회사 고유색)
   logo: z.enum(['microsoft', 'nvidia']).optional(), // 배지·핀에 붙일 고객 로고 (src/ui/logos)
   note_ko: z.string().optional(),
