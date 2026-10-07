@@ -1,4 +1,5 @@
 // 선택한 사이트의 상세 패널: 요약 → 스펙 → 건물/단계 → 납품 예정 → 타임라인 → 추정 → 출처
+import { useEffect, useRef } from 'react'
 import { ExternalLink, Truck, Clock, Building2, Info, Link2, Handshake } from 'lucide-react'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { useT, pickName } from '../i18n/useT.js'
@@ -20,6 +21,15 @@ export default function SitePanel() {
   const companies = useAppStore((s) => s.data?.companies)
   const hoverId = useAppStore((s) => s.hoverId)
   const setHover = useAppStore((s) => s.setHover)
+  const selectedId = useAppStore((s) => s.selectedBuildingId)
+  const selectBuilding = useAppStore((s) => s.selectBuilding)
+  // 3D 에서 건물을 클릭해 고르면 패널의 그 항목이 보이도록 스크롤 (패널에서 직접 고른 경우는 이미 보이니 생략)
+  const rowRefs = useRef({})
+  const fromPanel = useRef(null)
+  useEffect(() => {
+    if (!selectedId || fromPanel.current === selectedId) return
+    rowRefs.current[selectedId]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+  }, [selectedId])
   if (!site) return null
   const st = styleOf(site.status)
 
@@ -47,9 +57,11 @@ export default function SitePanel() {
           return (
             <li
               key={b.id}
-              className={hoverId === b.id ? 'is-hover' : ''}
+              ref={(el) => (rowRefs.current[b.id] = el)}
+              className={`${hoverId === b.id ? 'is-hover' : ''}${selectedId === b.id ? ' is-selected' : ''}`}
               onMouseEnter={() => setHover(b.id)}
               onMouseLeave={() => useAppStore.getState().clearHover(b.id)}
+              onClick={() => { fromPanel.current = b.id; selectBuilding(b.id, true) }} // 클릭 → 카메라가 그 건물로
             >
               <span className="dot" style={{ background: bs.color }} />
               <span className="b-name">

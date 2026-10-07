@@ -253,6 +253,24 @@ export default function CameraRig() {
     return () => { cancelled = true }
   }, [pending])
 
+  // 패널에서 건물을 고르면 그 건물로 카메라 이동: 보는 각도는 그대로, 시점 중심만 건물로 옮기고 조금 가까이
+  // (건물 배치는 날짜와 무관하게 고정이라 layoutCampus 만으로 위치를 구할 수 있음)
+  const buildingFly = useAppStore((s) => s.buildingFly)
+  useEffect(() => {
+    const c = ref.current
+    const st = useAppStore.getState()
+    const site = selectSelectedSite(st)
+    if (!c || !buildingFly || st.view !== 'site' || !site) return
+    const L = layoutCampus(site._raw)
+    const blocks = L.blocks.filter((b) => b.buildingId === buildingFly.id)
+    if (!blocks.length) return
+    const x = blocks.reduce((a, b) => a + b.x, 0) / blocks.length
+    const z = blocks.reduce((a, b) => a + b.z, 0) / blocks.length
+    c.smoothTime = 0.35
+    c.moveTo(x, 0, z, true)
+    c.dollyTo(Math.max(c.minDistance * 1.15, Math.min(c.distance, L.side * 1.3)), true) // 이미 가까우면 그대로
+  }, [buildingFly])
+
   // 지구본 자동 회전: 조작 후 4초간, 핀 호버 중, 전환 중에는 멈춤
   useFrame((_, delta) => {
     const c = ref.current

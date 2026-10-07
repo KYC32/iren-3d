@@ -36,6 +36,8 @@ export const useAppStore = create((set, get) => ({
   view: initial.site ? 'site' : 'globe',   // 'globe' | 'site'
   selectedSiteId: initial.site ?? null,    // 선택된 사이트 id
   hoverId: null,                           // 마우스 올린 사이트/건물 id
+  selectedBuildingId: null,                // 캠퍼스에서 클릭해 고른 건물 id (패널 항목과 연동)
+  buildingFly: null,                       // { id, seq } 패널에서 건물을 고르면 카메라가 그 건물로 (seq 로 같은 건물 재요청도 구분)
   transitioning: false,                    // 카메라 전환(페이드) 중인지
   // 카메라 전환 요청: UI/핀이 요청하면 CameraRig 가 애니메이션 후 실제로 view 를 바꿉니다
   pending: null,                           // null | { type: 'site', id } | { type: 'globe' }
@@ -110,6 +112,16 @@ export const useAppStore = create((set, get) => ({
     }, HOVER_CLEAR_MS)
   },
   setTransitioning: (v) => set({ transitioning: v }),
+  // 건물 고르기. fly=true 면 카메라도 그 건물로 이동 (패널에서 고를 때 — 3D 에서 클릭할 땐 이미 보고 있으니 안 움직임)
+  // 같은 건물을 다시 고르면 선택 해제 (토글)
+  selectBuilding: (id, fly = false) => {
+    const st = get()
+    const next = id && st.selectedBuildingId === id && !fly ? null : id
+    set({
+      selectedBuildingId: next,
+      buildingFly: fly && next ? { id: next, seq: (st.buildingFly?.seq ?? 0) + 1 } : st.buildingFly,
+    })
+  },
   toggleLang: () => set({ lang: get().lang === 'ko' ? 'en' : 'ko' }),
 
   // 전환 "요청" (애니메이션 포함) — UI 와 핀은 이것을 호출합니다
@@ -121,11 +133,11 @@ export const useAppStore = create((set, get) => ({
 
   // 사이트 선택 → 캠퍼스 뷰로 (CameraRig 가 애니메이션 도중에 호출) (URL 해시도 갱신해 공유 가능하게)
   selectSite: (id) => {
-    set({ selectedSiteId: id, view: id ? 'site' : 'globe', hoverId: null })
+    set({ selectedSiteId: id, view: id ? 'site' : 'globe', hoverId: null, selectedBuildingId: null })
     get().syncHash()
   },
   goGlobe: () => {
-    set({ view: 'globe', selectedSiteId: null, hoverId: null })
+    set({ view: 'globe', selectedSiteId: null, hoverId: null, selectedBuildingId: null })
     get().syncHash()
   },
 

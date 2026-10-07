@@ -189,8 +189,9 @@ export function Truck({ truck, index, lang }) {
         </mesh>
       ))}
       <Html position={[0, 2, 0]} center zIndexRange={[15, 0]}>
+        {/* 괄호 속 상세(대상 건물·계약명)는 빼고 짧게 — 건물 라벨을 덮지 않게. 전체 내용은 오른쪽 패널 "납품 예정"에 */}
         <div className="tag tag-pending">
-          {d.what} · {d.eta}
+          {d.what.replace(/\s*\([^)]*\)/g, '')} · {d.eta}
         </div>
       </Html>
     </group>

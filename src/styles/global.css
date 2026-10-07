@@ -106,6 +106,9 @@ button { font: inherit; cursor: pointer; }
 .sp-buildings { list-style: none; display: flex; flex-direction: column; gap: 2px; }
 .sp-buildings li { display: flex; align-items: center; gap: 8px; padding: 6px 7px; border-radius: 8px; }
 .sp-buildings li.is-hover { background: #eaf0fd; }
+.sp-buildings li { cursor: pointer; }
+/* 고른 건물: 왼쪽 파란 띠 + 진한 바탕 (3D 의 파란 바닥 판·라벨과 같은 건물) */
+.sp-buildings li.is-selected { background: #dfe8fd; box-shadow: inset 3px 0 0 var(--accent); }
 .b-name { flex: 1; display: flex; flex-direction: column; font-weight: 600; }
 .b-meta { font-size: 11px; color: var(--text-muted); font-weight: 400; }
 .b-mw { font-size: 11.5px; font-weight: 650; color: #44506c; white-space: nowrap; }
@@ -151,7 +154,7 @@ button { font: inherit; cursor: pointer; }
 .bld-label {
   position: relative;
   display: flex; flex-direction: column; align-items: center; gap: 3px;
-  white-space: nowrap; pointer-events: auto; user-select: none;
+  white-space: nowrap; pointer-events: auto; user-select: none; cursor: pointer;
 }
 .bld-label .row {
   display: flex; align-items: center; gap: 5px;
@@ -160,6 +163,13 @@ button { font: inherit; cursor: pointer; }
   box-shadow: 0 2px 8px rgba(30,45,90,0.1);
 }
 .bld-label.is-hover .row { border-color: var(--accent); }
+/* 클릭해 고른 건물: 파란 바탕 흰 글씨 (패널 항목과 같은 건물이라는 표시) */
+.bld-label.is-selected .row { background: var(--accent); border-color: var(--accent); color: #fff; }
+.bld-label.is-selected .row .prog { background: rgba(255,255,255,0.35); }
+.bld-label.is-selected .row .prog i { background: #fff; }
+/* 건설 진행률 막대 (라벨 줄 안의 작은 막대) */
+.bld-label .prog { display: inline-block; width: 30px; height: 5px; border-radius: 3px; background: #f4ddd3; overflow: hidden; }
+.bld-label .prog i { display: block; height: 100%; background: var(--c-construction); border-radius: 3px; }
 .bld-label .sub { font-size: 10px; color: var(--text-muted); }
 /* 호버 상세: 라벨 "위쪽" 공중에 띄우는 툴팁.
    - 라벨 크기가 변하지 않아 화면 위치가 흔들리지 않고
@@ -172,9 +182,14 @@ button { font: inherit; cursor: pointer; }
   background: #fff; border-radius: 9px; padding: 6px 9px; font-size: 11px; line-height: 1.5;
   box-shadow: 0 6px 18px rgba(30,45,90,0.16); color: #2a3550;
 }
-.bld-label .customer {
-  font-size: 10px; font-weight: 700; background: #fff; border: 1.5px solid; border-radius: 6px; padding: 1px 6px; color: #2a3550;
+/* 고객 계약 구역 배지: 구역(바닥 테두리) 앞쪽에 고객당 하나 */
+.zone-badge {
+  display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; pointer-events: none;
+  background: #fff; border: 1.5px solid; border-radius: 7px; padding: 2px 8px;
+  font-size: 11px; box-shadow: 0 2px 8px rgba(30,45,90,0.12);
 }
+.zone-badge b { font-weight: 750; }
+.zone-badge span { color: #44506c; font-weight: 650; }
 .tag {
   white-space: nowrap; font-size: 10.5px; font-weight: 650; color: #34405e;
   background: rgba(255,255,255,0.9); border: 1px solid rgba(20,30,60,0.1); border-radius: 6px; padding: 2px 6px;
@@ -203,7 +218,6 @@ button { font: inherit; cursor: pointer; }
   .hint { display: none; }
   /* 좁은 화면에서는 3D 라벨을 작게, 고객 배지는 숨겨 혼잡을 줄임 (패널에 고객 정보가 있음) */
   .bld-label .row { font-size: 9.5px; padding: 1px 6px; }
-  .bld-label .customer { display: none; }
   .tag { font-size: 9px; }
   .pin-label { font-size: 11px; padding: 3px 8px; }
 }
@@ -402,5 +416,4 @@ button { font: inherit; cursor: pointer; }
 .spc-head span { font-weight: 650; color: #34405e; white-space: nowrap; }
 .spc-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 .spc-note { font-size: 11px; color: #44506c; margin-top: 2px; }
-.bld-label .customer { display: inline-flex; align-items: center; gap: 4px; }
 .spc-name { display: inline-flex; align-items: center; gap: 5px; }

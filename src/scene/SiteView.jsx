@@ -4,11 +4,11 @@
 // =============================================================
 import { CustomerLogo, logoKeyOf, BRAND_COLOR } from '../ui/logos/index.jsx'
 import { useMemo } from 'react'
-import { RoundedBox } from '@react-three/drei'
+import { Line, RoundedBox } from '@react-three/drei'
 import Html from './SafeHtml.jsx'
 import { useAppStore, isStatusActive, EMPTY } from '../store/useAppStore.js'
 import { useT, pickName } from '../i18n/useT.js'
-import { styleOf, PENDING_COLOR } from '../data/statusStyle.js'
+import { styleOf } from '../data/statusStyle.js'
 import { layoutCampus, campusStateAt } from './layoutCampus.js'
 import { fmtMw } from './geo.js'
 import Block from './buildings/Block.jsx'
@@ -19,10 +19,13 @@ export default function SiteView({ site }) {
   const lang = useAppStore((s) => s.lang)
   const hoverId = useAppStore((s) => s.hoverId)
   const setHover = useAppStore((s) => s.setHover)
+  const selectedId = useAppStore((s) => s.selectedBuildingId)
+  const selectBuilding = useAppStore((s) => s.selectBuilding)
   const activeStatuses = useAppStore((s) => s.activeStatuses)
 
   const month = useAppStore((s) => s.month)
   const companies = useAppStore((s) => s.data?.companies ?? EMPTY)
+  const contracts = useMemo(() => companies.flatMap((c) => c.contracts ?? []), [companies])
   // 고정 배치는 사이트가 바뀔 때만, 상태는 날짜가 바뀔 때마다 계산
   const group = companies.find((c) => c.id === site.primary)?.group
   const defaultKind = group === 'hyperscaler' ? 'datahall_liquid' : 'datahall_air'
@@ -72,11 +75,16 @@ export default function SiteView({ site }) {
           key={b.key}
           block={b}
           hovered={b.buildingId && hoverId === b.buildingId}
+          selected={b.buildingId && selectedId === b.buildingId}
           dimmed={!isStatusActive(activeStatuses, b.status)}
           onHover={(id) => setHover(id, '3d')}
           onLeave={(id) => useAppStore.getState().clearHover(id, '3d')}
+          onSelect={(id) => selectBuilding(id)}
         />
       ))}
+
+      {/* 고객 계약 구역: 건물마다 고객 칩을 반복하는 대신, 바닥 테두리 + 고객 배지 한 번 */}
+      <CustomerZones blocks={L.blocks} byId={byId} contracts={contracts} />
 
       {/* 건물 라벨 (첫 블록 위) */}
       {L.blocks
@@ -85,19 +93,29 @@ export default function SiteView({ site }) {
           const bld = b.buildingId ? byId[b.buildingId] : null
           const st = styleOf(b.status)
           const hovered = bld && hoverId === bld.id
+          const selected = bld && selectedId === bld.id
+          const pct = bld && b.status === 'under_construction' && bld.progress != null ? Math.round(bld.progress * 100) : null
           const date = bld?.dates?.target ?? bld?.dates?.end
           // zIndexRange 는 호버와 상관없이 고정: 호버할 때 라벨을 맨 위로 올리면 겹친 두 라벨이
           // 서로 위로 올라오며 마우스 아래 요소가 계속 바뀌는 진동(깜빡임)이 생김
           return (
             <Html key={`lbl-${b.key}`} position={[b.x, b.h + 1.3, b.z]} center zIndexRange={[12, 0]}>
               <div
-                className={`bld-label${hovered ? ' is-hover' : ''}`}
+                className={`bld-label${hovered ? ' is-hover' : ''}${selected ? ' is-selected' : ''}`}
                 onPointerEnter={() => bld && setHover(bld.id)}
                 onPointerLeave={() => bld && useAppStore.getState().clearHover(bld.id)}
+                // stopPropagation: 라벨 클릭이 3D 쪽으로 퍼져 뒤에 있는 건물 블록도 "클릭"되면 선택이 바로 다시 풀림
+                onClick={(e) => { e.stopPropagation(); if (bld) selectBuilding(bld.id) }}
               >
                 <div className="row">
                   <span className="dot" style={{ background: st.color }} />
                   <span className="name">{bld ? pickName(bld, lang) : `${fmtMw(L.remainingMw)}`}</span>
+                  {/* 건설중이면 진행률 막대 (마우스를 올리지 않아도 보이게) */}
+                  {pct != null && (
+                    <span className="prog" aria-label={`${pct}%`}>
+                      <i style={{ width: `${pct}%` }} />
+                    </span>
+                  )}
                 </div>
                 {!bld && <div className="sub">{lang === 'ko' ? '용도 미발표 전력' : 'Unallocated power'}</div>}
                 {bld && hovered && (
@@ -109,25 +127,62 @@ export default function SiteView({ site }) {
                     {bld.dates?.delivered && <div>{t.panel.delivered} · {bld.dates.delivered}</div>}
                   </div>
                 )}
-                {bld?.customer && (
-                  <div className="customer" style={{ borderColor: BRAND_COLOR[logoKeyOf(bld.customer)] ?? (b.status === 'operating' ? st.color : PENDING_COLOR) }}>
-                    <CustomerLogo name={logoKeyOf(bld.customer)} size={11} />
-                    {bld.customer}
-                  </div>
-                )}
               </div>
             </Html>
           )
         })}
 
-      {L.blockMw > 75 && (
-        <Html position={[-L.side / 2 + 3, 0.5, L.side / 2 - 1]} center zIndexRange={[10, 0]}>
-          <div className="tag">{lang === 'ko' ? `1칸 = ${L.blockMw}MW` : `1 block = ${L.blockMw}MW`}</div>
-        </Html>
-      )}
+      {/* 블록 1칸이 몇 MW 인지 항상 표시 — 빈 부지(점선 칸)가 얼마만큼의 전력인지 읽을 수 있게 */}
+      <Html position={[-L.side / 2 + 3, 0.5, L.side / 2 - 1]} center zIndexRange={[10, 0]}>
+        <div className="tag">{lang === 'ko' ? `1칸 = ${L.blockMw}MW` : `1 block = ${L.blockMw}MW`}</div>
+      </Html>
       {L.cranes.map((c, i) => <Crane key={c.key} x={c.x} z={c.z} seed={i} />)}
       {L.trucks.map((tr, i) => <Truck key={tr.key} truck={tr} index={i} lang={lang} />)}
       <Trees side={L.side} seed={site.id.length * 7 + site.grid_mw} roadZ={L.road.z} />
     </group>
   )
+}
+
+// ---------- 고객 계약 구역 ----------
+// 같은 고객(예: Microsoft)의 건물 블록마다 바닥에 고객 색 테두리를 두르고, 고객 배지는 한 번만
+// (그 블록들의 가운데, 앞쪽 도로 쪽에). 계약 정보(색·금액)가 있으면 함께 표시합니다.
+const ZONE_PAD = 0.55 // 블록 둘레에서 테두리까지 여백
+function CustomerZones({ blocks, byId, contracts }) {
+  const zones = useMemo(() => {
+    const map = new Map()
+    for (const b of blocks) {
+      if (!b.buildingId || b.asLot) continue // 그 날짜에 아직 없는 칸은 제외 → 구역이 시간에 따라 자람
+      const bld = byId[b.buildingId]
+      if (!bld?.customer) continue
+      const logo = logoKeyOf(bld.customer)
+      const key = logo ?? bld.customer
+      const k = contracts.find((c) => c.buildings?.includes(b.buildingId))
+      if (!map.has(key)) {
+        map.set(key, { key, name: bld.customer, logo, color: k?.color ?? BRAND_COLOR[key] ?? '#55627f', value: k?.value_usd_bn, blocks: [] })
+      }
+      map.get(key).blocks.push(b)
+    }
+    return [...map.values()]
+  }, [blocks, byId, contracts])
+
+  return zones.map((zn) => {
+    const cx = zn.blocks.reduce((a, b) => a + b.x, 0) / zn.blocks.length
+    const front = Math.max(...zn.blocks.map((b) => b.z + b.d / 2))
+    return (
+      <group key={zn.key}>
+        {zn.blocks.map((b) => {
+          const x0 = b.x - b.w / 2 - ZONE_PAD, x1 = b.x + b.w / 2 + ZONE_PAD
+          const z0 = b.z - b.d / 2 - ZONE_PAD, z1 = b.z + b.d / 2 + ZONE_PAD
+          return <Line key={b.key} points={[[x0, 0.1, z0], [x1, 0.1, z0], [x1, 0.1, z1], [x0, 0.1, z1], [x0, 0.1, z0]]} color={zn.color} lineWidth={2.4} />
+        })}
+        <Html position={[cx, 0.3, front + 1.4]} center zIndexRange={[11, 0]}>
+          <div className="zone-badge" style={{ borderColor: zn.color, color: zn.color }}>
+            {zn.logo && <CustomerLogo name={zn.logo} size={12} />}
+            <b>{zn.name}</b>
+            {zn.value != null && <span>${zn.value}bn</span>}
+          </div>
+        </Html>
+      </group>
+    )
+  })
 }

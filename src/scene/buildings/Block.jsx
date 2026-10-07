@@ -6,8 +6,9 @@
 //   planned / lot    : 점선 풋프린트 + 옅은 유령 박스
 //   decommissioning  : 낮은 회색 채굴동 (반투명)
 // 같은 건물(buildingId)의 블록들은 함께 하이라이트됩니다.
+// 타임라인에서 상태가 바뀌면(계획 → 건설 → 가동) 바닥에서 솟아오르는 짧은 애니메이션을 보여 줍니다.
 // =============================================================
-import { useMemo, useRef } from 'react'
+import { useLayoutEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox, Line } from '@react-three/drei'
 import { styleOf, PENDING_COLOR } from '../../data/statusStyle.js'
@@ -16,33 +17,68 @@ const BODY = '#f7f8fc'      // 건물 외벽 (밝은 흰색)
 const CONCRETE = '#d9dde8'  // 슬래브
 const STEEL = '#8f99b3'     // 골조
 
-export default function Block({ block, hovered, dimmed, onHover, onLeave }) {
+const GROW_SEC = 0.6 // 솟아오르는 애니메이션 길이 (초)
+// 살짝 튀어 오르는 이징 (끝에서 5% 넘쳤다 돌아옴)
+const easeOutBack = (t) => 1 + 2.2 * Math.pow(t - 1, 3) + 1.2 * Math.pow(t - 1, 2)
+
+export default function Block({ block, hovered, selected, dimmed, onHover, onLeave, onSelect }) {
   const { x, z, w, d, h, kind, status } = block
   const handlers = block.buildingId
     ? {
         onPointerOver: (e) => { e.stopPropagation(); onHover(block.buildingId); document.body.style.cursor = 'pointer' },
         onPointerOut: () => { onLeave(block.buildingId); document.body.style.cursor = '' },
+        // 클릭 → 패널의 그 건물 항목 강조. 카메라를 끌어 돌린 뒤 손을 뗀 경우(이동 4px 초과)는 클릭으로 치지 않음
+        onClick: (e) => { e.stopPropagation(); if (e.delta <= 4) onSelect?.(block.buildingId) },
       }
     : {}
 
   // 필터에서 빠진 상태는 바닥 풋프린트만 남겨 "흐리게" 보이게 합니다
   const mode = dimmed ? 'dimmed' : kind === 'lot' ? 'planned' : status
 
+  // ---- 솟아오르는 애니메이션 ----
+  // "실제 상태"(빈 칸/계획/건설/가동…)가 바뀔 때만 재생. 필터로 흐려지는 건 상태 변화가 아니라서 제외.
+  // 시계는 R3F 시계(clock.elapsedTime)를 써서 영상 녹화(프레임을 직접 넘김)에서도 똑같이 재생됨.
+  const growRef = useRef()
+  const anim = useRef({ first: true, pending: false, start: 0 })
+  const shape = kind === 'lot' ? 'lot' : status
+  useLayoutEffect(() => {
+    if (anim.current.first) { anim.current.first = false; return } // 처음 화면에 나타날 땐 재생 안 함
+    anim.current.pending = true // 다음 프레임에서 시작 시각을 기록
+  }, [shape])
+  useFrame(({ clock }) => {
+    const g = growRef.current
+    if (!g) return
+    const a = anim.current
+    if (a.pending) { a.start = clock.elapsedTime; a.pending = false }
+    const t = a.start ? (clock.elapsedTime - a.start) / GROW_SEC : 1
+    const s = t >= 1 ? 1 : 0.05 + 0.95 * easeOutBack(Math.max(0, t))
+    if (g.scale.y !== s) g.scale.y = s
+  })
+
   return (
     <group position={[x, 0, z]} {...handlers}>
+      {/* 선택 하이라이트: 진한 파란 바닥 판 (호버보다 크고 진하게, 마우스를 떼도 유지) */}
+      {selected && (
+        <mesh position={[0, 0.025, 0]} receiveShadow>
+          <boxGeometry args={[w + 1.1, 0.04, d + 1.1]} />
+          <meshBasicMaterial color="#2f6bed" transparent opacity={0.7} />
+        </mesh>
+      )}
       {/* 호버 하이라이트: 바닥의 파란 테두리 판 */}
-      {hovered && (
+      {hovered && !selected && (
         <mesh position={[0, 0.03, 0]} receiveShadow>
           <boxGeometry args={[w + 0.7, 0.04, d + 0.7]} />
           <meshBasicMaterial color="#2f6bed" transparent opacity={0.45} />
         </mesh>
       )}
+      <group ref={growRef}>
       {mode === 'operating' && <FinishedHall w={w} d={d} h={h} kind={kind} status={status} spinning />}
       {mode === 'commissioning' && <FinishedHall w={w} d={d} h={h} kind={kind} status={status} beacon />}
       {mode === 'under_construction' && <ConstructionHall w={w} d={d} h={h} progress={block.progress} />}
       {mode === 'planned' && <GhostFootprint w={w} d={d} h={kind === 'lot' ? 0.05 : h} solidish={kind !== 'lot'} />}
       {mode === 'decommissioning' && <MinerHall w={w} d={d} h={h} />}
       {mode === 'dimmed' && <GhostFootprint w={w} d={d} h={0.05} />}
+      </group>
     </group>
   )
 }
