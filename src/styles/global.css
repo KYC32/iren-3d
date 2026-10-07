@@ -149,6 +149,7 @@ button { font: inherit; cursor: pointer; }
 .pin-label.is-hover { transform: scale(1.08); border-color: var(--accent); }
 
 .bld-label {
+  position: relative;
   display: flex; flex-direction: column; align-items: center; gap: 3px;
   white-space: nowrap; pointer-events: auto; user-select: none;
 }
@@ -160,7 +161,14 @@ button { font: inherit; cursor: pointer; }
 }
 .bld-label.is-hover .row { border-color: var(--accent); }
 .bld-label .sub { font-size: 10px; color: var(--text-muted); }
+/* 호버 상세: 라벨 "위쪽" 공중에 띄우는 툴팁.
+   - 라벨 크기가 변하지 않아 화면 위치가 흔들리지 않고
+   - 건물(라벨 아래쪽)을 가리지 않으며
+   - pointer-events:none 이라 마우스가 통과 → 캔버스가 포인터를 잃지 않음
+   (예전엔 라벨이 커지며 건물을 덮어 호버 해제 ↔ 재호버가 반복되는 깜빡임이 있었음) */
 .bld-label .detail {
+  position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+  pointer-events: none; z-index: 2;
   background: #fff; border-radius: 9px; padding: 6px 9px; font-size: 11px; line-height: 1.5;
   box-shadow: 0 6px 18px rgba(30,45,90,0.16); color: #2a3550;
 }
@@ -209,6 +217,11 @@ button { font: inherit; cursor: pointer; }
 .pin-cluster[data-expanded="1"] .more { display: none; }
 .pin-cluster:hover .member { display: flex; } /* 마우스를 올려도 펼침 */
 .pin-cluster:hover .more { display: none; }
+/* 보드판 무리 목록: 대표 줄 아래로 띄움 → 펼쳐져도 대표 줄 위치가 그대로 (가운데 정렬 때문에 대표 줄이 밀려
+   마우스가 벗어났다 들어오기를 반복하는 깜빡임 방지). 목록도 무리의 일부라 :hover 가 유지됨 */
+.pin-cluster { position: relative; }
+.pin-cluster .members { position: absolute; top: 100%; left: 0; display: none; flex-direction: column; align-items: flex-start; gap: 3px; padding-top: 3px; }
+.pin-cluster[data-expanded="1"] .members, .pin-cluster:hover .members { display: flex; }
 /* 지구본 기준 도시 이름: 점 오른쪽에 작은 회색 글씨 */
 .city-label {
   transform: translateX(calc(50% + 8px));

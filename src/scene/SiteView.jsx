@@ -73,7 +73,7 @@ export default function SiteView({ site }) {
           hovered={b.buildingId && hoverId === b.buildingId}
           dimmed={!isStatusActive(activeStatuses, b.status)}
           onHover={setHover}
-          onLeave={() => setHover(null)}
+          onLeave={(id) => useAppStore.getState().clearHover(id)}
         />
       ))}
 
@@ -85,12 +85,14 @@ export default function SiteView({ site }) {
           const st = styleOf(b.status)
           const hovered = bld && hoverId === bld.id
           const date = bld?.dates?.target ?? bld?.dates?.end
+          // zIndexRange 는 호버와 상관없이 고정: 호버할 때 라벨을 맨 위로 올리면 겹친 두 라벨이
+          // 서로 위로 올라오며 마우스 아래 요소가 계속 바뀌는 진동(깜빡임)이 생김
           return (
-            <Html key={`lbl-${b.key}`} position={[b.x, b.h + 1.3, b.z]} center zIndexRange={hovered ? [40, 30] : [12, 0]}>
+            <Html key={`lbl-${b.key}`} position={[b.x, b.h + 1.3, b.z]} center zIndexRange={[12, 0]}>
               <div
                 className={`bld-label${hovered ? ' is-hover' : ''}`}
                 onPointerEnter={() => bld && setHover(bld.id)}
-                onPointerLeave={() => setHover(null)}
+                onPointerLeave={() => bld && useAppStore.getState().clearHover(bld.id)}
               >
                 <div className="row">
                   <span className="dot" style={{ background: st.color }} />

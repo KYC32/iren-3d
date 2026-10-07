@@ -25,7 +25,7 @@ export default function SiteList() {
             key={s.id}
             className={`site-row${hoverId === s.id ? ' is-hover' : ''}${isSiteActive(state, s) ? '' : ' off'}`}
             onMouseEnter={() => setHover(s.id)}
-            onMouseLeave={() => setHover(null)}
+            onMouseLeave={() => useAppStore.getState().clearHover(s.id)}
             onClick={() => requestSite(s.id)}
           >
             <span className="dot" style={{ background: st.color }} />

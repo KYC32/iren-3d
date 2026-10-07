@@ -252,7 +252,7 @@ function BoardPin({ site, pos, rank }) {
 
   const color = active ? style.color : '#c3c9d8'
   const onOver = (e) => { e.stopPropagation(); setHover(site.id); document.body.style.cursor = 'pointer' }
-  const onOut = () => { setHover(null); document.body.style.cursor = '' }
+  const onOut = () => { useAppStore.getState().clearHover(site.id); document.body.style.cursor = '' }
   const onClick = (e) => { e.stopPropagation(); requestSite(site.id) }
 
   return (
@@ -272,24 +272,37 @@ function BoardPin({ site, pos, rank }) {
       {rank?.lead && (
         <Html position={[0, h + 2.6, 0]} center zIndexRange={[20, 0]}>
           <div ref={labelRef} className="pin-cluster" data-expanded="0">
-            {[site, ...rank.members].map((m, i) => (
-              <button
-                key={m.id}
-                className={`pin-label${hoverId === m.id ? ' is-hover' : ''}${i > 0 ? ' member' : ''}`}
-                onPointerEnter={() => setHover(m.id)}
-                onPointerLeave={() => setHover(null)}
-                onClick={() => requestSite(m.id)}
-              >
-                <span className="dot" style={{ background: styleOf(m.status).color }} />
-                <span className="name">{pickName(m, lang)}</span>
-                <span className="mw">{fmtMw(m.grid_mw)}</span>
-                {i === 0 && rank.members.length > 0 && <span className="more">+{rank.members.length}</span>}
-              </button>
-            ))}
+            {/* 대표 줄 */}
+            <PinRow m={site} lead more={rank.members.length} hoverId={hoverId} setHover={setHover} requestSite={requestSite} lang={lang} />
+            {/* 무리 구성원: 대표 줄 아래로 띄워 펼침 (대표 줄 위치는 그대로) */}
+            {rank.members.length > 0 && (
+              <div className="members">
+                {rank.members.map((m) => (
+                  <PinRow key={m.id} m={m} hoverId={hoverId} setHover={setHover} requestSite={requestSite} lang={lang} />
+                ))}
+              </div>
+            )}
           </div>
         </Html>
       )}
     </group>
+  )
+}
+
+// 무리 라벨의 한 줄 (사이트 이름·MW, 대표 줄이면 +N)
+function PinRow({ m, lead = false, more = 0, hoverId, setHover, requestSite, lang }) {
+  return (
+    <button
+      className={`pin-label${hoverId === m.id ? ' is-hover' : ''}`}
+      onPointerEnter={() => setHover(m.id)}
+      onPointerLeave={() => useAppStore.getState().clearHover(m.id)}
+      onClick={() => requestSite(m.id)}
+    >
+      <span className="dot" style={{ background: styleOf(m.status).color }} />
+      <span className="name">{pickName(m, lang)}</span>
+      <span className="mw">{fmtMw(m.grid_mw)}</span>
+      {lead && more > 0 && <span className="more">+{more}</span>}
+    </button>
   )
 }
 
@@ -394,7 +407,7 @@ function Contract({ contract: k, anchor, positions, sites, slot }) {
           className={`contract-badge${dim ? ' dim' : ''}${focus ? ' focus' : ''}`}
           style={{ borderColor: k.color, '--cb': k.color }}
           onPointerEnter={() => setHoverContract(k.id)}
-          onPointerLeave={() => setHoverContract(null)}
+          onPointerLeave={() => useAppStore.getState().clearHoverContract(k.id)}
           onClick={() => targets[0] && requestSite(targets[0].site.id)}
         >
           <span className="cb-name">

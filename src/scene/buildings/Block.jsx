@@ -21,7 +21,7 @@ export default function Block({ block, hovered, dimmed, onHover, onLeave }) {
   const handlers = block.buildingId
     ? {
         onPointerOver: (e) => { e.stopPropagation(); onHover(block.buildingId); document.body.style.cursor = 'pointer' },
-        onPointerOut: () => { onLeave(); document.body.style.cursor = '' },
+        onPointerOut: () => { onLeave(block.buildingId); document.body.style.cursor = '' },
       }
     : {}
 

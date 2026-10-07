@@ -49,7 +49,7 @@ export default function SitePanel() {
               key={b.id}
               className={hoverId === b.id ? 'is-hover' : ''}
               onMouseEnter={() => setHover(b.id)}
-              onMouseLeave={() => setHover(null)}
+              onMouseLeave={() => useAppStore.getState().clearHover(b.id)}
             >
               <span className="dot" style={{ background: bs.color }} />
               <span className="b-name">
