@@ -12,7 +12,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html, Line, QuadraticBezierLine, RoundedBox } from '@react-three/drei'
-import { BufferGeometry, Color, Float32BufferAttribute, Object3D, Vector3 } from 'three'
+import { BufferGeometry, CanvasTexture, Color, Float32BufferAttribute, Object3D, SRGBColorSpace, Vector3 } from 'three'
 import { useAppStore, isSiteActive, EMPTY } from '../store/useAppStore.js'
 import { styleOf } from '../data/statusStyle.js'
 import { BOARDS, boardPos, projectLocal, projectToBoard, layoutKind } from './boards.js'
@@ -77,19 +77,112 @@ function Plate({ board }) {
         <boxGeometry args={[board.w, 0.1, board.d]} />
         <meshLambertMaterial color={OCEAN} />
       </mesh>
-      {/* 판 이름표: 삽입판은 왼쪽 위, 본판은 앞쪽 오른쪽 모서리 (위쪽은 사이트 라벨과 겹치기 쉬움) */}
-      <Html
-        position={board.inset ? [-board.w / 2 + 1, 0.2, -board.d / 2 - 1.2] : [board.w / 2 - 1, 0.2, board.d / 2 + 2.2]}
-        zIndexRange={[6, 0]}
-        style={{ pointerEvents: 'none', transform: board.inset ? undefined : 'translateX(-100%)' }}
-      >
-        <div className={`board-tag${board.inset ? ' inset' : ''}`}>
-          {lang === 'ko' ? board.name_ko : board.name_en}
-          {board.inset && <span>{lang === 'ko' ? '같은 축척' : 'same scale'}</span>}
-        </div>
-      </Html>
+      {/* 판 이름 명판: 모든 판 공통으로 오른쪽 아래 모서리 */}
+      <BoardTag board={board} lang={lang} />
     </group>
   )
+}
+
+// ---------- 판 이름 명판 ----------
+// 판 바닥에 "인쇄된" 명판. 공중에 뜬 흰 말풍선(사이트 라벨)과 한눈에 구분되도록
+// HTML 이 아니라 캔버스에 글자를 그린 그림(텍스처)을 판 위에 눕힌 평면으로 붙입니다.
+//  - 원근에 따라 같이 기울고 작아져서 판의 일부처럼 보임
+//  - drei Html 은 처음 붙는 순간 React 루트가 지워지는 경쟁이 있어 본판 이름표가 통째로
+//    사라지는 문제가 있었음 → 3D 평면이라 그런 문제가 없음
+const TAG_PAD = 1.2     // 판 모서리에서 명판까지 여백 (월드 단위)
+const TAG_Y = 1.1       // 육지 타일(≤0.9)·경계선(1.0) 위
+const TAG_UNIT = 0.1    // 명판 1px(설계 단위) = 0.1 월드 단위
+const TAG_RES = 4       // 캔버스 해상도 배수 (가까이 줌해도 글자가 또렷하게)
+const TAG_FONT = '"Pretendard", "Apple SD Gothic Neo", -apple-system, "Segoe UI", sans-serif'
+// lucide "map" 아이콘 경로 (24×24 기준) — 캔버스에 직접 그리기 위해 경로 문자열만 가져옴
+const MAP_ICON_PATHS = [
+  'M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z',
+  'M15 5.764v15',
+  'M9 3.236v15',
+]
+
+function BoardTag({ board, lang }) {
+  const name = lang === 'ko' ? board.name_ko : board.name_en
+  const note = board.inset ? (lang === 'ko' ? '같은 축척' : 'same scale') : null
+  // 웹폰트가 늦게 준비되면 글자 폭이 달라지므로, 준비된 뒤 한 번 더 그림
+  const [fontsReady, setFontsReady] = useState(false)
+  useEffect(() => { document.fonts?.ready.then(() => setFontsReady(true)) }, [])
+  const tag = useMemo(() => drawTagTexture(name, note), [name, note, fontsReady])
+  useEffect(() => () => tag.texture.dispose(), [tag]) // 바뀌거나 사라질 때 GPU 메모리 정리
+
+  // 명판의 오른쪽 아래 꼭짓점을 판의 오른쪽 아래 모서리(여백 안쪽)에 맞춤
+  const x = board.w / 2 - TAG_PAD - tag.w / 2
+  const z = board.d / 2 - TAG_PAD - tag.h / 2
+  return (
+    <mesh position={[x, TAG_Y, z]} rotation={[-Math.PI / 2, 0, 0]} renderOrder={2}>
+      <planeGeometry args={[tag.w, tag.h]} />
+      <meshBasicMaterial map={tag.texture} transparent toneMapped={false} depthWrite={false} />
+    </mesh>
+  )
+}
+
+// 명판 그림 만들기: [지도 아이콘] 지역 이름 | 같은 축척
+// 반환: 텍스처와 월드 단위 가로·세로
+function drawTagTexture(name, note) {
+  const R = TAG_RES
+  const padL = 11, padR = 14, gap = 8, icon = 18, h = 34 // 설계 단위(px)
+  const nameFont = `800 22px ${TAG_FONT}`
+  const noteFont = `600 15px ${TAG_FONT}`
+
+  // 1) 글자 폭을 재서 명판 가로 길이 결정
+  const measure = document.createElement('canvas').getContext('2d')
+  measure.font = nameFont
+  const nameW = measure.measureText(name).width
+  measure.font = noteFont
+  const noteW = note ? measure.measureText(note).width : 0
+  const noteBlock = note ? gap + 1.5 + 9 + noteW : 0 // 간격 + 구분선 + 여백 + 글자
+  const w = Math.ceil(padL + icon + gap + nameW + noteBlock + padR)
+
+  // 2) 실제 그리기 (해상도 R배)
+  const canvas = document.createElement('canvas')
+  canvas.width = w * R
+  canvas.height = h * R
+  const ctx = canvas.getContext('2d')
+  ctx.scale(R, R)
+  ctx.fillStyle = 'rgba(52, 64, 94, 0.9)' // 진한 남색 바탕
+  ctx.beginPath()
+  ctx.roundRect(0, 0, w, h, 6)
+  ctx.fill()
+
+  // 지도 아이콘 (lucide map, 24 → 18 로 축소)
+  ctx.save()
+  ctx.translate(padL, (h - icon) / 2)
+  ctx.scale(icon / 24, icon / 24)
+  ctx.strokeStyle = 'rgba(255,255,255,0.85)'
+  ctx.lineWidth = 2.4
+  ctx.lineCap = 'round'
+  ctx.lineJoin = 'round'
+  for (const d of MAP_ICON_PATHS) ctx.stroke(new Path2D(d))
+  ctx.restore()
+
+  // 지역 이름
+  let cx = padL + icon + gap
+  ctx.textBaseline = 'middle'
+  ctx.fillStyle = '#fff'
+  ctx.font = nameFont
+  ctx.fillText(name, cx, h / 2 + 1)
+  cx += nameW
+
+  // 삽입판 안내: 세로 구분선 + 작은 글씨
+  if (note) {
+    cx += gap
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'
+    ctx.fillRect(cx, 9, 1.5, h - 18)
+    cx += 1.5 + 9
+    ctx.fillStyle = 'rgba(255,255,255,0.75)'
+    ctx.font = noteFont
+    ctx.fillText(note, cx, h / 2 + 1)
+  }
+
+  const texture = new CanvasTexture(canvas)
+  texture.colorSpace = SRGBColorSpace // 색이 CSS 와 같게 보이도록
+  texture.anisotropy = 4               // 비스듬히 볼 때도 덜 흐리게
+  return { texture, w: w * TAG_UNIT, h: h * TAG_UNIT }
 }
 
 // ---------- 육지 육각 타일 (모든 판을 InstancedMesh 하나로) ----------
