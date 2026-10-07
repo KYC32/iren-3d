@@ -8,6 +8,8 @@ import { PerformanceMonitor } from '@react-three/drei'
 import { useState } from 'react'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import GlobeView from './GlobeView.jsx'
+import BoardView from './BoardView.jsx'
+import { SINGLE_COMPANY } from '../config.js'
 // 캠퍼스·녹화 코드는 필요할 때만 불러옵니다 (첫 화면 로딩을 가볍게)
 const SiteView = lazy(() => import('./SiteView.jsx'))
 import CameraRig from './CameraRig.jsx'
@@ -20,6 +22,7 @@ export default function Scene({ record = false }) {
   const site = useAppStore(selectSelectedSite)
   // 성능이 떨어지면 해상도(DPR)를 자동으로 낮춥니다
   const [dpr, setDpr] = useState(1.5)
+  const boardMode = Boolean(SINGLE_COMPANY) && !record
 
   return (
     <Canvas
@@ -44,21 +47,22 @@ export default function Scene({ record = false }) {
       <ambientLight intensity={1.1} />
       <hemisphereLight args={['#ffffff', '#b8c4dc', 0.9]} />
       <directionalLight
-        position={view === 'site' ? [30, 50, 22] : [300, 260, 200]}
+        position={view === 'site' ? [30, 50, 22] : boardMode ? [80, 140, 90] : [300, 260, 200]}
         intensity={1.7}
-        castShadow={view === 'site'}
+        castShadow={view === 'site' || boardMode}
         shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={-45}
-        shadow-camera-right={45}
-        shadow-camera-top={45}
-        shadow-camera-bottom={-45}
+        shadow-camera-left={boardMode && view !== 'site' ? -110 : -45}
+        shadow-camera-right={boardMode && view !== 'site' ? 110 : 45}
+        shadow-camera-top={boardMode && view !== 'site' ? 110 : 45}
+        shadow-camera-bottom={boardMode && view !== 'site' ? -110 : -45}
         shadow-camera-near={1}
-        shadow-camera-far={160}
+        shadow-camera-far={boardMode && view !== 'site' ? 400 : 160}
         shadow-bias={-0.0004}
       />
 
       <Suspense fallback={null}>
-        <GlobeView visible={view === 'globe'} />
+        {/* 개요 화면: 단일 회사 모드는 보드판 지도, 녹화(영상 인트로)와 다회사 모드는 지구본 */}
+        {SINGLE_COMPANY && !record ? <BoardView visible={view === 'globe'} /> : <GlobeView visible={view === 'globe'} />}
         {view === 'site' && site && <SiteView key={site.id} site={site} />}
       </Suspense>
       {record ? (
