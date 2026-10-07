@@ -20,6 +20,7 @@ import { spreadPins, labelRanks, fmtMw } from './geo.js'
 import { CITIES } from './cities.js'
 import { pickName, useT } from '../i18n/useT.js'
 import { toMonth } from '../data/timeline.js'
+import { CustomerLogo } from '../ui/logos/index.jsx'
 
 const OCEAN = '#a8c3ef'
 const FRAME = '#f7f8fc'
@@ -293,8 +294,13 @@ function BoardPin({ site, pos, rank }) {
 }
 
 // ---------- 고객 계약 연결선 ----------
-// 본판 북쪽 가장자리 위에 고객 배지를 띄우고, 배지 → 사이트 핀까지 흐르는 아치선을 그립니다.
+// 본판 북쪽 가장자리 위에 고객 배지(로고·금액)를 띄우고, 배지 → 사이트 핀까지 흐르는 아치선을 그립니다.
+// 계약끼리 구분: 고객 고유색 + 선 모양(실선·긴 점선·짧은 점선) + 핀 옆 도착 로고 칩
+// 같은 사이트로 가는 계약이 여럿이면 도착 지점을 핀 좌우로 벌려 선이 겹치지 않게 합니다.
+// 배지에 마우스를 올리면 그 계약선만 강조, 나머지는 흐리게.
 // 선 굵기 ∝ 계약 금액, 타임라인이 서명일 이전이면 그 계약은 보이지 않습니다.
+const DASH = { solid: null, long: [3, 1.2], short: [0.9, 0.9] }
+
 function ContractLinks() {
   const show = useAppStore((s) => s.showContracts)
   const month = useAppStore((s) => s.month)
@@ -304,60 +310,99 @@ function ContractLinks() {
   if (!show || !contracts.length) return null
   const na = BOARDS.find((b) => b.id === 'na')
   const [px, pz] = boardPos('na')
-  // 배지는 판 폭 전체에 퍼뜨리고 높이를 계단식으로 달리해 원근 때문에 겹치지 않게
-  const span = na.w - 24
+  // 사이트별로 도착하는 계약 순서 (도착 지점 좌우 분리용)
+  const active = contracts.filter((k) => month >= toMonth(k.signed))
+  const slot = {}
+  for (const k of active) for (const sid of k.sites) (slot[sid] ??= []).push(k.id)
+  // 배지는 판 폭 전체에 퍼뜨리고 높이를 번갈아 달리해 원근 때문에 겹치지 않게
+  // 배지가 넓으니 판 폭만큼 퍼뜨리되, 데스크톱은 왼쪽 사이트 목록에 가리지 않게 묶음 전체를 오른쪽으로
+  const span = na.w - 4
+  const shift = typeof window !== 'undefined' && window.innerWidth >= 768 ? 12 : 0
   return contracts.map((k, i) => {
     if (month < toMonth(k.signed)) return null // 아직 서명 전
-    const x = contracts.length === 1 ? px : px - span / 2 + (span * i) / (contracts.length - 1)
+    const x = shift + (contracts.length === 1 ? px : px - span / 2 + (span * i) / (contracts.length - 1))
     const anchor = new Vector3(x, 5 + (i % 2) * 6, pz - na.d / 2 - 6)
-    return <Contract key={k.id} contract={k} anchor={anchor} positions={positions} sites={data.sites} />
+    return <Contract key={k.id} contract={k} anchor={anchor} positions={positions} sites={data.sites} slot={slot} />
   })
 }
 
-function Contract({ contract: k, anchor, positions, sites }) {
+function Contract({ contract: k, anchor, positions, sites, slot }) {
   const t = useT()
   const lang = useAppStore((s) => s.lang)
+  const hoverContract = useAppStore((s) => s.hoverContract)
+  const setHoverContract = useAppStore((s) => s.setHoverContract)
+  const requestSite = useAppStore((s) => s.requestSite)
   const lineRefs = useRef([])
+  const dash = DASH[k.dash ?? 'long']
   // 흐르는 점선: 매 프레임 점선 시작 위치를 옮김 (고객 → 사이트 방향)
   useFrame((_, delta) => {
+    if (!dash) return
     for (const l of lineRefs.current) if (l?.material) l.material.dashOffset -= delta * 3
   })
-  const width = 1.5 + (k.value_usd_bn ?? 1) / 2.5
+  const dim = hoverContract && hoverContract !== k.id
+  const focus = hoverContract === k.id
+  const width = (1.5 + (k.value_usd_bn ?? 1) / 2.5) * (focus ? 1.5 : 1)
   const targets = k.sites
     .map((sid) => ({ site: sites.find((s) => s.id === sid), pos: positions[sid] }))
     .filter((x) => x.site && x.pos)
   const name = lang === 'ko' ? k.customer_ko ?? k.customer : k.customer
+  const bNames = (site) => (k.buildings ?? []).map((id) => site.buildings.find((b) => b.id === id)).filter(Boolean)
   return (
     <group>
       {targets.map(({ site, pos }, i) => {
-        const end = new Vector3(pos.x, 0.9 + boardPinHeight(site.grid_mw) + 0.6, pos.z)
+        // 같은 사이트로 오는 계약이 여럿이면 핀 좌우로 벌림 (2개면 -1.8 / +1.8)
+        const list = slot[site.id] ?? [k.id]
+        const off = (list.indexOf(k.id) - (list.length - 1) / 2) * 3.6
+        const end = new Vector3(pos.x + off, 0.9 + boardPinHeight(site.grid_mw) * 0.75, pos.z)
         const mid = anchor.clone().lerp(end, 0.5)
         mid.y = 22 + anchor.distanceTo(end) * 0.12 // 거리가 멀수록 높게 휘어짐
+        const bs = bNames(site)
         return (
-          <QuadraticBezierLine
-            key={site.id}
-            ref={(el) => (lineRefs.current[i] = el)}
-            start={anchor}
-            end={end}
-            mid={mid}
-            color={k.color}
-            lineWidth={width}
-            dashed
-            dashSize={2.2}
-            gapSize={1.2}
-            transparent
-            opacity={0.9}
-          />
+          <group key={site.id}>
+            <QuadraticBezierLine
+              ref={(el) => (lineRefs.current[i] = el)}
+              start={anchor}
+              end={end}
+              mid={mid}
+              color={k.color}
+              lineWidth={width}
+              dashed={Boolean(dash)}
+              dashSize={dash?.[0] ?? 1}
+              gapSize={dash?.[1] ?? 1}
+              transparent
+              opacity={dim ? 0.15 : 0.95}
+            />
+            {/* 도착 로고 칩: 핀 옆에서 "이 선이 어느 고객인지" 바로 보이게 */}
+            <Html position={end} center zIndexRange={[19, 0]} style={{ pointerEvents: 'none' }}>
+              <div className={`contract-end${dim ? ' dim' : ''}`} style={{ borderColor: k.color }}>
+                {k.logo ? <CustomerLogo name={k.logo} size={12} /> : <span className="ce-dot" style={{ background: k.color }} />}
+                {bs.length > 0 && <span>{bs.length > 1 ? `${pickName(bs[0], lang)}–${bs.at(-1).name.replace(/^\D+/, '')}` : pickName(bs[0], lang)}</span>}
+              </div>
+            </Html>
+          </group>
         )
       })}
       <Html position={anchor} center zIndexRange={[18, 0]}>
-        <div className="contract-badge" style={{ borderColor: k.color }}>
-          <span className="cb-name" style={{ color: k.color }}>{name}</span>
+        <div
+          className={`contract-badge${dim ? ' dim' : ''}${focus ? ' focus' : ''}`}
+          style={{ borderColor: k.color, '--cb': k.color }}
+          onPointerEnter={() => setHoverContract(k.id)}
+          onPointerLeave={() => setHoverContract(null)}
+          onClick={() => targets[0] && requestSite(targets[0].site.id)}
+        >
+          <span className="cb-name">
+            {k.logo && <CustomerLogo name={k.logo} size={15} />}
+            <span style={{ color: k.color }}>{name}</span>
+          </span>
           <span className="cb-meta">
             {k.value_usd_bn != null && <b>${k.value_usd_bn}bn</b>}
             {k.term_years != null && <> · {k.term_years}{t.contracts.years}</>}
             {k.it_mw != null && <> · {k.it_mw}MW IT</>}
-            {!targets.length && <> · {t.contracts.undisclosed}</>}
+          </span>
+          <span className="cb-where">
+            {targets.length
+              ? targets.map(({ site }) => pickName(site, lang)).join(', ')
+              : t.contracts.undisclosed}
           </span>
         </div>
       </Html>

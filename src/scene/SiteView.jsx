@@ -2,6 +2,7 @@
 // SiteView — 선택한 사이트의 아이소메트릭 캠퍼스
 // layoutCampus() 가 계산한 좌표를 받아 그리기만 합니다.
 // =============================================================
+import { CustomerLogo, logoKeyOf, BRAND_COLOR } from '../ui/logos/index.jsx'
 import { useMemo } from 'react'
 import { Html, RoundedBox } from '@react-three/drei'
 import { useAppStore, isStatusActive, EMPTY } from '../store/useAppStore.js'
@@ -106,7 +107,8 @@ export default function SiteView({ site }) {
                   </div>
                 )}
                 {bld?.customer && (
-                  <div className="customer" style={{ borderColor: b.status === 'operating' ? st.color : PENDING_COLOR }}>
+                  <div className="customer" style={{ borderColor: BRAND_COLOR[logoKeyOf(bld.customer)] ?? (b.status === 'operating' ? st.color : PENDING_COLOR) }}>
+                    <CustomerLogo name={logoKeyOf(bld.customer)} size={11} />
                     {bld.customer}
                   </div>
                 )}

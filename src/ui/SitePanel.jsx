@@ -6,6 +6,7 @@ import { styleOf } from '../data/statusStyle.js'
 import { fmtMw } from '../scene/geo.js'
 import { toMonth } from '../data/timeline.js'
 import { fmtWhen } from '../data/events.js'
+import { CustomerLogo } from './logos/index.jsx'
 
 function host(url) {
   try { return new URL(url).hostname.replace(/^www\./, '') } catch { return url }
@@ -134,7 +135,10 @@ function SiteContracts({ site, companies, month, lang, t }) {
           return (
             <li key={k.id} className={before ? 'before' : ''} style={{ borderColor: k.color }}>
               <div className="spc-head">
-                <b style={{ color: k.color }}>{lang === 'ko' ? k.customer_ko ?? k.customer : k.customer}</b>
+                <b className="spc-name" style={{ color: k.color }}>
+                  {k.logo && <CustomerLogo name={k.logo} size={13} />}
+                  {lang === 'ko' ? k.customer_ko ?? k.customer : k.customer}
+                </b>
                 <span>
                   {k.value_usd_bn != null && `$${k.value_usd_bn}bn`}
                   {k.term_years != null && ` · ${k.term_years}${t.contracts.years}`}

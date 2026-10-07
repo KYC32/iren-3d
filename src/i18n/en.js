@@ -42,7 +42,7 @@ export default {
   },
   units: { mw: 'MW', gw: 'GW', acres: 'acres' },
   disclaimer:
-    'Independent, unofficial project. Not affiliated with, endorsed by, or sponsored by any company shown. All data compiled from public sources; see each item for its source. Not investment advice.',
+    'Independent, unofficial project. Not affiliated with, endorsed by, or sponsored by any company shown. All data compiled from public sources; see each item for its source. Not investment advice. Company logos and trademarks belong to their owners and are used only to identify contract counterparties.',
   official: 'Data & sources',
   hintGlobe: 'Click a pin to enter a site · drag to rotate',
   hintSite: 'Drag to rotate · wheel to zoom · hover buildings',

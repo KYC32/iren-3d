@@ -357,16 +357,29 @@ button { font: inherit; cursor: pointer; }
 .tl-tick.future { background: var(--c-pending); }
 .tl-tick.on, .tl-tick:hover { transform: scale(1.5); }
 
-/* 고객 계약 배지 (보드판 북쪽 위) */
+/* 고객 계약 배지 (보드판 북쪽 위): 로고 + 이름 + 금액 + 연결 사이트. 마우스를 올리면 그 계약선만 강조 */
 .contract-badge {
-  display: flex; flex-direction: column; align-items: center; gap: 1px; white-space: nowrap;
-  background: rgba(255,255,255,0.97); border: 2px solid; border-radius: 10px; padding: 4px 10px;
-  box-shadow: 0 4px 14px rgba(30,45,90,0.14); pointer-events: none;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1px; white-space: nowrap;
+  background: rgba(255,255,255,0.97); border: 2px solid; border-left-width: 6px; border-radius: 10px; padding: 5px 11px 5px 9px;
+  box-shadow: 0 4px 14px rgba(30,45,90,0.14); pointer-events: auto; cursor: pointer;
+  transition: opacity 150ms, transform 150ms, box-shadow 150ms;
 }
-.cb-name { font-size: 12px; font-weight: 800; max-width: 230px; overflow: hidden; text-overflow: ellipsis; }
-.cb-meta { font-size: 10.5px; color: #44506c; }
-.record .contract-badge { display: none; }
-@media (max-width: 767px) { .cb-name { font-size: 10px; max-width: 120px; } .cb-meta { font-size: 9px; } }
+.contract-badge.dim { opacity: 0.35; }
+.contract-badge.focus { transform: scale(1.06); box-shadow: 0 6px 20px color-mix(in srgb, var(--cb) 35%, transparent); }
+.cb-name { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 800; max-width: 230px; overflow: hidden; text-overflow: ellipsis; }
+.cb-meta { font-size: 11px; color: #34405e; }
+.cb-where { font-size: 10px; color: var(--text-muted); }
+/* 핀 옆 도착 로고 칩 */
+.contract-end {
+  display: flex; align-items: center; gap: 3px; white-space: nowrap;
+  background: #fff; border: 1.5px solid; border-radius: 6px; padding: 2px 4px;
+  font-size: 9.5px; font-weight: 700; color: #34405e; box-shadow: 0 2px 6px rgba(30,45,90,0.15);
+  transform: translateY(-14px); transition: opacity 150ms;
+}
+.contract-end.dim { opacity: 0.25; }
+.ce-dot { width: 8px; height: 8px; border-radius: 50%; }
+.record .contract-badge, .record .contract-end { display: none; }
+@media (max-width: 767px) { .cb-name { font-size: 10.5px; max-width: 130px; } .cb-meta { font-size: 9px; } .cb-where { display: none; } .contract-end span { display: none; } }
 .sp-contracts { list-style: none; display: flex; flex-direction: column; gap: 6px; }
 .sp-contracts li { border-left: 3px solid; background: #f6f8fc; border-radius: 6px; padding: 6px 9px; }
 .sp-contracts li.before { opacity: 0.45; }
@@ -374,3 +387,5 @@ button { font: inherit; cursor: pointer; }
 .spc-head span { font-weight: 650; color: #34405e; white-space: nowrap; }
 .spc-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 .spc-note { font-size: 11px; color: #44506c; margin-top: 2px; }
+.bld-label .customer { display: inline-flex; align-items: center; gap: 4px; }
+.spc-name { display: inline-flex; align-items: center; gap: 5px; }

@@ -47,6 +47,8 @@ export const useAppStore = create((set, get) => ({
   events: [],
   // 지도에 고객 계약 연결선 표시
   showContracts: true,
+  // 마우스를 올린 계약 id (그 계약선만 강조)
+  hoverContract: null,
   // 모바일: 순위·사이트 패널을 바텀시트로 열었는지
   sheetOpen: false,
 
@@ -127,6 +129,7 @@ export const useAppStore = create((set, get) => ({
   setRankMetric: (metric) => set({ rankMetric: metric }),
   setLeftTab: (tab) => set({ leftTab: tab }),
   toggleContracts: () => set({ showContracts: !get().showContracts }),
+  setHoverContract: (id) => set({ hoverContract: id }),
   // 일정 항목 클릭: 그 시점으로 이동하고 (사이트가 있으면) 그 사이트로
   jumpTo: (month, siteId) => {
     const st = get()
