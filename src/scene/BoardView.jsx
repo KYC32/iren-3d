@@ -15,7 +15,7 @@ import { Html, Line, QuadraticBezierLine, RoundedBox } from '@react-three/drei'
 import { BufferGeometry, Color, Float32BufferAttribute, Object3D, Vector3 } from 'three'
 import { useAppStore, isSiteActive, EMPTY } from '../store/useAppStore.js'
 import { styleOf } from '../data/statusStyle.js'
-import { BOARDS, boardPos, projectLocal, projectToBoard } from './boards.js'
+import { BOARDS, boardPos, projectLocal, projectToBoard, layoutKind } from './boards.js'
 import { spreadPins, labelRanks, fmtMw } from './geo.js'
 import { CITIES } from './cities.js'
 import { pickName, useT } from '../i18n/useT.js'
@@ -295,11 +295,13 @@ function BoardPin({ site, pos, rank }) {
 
 // ---------- 고객 계약 연결선 ----------
 // 본판 북쪽 가장자리 위에 고객 배지(로고·금액)를 띄우고, 배지 → 사이트 핀까지 흐르는 아치선을 그립니다.
-// 계약끼리 구분: 고객 고유색 + 선 모양(실선·긴 점선·짧은 점선) + 핀 옆 도착 로고 칩
+// 계약끼리 구분: 고객 고유색 + 로고 배지 + 핀 옆 도착 로고 칩 (선은 모두 같은 흐르는 점선)
 // 같은 사이트로 가는 계약이 여럿이면 도착 지점을 핀 좌우로 벌려 선이 겹치지 않게 합니다.
 // 배지에 마우스를 올리면 그 계약선만 강조, 나머지는 흐리게.
 // 선 굵기 ∝ 계약 금액, 타임라인이 서명일 이전이면 그 계약은 보이지 않습니다.
-const DASH = { solid: null, long: [3, 1.2], short: [0.9, 0.9] }
+const DASH = [2.4, 1.2] // 점선 길이·간격 (모든 계약 공통)
+// 계약 배지를 보드판 북쪽 가장자리에서 얼마나 띄울지 (CameraRig 의 첫 화면 맞춤도 이 값을 씀)
+export const CONTRACT_GAP = 18
 
 function ContractLinks() {
   const show = useAppStore((s) => s.showContracts)
@@ -316,12 +318,14 @@ function ContractLinks() {
   for (const k of active) for (const sid of k.sites) (slot[sid] ??= []).push(k.id)
   // 배지는 판 폭 전체에 퍼뜨리고 높이를 번갈아 달리해 원근 때문에 겹치지 않게
   // 배지가 넓으니 판 폭만큼 퍼뜨리되, 데스크톱은 왼쪽 사이트 목록에 가리지 않게 묶음 전체를 오른쪽으로
-  const span = na.w - 4
-  const shift = typeof window !== 'undefined' && window.innerWidth >= 768 ? 12 : 0
+  // 세로 화면(모바일)은 가로 폭이 좁아 양쪽 배지가 잘리므로 간격을 좁힘
+  const portrait = layoutKind() === 'portrait'
+  const span = portrait ? na.w * 0.78 : na.w - 4
+  const shift = !portrait && typeof window !== 'undefined' && window.innerWidth >= 768 ? 12 : 0
   return contracts.map((k, i) => {
     if (month < toMonth(k.signed)) return null // 아직 서명 전
     const x = shift + (contracts.length === 1 ? px : px - span / 2 + (span * i) / (contracts.length - 1))
-    const anchor = new Vector3(x, 5 + (i % 2) * 6, pz - na.d / 2 - 6)
+    const anchor = new Vector3(x, 8 + (i % 2) * 6, pz - na.d / 2 - CONTRACT_GAP)
     return <Contract key={k.id} contract={k} anchor={anchor} positions={positions} sites={data.sites} slot={slot} />
   })
 }
@@ -333,10 +337,8 @@ function Contract({ contract: k, anchor, positions, sites, slot }) {
   const setHoverContract = useAppStore((s) => s.setHoverContract)
   const requestSite = useAppStore((s) => s.requestSite)
   const lineRefs = useRef([])
-  const dash = DASH[k.dash ?? 'long']
   // 흐르는 점선: 매 프레임 점선 시작 위치를 옮김 (고객 → 사이트 방향)
   useFrame((_, delta) => {
-    if (!dash) return
     for (const l of lineRefs.current) if (l?.material) l.material.dashOffset -= delta * 3
   })
   const dim = hoverContract && hoverContract !== k.id
@@ -366,9 +368,9 @@ function Contract({ contract: k, anchor, positions, sites, slot }) {
               mid={mid}
               color={k.color}
               lineWidth={width}
-              dashed={Boolean(dash)}
-              dashSize={dash?.[0] ?? 1}
-              gapSize={dash?.[1] ?? 1}
+              dashed
+              dashSize={DASH[0]}
+              gapSize={DASH[1]}
               transparent
               opacity={dim ? 0.15 : 0.95}
             />
@@ -396,8 +398,8 @@ function Contract({ contract: k, anchor, positions, sites, slot }) {
           </span>
           <span className="cb-meta">
             {k.value_usd_bn != null && <b>${k.value_usd_bn}bn</b>}
-            {k.term_years != null && <> · {k.term_years}{t.contracts.years}</>}
-            {k.it_mw != null && <> · {k.it_mw}MW IT</>}
+            {k.term_years != null && <span> · {k.term_years}{t.contracts.years}</span>}
+            {k.it_mw != null && <span> · {k.it_mw}MW IT</span>}
           </span>
           <span className="cb-where">
             {targets.length

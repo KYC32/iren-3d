@@ -88,8 +88,7 @@
           "note_ko": "GB300 NVL72, 선급금 20%, Horizon 1~4 단계 인도",
           "note_en": "GB300 NVL72, 20% prepayment, Horizon 1–4 delivered in tranches",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036125040072/ef20058139_ex99-1.htm",
-          "logo": "microsoft",
-          "dash": "solid"
+          "logo": "microsoft"
         },
         {
           "id": "nvidia-2026",
@@ -108,8 +107,7 @@
           "note_ko": "공랭 Blackwell 관리형 GPU 클라우드, 2027년 초 가동 목표",
           "note_en": "Managed air-cooled Blackwell GPU cloud, targeted early 2027",
           "source": "https://www.globenewswire.com/news-release/2026/05/07/3290760/0/en/iren-secures-3-4bn-ai-cloud-contract-with-nvidia.html",
-          "logo": "nvidia",
-          "dash": "long"
+          "logo": "nvidia"
         },
         {
           "id": "ai-developers-2026",
@@ -123,8 +121,7 @@
           "color": "#9b6dd6",
           "note_ko": "Perplexity·Figure AI·Together AI·Fluidstack 등 다년 계약(가중평균 약 4년), 배치 사이트는 회사 미공개",
           "note_en": "Perplexity, Figure AI, Together AI, Fluidstack and others; multi-year (weighted avg ~4 yrs); sites not disclosed",
-          "source": "https://www.globenewswire.com/news-release/2026/07/20/3329624/0/en/iren-signs-2-8bn-in-new-customer-contracts-with-leading-ai-developers-raises-2026-arr-target-to-over-4bn.html",
-          "dash": "short"
+          "source": "https://www.globenewswire.com/news-release/2026/07/20/3329624/0/en/iren-signs-2-8bn-in-new-customer-contracts-with-leading-ai-developers-raises-2026-arr-target-to-over-4bn.html"
         }
       ]
     }

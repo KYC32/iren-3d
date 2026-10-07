@@ -68,7 +68,6 @@ const Contract = z.object({
   buildings: z.array(Id).optional(),        // 연결할 건물 (있으면 패널에 표시)
   color: Hex,                               // 연결선·배지 색 (가능하면 고객 회사 고유색)
   logo: z.enum(['microsoft', 'nvidia']).optional(), // 배지·핀에 붙일 고객 로고 (src/ui/logos)
-  dash: z.enum(['solid', 'long', 'short']).default('long'), // 연결선 모양 (계약끼리 구분)
   note_ko: z.string().optional(),
   note_en: z.string().optional(),
   source: Url,

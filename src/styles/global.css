@@ -379,7 +379,16 @@ button { font: inherit; cursor: pointer; }
 .contract-end.dim { opacity: 0.25; }
 .ce-dot { width: 8px; height: 8px; border-radius: 50%; }
 .record .contract-badge, .record .contract-end { display: none; }
-@media (max-width: 767px) { .cb-name { font-size: 10.5px; max-width: 130px; } .cb-meta { font-size: 9px; } .cb-where { display: none; } .contract-end span { display: none; } }
+/* 모바일: 배지를 로고·이름·금액만 남긴 작은 형태로 (세 개가 375px 폭에 나란히 들어가게) */
+@media (max-width: 767px) {
+  .contract-badge { padding: 3px 7px 3px 6px; border-width: 1.5px; border-left-width: 4px; }
+  .cb-name { font-size: 10px; max-width: 92px; gap: 4px; }
+  .cb-name svg { width: 11px; height: 11px; }
+  .cb-meta { font-size: 9px; }
+  .cb-meta > :not(b) { display: none; }
+  .cb-where { display: none; }
+  .contract-end span { display: none; }
+}
 .sp-contracts { list-style: none; display: flex; flex-direction: column; gap: 6px; }
 .sp-contracts li { border-left: 3px solid; background: #f6f8fc; border-radius: 6px; padding: 6px 9px; }
 .sp-contracts li.before { opacity: 0.45; }

@@ -15,8 +15,8 @@ import { latLngToVec3 } from './geo.js'
 import { layoutCampus } from './layoutCampus.js'
 import { Box3, Vector3 } from 'three'
 import { SINGLE_COMPANY } from '../config.js'
-import { layoutBounds } from './boards.js'
-import { boardPinPositions } from './BoardView.jsx'
+import { layoutBounds, layoutKind } from './boards.js'
+import { boardPinPositions, CONTRACT_GAP } from './BoardView.jsx'
 
 // 개요 화면 종류: 단일 회사 모드는 보드판 지도, 아니면 지구본
 const OVERVIEW = SINGLE_COMPANY ? 'board' : 'globe'
@@ -31,11 +31,14 @@ function boardHome() {
   const T = 0.536 // 2·tan(15°), fov 30
   // 데스크톱은 왼쪽 목록(약 30%)·위아래 패널(약 38%)이 가리므로 보이는 영역 기준으로 맞춤
   const usableW = mobile ? 0.98 : 0.6
-  const usableH = mobile ? 0.62 : 0.66
+  // 세로 화면은 아래 범례·슬라이더가 두 줄로 쌓여 더 많이 가림
+  const usableH = mobile ? 0.55 : layoutKind() === 'portrait' ? 0.58 : 0.66
+  // 계약 배지가 보드 북쪽으로 CONTRACT_GAP 만큼 떠 있으므로 그만큼 위쪽 여유를 더 담음
+  const extra = CONTRACT_GAP + 4
   const needW = (b.w + 6) / (T * aspect * usableW)
-  const needH = (b.d * 0.8 + 14) / (T * usableH)
+  const needH = ((b.d + extra) * 0.8 + 14) / (T * usableH)
   const D = Math.max(needW, needH)
-  const target = new Vector3(b.cx, 0, b.cz + 2)
+  const target = new Vector3(b.cx, 0, b.cz + 2 - extra / 2)
   return { target, pos: target.clone().addScaledVector(BOARD_DIR, D), D }
 }
 // 보드 위 한 지점을 가까이 내려다보는 시점
