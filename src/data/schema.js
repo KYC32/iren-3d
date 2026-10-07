@@ -7,6 +7,7 @@
 // =============================================================
 import { z } from 'zod'
 import { STATUS } from './status.js'
+import { isValidWhen } from './timeline.js'
 
 export const Id = z.string().regex(/^[a-z0-9-]+$/, 'id 는 소문자-숫자-하이픈만')
 export const Url = z.string().url()
@@ -14,7 +15,7 @@ const Hex = z.string().regex(/^#[0-9a-f]{6}$/i, '#rrggbb 형식')
 const Iso2 = z.string().regex(/^[A-Z]{2}$/, 'ISO 국가 코드 2글자 (예: US, KR)')
 
 // 날짜: '2026' | '2026-Q4' | '2026-H2' | '2026-08' | '2026-08-13'
-export const When = z.string().regex(/^\d{4}(-(Q[1-4]|H[12]|\d{2}(-\d{2})?))?$/, '날짜 형식: 2026 / 2026-Q4 / 2026-H2 / 2026-08 / 2026-08-13')
+export const When = z.string().refine(isValidWhen, '유효한 날짜: 2026 / 2026-Q4 / 2026-H2 / 2026-08 / 2026-08-13')
 
 // reported = 실제 발표된 사실, target = 회사가 밝힌 목표, estimate = 우리가 추정
 export const Basis = z.enum(['reported', 'target', 'estimate'])

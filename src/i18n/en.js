@@ -66,6 +66,8 @@ export default {
   basis: { reported: 'reported', target: 'company target', estimate: 'estimate' },
   contracts: { title: 'Customer contracts', toggle: 'Contract links', undisclosed: 'sites not disclosed', years: 'yrs' },
   timeline: { play: 'Play', pause: 'Pause', asOf: 'As of', future: 'Company targets', today: 'Back to as-of', label: 'Date' },
-  kpi2: { secured: 'Secured power', energized: 'energized', ai: 'AI live', mining: 'mining', building: 'Building / commissioning', sites: 'Sites', companies: 'companies' },
+  campus: { home: 'Fit campus', liquid: 'Liquid cooling', air: 'Air cooling', mining: 'Mining', planned: 'Expansion area' },
+  sceneLoading: 'Loading 3D map…',
+  kpi2: { reported: 'Reported', secured: 'Secured power', energized: 'energized', ai: 'AI live', mining: 'mining', building: 'Building / commissioning', sites: 'Sites', companies: 'companies' },
   empty: 'No announced buildings yet — grid power secured only',
 }

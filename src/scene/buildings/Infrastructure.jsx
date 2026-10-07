@@ -4,13 +4,13 @@
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Line, Instances, Instance } from '@react-three/drei'
-import Html from '../SafeHtml.jsx'
+import { CampusLabel } from '../CampusLabel.jsx'
 import { CatmullRomCurve3, Vector3 } from 'three'
 import { styleOf, PENDING_COLOR } from '../../data/statusStyle.js'
 import { fmtMw } from '../geo.js'
 
 // ---------- 변전소 ----------
-export function Substation({ sub, t }) {
+export function Substation({ sub, t, showLabel = true }) {
   const energized = sub.status === 'energized'
   const accent = energized ? styleOf('operating').color : PENDING_COLOR
   const ghost = !energized
@@ -49,13 +49,13 @@ export function Substation({ sub, t }) {
         {mat('#8f99b3')}
       </mesh>
       {/* 라벨: 통전 완료면 전압·용량, 아니면 노란 "통전 예정" */}
-      <Html position={[0, 3.6, 0]} center zIndexRange={[10, 0]}>
+      {showLabel && <CampusLabel position={[0, 3.6, 0]} priority={20}>
         <div className={`tag ${energized ? '' : 'tag-pending'}`}>
           {energized
             ? `${sub.voltage ? sub.voltage + ' · ' : ''}${fmtMw(sub.mw)}`
             : `${t.panel.energized} ${sub.dates?.target ?? ''}`}
         </div>
-      </Html>
+      </CampusLabel>}
     </group>
   )
 }
@@ -188,12 +188,12 @@ export function Truck({ truck, index, lang }) {
           <meshStandardMaterial color="#3a4256" />
         </mesh>
       ))}
-      <Html position={[0, 2, 0]} center zIndexRange={[15, 0]}>
+      <CampusLabel position={[0, 2, 0]} priority={0} hideOnOverlap>
         {/* 괄호 속 상세(대상 건물·계약명)는 빼고 짧게 — 건물 라벨을 덮지 않게. 전체 내용은 오른쪽 패널 "납품 예정"에 */}
-        <div className="tag tag-pending">
+        <div className="tag tag-pending truck-label">
           {d.what.replace(/\s*\([^)]*\)/g, '')} · {d.eta}
         </div>
-      </Html>
+      </CampusLabel>
     </group>
   )
 }

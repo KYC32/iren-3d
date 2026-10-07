@@ -3,7 +3,7 @@ import { ChevronRight } from 'lucide-react'
 import { useAppStore, isSiteActive, EMPTY } from '../store/useAppStore.js'
 import { useT, pickName } from '../i18n/useT.js'
 import { styleOf } from '../data/statusStyle.js'
-import { fmtMw } from '../scene/geo.js'
+import { fmtMw } from '../data/format.js'
 
 const FLAG = { US: 'US', CA: 'CA', AU: 'AU', ES: 'ES' }
 

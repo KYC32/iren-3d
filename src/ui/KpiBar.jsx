@@ -4,7 +4,8 @@ import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { useT } from '../i18n/useT.js'
 import { siteMetrics } from '../data/loadSites.js'
 import { totalsAt } from '../data/timeline.js'
-import { fmtMw } from '../scene/geo.js'
+import { fmtMw } from '../data/format.js'
+import { reportedMetricsAt } from '../data/reportedMetrics.js'
 import { SINGLE_COMPANY } from '../config.js'
 
 // 회사 발표 지표 표시: 단위에 맞게 ($bn / $m / GW·MW / 개수)
@@ -48,13 +49,14 @@ export default function KpiBar() {
     ]
     // 회사를 하나만 골랐으면 그 회사가 발표한 지표(출처 있음)도 표시
     const one = ids.length === 1 ? data.companies.find((c) => c.id === ids[0]) : null
-    for (const x of (one?.metrics ?? []).slice(0, 2)) {
+    for (const x of reportedMetricsAt(one?.metrics ?? [], data.month).slice(0, 2)) {
       cards.push({
         icon: x.unit.startsWith('USD') ? CircleDollarSign : Cpu,
         label: lang === 'ko' ? x.label_ko : x.label_en,
         value: fmtMetric(x),
         tone: 'pending',
-        sub: x.as_of,
+        sub: `${t.kpi2.reported} · ${x.as_of}`,
+        source: x.source,
       })
     }
   }
@@ -65,7 +67,7 @@ export default function KpiBar() {
         <div key={k.label} className={`kpi panel tone-${k.tone ?? 'none'}`}>
           <div className="kpi-label"><k.icon size={13} /> {k.label}</div>
           <div className="kpi-value">{k.value}</div>
-          {k.sub && <div className="kpi-sub">{k.sub}</div>}
+          {k.sub && <div className="kpi-sub">{k.source ? <a href={k.source} target="_blank" rel="noreferrer">{k.sub}</a> : k.sub}</div>}
         </div>
       ))}
     </div>

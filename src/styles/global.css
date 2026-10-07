@@ -417,3 +417,43 @@ button { font: inherit; cursor: pointer; }
 .spc-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
 .spc-note { font-size: 11px; color: #44506c; margin-top: 2px; }
 .spc-name { display: inline-flex; align-items: center; gap: 5px; }
+
+/* 3D 로딩 중에도 앞쪽 패널 조작은 유지 */
+.scene-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--text-muted); font-size: 14px; pointer-events: none; }
+.kpi-sub a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+
+/* 캠퍼스 라벨: 전체 보기에는 구역, 확대 시 건물, 선택 시 상세 */
+.campus-label { visibility: hidden; }
+.bld-label .name { max-width: 150px; overflow: hidden; text-overflow: ellipsis; }
+.bld-label.is-selected .name { max-width: 210px; }
+.selected-detail { max-width: 220px; white-space: normal; background: rgba(255,255,255,0.97); border: 1px solid #c3d3e9; border-radius: 9px; padding: 6px 10px; font-size: 11px; line-height: 1.5; box-shadow: 0 4px 14px rgba(30,45,90,0.12); pointer-events: none; }
+.area-label { border-color: #b8c5cf; color: #46596a; padding: 4px 9px; }
+.home-btn { border-radius: 9px; white-space: nowrap; }
+@media (max-width: 767px) {
+  .home-btn span { display: none; }
+  .brand { min-width: 0; }
+  .brand > div { min-width: 0; }
+  .brand .subtitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .top-actions { flex-shrink: 0; }
+}
+.selected-detail { width: 210px; max-width: 210px; text-align: left; }
+.campus-label { position: relative; }
+.campus-label::after { content: ''; position: absolute; left: 50%; width: 1px; height: var(--leader-length, 0px); background: #8597ad; opacity: 0.65; pointer-events: none; top: var(--leader-top, 100%); bottom: var(--leader-bottom, auto); }
+@media (max-width: 767px) { .selected-detail { width: 180px; } }
+
+.truck-label { width: max-content; max-width: min(260px, calc(100vw - 48px)); white-space: normal; line-height: 1.4; }
+
+/* 고객 구역 선택 */
+button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit; }
+.zone-badge.is-selected { box-shadow: 0 0 0 3px #ffffffb3, 0 3px 14px #24385830; }
+.zone-badge:focus-visible, .zone-switch button:focus-visible { outline: 3px solid #406de0; outline-offset: 3px; }
+.zone-switch { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+.zone-switch button, .zone-summary-head button { border: 1px solid #d9dfed; background: white; border-radius: 8px; padding: 6px 9px; color: #44506c; cursor: pointer; }
+.zone-switch button[aria-pressed="true"] { background: #eaf1ff; border-color: #517bca; color: #204f9a; font-weight: 700; }
+.zone-summary { border-bottom: 1px solid #e3e7f0; padding-bottom: 8px; }
+.zone-summary-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.zone-summary-head h3 { margin: 0; font-size: 17px; }
+.zone-summary p { font-size: 12px; line-height: 1.6; }
+.zone-statuses { list-style: none; padding: 0; margin: 12px 0; }
+.zone-statuses li { display: flex; align-items: center; gap: 7px; padding: 5px 0; font-size: 12px; }
+.zone-statuses b { margin-left: auto; }

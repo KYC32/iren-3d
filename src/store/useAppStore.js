@@ -1,6 +1,7 @@
 // 앱 전역 상태 (zustand)
 // "스토어가 진실의 원천, 3D 씬과 HTML UI 는 그 투영" 구조입니다.
 import { create } from 'zustand'
+import { customerKey, customerZones } from '../data/customerZones.js'
 import { STATUS } from '../data/status.js'
 import { parseHash, buildHash } from './hashState.js'
 import { viewInfra, asOfMonth } from '../data/view.js'
@@ -37,6 +38,8 @@ export const useAppStore = create((set, get) => ({
   selectedSiteId: initial.site ?? null,    // 선택된 사이트 id
   hoverId: null,                           // 마우스 올린 사이트/건물 id
   selectedBuildingId: null,                // 캠퍼스에서 클릭해 고른 건물 id (패널 항목과 연동)
+  selectedZoneKey: null,
+  cameraHomeSeq: 0,
   buildingFly: null,                       // { id, seq } 패널에서 건물을 고르면 카메라가 그 건물로 (seq 로 같은 건물 재요청도 구분)
   transitioning: false,                    // 카메라 전환(페이드) 중인지
   // 카메라 전환 요청: UI/핀이 요청하면 CameraRig 가 애니메이션 후 실제로 view 를 바꿉니다
@@ -66,15 +69,35 @@ export const useAppStore = create((set, get) => ({
   // 원본(infra.json)을 받으면 시작 날짜를 정하고 화면용 데이터를 만듦
   setRaw: (raw) => {
     const asOf = asOfMonth(raw.as_of)
-    const m = initial.date ? Math.min(MONTH_MAX, Math.max(MONTH_MIN, toMonth(initial.date))) : asOf
-    set({ asOfMonth: asOf, month: m, data: viewInfra(raw, m), events: buildEvents(raw) })
+    const h = parseHash(window.location.hash)
+    const m = Math.min(MONTH_MAX, Math.max(MONTH_MIN, h.date ? toMonth(h.date) : asOf))
+    const data = viewInfra(raw, m)
+    const id = data.sites.some((s) => s.id === h.site) ? h.site : null
+    set({ asOfMonth: asOf, month: m, data, events: buildEvents(raw),
+      selectedSiteId: id, view: id ? 'site' : 'globe', loadError: null,
+      activeCompanies: new Set((h.companies ?? []).filter((id) => raw.companies.some((c) => c.id === id))),
+      colorMode: h.color ?? 'status',
+    })
+    get().syncHash()
   },
   // 날짜 바꾸기 → 그 날짜의 상태로 화면용 데이터 다시 계산
   setMonth: (m) => {
+    if (!Number.isFinite(m)) return
     const mm = Math.min(MONTH_MAX, Math.max(MONTH_MIN, Math.round(m)))
     const { data, month } = get()
     if (!data || mm === month) return
-    set({ month: mm, data: viewInfra(data.raw, mm) })
+    const nextData = viewInfra(data.raw, mm)
+    const st = get()
+    const missing = (id) => id && !nextData.sites.some((s) => s.id === id)
+    const leaveSite = (st.view === 'site' && missing(st.selectedSiteId)) ||
+      (st.pending?.type === 'site' && missing(st.pending.id))
+    const site = nextData.sites.find((s) => s.id === st.selectedSiteId)
+    set({ month: mm, data: nextData,
+      ...(!site || !customerZones(site, nextData.companies).some((z) => z.key === st.selectedZoneKey) ? { selectedZoneKey: null } : {}),
+      ...(leaveSite && st.pending?.type !== 'globe' ? { pending: { type: 'globe' } } : {}),
+      ...(!site?.buildings.some((b) => b.id === st.selectedBuildingId)
+        ? { selectedBuildingId: null, buildingFly: null } : {}),
+    })
     if (!get().playing) get().syncHash()
   },
   setPlaying: (v) => {
@@ -91,6 +114,23 @@ export const useAppStore = create((set, get) => ({
       color: st.colorMode,
     })
     window.history.replaceState(null, '', hash || window.location.pathname + window.location.search)
+  },
+  // 해시에서 생략된 값도 기본값으로 복원합니다. 데이터 로딩 전에는 setRaw가 처리합니다.
+  applyHash: (hash) => {
+    const st = get()
+    if (!st.data) return
+    const h = parseHash(hash)
+    set({ playing: false })
+    st.setMonth(h.date ? toMonth(h.date) : st.asOfMonth)
+    const next = get()
+    const id = next.data.sites.some((s) => s.id === h.site) ? h.site : null
+    set({
+      activeCompanies: new Set((h.companies ?? []).filter((id) => next.data.companies.some((c) => c.id === id))),
+      colorMode: h.color ?? 'status',
+      pending: id ? (id === next.selectedSiteId && next.view === 'site' && !next.pending ? null : { type: 'site', id })
+        : (next.view === 'site' || next.pending ? { type: 'globe' } : null),
+    })
+    get().syncHash()
   },
   setLoadError: (err) => set({ loadError: err }),
   // src: '3d'(캔버스 속 물체) | 'dom'(라벨·목록 등 HTML, 기본값)
@@ -119,13 +159,21 @@ export const useAppStore = create((set, get) => ({
     const next = id && st.selectedBuildingId === id && !fly ? null : id
     set({
       selectedBuildingId: next,
+      selectedZoneKey: next && customerKey(selectSelectedSite(st)?.buildings.find((b) => b.id === next)?.customer) !== st.selectedZoneKey ? null : st.selectedZoneKey,
       buildingFly: fly && next ? { id: next, seq: (st.buildingFly?.seq ?? 0) + 1 } : st.buildingFly,
     })
   },
+  selectZone: (key) => {
+    const st = get(), site = selectSelectedSite(st)
+    if (st.pending || !site || !customerZones(site, st.data.companies).some((z) => z.key === key)) return
+    if (st.selectedZoneKey === key) return st.requestCampusHome()
+    set({ selectedZoneKey: key, selectedBuildingId: null, buildingFly: null, hoverId: null })
+  },
+  requestCampusHome: () => { if (!get().pending) set({ cameraHomeSeq: get().cameraHomeSeq + 1, selectedBuildingId: null, buildingFly: null, hoverId: null, selectedZoneKey: null }) },
   toggleLang: () => set({ lang: get().lang === 'ko' ? 'en' : 'ko' }),
 
   // 전환 "요청" (애니메이션 포함) — UI 와 핀은 이것을 호출합니다
-  requestSite: (id) => { if (!get().pending) set({ pending: { type: 'site', id } }) },
+  requestSite: (id) => { if (get().data?.sites.some((s) => s.id === id) && !get().pending) set({ pending: { type: 'site', id } }) },
   requestGlobe: () => { if (!get().pending) set({ pending: { type: 'globe' } }) },
   // 지구본에서 특정 지역(북미·유럽·아시아)으로 카메라 이동
   requestRegion: (lat, lng) => { if (!get().pending && get().view === 'globe') set({ pending: { type: 'region', lat, lng } }) },
@@ -133,11 +181,11 @@ export const useAppStore = create((set, get) => ({
 
   // 사이트 선택 → 캠퍼스 뷰로 (CameraRig 가 애니메이션 도중에 호출) (URL 해시도 갱신해 공유 가능하게)
   selectSite: (id) => {
-    set({ selectedSiteId: id, view: id ? 'site' : 'globe', hoverId: null, selectedBuildingId: null })
+    set({ selectedSiteId: id, view: id ? 'site' : 'globe', hoverId: null, selectedBuildingId: null, buildingFly: null, selectedZoneKey: null })
     get().syncHash()
   },
   goGlobe: () => {
-    set({ view: 'globe', selectedSiteId: null, hoverId: null, selectedBuildingId: null })
+    set({ view: 'globe', selectedSiteId: null, hoverId: null, selectedBuildingId: null, buildingFly: null, selectedZoneKey: null })
     get().syncHash()
   },
 

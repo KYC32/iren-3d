@@ -8,10 +8,12 @@
 // 지구본으로 돌아갈 때는 역순입니다.
 // =============================================================
 import { useEffect, useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { CameraControls } from '@react-three/drei'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { latLngToVec3 } from './geo.js'
+import { campusFrame, campusOffset, campusViewport } from './campusCamera.js'
+import { customerKey, zoneBounds } from '../data/customerZones.js'
 import { layoutCampus } from './layoutCampus.js'
 import { Box3, Vector3 } from 'three'
 import { SINGLE_COMPANY } from '../config.js'
@@ -64,11 +66,9 @@ function globeAlt() {
 
 // 캠퍼스 기본 시점: 부지 크기에 맞춰 대각선 위에서 내려다봄 (준아이소메트릭)
 function campusHome(side) {
-  // 세로로 긴 화면(모바일)은 가로 시야가 좁으므로 그만큼 멀리서 봅니다
-  const aspect = window.innerWidth / Math.max(1, window.innerHeight)
-  const k = aspect < 1 ? Math.min(2.5, 1.05 / aspect) : 1
-  const d = side * 1.32 * Math.max(1, k)
-  return [d, d * 0.95, d, 0, 0, 0]
+  const w = window.innerWidth, h = window.innerHeight
+  const frame = campusFrame(side, w, h, campusViewport(w, h))
+  return [...frame.position, ...frame.target]
 }
 
 // 상세 패널이 화면 일부를 가리므로 캠퍼스를 보이는 영역 가운데로 밀어 줍니다.
@@ -84,8 +84,8 @@ function applyFocalOffset(c, view, side, transition) {
   }
   // 지구본: 데스크톱에서는 왼쪽 사이트 목록을 피해 지구본을 오른쪽으로
   if (view !== 'site') return c.setFocalOffset(mobile ? 0 : -28, 0, 0, transition)
-  if (mobile) return c.setFocalOffset(0, side * 0.3, 0, transition) // 바텀시트(화면 아래 42%) → 캠퍼스를 위로 (+y = 화면 위)
-  return c.setFocalOffset(side * 0.22, -side * 0.05, 0, transition)   // 오른쪽 패널 → 왼쪽으로, 상단 KPI → 살짝 아래로
+  const w = window.innerWidth, h = window.innerHeight
+  return c.setFocalOffset(...campusOffset(c.distance, w, h, campusViewport(w, h)), transition)
 }
 
 // 뷰별 카메라 제약
@@ -118,7 +118,7 @@ function applyLimits(c, view, side = 30) {
     c.dollySpeed = 0.6
   } else {
     c.minDistance = side * 0.9
-    c.maxDistance = side * 7
+    c.maxDistance = Math.max(side * 9, campusFrame(side, window.innerWidth, window.innerHeight, campusViewport(window.innerWidth, window.innerHeight)).distance * 1.8)
     c.minPolarAngle = 0.35 // 너무 위에서 수직으로 내려다보지 않게
     c.maxPolarAngle = 1.2  // 바닥 아래로 들어가지 않게
     c.truckSpeed = 1
@@ -130,6 +130,39 @@ export default function CameraRig() {
   const ref = useRef()
   const lastInteract = useRef(-Infinity)
   const pending = useAppStore((s) => s.pending)
+  const view = useAppStore((s) => s.view)
+  const zoneKey = useAppStore((s) => s.selectedZoneKey)
+  const month = useAppStore((s) => s.month)
+  const homeSeq = useAppStore((s) => s.cameraHomeSeq)
+  const size = useThree((s) => s.size)
+  const safeRect = useRef(null)
+
+  // 패널·화면 크기가 바뀌거나 전체 보기를 누르면 안전 영역에 다시 맞춥니다.
+  useEffect(() => {
+    if (view !== 'site') return
+    const fit = () => {
+      const st = useAppStore.getState(), c = ref.current
+      safeRect.current = campusViewport(size.width, size.height)
+      const site = selectSelectedSite(st)
+      if (!c || !site || st.pending) return
+      const L = layoutCampus(site._raw)
+      applyLimits(c, 'site', L.side)
+      const ids = new Set(site.buildings.filter((b) => customerKey(b.customer) === st.selectedZoneKey).map((b) => b.id))
+      const bounds = st.selectedZoneKey && zoneBounds(L.blocks.filter((b) => ids.has(b.buildingId)))
+      if (bounds) {
+        const frame = campusFrame(bounds.side, size.width, size.height, safeRect.current)
+        c.setLookAt(frame.position[0] + bounds.x, frame.position[1], frame.position[2] + bounds.z,
+          bounds.x, frame.target[1], bounds.z, true)
+      } else c.setLookAt(...campusHome(L.side), true)
+    }
+    fit()
+    const observer = new ResizeObserver(fit)
+    for (const selector of ['.site-panel', '.kpis', '.bottom']) {
+      const el = document.querySelector(selector)
+      if (el) observer.observe(el)
+    }
+    return () => observer.disconnect()
+  }, [view, size.width, size.height, homeSeq, zoneKey, month])
 
   // 처음 마운트: 딥링크(#site=...)면 캠퍼스, 아니면 지구본 시점
   useEffect(() => {
@@ -191,23 +224,26 @@ export default function CameraRig() {
       // 2) 페이드 인 → 뷰 전환 → 캠퍼스 시점
       st.setTransitioning(true)
       await sleep(FADE_MS)
+      if (cancelled) return
       st.selectSite(id)
       const L = layoutCampus(site._raw)
       applyLimits(c, 'site', L.side)
       c.smoothTime = 0.25
-      const [px, py, pz] = campusHome(L.side)
+      const [px, py, pz, tx, ty, tz] = campusHome(L.side)
       // 살짝 멀리서 시작해 안으로 들어오는 느낌
-      c.setLookAt(px * 1.6, py * 1.6, pz * 1.6, 0, 0, 0, false)
+      c.setLookAt(px * 1.15, py * 1.15, pz * 1.15, tx, ty, tz, false)
       applyFocalOffset(c, 'site', L.side, false)
       await sleep(30)
+      if (cancelled) return
       st.setTransitioning(false)
-      await settle(c.setLookAt(px, py, pz, 0, 0, 0, true), 1200)
+      await settle(c.setLookAt(px, py, pz, tx, ty, tz, true), 1200)
     }
 
     async function toGlobe() {
       const prev = selectSelectedSite(st)
       st.setTransitioning(true)
       await sleep(FADE_MS)
+      if (cancelled) return
       st.goGlobe()
       if (OVERVIEW === 'board') {
         // 방금 보던 사이트 핀 바로 위에서 시작해 보드 전체로 빠져나옴
@@ -219,10 +255,12 @@ export default function CameraRig() {
         const near = p ? boardCloseUp(p.x, p.z) : boardHome()
         c.setLookAt(near.pos.x, near.pos.y, near.pos.z, near.target.x, near.target.y, near.target.z, false)
         await sleep(30)
+        if (cancelled) return
         st.setTransitioning(false)
         const home = boardHome()
         c.smoothTime = 0.5
         await settle(c.setLookAt(home.pos.x, home.pos.y, home.pos.z, home.target.x, home.target.y, home.target.z, true), 1300)
+        if (cancelled) return
         applyLimits(c, 'globe')
         return
       }
@@ -234,10 +272,12 @@ export default function CameraRig() {
       const target = prev ? latLngToVec3(prev.lat, prev.lng, 0) : latLngToVec3(GLOBE_HOME.lat, GLOBE_HOME.lng, 0)
       c.setLookAt(near.x, near.y, near.z, target.x, target.y, target.z, false)
       await sleep(30)
+      if (cancelled) return
       st.setTransitioning(false)
       const far = prev ? latLngToVec3(prev.lat, prev.lng, GLOBE_HOME.alt) : latLngToVec3(GLOBE_HOME.lat, GLOBE_HOME.lng, GLOBE_HOME.alt)
       c.smoothTime = 0.5
       await settle(c.setLookAt(far.x, far.y, far.z, 0, 0, 0, true), 1400)
+      if (cancelled) return
       applyLimits(c, 'globe')
     }
 
@@ -275,6 +315,10 @@ export default function CameraRig() {
   useFrame((_, delta) => {
     const c = ref.current
     const st = useAppStore.getState()
+    if (c && st.view === 'site') {
+      const rect = safeRect.current ?? campusViewport(size.width, size.height)
+      c.setFocalOffset(...campusOffset(c.distance, size.width, size.height, rect), false)
+    }
     if (!c || OVERVIEW !== 'globe' || st.view !== 'globe' || st.pending || st.hoverId) return
     if (performance.now() - lastInteract.current < 4000) return
     c.rotate(-delta * 0.035, 0, false)

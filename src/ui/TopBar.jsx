@@ -1,5 +1,5 @@
 // 상단 바: 제목·기준일 / 뒤로가기 / 한영 토글
-import { ArrowLeft, Languages, Server, ListOrdered } from 'lucide-react'
+import { ArrowLeft, Languages, Server, ListOrdered, Maximize2 } from 'lucide-react'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { useT, pickName } from '../i18n/useT.js'
 
@@ -34,6 +34,9 @@ export default function TopBar() {
         </div>
       </div>
       <div className="top-actions">
+      {view === 'site' && <button className="lang-btn home-btn" onClick={() => useAppStore.getState().requestCampusHome()} aria-label={t.campus.home} title={t.campus.home}>
+        <Maximize2 size={15} /><span>{t.campus.home}</span>
+      </button>}
       {view === 'globe' && (
         <button className="icon-btn sheet-btn" onClick={toggleSheet} aria-label={t.rank.tab} title={t.rank.tab}>
           <ListOrdered size={17} />

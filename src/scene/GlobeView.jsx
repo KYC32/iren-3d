@@ -49,7 +49,7 @@ function LandHexes() {
     fetch('/data/land-hex.json')
       .then((r) => r.json())
       .then((d) => setCells({ data: d.cells, stride: d.stride ?? 3 }))
-      .catch(() => setCells([]))
+      .catch(() => setCells({ data: [], stride: 3 }))
   }, [])
 
   const count = cells ? cells.data.length / cells.stride : 0

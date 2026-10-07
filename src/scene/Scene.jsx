@@ -5,13 +5,14 @@
 import { Suspense, lazy } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { PerformanceMonitor } from '@react-three/drei'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
-import GlobeView from './GlobeView.jsx'
+const GlobeView = lazy(() => import('./GlobeView.jsx'))
 import BoardView from './BoardView.jsx'
 import { SINGLE_COMPANY } from '../config.js'
 // 캠퍼스·녹화 코드는 필요할 때만 불러옵니다 (첫 화면 로딩을 가볍게)
 const SiteView = lazy(() => import('./SiteView.jsx'))
+import { layoutCampus } from './layoutCampus.js'
 import CameraRig from './CameraRig.jsx'
 const RecordDirector = lazy(() => import('../record/RecordDirector.jsx'))
 
@@ -22,11 +23,14 @@ export default function Scene({ record = false }) {
   const site = useAppStore(selectSelectedSite)
   // 성능이 떨어지면 해상도(DPR)를 자동으로 낮춥니다
   const [dpr, setDpr] = useState(1.5)
+  const campusSide = useMemo(() => site ? layoutCampus(site._raw).side : 32, [site?._raw])
+  const campus = view === 'site'
+  const shadowSpan = campus ? campusSide * 0.85 : 110
   const boardMode = Boolean(SINGLE_COMPANY) && !record
 
   return (
     <Canvas
-      shadows
+      shadows="percentage"
       // 녹화 모드: 자동 렌더를 끄고(never) RecordDirector 가 한 프레임씩 직접 그림
       frameloop={record ? 'never' : 'always'}
       dpr={record ? 1 : [1, dpr]}
@@ -41,23 +45,27 @@ export default function Scene({ record = false }) {
     >
       {!record && <PerformanceMonitor onDecline={() => setDpr(1)} onIncline={() => setDpr(1.5)} />}
       <color attach="background" args={[BG]} />
-      {view === 'site' && <fog attach="fog" args={[BG, 140, 320]} />}
+      {view === 'site' && <fog attach="fog" args={[BG, campusSide * 12, campusSide * 22]} />}
 
       {/* 조명 */}
-      <ambientLight intensity={1.1} />
-      <hemisphereLight args={['#ffffff', '#b8c4dc', 0.9]} />
+      <ambientLight intensity={campus ? 0.45 : 1.1} />
+      <hemisphereLight args={[campus ? '#edf4ff' : '#ffffff', campus ? '#9ca9b4' : '#b8c4dc', campus ? 0.7 : 0.9]} />
+      {campus && <directionalLight position={[-30, 18, -25]} color="#d9e8ff" intensity={0.45} />}
       <directionalLight
-        position={view === 'site' ? [30, 50, 22] : boardMode ? [80, 140, 90] : [300, 260, 200]}
-        intensity={1.7}
+        position={campus ? [campusSide * 0.7, campusSide * 1.4, campusSide * 0.85] : boardMode ? [80, 140, 90] : [300, 260, 200]}
+        intensity={campus ? 2.5 : 1.7}
+        color={campus ? '#fff5e8' : '#ffffff'}
         castShadow={view === 'site' || boardMode}
         shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={boardMode && view !== 'site' ? -110 : -45}
-        shadow-camera-right={boardMode && view !== 'site' ? 110 : 45}
-        shadow-camera-top={boardMode && view !== 'site' ? 110 : 45}
-        shadow-camera-bottom={boardMode && view !== 'site' ? -110 : -45}
+        shadow-camera-left={-shadowSpan}
+        shadow-camera-right={shadowSpan}
+        shadow-camera-top={shadowSpan}
+        shadow-camera-bottom={-shadowSpan}
         shadow-camera-near={1}
-        shadow-camera-far={boardMode && view !== 'site' ? 400 : 160}
-        shadow-bias={-0.0004}
+        shadow-camera-far={campus ? campusSide * 4 : 400}
+        shadow-bias={campus ? -0.00015 : -0.0004}
+        shadow-normalBias={campus ? 0.025 : 0}
+        onUpdate={(light) => light.shadow.camera.updateProjectionMatrix()}
       />
 
       <Suspense fallback={null}>

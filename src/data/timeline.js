@@ -17,9 +17,20 @@ const PRECEDENCE = ['operating', 'commissioning', 'under_construction', 'decommi
 // ---------- 날짜 → 월 번호 ----------
 // 허용 형식: '2026' | '2026-Q4' | '2026-H2' | '2026-08' | '2026-08-13'
 // edge: 'start' 면 기간의 첫 달, 'end' 면 마지막 달 ('2026-Q4' → 10월 / 12월)
+export function isValidWhen(when) {
+  const m = String(when).match(/^(\d{4})(?:-(Q[1-4]|H[12]|0[1-9]|1[0-2])(?:-(\d{2}))?)?$/)
+  if (!m) return false
+  if (!m[3]) return true
+  if (!/^\d{2}$/.test(m[2])) return false
+  const year = Number(m[1]), month = Number(m[2]), day = Number(m[3])
+  const leap = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+  return day >= 1 && day <= days[month - 1]
+}
+
 export function toMonth(when, edge = 'start') {
   const m = String(when).match(/^(\d{4})(?:-(Q[1-4]|H[12]|\d{2})(?:-\d{2})?)?$/)
-  if (!m) throw new Error(`알 수 없는 날짜 형식: ${when}`)
+  if (!m || !isValidWhen(when)) throw new Error(`알 수 없는 날짜 형식: ${when}`)
   const y = Number(m[1])
   const part = m[2]
   let first = 1, last = 12

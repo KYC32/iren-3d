@@ -7,8 +7,17 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   build: {
-    // three.js가 커서 경고가 뜨는 것을 막기 위해 한도를 조금 올립니다 (단위: KB)
-    chunkSizeWarningLimit: 1200,
+    manifest: true, // 번들 검사에서 동적 3D 진입점까지 합산
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            { name: 'three-core', test: /node_modules[\\/]three[\\/]build[\\/]three\.core\.js$/, priority: 2 },
+            { name: 'three-renderer', test: /node_modules[\\/]three[\\/]/, priority: 1 },
+          ],
+        },
+      },
+    },
   },
   test: {
     environment: 'node', // 순수 함수(layoutCampus 등) 테스트만 돌리므로 node 환경이면 충분

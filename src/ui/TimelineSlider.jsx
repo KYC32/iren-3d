@@ -10,6 +10,7 @@ import { useAppStore, MONTH_MIN, MONTH_MAX } from '../store/useAppStore.js'
 import { useT } from '../i18n/useT.js'
 import { monthLabel } from '../data/timeline.js'
 import { eventTicks } from '../data/events.js'
+import { advancePlayback } from './playback.js'
 
 const STEP_MS = 200 // 재생 속도: 한 달에 0.2초 → 60개월 = 12초
 
@@ -19,6 +20,7 @@ function usePlayer() {
   const acc = useRef(0)
   useEffect(() => {
     if (!playing) return
+    acc.current = 0
     let raf, last = performance.now()
     const st = useAppStore.getState()
     if (st.month >= MONTH_MAX) st.setMonth(MONTH_MIN) // 끝에서 누르면 처음부터
@@ -26,11 +28,10 @@ function usePlayer() {
       acc.current += now - last
       last = now
       const s = useAppStore.getState()
-      while (acc.current >= STEP_MS) {
-        acc.current -= STEP_MS
-        if (s.month >= MONTH_MAX) { s.setPlaying(false); return }
-        s.setMonth(s.month + 1)
-      }
+      const next = advancePlayback(s.month, acc.current, MONTH_MAX, STEP_MS)
+      acc.current = next.remainder
+      s.setMonth(next.month)
+      if (next.finished) { s.setPlaying(false); return }
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
@@ -57,7 +58,10 @@ export default function TimelineSlider() {
   // 키보드 ←/→ (입력창에 쓰는 중이 아닐 때)
   useEffect(() => {
     const onKey = (e) => {
-      if (e.target instanceof HTMLInputElement && e.target.type !== 'range') return
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return
+      if (e.target instanceof Element && e.target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
+      e.preventDefault()
       const st = useAppStore.getState()
       if (e.key === 'ArrowRight') { st.setPlaying(false); st.setMonth(st.month + 1) }
       if (e.key === 'ArrowLeft') { st.setPlaying(false); st.setMonth(st.month - 1) }

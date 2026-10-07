@@ -36,12 +36,7 @@ export function spreadPins(sites, minDeg = 2.2, iterations = 40) {
   return Object.fromEntries(pts.map((p) => [p.id, { lat: p.lat, lng: p.lng }]))
 }
 
-// 숫자 표시: 1,000MW 이상은 GW 로
-export function fmtMw(mw, digits = 1) {
-  if (mw == null) return '–'
-  if (mw >= 1000) return `${(mw / 1000).toFixed(digits).replace(/\.0$/, '')} GW`
-  return `${Math.round(mw).toLocaleString()} MW`
-}
+export { fmtMw } from '../data/format.js'
 
 // 가까이 모인 사이트(예: 텍사스 4곳)를 무리로 묶습니다.
 // 멀리서 볼 때는 무리의 대표(가장 큰 사이트) 라벨만 "+N" 과 함께 보여 겹침을 막고,

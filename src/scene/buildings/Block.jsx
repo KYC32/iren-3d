@@ -13,7 +13,7 @@ import { useFrame } from '@react-three/fiber'
 import { RoundedBox, Line } from '@react-three/drei'
 import { styleOf, PENDING_COLOR } from '../../data/statusStyle.js'
 
-const BODY = '#f7f8fc'      // 건물 외벽 (밝은 흰색)
+const BODY = '#eef1f5'      // 건물 외벽 (밝은 흰색)
 const CONCRETE = '#d9dde8'  // 슬래브
 const STEEL = '#8f99b3'     // 골조
 
@@ -113,6 +113,11 @@ function FinishedHall({ w, d, h, kind, status, spinning, beacon }) {
 
   return (
     <group>
+      {/* 낮은 기단으로 건물과 지면의 경계를 구분 */}
+      <mesh position={[0, 0.07, 0]} receiveShadow castShadow>
+        <boxGeometry args={[w + 0.28, 0.14, d + 0.28]} />
+        <meshStandardMaterial color="#9daab8" roughness={0.95} />
+      </mesh>
       {/* 본체 */}
       <RoundedBox args={[w, h, d]} radius={0.12} smoothness={3} position={[0, h / 2, 0]} castShadow receiveShadow>
         <meshStandardMaterial color={BODY} roughness={0.75} />
