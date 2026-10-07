@@ -55,6 +55,7 @@ npm run build
 node scripts/record-server.mjs all              # 16:9 + 9:16 → video/iren-x-ko.mp4, video/iren-shorts-ko.mp4
 node scripts/record-server.mjs x --lang=en      # 영어 자막 16:9
 node scripts/record-server.mjs shorts --only=3,13,25   # 그 시점만 미리보기 PNG (video/preview-*.png)
+node scripts/record-server.mjs og --only=13           # 링크 미리보기 1200×630 → ffmpeg 로 public/og.jpg 저장
 ```
 
 - 장면 순서·카메라 동선·자막은 `src/record/storyboard.js` 의 시간표만 고치면 됩니다.

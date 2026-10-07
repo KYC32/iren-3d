@@ -58,7 +58,46 @@ export function drawPill(o, x, y, u, { color, text, sub, alpha = 1 }) {
 }
 
 // 시간 t 의 자막 카드들 그리기
+// 링크 미리보기(OG) 전용 고정 카드: 서비스 이름 + 한 줄 설명 + 주소 (영상 자막 대신)
+const OG_CARD = {
+  ko: { title: 'IREN 데이터센터 3D 현황판', sub: '가동·건설·계획 9개 사이트 · 2024~2028 타임라인 · 고객 계약', url: 'iren-3d.vercel.app' },
+  en: { title: 'IREN Data Center 3D Map', sub: '9 sites: operating, building, planned · 2024–2028 timeline · contracts', url: 'iren-3d.vercel.app' },
+}
+function drawOgCard(o, W, H, lang) {
+  const c = OG_CARD[lang]
+  const u = H / 630
+  const x = 40 * u, y = 34 * u
+  o.save()
+  o.font = `800 ${46 * u}px ${FONT}`
+  const tw = o.measureText(c.title).width
+  o.font = `500 ${21 * u}px ${FONT}`
+  const sw = o.measureText(c.sub).width
+  const w = Math.max(tw, sw) + 64 * u
+  const h = 150 * u
+  o.shadowColor = 'rgba(30,45,90,0.14)'
+  o.shadowBlur = 24 * u
+  o.fillStyle = 'rgba(255,255,255,0.95)'
+  rr(o, x, y, w, h, 18 * u)
+  o.fill()
+  o.shadowColor = 'transparent'
+  o.fillStyle = styleOf('operating').color
+  rr(o, x, y, 8 * u, h, 4 * u)
+  o.fill()
+  o.textBaseline = 'alphabetic'
+  o.fillStyle = TEXT
+  o.font = `800 ${46 * u}px ${FONT}`
+  o.fillText(c.title, x + 32 * u, y + 62 * u)
+  o.fillStyle = MUTED
+  o.font = `500 ${21 * u}px ${FONT}`
+  o.fillText(c.sub, x + 32 * u, y + 98 * u)
+  o.fillStyle = '#2f6bed'
+  o.font = `800 ${22 * u}px ${FONT}`
+  o.fillText(c.url, x + 32 * u, y + 132 * u)
+  o.restore()
+}
+
 export function drawCards(o, t, W, H, lang, format) {
+  if (format === 'og') return drawOgCard(o, W, H, lang)
   const u = Math.min(W, H) / 1080 // 1080 기준 크기 단위
   const shorts = format === 'shorts'
   for (const c of CARDS[lang]) {
