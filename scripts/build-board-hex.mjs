@@ -2,8 +2,9 @@
 // 보드판 지도 육각 타일 사전계산
 // 사용법: npm run geo   (결과: public/data/board-hex.json)
 // -------------------------------------------------------------
-// 판마다(북미 서부·스페인·남호주) 그 범위의 육지를 h3 해상도 4(한 변 약 23km) 육각형으로 바꿉니다.
-// 저장 형식: { boards: { na: [lat, lng, home, ...], ... }, lines: { na: { countries, states, focus }, ... } }
+// 판마다(BC·텍사스·스페인·남호주) 그 범위의 육지를 h3 해상도 5(한 변 약 8.5km) 육각형으로 바꿉니다.
+// (판이 지역 단위로 작아져 확대해서 보므로, 예전 해상도 4보다 한 단계 촘촘하게 — 해안선이 덜 뭉개짐)
+// 저장 형식: { res, boards: { tx: [lat, lng, home, ...], ... }, lines: { tx: { countries, states, focus }, ... } }
 //   lines 는 판 범위로 잘라낸 경계선 [경도, 위도, 경도, 위도, ...] 목록
 //   - countries: 국경·해안선 (Natural Earth 50m — 지구본용 110m 보다 촘촘)
 //   - states   : 미국 주 경계(us-atlas) + 캐나다·호주 주 경계(Natural Earth 50m 캐시가 있으면)
@@ -15,7 +16,7 @@ import { feature, mesh } from 'topojson-client'
 import { existsSync } from 'node:fs'
 import { BOARDS, insideBoard, latLngBox } from '../src/scene/boards.js'
 
-const RES = 4
+const RES = 5
 const HOME = new Set(['840', '124', '036', '724']) // 미국·캐나다·호주·스페인 → 민트색
 
 const topo = JSON.parse(readFileSync(new URL('../node_modules/world-atlas/countries-50m.json', import.meta.url), 'utf8'))

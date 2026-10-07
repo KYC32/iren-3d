@@ -1,5 +1,5 @@
 // =============================================================
-// BoardView — 보드판 지도 (북미 서부 본판 + 스페인·남호주 삽입판)
+// BoardView — 보드판 지도 (BC·텍사스·스페인·남호주 섬 보드 4개, 모두 같은 축척)
 // -------------------------------------------------------------
 // 지구본은 사이트가 없는 바다·대륙이 화면 대부분을 차지해서,
 // IREN 사이트가 있는 지역만 잘라 보드게임판처럼 펼쳐 놓았습니다.
@@ -15,7 +15,7 @@ import { Html, Line, QuadraticBezierLine, RoundedBox } from '@react-three/drei'
 import { BufferGeometry, CanvasTexture, Color, Float32BufferAttribute, Object3D, SRGBColorSpace, Vector3 } from 'three'
 import { useAppStore, isSiteActive, EMPTY } from '../store/useAppStore.js'
 import { styleOf } from '../data/statusStyle.js'
-import { BOARDS, boardPos, projectLocal, projectToBoard, layoutKind } from './boards.js'
+import { BOARDS, K, boardPos, layoutBounds, projectLocal, projectToBoard, layoutKind } from './boards.js'
 import { spreadPins, labelRanks, fmtMw } from './geo.js'
 import { CITIES } from './cities.js'
 import { pickName, useT } from '../i18n/useT.js'
@@ -26,9 +26,11 @@ const OCEAN = '#a8c3ef'
 const FRAME = '#f7f8fc'
 const LAND = '#fffaf0'
 const HOME_LAND = '#8fd6b8'
-const TILE_R = 0.62        // 육각 타일 반지름 (h3 해상도4 ≈ 0.7 단위보다 조금 작게 → 틈)
+// h3 해상도별 육각형 꼭짓점 반지름(km) → 타일 반지름(월드 단위). 0.92 배로 살짝 줄여 타일 사이에 틈
+const HEX_KM = { 4: 22.6, 5: 8.54 }
+const tileRadius = (res) => ((HEX_KM[res] ?? HEX_KM[5]) / 111.2) * K * 0.92
 const LINE_Y = 1.0         // 경계선 높이 (홈 국가 타일 윗면 0.9 보다 살짝 위)
-export const BOARD_EXPAND_DISTANCE = 120 // 카메라가 이보다 가까우면 무리 라벨을 펼침
+export const BOARD_EXPAND_DISTANCE = 90 // 카메라가 이보다 가까우면 무리 라벨을 펼침 (첫 화면 거리 ≈ 240)
 
 // 사이트 → 보드 위 위치 (가까운 핀은 화면용으로 살짝 벌림). CameraRig 도 같은 함수를 씁니다.
 export function boardPinPositions(sites) {
@@ -42,8 +44,8 @@ export function boardPinPositions(sites) {
   return out
 }
 
-// 핀 높이: √MW 비례 (30MW ≈ 2.9, 1,600MW ≈ 11.5)
-export const boardPinHeight = (mw) => 2 + Math.sqrt(Math.max(0, mw)) * 0.3
+// 핀 높이: √MW 비례 (30MW ≈ 2.1, 1,600MW ≈ 8.0) — 판 폭(28~38)의 1/4 남짓이 최대가 되도록
+export const boardPinHeight = (mw) => 1.2 + Math.sqrt(Math.max(0, mw)) * 0.17
 
 export default function BoardView({ visible }) {
   const [geo, setGeo] = useState(null)
@@ -91,7 +93,8 @@ function Plate({ board }) {
 //    사라지는 문제가 있었음 → 3D 평면이라 그런 문제가 없음
 const TAG_PAD = 1.2     // 판 모서리에서 명판까지 여백 (월드 단위)
 const TAG_Y = 1.1       // 육지 타일(≤0.9)·경계선(1.0) 위
-const TAG_UNIT = 0.1    // 명판 1px(설계 단위) = 0.1 월드 단위
+const TAG_UNIT = 0.065  // 명판 1px(설계 단위) = 0.065 월드 단위 (판 폭 28~38 에 맞춘 크기)
+const SCALE_KM = 100    // 명판 속 축척 막대 길이 (km) — 모든 판이 같은 축척이라 막대 길이도 똑같음
 const TAG_RES = 4       // 캔버스 해상도 배수 (가까이 줌해도 글자가 또렷하게)
 const TAG_FONT = '"Pretendard", "Apple SD Gothic Neo", -apple-system, "Segoe UI", sans-serif'
 // lucide "map" 아이콘 경로 (24×24 기준) — 캔버스에 직접 그리기 위해 경로 문자열만 가져옴
@@ -103,11 +106,10 @@ const MAP_ICON_PATHS = [
 
 function BoardTag({ board, lang }) {
   const name = lang === 'ko' ? board.name_ko : board.name_en
-  const note = board.inset ? (lang === 'ko' ? '같은 축척' : 'same scale') : null
   // 웹폰트가 늦게 준비되면 글자 폭이 달라지므로, 준비된 뒤 한 번 더 그림
   const [fontsReady, setFontsReady] = useState(false)
   useEffect(() => { document.fonts?.ready.then(() => setFontsReady(true)) }, [])
-  const tag = useMemo(() => drawTagTexture(name, note), [name, note, fontsReady])
+  const tag = useMemo(() => drawTagTexture(name), [name, fontsReady])
   useEffect(() => () => tag.texture.dispose(), [tag]) // 바뀌거나 사라질 때 GPU 메모리 정리
 
   // 명판의 오른쪽 아래 꼭짓점을 판의 오른쪽 아래 모서리(여백 안쪽)에 맞춤
@@ -121,22 +123,26 @@ function BoardTag({ board, lang }) {
   )
 }
 
-// 명판 그림 만들기: [지도 아이콘] 지역 이름 | 같은 축척
+// 명판 그림 만들기: [지도 아이콘] 지역 이름 | ▬ 100 km
+// 축척 막대는 실제 100km 를 판 위 길이로 환산해 그림 → 네 판의 막대가 같은 길이 = 같은 축척
 // 반환: 텍스처와 월드 단위 가로·세로
-function drawTagTexture(name, note) {
+function drawTagTexture(name) {
   const R = TAG_RES
   const padL = 11, padR = 14, gap = 8, icon = 18, h = 34 // 설계 단위(px)
   const nameFont = `800 22px ${TAG_FONT}`
   const noteFont = `600 15px ${TAG_FONT}`
+  const note = `${SCALE_KM} km`
+  // 100km → 월드 단위(위도 1° ≈ 111.2km = K 단위) → 명판 px
+  const barW = ((SCALE_KM / 111.2) * K) / TAG_UNIT
 
   // 1) 글자 폭을 재서 명판 가로 길이 결정
   const measure = document.createElement('canvas').getContext('2d')
   measure.font = nameFont
   const nameW = measure.measureText(name).width
   measure.font = noteFont
-  const noteW = note ? measure.measureText(note).width : 0
-  const noteBlock = note ? gap + 1.5 + 9 + noteW : 0 // 간격 + 구분선 + 여백 + 글자
-  const w = Math.ceil(padL + icon + gap + nameW + noteBlock + padR)
+  const noteW = measure.measureText(note).width
+  const scaleBlock = gap + 1.5 + 10 + barW + 7 + noteW // 간격 + 구분선 + 여백 + 막대 + 여백 + 글자
+  const w = Math.ceil(padL + icon + gap + nameW + scaleBlock + padR)
 
   // 2) 실제 그리기 (해상도 R배)
   const canvas = document.createElement('canvas')
@@ -168,16 +174,22 @@ function drawTagTexture(name, note) {
   ctx.fillText(name, cx, h / 2 + 1)
   cx += nameW
 
-  // 삽입판 안내: 세로 구분선 + 작은 글씨
-  if (note) {
-    cx += gap
-    ctx.fillStyle = 'rgba(255,255,255,0.35)'
-    ctx.fillRect(cx, 9, 1.5, h - 18)
-    cx += 1.5 + 9
-    ctx.fillStyle = 'rgba(255,255,255,0.75)'
-    ctx.font = noteFont
-    ctx.fillText(note, cx, h / 2 + 1)
-  }
+  // 세로 구분선
+  cx += gap
+  ctx.fillStyle = 'rgba(255,255,255,0.35)'
+  ctx.fillRect(cx, 9, 1.5, h - 18)
+  cx += 1.5 + 10
+
+  // 축척 막대: 가로선 + 양 끝 눈금 (지도에서 흔히 쓰는 모양)
+  ctx.fillStyle = 'rgba(255,255,255,0.85)'
+  ctx.fillRect(cx, h / 2 - 1, barW, 2.5)
+  ctx.fillRect(cx, h / 2 - 6, 2, 12)
+  ctx.fillRect(cx + barW - 2, h / 2 - 6, 2, 12)
+  cx += barW + 7
+
+  ctx.fillStyle = 'rgba(255,255,255,0.75)'
+  ctx.font = noteFont
+  ctx.fillText(note, cx, h / 2 + 1)
 
   const texture = new CanvasTexture(canvas)
   texture.colorSpace = SRGBColorSpace // 색이 CSS 와 같게 보이도록
@@ -223,7 +235,7 @@ function LandTiles({ geo }) {
 
   return (
     <instancedMesh ref={ref} name="board-tiles" args={[null, null, items.length]} receiveShadow>
-      <cylinderGeometry args={[TILE_R, TILE_R, 1, 6]} />
+      <cylinderGeometry args={[tileRadius(geo.res), tileRadius(geo.res), 1, 6]} />
       <meshLambertMaterial />
     </instancedMesh>
   )
@@ -307,8 +319,9 @@ function BoardCities() {
 function BoardPins() {
   const sites = useAppStore((s) => s.data?.sites ?? EMPTY)
   const positions = useMemo(() => boardPinPositions(sites), [sites])
-  // 가까운 사이트(예: 스위트워터 1·2·칠드레스)는 무리로 묶어 라벨 하나로
-  const ranks = useMemo(() => labelRanks(sites, 3.8), [sites]) // 3.8°: 칠드레스·스위트워터 1·2·카이오와를 한 무리로
+  // 아주 가까운 사이트는 무리로 묶어 라벨 하나로. 판이 지역 단위로 확대돼 있어
+  // 1° 안쪽만 묶음 → 스위트워터 1·2(0.25° 차이)만 한 무리, 칠드레스·카이오와·BC 세 곳은 각자 라벨
+  const ranks = useMemo(() => labelRanks(sites, 1.0), [sites])
   return sites
     .filter((s) => positions[s.id])
     .map((s) => <BoardPin key={s.id} site={s} pos={positions[s.id]} rank={ranks[s.id]} />)
@@ -407,7 +420,7 @@ function PinRow({ m, lead = false, more = 0, hoverId, setHover, requestSite, lan
 // 선 굵기 ∝ 계약 금액, 타임라인이 서명일 이전이면 그 계약은 보이지 않습니다.
 const DASH = [2.4, 1.2] // 점선 길이·간격 (모든 계약 공통)
 // 계약 배지를 보드판 북쪽 가장자리에서 얼마나 띄울지 (CameraRig 의 첫 화면 맞춤도 이 값을 씀)
-export const CONTRACT_GAP = 18
+export const CONTRACT_GAP = 14
 
 function ContractLinks() {
   const show = useAppStore((s) => s.showContracts)
@@ -416,8 +429,7 @@ function ContractLinks() {
   const contracts = useMemo(() => (data?.companies ?? []).flatMap((c) => c.contracts ?? []), [data])
   const positions = useMemo(() => boardPinPositions(data?.sites ?? []), [data])
   if (!show || !contracts.length) return null
-  const na = BOARDS.find((b) => b.id === 'na')
-  const [px, pz] = boardPos('na')
+  const b = layoutBounds() // 판 4개 전체 범위 — 배지는 그 북쪽 가장자리 위에 한 줄로
   // 사이트별로 도착하는 계약 순서 (도착 지점 좌우 분리용)
   const active = contracts.filter((k) => month >= toMonth(k.signed))
   const slot = {}
@@ -426,12 +438,12 @@ function ContractLinks() {
   // 배지가 넓으니 판 폭만큼 퍼뜨리되, 데스크톱은 왼쪽 사이트 목록에 가리지 않게 묶음 전체를 오른쪽으로
   // 세로 화면(모바일)은 가로 폭이 좁아 양쪽 배지가 잘리므로 간격을 좁힘
   const portrait = layoutKind() === 'portrait'
-  const span = portrait ? na.w * 0.78 : na.w - 4
+  const span = portrait ? b.w * 0.78 : b.w - 4
   const shift = !portrait && typeof window !== 'undefined' && window.innerWidth >= 768 ? 12 : 0
   return contracts.map((k, i) => {
     if (month < toMonth(k.signed)) return null // 아직 서명 전
-    const x = shift + (contracts.length === 1 ? px : px - span / 2 + (span * i) / (contracts.length - 1))
-    const anchor = new Vector3(x, 8 + (i % 2) * 6, pz - na.d / 2 - CONTRACT_GAP)
+    const x = shift + (contracts.length === 1 ? b.cx : b.cx - span / 2 + (span * i) / (contracts.length - 1))
+    const anchor = new Vector3(x, 6 + (i % 2) * 4, b.z0 - CONTRACT_GAP)
     return <Contract key={k.id} contract={k} anchor={anchor} positions={positions} sites={data.sites} slot={slot} />
   })
 }
