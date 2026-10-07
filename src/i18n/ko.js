@@ -1,6 +1,7 @@
 // 한국어 UI 문자열 사전. 키 이름은 en.js 와 반드시 같아야 합니다.
 export default {
   appTitle: 'IREN 3D 현황판',
+  subtitle: 'NASDAQ: IREN',
   asOf: '기준일',
   back: '지구본으로',
   langToggle: 'EN',
@@ -41,10 +42,26 @@ export default {
   },
   units: { mw: 'MW', gw: 'GW', acres: '에이커' },
   disclaimer:
-    '본 사이트는 IREN Ltd 와 무관한 개인의 비공식 프로젝트이며 회사의 승인·후원을 받지 않았습니다. 모든 데이터는 공개 자료에서 수집했고 항목별 출처를 표기했습니다. 투자 조언이 아닙니다.',
-  official: '공식 IR 자료',
+    '본 사이트는 여기 등장하는 어떤 회사와도 무관한 개인의 비공식 프로젝트이며 승인·후원을 받지 않았습니다. 모든 데이터는 공개 자료에서 수집했고 항목별 출처를 표기했습니다. 투자 조언이 아닙니다.',
+  official: '데이터·출처',
   hintGlobe: '핀을 클릭하면 사이트로 들어갑니다 · 드래그로 회전',
   hintSite: '드래그로 회전 · 휠로 줌 · 건물에 마우스를 올려 보세요',
   loading: '데이터 불러오는 중…',
+  rank: {
+    tab: '회사 순위',
+    sitesTab: '사이트',
+    metric: { secured: '확보', ai: 'AI 가동', building: '건설' },
+    note: '대표 회사 기준 · ~ 는 추정 포함',
+    reset: '필터 해제',
+    coloc: '코로케이션 입주',
+    colocMore: '곳 미공개',
+    undisclosed: '미공개',
+    colocNote: '다른 회사 시설에 입주한 곳 — 지도·순위 합계 미포함',
+  },
+  groups: { miner: '채굴→AI', neocloud: '네오클라우드', hyperscaler: '하이퍼스케일러', korea: '한국', partner: '참여사' },
+  colorMode: { status: '상태색', company: '회사색' },
+  regions: { na: '북미', eu: '유럽', asia: '아시아' },
+  timeline: { play: '재생', pause: '정지', asOf: '기준일', future: '회사 발표 목표 기준', today: '기준일로', label: '날짜' },
+  kpi2: { secured: '확보 전력', energized: '통전', ai: 'AI 가동', mining: '채굴', building: '건설·시운전', sites: '사이트', companies: '회사' },
   empty: '발표된 건물 없음 — 계통 전력만 확보',
 }

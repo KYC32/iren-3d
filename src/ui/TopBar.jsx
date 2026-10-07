@@ -1,5 +1,5 @@
 // 상단 바: 제목·기준일 / 뒤로가기 / 한영 토글
-import { ArrowLeft, Languages, Server } from 'lucide-react'
+import { ArrowLeft, Languages, Server, ListOrdered } from 'lucide-react'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { useT, pickName } from '../i18n/useT.js'
 
@@ -11,6 +11,7 @@ export default function TopBar() {
   const site = useAppStore(selectSelectedSite)
   const toggleLang = useAppStore((s) => s.toggleLang)
   const requestGlobe = useAppStore((s) => s.requestGlobe)
+  const toggleSheet = useAppStore((s) => s.toggleSheet)
 
   return (
     <header className="topbar panel">
@@ -27,14 +28,21 @@ export default function TopBar() {
             {view === 'site' && site ? pickName(site, lang) : t.appTitle}
           </div>
           <div className="subtitle">
-            {view === 'site' && site ? `${site.region} · ${site.grid_operator}` : 'NASDAQ: IREN'}
+            {view === 'site' && site ? `${site.region} · ${site.grid_operator}` : t.subtitle}
             {data && <> · {t.asOf} {data.as_of}</>}
           </div>
         </div>
       </div>
+      <div className="top-actions">
+      {view === 'globe' && (
+        <button className="icon-btn sheet-btn" onClick={toggleSheet} aria-label={t.rank.tab} title={t.rank.tab}>
+          <ListOrdered size={17} />
+        </button>
+      )}
       <button className="lang-btn" onClick={toggleLang} aria-label="language">
         <Languages size={15} /> {t.langToggle}
       </button>
+      </div>
     </header>
   )
 }

@@ -22,7 +22,7 @@ import { fileURLToPath } from 'node:url'
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const DIST = path.join(ROOT, 'dist')       // npm run build 결과물
 const VIDEO = path.join(ROOT, 'video')     // 프레임·영상 저장 폴더 (git 제외)
-const PORT = 4180
+const PORT = 4181
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 const argv = process.argv.slice(2)
 const MODE = argv.find((a) => !a.startsWith('--')) // x | shorts | all | (없으면 수동)
@@ -50,7 +50,7 @@ fs.mkdirSync(VIDEO, { recursive: true })
 const cleared = new Set() // 형식별로 첫 프레임이 올 때 이전 프레임 폴더를 비움
 
 function makeMp4(fmt, lang, then) {
-  const out = path.join(VIDEO, `iren-${fmt}-${lang}.mp4`)
+  const out = path.join(VIDEO, `ai-infra-map-${fmt}-${lang}.mp4`)
   const args = ['-y', '-framerate', '30', '-i', path.join(VIDEO, fmt, '%04d.png'), '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-movflags', '+faststart', out]
   console.log('ffmpeg 로 합치는 중…')
   const p = spawn('ffmpeg', args, { stdio: 'ignore' })
@@ -84,7 +84,7 @@ process.on('SIGTERM', () => process.exit(0))
 http
   .createServer((req, res) => {
     const url = new URL(req.url, `http://localhost:${PORT}`)
-    const fmt = url.searchParams.get('fmt') === 'shorts' ? 'shorts' : 'x'
+    const fmt = ['shorts', 'og'].includes(url.searchParams.get('fmt')) ? url.searchParams.get('fmt') : 'x'
 
     // 보안: 저장 요청(POST)은 이 서버가 띄운 녹화 페이지에서 온 것만 받습니다.
     // (녹화 중 브라우저로 연 다른 웹사이트가 localhost 로 요청을 보내는 것을 차단)

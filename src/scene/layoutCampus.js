@@ -1,100 +1,91 @@
 // =============================================================
-// layoutCampus.js — 사이트 데이터(sites.json) → 캠퍼스 3D 배치 계산
+// layoutCampus.js — 사이트 원본(v2) → 캠퍼스 3D 배치
 // -------------------------------------------------------------
-// 3D 컴포넌트는 "어디에 무엇을 그릴지" 고민하지 않고 이 함수의 결과만 그립니다.
-// 순수 함수(입력이 같으면 결과도 같음)라서 단위 테스트로 검증할 수 있습니다.
+// 두 단계로 나눕니다.
+//   1) layoutCampus(site)            : 날짜와 무관한 "고정 자리" — 과거·미래의 모든 건물 + 빈 부지
+//   2) campusStateAt(layout, site, m) : 날짜 m 의 블록별 상태(가동·건설·계획…)와 크레인·트럭
+// 그래서 타임라인 슬라이더를 움직여도 블록 위치는 그대로이고 모습만 바뀝니다.
+// 모두 순수 함수라 단위 테스트로 검증합니다.
 //
-// 좌표계: 캠퍼스 중심이 (0,0). x = 오른쪽, z = 화면 앞쪽(카메라 쪽), 단위는 대략 "블록 1칸 = 4~6".
+// 좌표계: 캠퍼스 중심이 (0,0). x = 오른쪽, z = 화면 앞쪽(카메라 쪽).
 // =============================================================
+import { grossOf, phaseMonth, effectiveBuildingsAt, powerAt, progressAt, toMonth } from '../data/timeline.js'
 
-// ---- 배치 상수 (값을 바꾸면 캠퍼스 모양이 바뀝니다) ----
-export const BLOCK_MW = 75        // 데이터홀 1블록 = 75MW gross (= Horizon 1동, 50MW IT)
+// ---- 배치 상수 ----
+export const BLOCK_MW = 75        // 기본 블록 1칸 = 75MW gross (= Horizon 1동, 50MW IT)
 export const BLOCK_W = 4          // 블록 가로 (x)
 export const BLOCK_D = 6          // 블록 세로 (z)
 export const GAP = 1.4            // 블록 사이 간격
-const MARGIN = 2                  // 부지 가장자리 여백
-const SUBSTATION_COL = 7          // 왼쪽에 변전소가 차지하는 폭
-const ROAD_DEPTH = 3              // 앞쪽 도로 폭
-
-// 건물 종류별 높이
+export const MAX_BLOCKS = 28      // 캠퍼스 블록 수 상한 (기가와트급은 블록 1칸 MW 를 키움)
+const BLOCK_STEPS = [75, 150, 300, 600]
+const MARGIN = 2
+const SUBSTATION_COL = 7
+const ROAD_DEPTH = 3
 const HEIGHT = { datahall_liquid: 2.4, datahall_air: 1.9, miner_hall: 1.1, lot: 0.05 }
 
-// 상태별 정렬 순서: 가동 → 시운전 → 건설 → 폐쇄중 → 계획 → 빈 부지
-const ORDER = { operating: 0, commissioning: 1, under_construction: 2, decommissioning: 3, planned: 4 }
-
 // -------------------------------------------------------------
-// 아직 용도가 발표되지 않은 전력을 "빈 부지(점선)"로 몇 칸 그릴지 결정합니다.
-//
-// TODO(학습 포인트 2): 이 규칙을 직접 정해 보세요. (5~10줄)
-//   remainingMw : 계통 전력 중 발표된 건물로 설명되지 않는 MW (예: Kiowa 1,600MW)
-//   반환값      : 빈 부지 블록 수
-//   고려할 점   :
-//     - 비례로 그리면(1,600 / 75 ≈ 21칸) "규모감"이 정직하게 전달되지만 화면이 빈 부지로 가득 찹니다.
-//     - 상한을 두면(예: 최대 12칸) 깔끔하지만 1.6GW 와 0.9GW 가 똑같이 보입니다.
-//     - 로그 스케일(예: 3 + log2(MW/75) * 2)은 규모 차이를 남기면서 화면도 지킵니다.
-//   지금은 "비례 + 상한 16칸" 으로 두었습니다.
+// 아직 용도가 발표되지 않은 전력을 "빈 부지(점선)" 몇 칸으로 그릴지
+// TODO(학습 포인트): 비례 / 상한 / 로그 스케일 중 직접 골라 보세요. 지금은 "비례 + 상한 16칸".
 // -------------------------------------------------------------
-export function ghostLotCount(remainingMw) {
-  if (remainingMw < BLOCK_MW * 0.5) return 0
-  return Math.min(16, Math.round(remainingMw / BLOCK_MW))
+export function ghostLotCount(remainingMw, blockMw = BLOCK_MW) {
+  if (remainingMw < blockMw * 0.5) return 0
+  return Math.min(16, Math.round(remainingMw / blockMw))
 }
 
 // 건물 하나가 몇 블록을 차지하는지 (최소 1칸)
-export function blocksFor(building) {
-  return Math.max(1, Math.round(building.gross_mw / BLOCK_MW))
+export function blocksFor(building, blockMw = BLOCK_MW) {
+  return Math.max(1, Math.round(grossOf(building).mw / blockMw))
 }
 
-// 부지 크기(한 변 길이): 에이커가 클수록 넓게, 단 너무 작거나 크지 않게
+// 최종 확보 전력 (전력 이력의 마지막 값)
+const finalSecured = (site) => site.power.at(-1).secured_mw
+
+// 발표된 건물로 설명되지 않는 남은 전력 (전환 건물은 기존 전력을 재사용하므로 제외)
+function remainingOf(site) {
+  const announced = site.buildings.filter((b) => !b.replaces).reduce((n, b) => n + grossOf(b).mw, 0)
+  return Math.max(0, finalSecured(site) - announced)
+}
+
+// 블록 1칸의 MW: 총 블록이 MAX_BLOCKS 안에 들어오는 가장 작은 값
+export function blockMwFor(site) {
+  for (const mw of BLOCK_STEPS) {
+    const n = site.buildings.reduce((k, b) => k + blocksFor(b, mw), 0) + ghostLotCount(remainingOf(site), mw)
+    if (n <= MAX_BLOCKS) return mw
+  }
+  return BLOCK_STEPS.at(-1)
+}
+
 function plateSideFromAcres(acres) {
   const a = acres ?? 100
   return Math.min(44, Math.max(18, 12 + Math.sqrt(a) * 0.8))
 }
 
+const firstMonth = (b) => Math.min(...b.phases.map(phaseMonth))
+const round2 = (v) => Math.round(v * 100) / 100
+
 /**
- * @param {object} site  sites.json 의 사이트 1개
- * @returns {{
- *   side:number, blocks:Array, substation:object, road:object, gate:object,
- *   powerLine:object, trucks:Array, cranes:Array, ghostCount:number
- * }}
+ * 1) 고정 배치
+ * @param {object} site  v2 원본 사이트 (view.js 의 viewSite 라면 site._raw)
+ * @param {{ defaultKind?: string }} opts  건물 종류가 없을 때 쓸 기본값 (회사 그룹별)
  */
-export function layoutCampus(site) {
-  // 1) 그릴 블록 목록 만들기 ------------------------------------
-  //    건물마다 blocksFor(건물) 칸을 만들고, 첫 칸을 "라벨 기준점(anchor)"으로 표시
-  const sorted = [...site.buildings].sort((a, b) => (ORDER[a.status] ?? 9) - (ORDER[b.status] ?? 9))
+export function layoutCampus(site, { defaultKind = 'datahall_air' } = {}) {
+  const blockMw = blockMwFor(site)
+  // 첫 단계 날짜 순(같으면 데이터 순서) — 날짜가 바뀌어도 순서가 변하지 않음
+  const ordered = site.buildings.map((b, i) => ({ b, i })).sort((x, y) => firstMonth(x.b) - firstMonth(y.b) || x.i - y.i)
   const items = []
-  for (const b of sorted) {
-    const n = blocksFor(b)
-    for (let i = 0; i < n; i++) {
-      items.push({
-        key: `${b.id}#${i}`,
-        buildingId: b.id,
-        kind: b.kind,
-        status: b.status,
-        progress: b.progress ?? (b.status === 'operating' || b.status === 'commissioning' ? 1 : 0),
-        isAnchor: i === 0,
-        index: i,
-        count: n,
-      })
-    }
+  for (const { b } of ordered) {
+    const n = blocksFor(b, blockMw)
+    const kind = b.kind ?? defaultKind
+    for (let i = 0; i < n; i++) items.push({ key: `${b.id}#${i}`, buildingId: b.id, kind, isAnchor: i === 0, index: i, count: n })
   }
+  const remainingMw = remainingOf(site)
+  const lotCount = ghostLotCount(remainingMw, blockMw)
+  for (let i = 0; i < lotCount; i++) items.push({ key: `lot#${i}`, buildingId: null, kind: 'lot', isAnchor: i === 0, index: i, count: lotCount })
 
-  // 2) 발표되지 않은 남은 전력 → 빈 부지 --------------------------
-  //    replaces(전환) 건물은 기존 전력을 재사용하므로 합계에서 제외
-  const announcedMw = site.buildings.filter((b) => !b.replaces).reduce((n, b) => n + b.gross_mw, 0)
-  const remainingMw = Math.max(0, site.grid_mw - announcedMw)
-  const ghostCount = ghostLotCount(remainingMw)
-  for (let i = 0; i < ghostCount; i++) {
-    items.push({
-      key: `lot#${i}`, buildingId: null, kind: 'lot', status: 'planned',
-      progress: 0, isAnchor: i === 0, index: i, count: ghostCount,
-    })
-  }
-
-  // 3) 부지 크기 결정: 에이커 기준 크기와 "블록이 다 들어가는 크기" 중 큰 쪽 ---------
+  // 부지 크기: 에이커 기준과 "블록이 다 들어가는 크기" 중 큰 쪽
   const cellW = BLOCK_W + GAP
   const cellD = BLOCK_D + GAP
   let side = plateSideFromAcres(site.acres)
-  // 블록이 들어갈 자리가 부족하면 부지를 키웁니다
   for (let guard = 0; guard < 40; guard++) {
     const cols = Math.max(1, Math.floor((side - SUBSTATION_COL - MARGIN * 2) / cellW))
     const rows = Math.max(1, Math.floor((side - ROAD_DEPTH - MARGIN * 2) / cellD))
@@ -103,71 +94,88 @@ export function layoutCampus(site) {
   }
   const half = side / 2
   const cols = Math.max(1, Math.floor((side - SUBSTATION_COL - MARGIN * 2) / cellW))
-
-  // 4) 블록 좌표 배정: 왼쪽 위(변전소 옆)부터 오른쪽으로 채우고 줄을 바꿉니다 ------
   const x0 = -half + MARGIN + SUBSTATION_COL + BLOCK_W / 2
   const z0 = -half + MARGIN + BLOCK_D / 2
-  const blocks = items.map((it, i) => {
-    const c = i % cols
-    const r = Math.floor(i / cols)
-    return {
-      ...it,
-      x: round2(x0 + c * cellW),
-      z: round2(z0 + r * cellD),
-      w: BLOCK_W,
-      d: BLOCK_D,
-      h: HEIGHT[it.kind] ?? 2,
-    }
-  })
+  const blocks = items.map((it, i) => ({
+    ...it,
+    x: round2(x0 + (i % cols) * cellW),
+    z: round2(z0 + Math.floor(i / cols) * cellD),
+    w: BLOCK_W,
+    d: BLOCK_D,
+    h: HEIGHT[it.kind] ?? 2,
+  }))
 
-  // 5) 변전소·도로·게이트·송전선 ----------------------------------
-  const substation = {
-    x: round2(-half + MARGIN + 2.6),
-    z: round2(-half + MARGIN + 3),
-    w: 4.4,
-    d: 5,
-    status: site.substation.status,
-    mw: site.substation.mw,
-    dates: site.substation.dates,
-  }
+  const substation = { x: round2(-half + MARGIN + 2.6), z: round2(-half + MARGIN + 3), w: 4.4, d: 5 }
   const roadZ = round2(half - MARGIN - ROAD_DEPTH / 2 + 0.6)
-  const road = { z: roadZ, x0: -half, x1: half, depth: ROAD_DEPTH }
-  const gate = { x: round2(half), z: roadZ }
-  // 송전선: 부지 바깥 왼쪽 → 변전소
-  const powerLine = {
-    from: [round2(-half - 10), substation.z],
-    to: [substation.x, substation.z],
-    energized: site.substation.status === 'energized',
-    dates: site.substation.dates,
+  return {
+    side: round2(side),
+    blockMw,
+    blocks,
+    substation,
+    road: { z: roadZ, x0: -half, x1: half, depth: ROAD_DEPTH },
+    gate: { x: round2(half), z: roadZ },
+    powerLine: { from: [round2(-half - 10), substation.z], to: [substation.x, substation.z] },
+    lotCount,
+    remainingMw,
   }
-
-  // 6) 크레인: 건설중 건물마다 하나 (첫 블록 옆) ------------------------
-  const cranes = blocks
-    .filter((b) => b.status === 'under_construction' && b.isAnchor)
-    .map((b) => ({ key: `crane-${b.buildingId}`, buildingId: b.buildingId, x: round2(b.x + b.w / 2 + 0.6), z: round2(b.z - b.d / 2 + 0.6) }))
-
-  // 7) 납품 트럭: deliveries 하나당 트럭 1대 ---------------------------
-  //    게이트 → 도로 → 목표 건물 앞까지 가는 경로 (시운전/건설중 건물 우선)
-  const targets = blocks.filter((b) => b.isAnchor && (b.status === 'commissioning' || b.status === 'under_construction'))
-  const trucks = site.deliveries.map((dlv, i) => {
-    const target = targets[i % Math.max(1, targets.length)] ?? blocks[0] ?? { x: 0, z: 0, d: BLOCK_D }
-    const frontZ = round2(target.z + target.d / 2 + 0.9)
-    return {
-      key: `truck-${i}`,
-      delivery: dlv,
-      targetBuildingId: target.buildingId ?? null,
-      // 경로: [x, z] 점 목록. 마지막 점에서 잠시 멈췄다가 처음으로 돌아갑니다.
-      path: [
-        [round2(half + 6), roadZ],
-        [target.x, roadZ],
-        [target.x, frontZ],
-      ],
-    }
-  })
-
-  return { side: round2(side), blocks, substation, road, gate, powerLine, cranes, trucks, ghostCount, remainingMw }
 }
 
-function round2(v) {
-  return Math.round(v * 100) / 100
+/**
+ * 2) 날짜 m 의 상태
+ * 블록마다 status / progress / asLot(아직 없거나 사라진 건물 자리 → 빈 부지로 그림)
+ */
+export function campusStateAt(layout, site, m) {
+  const asOfM = toMonth(String(site.as_of ?? '2026-01').slice(0, 7))
+  const eff = new Map(effectiveBuildingsAt(site, m).map((e) => [e.building.id, e]))
+  const byId = new Map(site.buildings.map((b) => [b.id, b]))
+  const blocks = layout.blocks.map((blk) => {
+    if (!blk.buildingId) return { ...blk, status: 'planned', progress: 0, asLot: false }
+    const e = eff.get(blk.buildingId)
+    // 아직 생기기 전 / 철거·완전 전환 / 부분 전환으로 줄어든 칸 → 빈 부지 모습
+    const liveBlocks = e ? Math.max(1, Math.round(e.mw / layout.blockMw)) : 0
+    if (!e || blk.index >= liveBlocks) return { ...blk, kind: 'lot', h: 0.05, status: 'planned', progress: 0, asLot: true }
+    const progress = e.status === 'under_construction' ? progressAt(byId.get(blk.buildingId), m, asOfM) : e.status === 'planned' ? 0 : 1
+    return { ...blk, status: e.status, progress, asLot: false }
+  })
+
+  // 변전소·송전선: 그 날짜에 통전됐는지
+  const power = powerAt(site, m) ?? { secured: 0, energized: 0 }
+  const energized = power.energized > 0
+  const firstEnergized = site.power.find((p) => p.energized_mw > 0)
+  const substation = {
+    ...layout.substation,
+    status: energized ? 'energized' : 'planned',
+    mw: power.secured || finalSecured(site),
+    voltage: site.substation?.voltage,
+    dates: energized ? { energized: firstEnergized?.from } : firstEnergized ? { target: firstEnergized.from } : {},
+  }
+
+  // 크레인: 건설중 건물마다 하나 (첫 블록 옆)
+  const cranes = blocks
+    .filter((b) => b.status === 'under_construction' && b.isAnchor && !b.asLot)
+    .map((b) => ({ key: `crane-${b.buildingId}`, buildingId: b.buildingId, x: round2(b.x + b.w / 2 + 0.6), z: round2(b.z - b.d / 2 + 0.6) }))
+
+  // 납품 트럭: 기준일 이전·이후 모두 "진행 중" 납품만, 시운전·건설중 건물 앞으로
+  const targets = blocks.filter((b) => b.isAnchor && !b.asLot && (b.status === 'commissioning' || b.status === 'under_construction'))
+  const trucks = targets.length
+    ? site.deliveries.map((dlv, i) => {
+        const tgt = targets[i % targets.length]
+        const frontZ = round2(tgt.z + tgt.d / 2 + 0.9)
+        return {
+          key: `truck-${i}`,
+          delivery: dlv,
+          targetBuildingId: tgt.buildingId,
+          path: [[round2(layout.gate.x + 6), layout.road.z], [tgt.x, layout.road.z], [tgt.x, frontZ]],
+        }
+      })
+    : []
+
+  return {
+    blocks,
+    substation,
+    powerLine: { ...layout.powerLine, energized, dates: substation.dates },
+    cranes,
+    trucks,
+    remainingMw: layout.remainingMw,
+  }
 }

@@ -2,15 +2,16 @@
 // Scene — 하나의 Canvas 안에 지구본 뷰와 캠퍼스 뷰를 함께 두고 store.view 로 전환
 // 조명은 WareTrack 재현판 레시피(밝은 앰비언트 + 반구광 + 그림자 방향광)를 참고했습니다.
 // =============================================================
-import { Suspense } from 'react'
+import { Suspense, lazy } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { PerformanceMonitor } from '@react-three/drei'
 import { useState } from 'react'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import GlobeView from './GlobeView.jsx'
-import SiteView from './SiteView.jsx'
+// 캠퍼스·녹화 코드는 필요할 때만 불러옵니다 (첫 화면 로딩을 가볍게)
+const SiteView = lazy(() => import('./SiteView.jsx'))
 import CameraRig from './CameraRig.jsx'
-import RecordDirector from '../record/RecordDirector.jsx'
+const RecordDirector = lazy(() => import('../record/RecordDirector.jsx'))
 
 const BG = '#eceffa' // 배경 = 안개 색 (지평선이 자연스럽게 사라짐)
 
@@ -60,7 +61,13 @@ export default function Scene({ record = false }) {
         <GlobeView visible={view === 'globe'} />
         {view === 'site' && site && <SiteView key={site.id} site={site} />}
       </Suspense>
-      {record ? <RecordDirector /> : <CameraRig />}
+      {record ? (
+        <Suspense fallback={null}>
+          <RecordDirector />
+        </Suspense>
+      ) : (
+        <CameraRig />
+      )}
     </Canvas>
   )
 }

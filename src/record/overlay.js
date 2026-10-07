@@ -184,3 +184,60 @@ export function drawFade(o, W, H, f) {
   o.fillRect(0, 0, W, H)
   o.restore()
 }
+
+// 회사 순위 오버레이 (오른쪽 위): rows = companyRanking(...) 결과, byId = 회사 정보
+export function drawRanking(o, rows, byId, W, H, { title, dateLabel, lang = 'ko', top = 6 } = {}) {
+  if (!rows.length) return
+  const u = Math.min(W, H) / 1080
+  const shorts = H > W
+  const w = (shorts ? 900 : 560) * u
+  const rowH = 46 * u
+  const list = rows.slice(0, top)
+  const h = (92 + list.length * 46 + 16) * u
+  const x = shorts ? (W - w) / 2 : W - w - 70 * u
+  const y = shorts ? H * 0.70 : 260 * u
+  const max = Math.max(1, ...list.map((r) => r.secured))
+  o.save()
+  o.shadowColor = 'rgba(30,45,90,0.12)'
+  o.shadowBlur = 24 * u
+  o.fillStyle = 'rgba(255,255,255,0.94)'
+  o.beginPath(); o.roundRect(x, y, w, h, 22 * u); o.fill()
+  o.shadowColor = 'transparent'
+  o.textBaseline = 'alphabetic'
+  o.fillStyle = TEXT
+  o.font = `800 ${28 * u}px ${FONT}`
+  o.fillText(title ?? (lang === 'ko' ? '확보 전력 순위' : 'Secured power ranking'), x + 28 * u, y + 46 * u)
+  if (dateLabel) {
+    o.fillStyle = MUTED
+    o.font = `600 ${20 * u}px ${FONT}`
+    o.textAlign = 'right'
+    o.fillText(dateLabel, x + w - 28 * u, y + 46 * u)
+    o.textAlign = 'left'
+  }
+  list.forEach((r, i) => {
+    const c = byId[r.companyId] ?? { name: r.companyId, color: '#999' }
+    const ry = y + 80 * u + i * rowH
+    o.fillStyle = MUTED
+    o.font = `700 ${18 * u}px ${FONT}`
+    o.fillText(String(r.rank), x + 28 * u, ry + 22 * u)
+    o.fillStyle = c.color
+    o.beginPath(); o.arc(x + 62 * u, ry + 15 * u, 8 * u, 0, Math.PI * 2); o.fill()
+    o.fillStyle = TEXT
+    o.font = `700 ${21 * u}px ${FONT}`
+    o.fillText(lang === 'ko' && c.name_ko ? c.name_ko : c.name, x + 82 * u, ry + 22 * u)
+    const val = r.secured >= 1000 ? `${(r.secured / 1000).toFixed(1)} GW` : `${Math.round(r.secured)} MW`
+    o.textAlign = 'right'
+    o.fillText(val, x + w - 28 * u, ry + 22 * u)
+    o.textAlign = 'left'
+    // 가동(AI) · 건설 · 계획 막대
+    const bx = x + 82 * u, bw = w - 110 * u, by = ry + 30 * u, bh = 7 * u
+    o.fillStyle = '#eef1f8'; o.fillRect(bx, by, bw, bh)
+    let cx = bx
+    for (const [v, col] of [[r.ai, styleOf('operating').color], [r.building, styleOf('under_construction').color], [r.planned, styleOf('planned').color]]) {
+      const ww = (v / max) * bw
+      o.fillStyle = col; o.fillRect(cx, by, ww, bh)
+      cx += ww
+    }
+  })
+  o.restore()
+}

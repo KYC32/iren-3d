@@ -14,13 +14,14 @@ import { useThree } from '@react-three/fiber'
 import { Vector3 } from 'three'
 import { useAppStore } from '../store/useAppStore.js'
 import { latLngToVec3, spreadPins, labelRanks, pinHeight, fmtMw } from '../scene/geo.js'
-import { layoutCampus } from '../scene/layoutCampus.js'
+import { layoutCampus, campusStateAt } from '../scene/layoutCampus.js'
 import { styleOf, PENDING_COLOR } from '../data/statusStyle.js'
 import ko from '../i18n/ko.js'
 import en from '../i18n/en.js'
 import { RECORD } from './recordMode.js'
 import { DURATION, CARDS, shotAt, fadeAt, clamp01, easeInOut, lerp } from './storyboard.js'
-import { drawPill, drawCards, drawFade } from './overlay.js'
+import { drawPill, drawCards, drawFade, drawRanking } from './overlay.js'
+import { toMonth, monthLabel, companyRanking } from '../data/timeline.js'
 
 // 숨겨진 브라우저 탭에서는 setTimeout 이 크게 늦춰지므로(탭 절전),
 // MessageChannel 로 "한 차례 양보"하며 조건을 기다립니다. (탭 상태와 무관하게 동작)
@@ -40,29 +41,35 @@ function globeBaseAlt(aspect) {
 
 export default function RecordDirector() {
   const { camera, gl, scene, advance } = useThree()
-  const data = useAppStore((s) => s.data)
+  // 데이터가 준비됐는지만 구독 (날짜가 바뀔 때마다 녹화 루프가 다시 시작되면 안 됨)
+  const ready = useAppStore((s) => !!s.data)
 
   useEffect(() => {
-    if (!data || !RECORD) return
+    if (!ready || !RECORD) return
     let cancelled = false
     const { W, H, FPS, only, lang, format } = RECORD
     const t = lang === 'en' ? en : ko
     const aspect = W / H
     const baseAlt = globeBaseAlt(aspect)
-    const sites = data.sites
-    const byId = Object.fromEntries(sites.map((s) => [s.id, s]))
-    const display = spreadPins(sites)
-    const ranks = labelRanks(sites)
-    const layouts = Object.fromEntries(sites.map((s) => [s.id, layoutCampus(s)]))
+    // 사이트 목록은 날짜에 따라 달라지므로 매 프레임 스토어에서 지금 값을 읽음
+    const cur = () => {
+      const sites = useAppStore.getState().data.sites
+      return { sites, byId: Object.fromEntries(sites.map((s) => [s.id, s])) }
+    }
+    // 캠퍼스 고정 배치는 사이트마다 한 번만 계산해 보관 (원본 기준이라 날짜와 무관)
+    const layoutCache = new Map()
+    const layoutOf = (site) => {
+      if (!layoutCache.has(site.id)) layoutCache.set(site.id, layoutCampus(site._raw))
+      return layoutCache.get(site.id)
+    }
     // 캠퍼스에서 카메라가 바라볼 곳: 실제 건물(빈 부지 제외)과 변전소의 중심
-    const focusOf = Object.fromEntries(
-      Object.entries(layouts).map(([id, L]) => {
-        const pts = [...L.blocks.filter((b) => b.kind !== 'lot').map((b) => [b.x, b.z]), [L.substation.x, L.substation.z]]
-        const cx = pts.reduce((n, p) => n + p[0], 0) / pts.length
-        const cz = pts.reduce((n, p) => n + p[1], 0) / pts.length
-        return [id, new Vector3(cx, 0, cz)]
-      }),
-    )
+    const focusOf = (site) => {
+      const L = layoutOf(site)
+      const pts = [...L.blocks.filter((b) => b.kind !== 'lot').map((b) => [b.x, b.z]), [L.substation.x, L.substation.z]]
+      const cx = pts.reduce((n, p) => n + p[0], 0) / pts.length
+      const cz = pts.reduce((n, p) => n + p[1], 0) / pts.length
+      return new Vector3(cx, 0, cz)
+    }
     const name = (o) => (lang === 'ko' && o.name_ko ? o.name_ko : o.name)
     const v = new Vector3()
 
@@ -89,7 +96,8 @@ export default function RecordDirector() {
       const e = easeInOut(p)
       if (shot.type === 'globe' && shot.fly) {
         // 사이트로 날아 들어가기: 위치는 사이트 상공으로, 시선은 지구 중심 → 사이트 지표로
-        const site = byId[shot.fly]
+        const site = cur().byId[shot.fly] ?? useAppStore.getState().data.raw.sites.find((x) => x.id === shot.fly)
+        if (site && !site.lat) { site.lat = site.coord.lat; site.lng = site.coord.lng }
         const f = shot.cam.from
         const lat = lerp(f.lat, site.lat, e), lng = lerp(f.lng, site.lng, e)
         const alt = lerp(f.alt * baseAlt, 0.8, e) // 너무 가까이 가면 핀 머리가 화면을 가림
@@ -101,11 +109,12 @@ export default function RecordDirector() {
         camera.lookAt(0, 0, 0)
       } else {
         // 캠퍼스 주위를 천천히 돌며 살짝 다가감
-        const L = layouts[shot.site]
+        const site = cur().byId[shot.site]
+        const L = layoutOf(site)
         const o = shot.orbit
         const R = L.side * 2.3 * lerp(o.dist0, o.dist1, e) * (aspect < 1 ? 1.45 : 1)
         // 가로 영상은 부지 중심, 세로 영상은 실제 건물 중심을 바라봄 (좁은 화면에 빈 부지보다 건물을)
-        const target = aspect < 1 ? focusOf[shot.site] : new Vector3()
+        const target = aspect < 1 ? focusOf(site) : new Vector3()
         const az = lerp(o.az0, o.az1, e)
         const polar = lerp(o.polar0, o.polar1, e)
         camera.position.set(
@@ -136,6 +145,9 @@ export default function RecordDirector() {
       // 아웃트로 정리 카드가 떠 있는 동안은 라벨을 그리지 않음 (카드 뒤로 비치지 않게)
       if (CARDS[lang].some((c) => c.kind === 'outro' && time >= c.t0)) return
       if (shot.type === 'globe') {
+        const { sites } = cur()
+        const display = spreadPins(sites, 0.8)
+        const ranks = labelRanks(sites)
         for (const s of sites) {
           const r = ranks[s.id]
           if (!r.lead) continue
@@ -152,11 +164,12 @@ export default function RecordDirector() {
           drawPill(o, xy[0], xy[1], u * 1.15, { color: styleOf(s.status).color, text: name(s), sub: fmtMw(s.grid_mw) + more, alpha: clamp01((facing - 0.2) / 0.2) })
         }
       } else {
-        const site = byId[shot.site]
-        const L = layouts[shot.site]
+        const site = cur().byId[shot.site]
+        // 고정 배치 + 지금 날짜의 상태 (블록 상태·변전소 통전 여부)
+        const L = { ...layoutOf(site), ...campusStateAt(layoutOf(site), site._raw, useAppStore.getState().month) }
         const bById = Object.fromEntries(site.buildings.map((b) => [b.id, b]))
         for (const b of L.blocks) {
-          if (!b.isAnchor) continue
+          if (!b.isAnchor || b.asLot) continue
           const xy = project(new Vector3(b.x, b.h + 1.6, b.z))
           if (!xy) continue
           const bld = b.buildingId ? bById[b.buildingId] : null
@@ -194,12 +207,27 @@ export default function RecordDirector() {
         if (cancelled) return
         const time = f / FPS
         const shot = shotAt(time)
+        // 장면에 날짜 구간이 있으면 진행률에 따라 날짜를 흘려보냄 (없으면 기준일)
+        const st0 = useAppStore.getState()
+        const targetMonth = shot.date
+          ? Math.round(lerp(toMonth(shot.date.from), toMonth(shot.date.to), clamp01((time - shot.t0) / (shot.t1 - shot.t0))))
+          : st0.asOfMonth
+        if (targetMonth !== st0.month) {
+          st0.setMonth(targetMonth)
+          await settleFrames(3) // React 가 새 날짜의 핀·건물을 반영할 때까지
+        }
         await ensureView(shot)
         placeCamera(time, shot)
         advance(time) // R3F 시계 = time 초, useFrame 실행 + 렌더
         o.clearRect(0, 0, W, H)
         o.drawImage(gl.domElement, 0, 0, W, H) // 2배 크기 3D 그림을 줄여서 옮김
         drawLabels(o, shot, time)
+        if (shot.ranking) {
+          const st = useAppStore.getState()
+          const rows = companyRanking(st.data.raw, st.month)
+          const byIdC = Object.fromEntries(st.data.companies.map((c) => [c.id, c]))
+          drawRanking(o, rows, byIdC, W, H, { lang, dateLabel: monthLabel(st.month, lang) })
+        }
         drawCards(o, time, W, H, lang, format)
         drawFade(o, W, H, fadeAt(time))
         const blob = await new Promise((r) => out.toBlob(r, 'image/png'))
@@ -214,7 +242,7 @@ export default function RecordDirector() {
       console.error(e)
     })
     return () => { cancelled = true }
-  }, [data, camera, gl, scene, advance])
+  }, [ready, camera, gl, scene, advance])
 
   return null
 }

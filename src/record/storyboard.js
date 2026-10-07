@@ -8,9 +8,11 @@ export const DURATION = 34 // 전체 길이(초)
 
 // type: 'globe' = 지구본, 'site' = 캠퍼스
 // fadeIn/fadeOut: 장면 시작/끝에 배경색으로 페이드(초)
+// date: { from: 'YYYY-MM', to: 'YYYY-MM' } 를 주면 그 장면 동안 타임라인 날짜가 흘러감 (없으면 기준일)
+// ranking: true 면 오른쪽에 회사 확보 전력 순위 오버레이
 export const SHOTS = [
   // 1) 지구본: 태평양 쪽에서 북미로 천천히 돌아옴
-  { t0: 0, t1: 6.5, type: 'globe', cam: { from: { lat: 30, lng: -165, alt: 1 }, to: { lat: 38, lng: -102, alt: 1 } }, fadeIn: 0.4 },
+  { t0: 0, t1: 6.5, type: 'globe', cam: { from: { lat: 30, lng: -165, alt: 1 }, to: { lat: 38, lng: -102, alt: 1 } }, fadeIn: 0.4, date: { from: '2024-01', to: '2026-10' } },
   // 2) Childress 로 날아 들어감
   { t0: 6.5, t1: 9, type: 'globe', fly: 'childress', cam: { from: { lat: 38, lng: -102, alt: 1 } }, fadeOut: 0.45 },
   // 3) Childress 캠퍼스 한 바퀴

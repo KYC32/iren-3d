@@ -10,10 +10,13 @@ import Scene from './scene/Scene.jsx'
 import TopBar from './ui/TopBar.jsx'
 import KpiBar from './ui/KpiBar.jsx'
 import Legend from './ui/Legend.jsx'
-import SiteList from './ui/SiteList.jsx'
+import LeftPanel from './ui/Leaderboard.jsx'
 import SitePanel from './ui/SitePanel.jsx'
 import Footer from './ui/Footer.jsx'
+import TimelineSlider from './ui/TimelineSlider.jsx'
 import { RECORD } from './record/recordMode.js'
+import { parseHash } from './store/hashState.js'
+import { toMonth } from './data/timeline.js'
 
 export default function App() {
   const t = useT()
@@ -23,20 +26,21 @@ export default function App() {
   const transitioning = useAppStore((s) => s.transitioning)
   const lang = useAppStore((s) => s.lang)
 
-  // 처음 한 번 sites.json 로드
+  // 처음 한 번 infra.json 로드
   useEffect(() => {
     loadSites()
-      .then((d) => useAppStore.getState().setData(d))
+      .then((raw) => useAppStore.getState().setRaw(raw))
       .catch((e) => useAppStore.getState().setLoadError(e.message))
   }, [])
 
-  // 주소창의 #site=... 가 바뀌면(링크 공유·직접 입력) 해당 사이트로 전환
+  // 주소창 해시가 바뀌면(링크 공유·직접 입력) 그 상태로 이동
   useEffect(() => {
     const onHash = () => {
-      const m = window.location.hash.match(/site=([a-z0-9-]+)/)
+      const h = parseHash(window.location.hash)
       const st = useAppStore.getState()
-      if (m && m[1] !== st.selectedSiteId) st.requestSite(m[1])
-      if (!m && st.view === 'site') st.requestGlobe()
+      if (h.date) st.setMonth(toMonth(h.date))
+      if (h.site && h.site !== st.selectedSiteId) st.requestSite(h.site)
+      if (!h.site && st.view === 'site') st.requestGlobe()
     }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
@@ -67,12 +71,13 @@ export default function App() {
         <TopBar />
         {data && <KpiBar />}
         <div className="middle">
-          {data && view === 'globe' && <SiteList />}
+          {data && view === 'globe' && <LeftPanel />}
           <div className="spacer" />
           {data && view === 'site' && <SitePanel />}
         </div>
         <div className="bottom">
           {data && <Legend />}
+          {data && <TimelineSlider />}
           <Footer />
         </div>
       </div>

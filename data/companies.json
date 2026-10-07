@@ -1,0 +1,63 @@
+{
+  "companies": [
+    {
+      "id": "iren",
+      "name": "IREN",
+      "name_ko": "아이렌",
+      "group": "miner",
+      "ticker": {
+        "symbol": "IREN",
+        "exchange": "NASDAQ"
+      },
+      "color": "#7f9cf5",
+      "hq_country": "AU",
+      "summary_ko": "호주 시드니 본사. 비트코인 채굴에서 AI 클라우드로 전환 중이며 Microsoft·NVIDIA 등과 GPU 클라우드 계약을 맺었다.",
+      "summary_en": "Sydney-based. Transitioning from bitcoin mining to AI cloud with GPU contracts from Microsoft, NVIDIA and others.",
+      "metrics": [
+        {
+          "key": "contracted_arr_usd_bn",
+          "value": 4,
+          "unit": "USD bn",
+          "label_ko": "계약 ARR",
+          "label_en": "Contracted ARR",
+          "as_of": "2026-08",
+          "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+        },
+        {
+          "key": "operating_arr_usd_bn",
+          "value": 1,
+          "unit": "USD bn",
+          "label_ko": "운영 ARR",
+          "label_en": "Operating ARR",
+          "as_of": "2026-08",
+          "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+        },
+        {
+          "key": "backlog_usd_bn",
+          "value": 13,
+          "unit": "USD bn",
+          "label_ko": "수주잔고",
+          "label_en": "Backlog",
+          "as_of": "2026-10",
+          "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+        },
+        {
+          "key": "gpus_total",
+          "value": 150000,
+          "unit": "GPU",
+          "label_ko": "총 GPU(설치+주문)",
+          "label_en": "GPUs (installed + ordered)",
+          "as_of": "2026-03",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036126007905/ny20064909x3_ex99-1.htm"
+        }
+      ],
+      "sources": [
+        "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html",
+        "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm",
+        "https://iren.com/data-centers",
+        "https://www.sec.gov/Archives/edgar/data/1878848/000114036126007905/ny20064909x3_ex99-1.htm"
+      ]
+    }
+  ],
+  "programs": []
+}

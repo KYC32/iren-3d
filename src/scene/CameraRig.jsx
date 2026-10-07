@@ -26,7 +26,7 @@ const GLOBE_HOME = { lat: 40, lng: -102, alt: globeAlt() }
 // 화면 비율에 맞춰 지구본 전체가 들어오는 거리 (세로 화면일수록 멀리)
 function globeAlt() {
   const aspect = window.innerWidth / Math.max(1, window.innerHeight)
-  return aspect < 0.8 ? 5.4 : aspect < 1.2 ? 4.2 : 3.7
+  return aspect < 0.6 ? 7.2 : aspect < 0.8 ? 5.6 : aspect < 1.2 ? 4.2 : 3.7
 }
 
 // 캠퍼스 기본 시점: 부지 크기에 맞춰 대각선 위에서 내려다봄 (준아이소메트릭)
@@ -52,7 +52,7 @@ function applyFocalOffset(c, view, side, transition) {
 function applyLimits(c, view, side = 30) {
   if (view === 'globe') {
     c.minDistance = 150
-    c.maxDistance = 760
+    c.maxDistance = 900
     c.minPolarAngle = 0.15
     c.maxPolarAngle = Math.PI - 0.15
     c.truckSpeed = 0 // 지구본에서는 평행이동 금지 (회전·줌만)
@@ -79,7 +79,7 @@ export default function CameraRig() {
     const st = useAppStore.getState()
     const site = selectSelectedSite(st)
     if (st.view === 'site' && site) {
-      const L = layoutCampus(site)
+      const L = layoutCampus(site._raw)
       applyLimits(c, 'site', L.side)
       c.setLookAt(...campusHome(L.side), false)
       applyFocalOffset(c, 'site', L.side, false)
@@ -118,7 +118,7 @@ export default function CameraRig() {
       st.setTransitioning(true)
       await sleep(FADE_MS)
       st.selectSite(id)
-      const L = layoutCampus(site)
+      const L = layoutCampus(site._raw)
       applyLimits(c, 'site', L.side)
       c.smoothTime = 0.25
       const [px, py, pz] = campusHome(L.side)
@@ -150,7 +150,14 @@ export default function CameraRig() {
       applyLimits(c, 'globe')
     }
 
-    const run = pending.type === 'site' ? toSite(pending.id) : toGlobe()
+    async function toRegion(lat, lng) {
+      const p = latLngToVec3(lat, lng, GLOBE_HOME.alt)
+      c.smoothTime = 0.5
+      lastInteract.current = performance.now() // 이동 직후 자동 회전이 바로 시작되지 않게
+      await settle(c.setLookAt(p.x, p.y, p.z, 0, 0, 0, true), 1300)
+    }
+
+    const run = pending.type === 'site' ? toSite(pending.id) : pending.type === 'region' ? toRegion(pending.lat, pending.lng) : toGlobe()
     run.finally(() => { if (!cancelled) useAppStore.getState().clearPending() })
     return () => { cancelled = true }
   }, [pending])

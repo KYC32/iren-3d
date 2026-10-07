@@ -16,7 +16,12 @@ const read = (p) => JSON.parse(readFileSync(new URL(p, import.meta.url), 'utf8')
 const world = read('../node_modules/world-atlas/countries-110m.json')
 const us = read('../node_modules/us-atlas/states-10m.json')
 
-const FOCUS_STATES = new Set(['48', '40']) // 48 텍사스, 40 오클라호마 (FIPS 코드)
+import { buildInfra } from './build-data.mjs'
+// 사이트가 있는 주·도 (데이터의 admin1, 예: US-TX, CA-BC) → 진하게 강조
+const ADMIN1 = new Set(buildInfra().sites.map((s) => s.admin1).filter(Boolean))
+// 미국 주 우편 약어 → FIPS 번호 (us-atlas 의 id)
+const US_FIPS = { AL:'01',AK:'02',AZ:'04',AR:'05',CA:'06',CO:'08',CT:'09',DE:'10',DC:'11',FL:'12',GA:'13',HI:'15',ID:'16',IL:'17',IN:'18',IA:'19',KS:'20',KY:'21',LA:'22',ME:'23',MD:'24',MA:'25',MI:'26',MN:'27',MS:'28',MO:'29',MT:'30',NE:'31',NV:'32',NH:'33',NJ:'34',NM:'35',NY:'36',NC:'37',ND:'38',OH:'39',OK:'40',OR:'41',PA:'42',RI:'44',SC:'45',SD:'46',TN:'47',TX:'48',UT:'49',VT:'50',VA:'51',WA:'53',WV:'54',WI:'55',WY:'56' }
+const FOCUS_STATES = new Set([...ADMIN1].filter((a) => a.startsWith('US-')).map((a) => US_FIPS[a.slice(3)]).filter(Boolean))
 
 // 선 하나를 단순화: 가까운 점(약 minDeg 미만)은 건너뛰고 반올림
 function simplify(coords, minDeg) {
@@ -53,7 +58,8 @@ const focus = feature(us, us.objects.states).features
 // ---------- 캐나다·호주 주 경계 (Natural Earth 50m) ----------
 const NE_FILE = new URL('./.cache/ne_50m_admin_1_states_provinces.geojson', import.meta.url)
 const NE_COUNTRIES = new Set(['CAN', 'AUS'])
-const NE_FOCUS = new Set(['British Columbia', 'South Australia'])
+// Natural Earth 의 iso_3166_2 (예: CA-BC) 로 강조할 주·도를 데이터에서 자동 선택
+const NE_FOCUS = ADMIN1
 let neNote = '캐시 없음 → 건너뜀 (npm run geo:fetch)'
 if (existsSync(NE_FILE)) {
   const ne = JSON.parse(readFileSync(NE_FILE, 'utf8'))
@@ -87,13 +93,13 @@ if (existsSync(NE_FILE)) {
     }
   })
   // 강조할 주의 외곽선(해안 포함)
-  for (const f of provs.filter((f) => NE_FOCUS.has(f.properties.name))) {
+  for (const f of provs.filter((f) => NE_FOCUS.has(f.properties.iso_3166_2))) {
     for (const ring of lines(f.geometry)) {
       const l = simplify(ring, 0.06)
       if (l && l.length >= 40) focus.push(l) // 아주 작은 섬은 생략
     }
   }
-  neNote = `캐나다·호주 ${provs.length}개 주, 강조 ${[...NE_FOCUS].join('·')}`
+  neNote = `캐나다·호주 ${provs.length}개 주, 강조 ${provs.filter((f) => NE_FOCUS.has(f.properties.iso_3166_2)).map((f) => f.properties.name).join('·') || '없음'}`
 }
 
 writeFileSync(new URL('../public/data/borders.json', import.meta.url), JSON.stringify({ countries, states, focus }))

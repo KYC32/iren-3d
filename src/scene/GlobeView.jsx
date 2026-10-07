@@ -4,26 +4,23 @@
 // - 육지: 미리 계산한 h3 육각형 타일(public/data/land-hex.json)을 육각기둥으로
 //         InstancedMesh 하나에 1만 개를 한 번에 그림 (드로우콜 1회)
 // - 대기: 뒷면 구에 가장자리만 빛나는(fresnel) 셰이더
-// - 핀(GlobePin): R3F 로 직접 그려서 호버·클릭·필터 흐림을 자유롭게 제어
+// - 핀: Pins.jsx (인스턴싱 핀 + 무리 라벨)
 // =============================================================
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Html, Line } from '@react-three/drei'
-import { BackSide, AdditiveBlending, BufferGeometry, Color, Float32BufferAttribute, Object3D, Quaternion, Vector3 } from 'three'
-import { useAppStore, isStatusActive } from '../store/useAppStore.js'
-import { styleOf } from '../data/statusStyle.js'
-import { GLOBE_RADIUS, latLngToVec3, spreadPins, fmtMw, labelRanks, pinHeight } from './geo.js'
-import { pickName } from '../i18n/useT.js'
+import { BackSide, AdditiveBlending, BufferGeometry, Color, Float32BufferAttribute, Object3D, Vector3 } from 'three'
+import { useAppStore, EMPTY } from '../store/useAppStore.js'
+import { GLOBE_RADIUS, latLngToVec3 } from './geo.js'
+import { PinsInstanced, PinLabels } from './Pins.jsx'
+import { CITIES } from './cities.js'
 
 const OCEAN = '#a8c3ef'      // 파스텔 바다
 const LAND = '#fffaf0'       // 아이보리 육지
-const HOME_LAND = '#8fd6b8'  // IREN 사이트가 있는 나라(미국·캐나다·호주·스페인): 민트
+const HOME_LAND = '#8fd6b8'  // 사이트가 있는 나라: 민트 (scripts/build-land-hex.mjs 가 데이터에서 자동 계산)
 
 export default function GlobeView({ visible }) {
-  const sites = useAppStore((s) => s.data?.sites ?? [])
-  // 가까운 핀은 화면에서 살짝 벌려서 표시
-  const display = useMemo(() => spreadPins(sites), [sites])
-  const ranks = useMemo(() => labelRanks(sites), [sites])
+  const sites = useAppStore((s) => s.data?.sites ?? EMPTY)
 
   return (
     <group visible={visible}>
@@ -35,12 +32,12 @@ export default function GlobeView({ visible }) {
       <Borders />
       <Atmosphere />
       {visible && <CityLabels />}
-      {visible && sites.map((s) => <GlobePin key={s.id} site={s} pos={display[s.id]} rank={ranks[s.id]} />)}
+      {visible && <PinsInstanced sites={sites} />}
+      {visible && <PinLabels sites={sites} />}
     </group>
   )
 }
 
-const EXPAND_DISTANCE = 300 // 카메라가 이보다 가까우면 무리 라벨을 모두 펼침
 
 // ---------- 육지 육각 타일 ----------
 function LandHexes() {
@@ -166,18 +163,6 @@ function Borders() {
 }
 
 // ---------- 기준 도시 라벨: "이 사이트가 어디쯤인지" 감을 주는 큰 도시 ----------
-const CITIES = [
-  { ko: '댈러스', en: 'Dallas', lat: 32.78, lng: -96.8 },
-  { ko: '애머릴로', en: 'Amarillo', lat: 35.22, lng: -101.83 },
-  { ko: '오클라호마시티', en: 'Oklahoma City', lat: 35.47, lng: -97.52 },
-  { ko: '밴쿠버', en: 'Vancouver', lat: 49.28, lng: -123.12 },
-  { ko: '캘거리', en: 'Calgary', lat: 51.05, lng: -114.07 },
-  { ko: '시애틀', en: 'Seattle', lat: 47.61, lng: -122.33 },
-  { ko: '애들레이드', en: 'Adelaide', lat: -34.93, lng: 138.6 },
-  { ko: '시드니 (IREN 본사)', en: 'Sydney (IREN HQ)', lat: -33.87, lng: 151.21 },
-  { ko: '마드리드', en: 'Madrid', lat: 40.42, lng: -3.7 },
-  { ko: '리스본', en: 'Lisbon', lat: 38.72, lng: -9.14 },
-]
 const CITY_SHOW_DISTANCE = 420 // 이보다 가까이 줌하면 도시 이름 표시
 
 function CityLabels() {
@@ -247,103 +232,5 @@ function Atmosphere() {
         blending={AdditiveBlending}
       />
     </mesh>
-  )
-}
-
-const UP = new Vector3(0, 1, 0)
-
-function GlobePin({ site, pos, rank = { lead: true, members: [] } }) {
-  const lang = useAppStore((s) => s.lang)
-  const hoverId = useAppStore((s) => s.hoverId)
-  const setHover = useAppStore((s) => s.setHover)
-  const requestSite = useAppStore((s) => s.requestSite)
-  const activeStatuses = useAppStore((s) => s.activeStatuses)
-
-  const style = styleOf(site.status)
-  const active = isStatusActive(activeStatuses, site.status)
-  const hovered = hoverId === site.id
-
-  // 지표면 위 위치와 "위쪽" 방향(지구 중심 → 바깥)
-  const { position, quaternion, normal } = useMemo(() => {
-    const p = latLngToVec3(pos.lat, pos.lng, 0)
-    const n = p.clone().normalize()
-    return { position: p, normal: n, quaternion: new Quaternion().setFromUnitVectors(UP, n) }
-  }, [pos.lat, pos.lng])
-
-  // 막대 높이 ∝ √MW (면적 감각에 가깝게): 30MW ≈ 5, 1,600MW ≈ 21
-  const h = pinHeight(site.grid_mw)
-  const ringRef = useRef()
-  const labelRef = useRef()
-  const tmp = useMemo(() => new Vector3(), [])
-
-  useFrame(({ camera, clock }) => {
-    // (a) 바닥 링 펄스: 상태별 속도로 커졌다가 사라짐
-    if (ringRef.current) {
-      const speed = style.ringSpeed
-      const t = speed > 0 ? (clock.elapsedTime * speed * 0.6) % 1 : 0
-      const s = 1 + t * 2.4
-      ringRef.current.scale.set(s, s, s)
-      ringRef.current.material.opacity = speed > 0 ? (1 - t) * (active ? 0.7 : 0.15) : 0
-    }
-    // (b) 지구 뒤편에 있는 핀의 라벨은 숨기기: 카메라 방향과 지표 법선의 내적으로 판단
-    if (labelRef.current) {
-      tmp.copy(camera.position).sub(position).normalize()
-      const facing = tmp.dot(normal)
-      const near = camera.position.length() < EXPAND_DISTANCE
-      // 무리 대표 라벨만 그립니다. 가까이 줌하면 무리 구성원 목록이 펼쳐집니다.
-      const show = facing > 0.15
-      labelRef.current.dataset.expanded = near ? '1' : '0'
-      labelRef.current.style.opacity = show ? (active ? 1 : 0.35) : 0
-      labelRef.current.style.pointerEvents = show ? 'auto' : 'none'
-    }
-  })
-
-  const color = active ? style.color : '#c3c9d8'
-  const onOver = (e) => { e.stopPropagation(); setHover(site.id); document.body.style.cursor = 'pointer' }
-  const onOut = () => { setHover(null); document.body.style.cursor = '' }
-  const onClick = (e) => { e.stopPropagation(); requestSite(site.id) }
-
-  return (
-    <group position={position} quaternion={quaternion}>
-      {/* 막대 (계통 전력 규모) */}
-      <mesh position={[0, h / 2, 0]} scale={hovered ? 1.25 : 1} onPointerOver={onOver} onPointerOut={onOut} onClick={onClick} castShadow>
-        <cylinderGeometry args={[1.1, 1.4, h, 12]} />
-        <meshStandardMaterial color={color} roughness={0.55} transparent opacity={site.status === 'planned' ? 0.75 : 1} />
-      </mesh>
-      {/* 꼭대기 캡 */}
-      <mesh position={[0, h + 0.8, 0]} onPointerOver={onOver} onPointerOut={onOut} onClick={onClick}>
-        <sphereGeometry args={[1.9, 16, 12]} />
-        <meshStandardMaterial color={new Color(color).offsetHSL(0, 0, 0.12)} roughness={0.4} />
-      </mesh>
-      {/* 바닥 펄스 링 */}
-      <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.25, 0]}>
-        <ringGeometry args={[1.8, 2.5, 32]} />
-        <meshBasicMaterial color={style.color} transparent depthWrite={false} />
-      </mesh>
-      {/* 이름·MW 라벨 (HTML) — 무리 대표만. 구성원은 대표 라벨 아래 목록으로 */}
-      {rank.lead && (
-        <Html position={[0, h + 3.2, 0]} center zIndexRange={[20, 0]}>
-          <div ref={labelRef} className="pin-cluster" data-expanded="0">
-            {[site, ...rank.members].map((m, i) => {
-              const ms = styleOf(m.status)
-              return (
-                <button
-                  key={m.id}
-                  className={`pin-label${hoverId === m.id ? ' is-hover' : ''}${i > 0 ? ' member' : ''}`}
-                  onPointerEnter={() => setHover(m.id)}
-                  onPointerLeave={() => setHover(null)}
-                  onClick={() => requestSite(m.id)}
-                >
-                  <span className="dot" style={{ background: ms.color }} />
-                  <span className="name">{pickName(m, lang)}</span>
-                  <span className="mw">{fmtMw(m.grid_mw)}</span>
-                  {i === 0 && rank.members.length > 0 && <span className="more">+{rank.members.length}</span>}
-                </button>
-              )
-            })}
-          </div>
-        </Html>
-      )}
-    </group>
   )
 }

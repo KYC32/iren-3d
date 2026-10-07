@@ -4,10 +4,10 @@
 // =============================================================
 import { useMemo } from 'react'
 import { Html, RoundedBox } from '@react-three/drei'
-import { useAppStore, isStatusActive } from '../store/useAppStore.js'
+import { useAppStore, isStatusActive, EMPTY } from '../store/useAppStore.js'
 import { useT, pickName } from '../i18n/useT.js'
 import { styleOf, PENDING_COLOR } from '../data/statusStyle.js'
-import { layoutCampus } from './layoutCampus.js'
+import { layoutCampus, campusStateAt } from './layoutCampus.js'
 import { fmtMw } from './geo.js'
 import Block from './buildings/Block.jsx'
 import { Substation, PowerLine, Crane, Truck, FlowDots, Trees } from './buildings/Infrastructure.jsx'
@@ -19,12 +19,20 @@ export default function SiteView({ site }) {
   const setHover = useAppStore((s) => s.setHover)
   const activeStatuses = useAppStore((s) => s.activeStatuses)
 
-  const L = useMemo(() => layoutCampus(site), [site])
+  const month = useAppStore((s) => s.month)
+  const companies = useAppStore((s) => s.data?.companies ?? EMPTY)
+  // 고정 배치는 사이트가 바뀔 때만, 상태는 날짜가 바뀔 때마다 계산
+  const group = companies.find((c) => c.id === site.primary)?.group
+  const defaultKind = group === 'hyperscaler' ? 'datahall_liquid' : 'datahall_air'
+  const layout = useMemo(() => layoutCampus(site._raw, { defaultKind }), [site._raw, defaultKind])
+  const S = useMemo(() => campusStateAt(layout, site._raw, month), [layout, site._raw, month])
+  const L = { ...layout, ...S } // 아래 코드가 L.blocks / L.substation / L.cranes … 로 읽음
+  // 라벨에 쓰는 건물 정보 (그 날짜의 화면용 값: 상태·날짜·진행률)
   const byId = useMemo(() => Object.fromEntries(site.buildings.map((b) => [b.id, b])), [site])
   const half = L.side / 2
 
   // 전력 흐름 점: 가동/시운전 건물의 첫 블록으로
-  const flowTargets = L.blocks.filter((b) => b.isAnchor && (b.status === 'operating' || b.status === 'commissioning'))
+  const flowTargets = L.blocks.filter((b) => b.isAnchor && !b.asLot && (b.status === 'operating' || b.status === 'commissioning'))
 
   return (
     <group name={`site-${site.id}`}>
@@ -51,7 +59,7 @@ export default function SiteView({ site }) {
       ))}
 
       <PowerLine line={L.powerLine} />
-      <Substation sub={{ ...L.substation, voltage: site.substation.voltage }} t={t} />
+      <Substation sub={L.substation} t={t} />
       {L.powerLine.energized && flowTargets.length > 0 && (
         <FlowDots from={[L.substation.x, L.substation.z]} targets={flowTargets} />
       )}
@@ -70,7 +78,7 @@ export default function SiteView({ site }) {
 
       {/* 건물 라벨 (첫 블록 위) */}
       {L.blocks
-        .filter((b) => b.isAnchor)
+        .filter((b) => b.isAnchor && !b.asLot && (b.buildingId ? byId[b.buildingId] : L.lotCount > 0))
         .map((b) => {
           const bld = b.buildingId ? byId[b.buildingId] : null
           const st = styleOf(b.status)
@@ -107,6 +115,11 @@ export default function SiteView({ site }) {
           )
         })}
 
+      {L.blockMw > 75 && (
+        <Html position={[-L.side / 2 + 3, 0.5, L.side / 2 - 1]} center zIndexRange={[10, 0]}>
+          <div className="tag">{lang === 'ko' ? `1칸 = ${L.blockMw}MW` : `1 block = ${L.blockMw}MW`}</div>
+        </Html>
+      )}
       {L.cranes.map((c, i) => <Crane key={c.key} x={c.x} z={c.z} seed={i} />)}
       {L.trucks.map((tr, i) => <Truck key={tr.key} truck={tr} index={i} lang={lang} />)}
       <Trees side={L.side} seed={site.id.length * 7 + site.grid_mw} roadZ={L.road.z} />

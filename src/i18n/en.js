@@ -1,6 +1,7 @@
 // English UI strings. Keys must match ko.js exactly.
 export default {
   appTitle: 'IREN 3D Status Map',
+  subtitle: 'NASDAQ: IREN',
   asOf: 'As of',
   back: 'Back to globe',
   langToggle: '한',
@@ -41,10 +42,26 @@ export default {
   },
   units: { mw: 'MW', gw: 'GW', acres: 'acres' },
   disclaimer:
-    'Independent, unofficial project. Not affiliated with, endorsed by, or sponsored by IREN Ltd. All data compiled from public sources; see each item for its source. Not investment advice.',
-  official: 'Official IR',
+    'Independent, unofficial project. Not affiliated with, endorsed by, or sponsored by any company shown. All data compiled from public sources; see each item for its source. Not investment advice.',
+  official: 'Data & sources',
   hintGlobe: 'Click a pin to enter a site · drag to rotate',
   hintSite: 'Drag to rotate · wheel to zoom · hover buildings',
   loading: 'Loading data…',
+  rank: {
+    tab: 'Ranking',
+    sitesTab: 'Sites',
+    metric: { secured: 'Secured', ai: 'AI live', building: 'Building' },
+    note: 'By primary company · ~ includes estimates',
+    reset: 'Clear filters',
+    coloc: 'Colocation',
+    colocMore: ' undisclosed',
+    undisclosed: 'n/a',
+    colocNote: 'Hosted in third-party facilities — not on the map or in totals',
+  },
+  groups: { miner: 'Miner→AI', neocloud: 'Neocloud', hyperscaler: 'Hyperscaler', korea: 'Korea', partner: 'Partner' },
+  colorMode: { status: 'Status', company: 'Company' },
+  regions: { na: 'N. America', eu: 'Europe', asia: 'Asia' },
+  timeline: { play: 'Play', pause: 'Pause', asOf: 'As of', future: 'Company targets', today: 'Back to as-of', label: 'Date' },
+  kpi2: { secured: 'Secured power', energized: 'energized', ai: 'AI live', mining: 'mining', building: 'Building / commissioning', sites: 'Sites', companies: 'companies' },
   empty: 'No announced buildings yet — grid power secured only',
 }
