@@ -72,8 +72,8 @@ export default function SiteView({ site }) {
           block={b}
           hovered={b.buildingId && hoverId === b.buildingId}
           dimmed={!isStatusActive(activeStatuses, b.status)}
-          onHover={setHover}
-          onLeave={(id) => useAppStore.getState().clearHover(id)}
+          onHover={(id) => setHover(id, '3d')}
+          onLeave={(id) => useAppStore.getState().clearHover(id, '3d')}
         />
       ))}
 

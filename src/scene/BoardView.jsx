@@ -251,8 +251,8 @@ function BoardPin({ site, pos, rank }) {
   })
 
   const color = active ? style.color : '#c3c9d8'
-  const onOver = (e) => { e.stopPropagation(); setHover(site.id); document.body.style.cursor = 'pointer' }
-  const onOut = () => { useAppStore.getState().clearHover(site.id); document.body.style.cursor = '' }
+  const onOver = (e) => { e.stopPropagation(); setHover(site.id, '3d'); document.body.style.cursor = 'pointer' }
+  const onOut = () => { useAppStore.getState().clearHover(site.id, '3d'); document.body.style.cursor = '' }
   const onClick = (e) => { e.stopPropagation(); requestSite(site.id) }
 
   return (

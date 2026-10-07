@@ -17,7 +17,11 @@ export const MONTH_MAX = toMonth('2028-12')
 
 // 호버 해제 지연 (ms) — clearHover 참고
 const HOVER_CLEAR_MS = 80
-let hoverClearTimer = null
+// 지금 호버를 "누가" 걸었는지('3d' = 캔버스 속 물체, 'dom' = 라벨·목록 같은 HTML)와 몇 번째 호버인지.
+// 라벨(HTML)이 R3F 이벤트 영역 안에 붙어 있어서, 라벨 위에서 움직이면 R3F 가 라벨 뒤를 다시 검사해
+// "건물에서 나감"을 보냄 → 출처가 다르면 그 해제는 무시해야 라벨 호버가 지워지지 않음
+let hoverSrc = null
+let hoverSeq = 0
 
 export const useAppStore = create((set, get) => ({
   // ----- 데이터 -----
@@ -87,19 +91,22 @@ export const useAppStore = create((set, get) => ({
     window.history.replaceState(null, '', hash || window.location.pathname + window.location.search)
   },
   setLoadError: (err) => set({ loadError: err }),
-  setHover: (id) => {
-    clearTimeout(hoverClearTimer) // 새 호버가 들어오면 예약된 해제를 취소
+  // src: '3d'(캔버스 속 물체) | 'dom'(라벨·목록 등 HTML, 기본값)
+  setHover: (id, src = 'dom') => {
+    hoverSeq++      // 순번이 바뀌면 그 전에 예약된 해제는 모두 무효
+    hoverSrc = src
     if (get().hoverId !== id) set({ hoverId: id })
   },
-  // "떠남" 처리용 (호버 깜빡임 방지 두 가지):
-  //  1) 지금 호버가 아직 그 대상일 때만 지움 — 라벨·건물이 화면에서 겹쳐 있어,
-  //     다음 대상에 들어간 뒤 이전 대상의 떠남 이벤트가 늦게 와도 새 호버를 덮어쓰지 않게
-  //  2) 바로 지우지 않고 HOVER_CLEAR_MS 뒤에 지움 — 건물(캔버스)에서 그 건물의 라벨(HTML)로
-  //     넘어가는 순간처럼 "떠남 → 같은 대상 진입"이 연달아 올 때 한 프레임 깜빡임을 없앰
-  clearHover: (id) => {
-    clearTimeout(hoverClearTimer)
-    hoverClearTimer = setTimeout(() => {
-      if (get().hoverId === id) set({ hoverId: null })
+  // "떠남" 처리용 (호버 깜빡임 방지 세 가지):
+  //  1) 바로 지우지 않고 HOVER_CLEAR_MS 뒤에 지움 — 건물(캔버스)에서 그 건물의 라벨(HTML)로
+  //     넘어가는 순간처럼 "떠남 → 진입"이 연달아 올 때 한 프레임 깜빡임을 없앰
+  //  2) 그 사이 새 호버가 있었으면(순번이 바뀜) 지우지 않음
+  //  3) 지금 호버를 건 출처·대상과 같을 때만 지움 — 다른 쪽의 늦은 떠남 이벤트가
+  //     새 호버를 덮어쓰지 않게. 요청마다 타이머를 따로 둬서 서로의 예약을 취소하지도 않음
+  clearHover: (id, src = 'dom') => {
+    const seq = hoverSeq
+    setTimeout(() => {
+      if (hoverSeq === seq && hoverSrc === src && get().hoverId === id) set({ hoverId: null })
     }, HOVER_CLEAR_MS)
   },
   setTransitioning: (v) => set({ transitioning: v }),
