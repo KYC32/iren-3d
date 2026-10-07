@@ -30,7 +30,8 @@ function boardHome() {
   const mobile = window.innerWidth < 768
   const T = 0.536 // 2·tan(15°), fov 30
   // 데스크톱은 왼쪽 목록(약 30%)·위아래 패널(약 38%)이 가리므로 보이는 영역 기준으로 맞춤
-  const usableW = mobile ? 0.98 : 0.6
+  // 모바일은 카드 가장자리 사이트(예: 스페인 서쪽 끝 바다호스)의 라벨이 잘리지 않게 좌우 여백을 남김
+  const usableW = mobile ? 0.8 : 0.6
   // 세로 화면은 아래 범례·슬라이더가 두 줄로 쌓여 더 많이 가림
   const usableH = mobile ? 0.55 : layoutKind() === 'portrait' ? 0.58 : 0.66
   // 계약 배지가 보드 북쪽으로 CONTRACT_GAP 만큼 떠 있으므로 그만큼 위쪽 여유를 더 담음

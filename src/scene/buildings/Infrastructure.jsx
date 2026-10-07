@@ -3,7 +3,8 @@
 // =============================================================
 import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Line, Html, Instances, Instance } from '@react-three/drei'
+import { Line, Instances, Instance } from '@react-three/drei'
+import Html from '../SafeHtml.jsx'
 import { CatmullRomCurve3, Vector3 } from 'three'
 import { styleOf, PENDING_COLOR } from '../../data/statusStyle.js'
 import { fmtMw } from '../geo.js'

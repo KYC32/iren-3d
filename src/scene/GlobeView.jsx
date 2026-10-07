@@ -8,7 +8,8 @@
 // =============================================================
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html, Line } from '@react-three/drei'
+import { Line } from '@react-three/drei'
+import Html from './SafeHtml.jsx'
 import { BackSide, AdditiveBlending, BufferGeometry, Color, Float32BufferAttribute, Object3D, Vector3 } from 'three'
 import { useAppStore, EMPTY } from '../store/useAppStore.js'
 import { GLOBE_RADIUS, latLngToVec3 } from './geo.js'

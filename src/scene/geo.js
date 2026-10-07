@@ -49,13 +49,21 @@ export function fmtMw(mw, digits = 1) {
 const LEAD_ORDER = ['operating', 'commissioning', 'under_construction', 'planned', 'decommissioning']
 
 export function labelRanks(sites, nearDeg = 5.5) {
+  // 거리 = 위경도 차이(경도는 위도에 따라 줄여서)
+  const deg = (a, b) => Math.hypot(a.lat - b.lat, (a.lng - b.lng) * Math.cos((b.lat * Math.PI) / 180))
+  return labelRanksBy(sites, nearDeg, deg)
+}
+
+// labelRanks 의 일반형: 거리 함수 dist(대표, 사이트) 를 직접 받음
+// (보드판처럼 카드마다 배율이 달라 "몇 도"보다 "화면에서 몇 단위"로 묶어야 할 때)
+export function labelRanksBy(sites, near, dist) {
   const leads = []
   const ranks = {}
   // 대표 선정: 상태가 앞선 사이트(가동 > 시운전 > 건설 > 계획 > 폐쇄중) 먼저, 같으면 계통 전력이 큰 순서
   // → 예) 텍사스 무리는 1.4GW 건설중인 스위트워터 1보다 가동중인 칠드레스가 대표
   const rank = (s) => LEAD_ORDER.indexOf(s.status) === -1 ? 9 : LEAD_ORDER.indexOf(s.status)
   for (const s of [...sites].sort((a, b) => rank(a) - rank(b) || b.grid_mw - a.grid_mw)) {
-    const lead = leads.find((l) => Math.hypot(l.lat - s.lat, (l.lng - s.lng) * Math.cos((s.lat * Math.PI) / 180)) < nearDeg)
+    const lead = leads.find((l) => dist(l, s) < near)
     if (lead) {
       ranks[s.id] = { lead: false, members: [] }
       ranks[lead.id].members.push(s)

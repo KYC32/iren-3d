@@ -7,7 +7,7 @@
 // =============================================================
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html } from '@react-three/drei'
+import Html from './SafeHtml.jsx'
 import { Color, CylinderGeometry, Object3D, Quaternion, RingGeometry, SphereGeometry, Vector3 } from 'three'
 import { useAppStore, isSiteActive, EMPTY } from '../store/useAppStore.js'
 import { styleOf } from '../data/statusStyle.js'

@@ -393,6 +393,7 @@ button { font: inherit; cursor: pointer; }
   .cb-meta > :not(b) { display: none; }
   .cb-where { display: none; }
   .contract-end span { display: none; }
+  .contract-end { display: none; } /* 좁은 화면에선 핀 라벨을 가려서 숨김 — 위쪽 계약 배지로 충분 */
 }
 .sp-contracts { list-style: none; display: flex; flex-direction: column; gap: 6px; }
 .sp-contracts li { border-left: 3px solid; background: #f6f8fc; border-radius: 6px; padding: 6px 9px; }

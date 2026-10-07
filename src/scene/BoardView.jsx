@@ -1,5 +1,5 @@
 // =============================================================
-// BoardView — 보드판 지도 (BC·텍사스·스페인·남호주 섬 보드 4개, 모두 같은 축척)
+// BoardView — 보드판 지도 (캐나다·미국·스페인·호주 국가 카드 4장, 사이트 있는 주 강조)
 // -------------------------------------------------------------
 // 지구본은 사이트가 없는 바다·대륙이 화면 대부분을 차지해서,
 // IREN 사이트가 있는 지역만 잘라 보드게임판처럼 펼쳐 놓았습니다.
@@ -11,12 +11,13 @@
 // =============================================================
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html, Line, QuadraticBezierLine, RoundedBox } from '@react-three/drei'
+import { Line, QuadraticBezierLine, RoundedBox } from '@react-three/drei'
+import Html from './SafeHtml.jsx' // drei Html 을 이벤트 연결 뒤에 붙이는 포장 (첫 라벨이 비는 문제 방지)
 import { BufferGeometry, CanvasTexture, Color, Float32BufferAttribute, Object3D, SRGBColorSpace, Vector3 } from 'three'
 import { useAppStore, isSiteActive, EMPTY } from '../store/useAppStore.js'
 import { styleOf } from '../data/statusStyle.js'
-import { BOARDS, K, boardPos, layoutBounds, projectLocal, projectToBoard, layoutKind } from './boards.js'
-import { spreadPins, labelRanks, fmtMw } from './geo.js'
+import { BOARDS, boardPos, layoutBounds, projectLocal, projectToBoard, layoutKind } from './boards.js'
+import { spreadPins, labelRanksBy, fmtMw } from './geo.js'
 import { CITIES } from './cities.js'
 import { pickName, useT } from '../i18n/useT.js'
 import { toMonth } from '../data/timeline.js'
@@ -24,22 +25,29 @@ import { CustomerLogo } from '../ui/logos/index.jsx'
 
 const OCEAN = '#a8c3ef'
 const FRAME = '#f7f8fc'
-const LAND = '#fffaf0'
-const HOME_LAND = '#8fd6b8'
+const LAND = '#fbf6e9'      // 나라 육지 (크림색) — 파란 바다 위에 실루엣이 또렷하게
+const FOCUS_LAND = '#8fd6b8' // 사이트가 있는 주 (민트) — 타일도 더 솟음
 // h3 해상도별 육각형 꼭짓점 반지름(km) → 타일 반지름(월드 단위). 0.92 배로 살짝 줄여 타일 사이에 틈
-const HEX_KM = { 4: 22.6, 5: 8.54 }
-const tileRadius = (res) => ((HEX_KM[res] ?? HEX_KM[5]) / 111.2) * K * 0.92
-const LINE_Y = 1.0         // 경계선 높이 (홈 국가 타일 윗면 0.9 보다 살짝 위)
+// 카드마다 배율(k)과 해상도가 달라서 타일마다 크기를 따로 계산합니다.
+const HEX_KM = { 3: 59.8, 4: 22.6, 5: 8.54 }
+const tileRadius = (res, k) => ((HEX_KM[res] ?? HEX_KM[4]) / 111.2) * k * 0.92
+const LINE_Y = 1.0         // 경계선 높이 (강조 주 타일 윗면 0.9 보다 살짝 위)
+const PIN_GAP = 1.6        // 같은 카드의 핀끼리 최소 간격 (월드 단위) — 배율이 작은 카드에서 핀이 포개지지 않게
+const CLUSTER_NEAR = 4     // 핀끼리 이보다 가까우면(월드 단위) 라벨 하나로 묶음
 export const BOARD_EXPAND_DISTANCE = 90 // 카메라가 이보다 가까우면 무리 라벨을 펼침 (첫 화면 거리 ≈ 240)
 
-// 사이트 → 보드 위 위치 (가까운 핀은 화면용으로 살짝 벌림). CameraRig 도 같은 함수를 씁니다.
+// 사이트 → 카드 위 위치 (가까운 핀은 화면용으로 살짝 벌림). CameraRig 도 같은 함수를 씁니다.
+// 카드마다 배율이 달라서, 벌리는 간격(도)도 카드별로 PIN_GAP ÷ 배율로 맞춥니다.
 export function boardPinPositions(sites) {
-  const display = spreadPins(sites, 0.5)
   const out = {}
-  for (const s of sites) {
-    const d = display[s.id]
-    const p = projectToBoard(d.lat, d.lng) ?? projectToBoard(s.lat, s.lng)
-    if (p) out[s.id] = p
+  for (const b of BOARDS) {
+    const group = sites.filter((s) => s.country === b.country)
+    const display = spreadPins(group, PIN_GAP / b.k)
+    for (const s of group) {
+      const d = display[s.id]
+      const p = projectToBoard(d.lat, d.lng, s.country) ?? projectToBoard(s.lat, s.lng, s.country)
+      if (p) out[s.id] = p
+    }
   }
   return out
 }
@@ -93,8 +101,7 @@ function Plate({ board }) {
 //    사라지는 문제가 있었음 → 3D 평면이라 그런 문제가 없음
 const TAG_PAD = 1.2     // 판 모서리에서 명판까지 여백 (월드 단위)
 const TAG_Y = 1.1       // 육지 타일(≤0.9)·경계선(1.0) 위
-const TAG_UNIT = 0.065  // 명판 1px(설계 단위) = 0.065 월드 단위 (판 폭 28~38 에 맞춘 크기)
-const SCALE_KM = 100    // 명판 속 축척 막대 길이 (km) — 모든 판이 같은 축척이라 막대 길이도 똑같음
+const TAG_UNIT = 0.065  // 명판 1px(설계 단위) = 0.065 월드 단위 (카드 폭 35~39 에 맞춘 크기)
 const TAG_RES = 4       // 캔버스 해상도 배수 (가까이 줌해도 글자가 또렷하게)
 const TAG_FONT = '"Pretendard", "Apple SD Gothic Neo", -apple-system, "Segoe UI", sans-serif'
 // lucide "map" 아이콘 경로 (24×24 기준) — 캔버스에 직접 그리기 위해 경로 문자열만 가져옴
@@ -106,10 +113,11 @@ const MAP_ICON_PATHS = [
 
 function BoardTag({ board, lang }) {
   const name = lang === 'ko' ? board.name_ko : board.name_en
+  const sub = lang === 'ko' ? board.focus_ko : board.focus_en // 강조한 주 이름
   // 웹폰트가 늦게 준비되면 글자 폭이 달라지므로, 준비된 뒤 한 번 더 그림
   const [fontsReady, setFontsReady] = useState(false)
   useEffect(() => { document.fonts?.ready.then(() => setFontsReady(true)) }, [])
-  const tag = useMemo(() => drawTagTexture(name), [name, fontsReady])
+  const tag = useMemo(() => drawTagTexture(name, sub), [name, sub, fontsReady])
   useEffect(() => () => tag.texture.dispose(), [tag]) // 바뀌거나 사라질 때 GPU 메모리 정리
 
   // 명판의 오른쪽 아래 꼭짓점을 판의 오른쪽 아래 모서리(여백 안쪽)에 맞춤
@@ -123,26 +131,22 @@ function BoardTag({ board, lang }) {
   )
 }
 
-// 명판 그림 만들기: [지도 아이콘] 지역 이름 | ▬ 100 km
-// 축척 막대는 실제 100km 를 판 위 길이로 환산해 그림 → 네 판의 막대가 같은 길이 = 같은 축척
+// 명판 그림 만들기: [지도 아이콘] 나라 이름 | 강조한 주
 // 반환: 텍스처와 월드 단위 가로·세로
-function drawTagTexture(name) {
+function drawTagTexture(name, sub) {
   const R = TAG_RES
   const padL = 11, padR = 14, gap = 8, icon = 18, h = 34 // 설계 단위(px)
   const nameFont = `800 22px ${TAG_FONT}`
   const noteFont = `600 15px ${TAG_FONT}`
-  const note = `${SCALE_KM} km`
-  // 100km → 월드 단위(위도 1° ≈ 111.2km = K 단위) → 명판 px
-  const barW = ((SCALE_KM / 111.2) * K) / TAG_UNIT
 
   // 1) 글자 폭을 재서 명판 가로 길이 결정
   const measure = document.createElement('canvas').getContext('2d')
   measure.font = nameFont
   const nameW = measure.measureText(name).width
   measure.font = noteFont
-  const noteW = measure.measureText(note).width
-  const scaleBlock = gap + 1.5 + 10 + barW + 7 + noteW // 간격 + 구분선 + 여백 + 막대 + 여백 + 글자
-  const w = Math.ceil(padL + icon + gap + nameW + scaleBlock + padR)
+  const subW = sub ? measure.measureText(sub).width : 0
+  const subBlock = sub ? gap + 1.5 + 10 + subW : 0 // 간격 + 구분선 + 여백 + 글자
+  const w = Math.ceil(padL + icon + gap + nameW + subBlock + padR)
 
   // 2) 실제 그리기 (해상도 R배)
   const canvas = document.createElement('canvas')
@@ -174,22 +178,16 @@ function drawTagTexture(name) {
   ctx.fillText(name, cx, h / 2 + 1)
   cx += nameW
 
-  // 세로 구분선
-  cx += gap
-  ctx.fillStyle = 'rgba(255,255,255,0.35)'
-  ctx.fillRect(cx, 9, 1.5, h - 18)
-  cx += 1.5 + 10
-
-  // 축척 막대: 가로선 + 양 끝 눈금 (지도에서 흔히 쓰는 모양)
-  ctx.fillStyle = 'rgba(255,255,255,0.85)'
-  ctx.fillRect(cx, h / 2 - 1, barW, 2.5)
-  ctx.fillRect(cx, h / 2 - 6, 2, 12)
-  ctx.fillRect(cx + barW - 2, h / 2 - 6, 2, 12)
-  cx += barW + 7
-
-  ctx.fillStyle = 'rgba(255,255,255,0.75)'
-  ctx.font = noteFont
-  ctx.fillText(note, cx, h / 2 + 1)
+  // 강조한 주: 세로 구분선 뒤 민트색 작은 글씨 (지도 위 강조 타일과 같은 색 계열)
+  if (sub) {
+    cx += gap
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'
+    ctx.fillRect(cx, 9, 1.5, h - 18)
+    cx += 1.5 + 10
+    ctx.fillStyle = '#a9e6cf'
+    ctx.font = noteFont
+    ctx.fillText(sub, cx, h / 2 + 1)
+  }
 
   const texture = new CanvasTexture(canvas)
   texture.colorSpace = SRGBColorSpace // 색이 CSS 와 같게 보이도록
@@ -205,9 +203,10 @@ function LandTiles({ geo }) {
     for (const b of BOARDS) {
       const flat = geo.boards[b.id] ?? []
       const [px, pz] = boardPos(b.id)
+      const r = tileRadius(geo.res?.[b.id] ?? b.res, b.k)
       for (let i = 0; i < flat.length; i += geo.stride) {
         const [x, z] = projectLocal(b, flat[i], flat[i + 1])
-        arr.push({ x: px + x, z: pz + z, home: flat[i + 2] === 1 })
+        arr.push({ x: px + x, z: pz + z, r, focus: flat[i + 2] === 1 })
       }
     }
     return arr
@@ -219,13 +218,13 @@ function LandTiles({ geo }) {
     const dummy = new Object3D()
     const color = new Color()
     items.forEach((t, i) => {
-      const h = t.home ? 0.9 : 0.5 // 홈 국가는 살짝 더 솟게
+      const h = t.focus ? 0.9 : 0.4 // 사이트가 있는 주는 더 솟게
       dummy.position.set(t.x, h / 2, t.z)
-      dummy.scale.set(1, h, 1)
+      dummy.scale.set(t.r, h, t.r) // 반지름 1 짜리 육각기둥을 타일 크기로 늘림
       dummy.updateMatrix()
       mesh.setMatrixAt(i, dummy.matrix)
       const jitter = (Math.sin(i * 12.9898) * 43758.5453) % 1 // 결정적 미세 명암 → 타일 질감
-      color.set(t.home ? HOME_LAND : LAND).offsetHSL(0, 0, jitter * 0.03)
+      color.set(t.focus ? FOCUS_LAND : LAND).offsetHSL(0, 0, jitter * 0.03)
       mesh.setColorAt(i, color)
     })
     mesh.instanceMatrix.needsUpdate = true
@@ -235,7 +234,7 @@ function LandTiles({ geo }) {
 
   return (
     <instancedMesh ref={ref} name="board-tiles" args={[null, null, items.length]} receiveShadow>
-      <cylinderGeometry args={[tileRadius(geo.res), tileRadius(geo.res), 1, 6]} />
+      <cylinderGeometry args={[1, 1, 1, 6]} />
       <meshLambertMaterial />
     </instancedMesh>
   )
@@ -296,12 +295,20 @@ function BoardLines({ geo }) {
 }
 
 // ---------- 기준 도시 ----------
+const CITY_SHOW_HEIGHT = 75 // 카메라 높이가 이보다 낮으면 도시 이름 표시 (첫 화면 높이 ≈ 190)
+// 나라 전체가 보이는 첫 화면에선 사이트 라벨과 겹치므로, 카메라가 가까이 왔을 때만 보여 줍니다.
 function BoardCities() {
   const lang = useAppStore((s) => s.lang)
+  const [near, setNear] = useState(false)
+  useFrame(({ camera }) => {
+    const v = camera.position.y < CITY_SHOW_HEIGHT // 높이로 판단 (보드판은 위에서 내려다봄)
+    if (v !== near) setNear(v) // 경계를 넘을 때만 다시 그림
+  })
   const placed = useMemo(
-    () => CITIES.map((c) => ({ c, p: projectToBoard(c.lat, c.lng) })).filter((x) => x.p),
+    () => CITIES.map((c) => ({ c, p: projectToBoard(c.lat, c.lng, c.cc) })).filter((x) => x.p),
     [],
   )
+  if (!near) return null
   return placed.map(({ c, p }) => (
     <group key={c.en} position={[p.x, LINE_Y, p.z]}>
       <mesh>
@@ -319,9 +326,14 @@ function BoardCities() {
 function BoardPins() {
   const sites = useAppStore((s) => s.data?.sites ?? EMPTY)
   const positions = useMemo(() => boardPinPositions(sites), [sites])
-  // 아주 가까운 사이트는 무리로 묶어 라벨 하나로. 판이 지역 단위로 확대돼 있어
-  // 1° 안쪽만 묶음 → 스위트워터 1·2(0.25° 차이)만 한 무리, 칠드레스·카이오와·BC 세 곳은 각자 라벨
-  const ranks = useMemo(() => labelRanks(sites, 1.0), [sites])
+  // 화면에서 가까운 사이트는 무리로 묶어 라벨 하나로 (가까이 줌하거나 마우스를 올리면 펼침).
+  // 카드마다 배율이 달라 "몇 도"가 아니라 카드 위 거리(CLUSTER_NEAR 단위)로 묶음
+  //  → 텍사스 4곳·BC 3곳은 각각 한 무리, 스페인·남호주는 혼자
+  const ranks = useMemo(() => {
+    const at = (s) => positions[s.id]
+    const dist = (a, b) => (at(a) && at(b) && at(a).board === at(b).board ? Math.hypot(at(a).x - at(b).x, at(a).z - at(b).z) : Infinity)
+    return labelRanksBy(sites.filter(at), CLUSTER_NEAR, dist)
+  }, [sites, positions])
   return sites
     .filter((s) => positions[s.id])
     .map((s) => <BoardPin key={s.id} site={s} pos={positions[s.id]} rank={ranks[s.id]} />)
@@ -364,19 +376,19 @@ function BoardPin({ site, pos, rank }) {
   return (
     <group position={[pos.x, 0.9, pos.z]}>
       <mesh position={[0, h / 2, 0]} scale={hovered ? 1.25 : 1} onPointerOver={onOver} onPointerOut={onOut} onClick={onClick} castShadow>
-        <cylinderGeometry args={[0.75, 0.9, h, 12]} />
+        <cylinderGeometry args={[0.42, 0.5, h, 12]} />
         <meshStandardMaterial color={color} roughness={0.55} transparent opacity={site.status === 'planned' ? 0.8 : 1} />
       </mesh>
-      <mesh position={[0, h + 0.6, 0]} onPointerOver={onOver} onPointerOut={onOut} onClick={onClick}>
-        <sphereGeometry args={[1.25, 16, 12]} />
+      <mesh position={[0, h + 0.35, 0]} onPointerOver={onOver} onPointerOut={onOut} onClick={onClick}>
+        <sphereGeometry args={[0.75, 16, 12]} />
         <meshStandardMaterial color={new Color(color).offsetHSL(0, 0, 0.12)} roughness={0.4} />
       </mesh>
       <mesh ref={ringRef} rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.12, 0]}>
-        <ringGeometry args={[1.1, 1.55, 32]} />
+        <ringGeometry args={[0.65, 0.95, 32]} />
         <meshBasicMaterial color={style.color} transparent depthWrite={false} />
       </mesh>
       {rank?.lead && (
-        <Html position={[0, h + 2.6, 0]} center zIndexRange={[20, 0]}>
+        <Html position={[0, h + 1.8, 0]} center zIndexRange={[20, 0]}>
           <div ref={labelRef} className="pin-cluster" data-expanded="0">
             {/* 대표 줄 */}
             <PinRow m={site} lead more={rank.members.length} hoverId={hoverId} setHover={setHover} requestSite={requestSite} lang={lang} />
@@ -405,7 +417,8 @@ function PinRow({ m, lead = false, more = 0, hoverId, setHover, requestSite, lan
       onClick={() => requestSite(m.id)}
     >
       <span className="dot" style={{ background: styleOf(m.status).color }} />
-      <span className="name">{pickName(m, lang)}</span>
+      {/* 끝의 "(스페인)" 같은 괄호는 뺌 — 국가 카드가 이미 어느 나라인지 보여 줌 (라벨이 짧아져 화면 밖으로 덜 나감) */}
+      <span className="name">{pickName(m, lang).replace(/\s*\([^)]*\)$/, '')}</span>
       <span className="mw">{fmtMw(m.grid_mw)}</span>
       {lead && more > 0 && <span className="more">+{more}</span>}
     </button>
