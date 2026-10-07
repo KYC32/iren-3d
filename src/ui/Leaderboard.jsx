@@ -11,6 +11,8 @@ import { styleOf } from '../data/statusStyle.js'
 import { fmtMw } from '../scene/geo.js'
 import SiteList from './SiteList.jsx'
 import { SINGLE_COMPANY } from '../config.js'
+import Upcoming from './Upcoming.jsx'
+import ChangeLog from './ChangeLog.jsx'
 
 const GROUPS = ['miner', 'neocloud', 'hyperscaler', 'korea']
 const METRICS = ['secured', 'ai', 'building']
@@ -20,11 +22,17 @@ export default function LeftPanel() {
   const leftTab = useAppStore((s) => s.leftTab)
   const setLeftTab = useAppStore((s) => s.setLeftTab)
   const sheetOpen = useAppStore((s) => s.sheetOpen)
-  // 단일 회사 모드: 순위표·그룹 칩 없이 사이트 목록만
+  // 단일 회사 모드: 순위표 대신 [사이트 | 다가오는 일정 | 갱신 기록] 탭
   if (SINGLE_COMPANY) {
+    const tab = ['sites', 'upcoming', 'log'].includes(leftTab) ? leftTab : 'sites'
     return (
       <div className={`left-panel panel${sheetOpen ? ' sheet-open' : ''}`}>
-        <SiteList />
+        <div className="tabs">
+          <button className={tab === 'sites' ? 'on' : ''} onClick={() => setLeftTab('sites')}>{t.rank.sitesTab}</button>
+          <button className={tab === 'upcoming' ? 'on' : ''} onClick={() => setLeftTab('upcoming')}>{t.upcoming.tab}</button>
+          <button className={tab === 'log' ? 'on' : ''} onClick={() => setLeftTab('log')}>{t.changelog.tab}</button>
+        </div>
+        {tab === 'sites' ? <SiteList /> : tab === 'upcoming' ? <Upcoming /> : <ChangeLog />}
       </div>
     )
   }

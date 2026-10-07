@@ -324,3 +324,53 @@ button { font: inherit; cursor: pointer; }
 .board-tag span { font-size: 10px; font-weight: 600; color: var(--text-muted); }
 .city-label.board { opacity: 1; }
 .record .board-tag { display: none; }
+
+/* ---------- 다가오는 일정·갱신 기록 (왼쪽 패널 탭) ---------- */
+.upcoming, .changelog { overflow-y: auto; padding: 4px 6px 8px; font-size: 12.5px; }
+.up-hint { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); padding: 4px 4px 6px; }
+.upcoming h5, .changelog h5 { font-size: 11.5px; color: #34405e; margin: 10px 4px 4px; }
+.upcoming ul, .changelog ul { list-style: none; display: flex; flex-direction: column; gap: 1px; }
+.upcoming li { display: flex; align-items: center; gap: 4px; border-radius: 9px; }
+.upcoming li:hover { background: #eef2fb; }
+.upcoming li.passed { opacity: 0.55; } /* 타임라인을 그 시점 이후로 옮기면 지난 일정은 흐리게 */
+.up-row { flex: 1; display: flex; align-items: flex-start; gap: 8px; border: 0; background: none; padding: 6px 6px; text-align: left; color: var(--text); }
+.up-row .dot { margin-top: 4px; }
+.up-text { display: flex; flex-direction: column; gap: 1px; }
+.up-title { font-weight: 600; line-height: 1.35; }
+.up-meta { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+.basis { font-size: 10px; font-weight: 700; border-radius: 5px; padding: 0 5px; }
+.basis.reported { background: #e2f3ec; color: #1f7f66; }
+.basis.target { background: #fff3cc; color: #8a6400; }
+.basis.estimate { background: #eef0f5; color: #6b7591; }
+.up-src { padding: 6px; color: var(--text-muted); }
+.changelog li { display: flex; gap: 6px; align-items: flex-start; padding: 5px 6px; line-height: 1.45; color: #2a3550; }
+.changelog li::before { content: ''; flex-shrink: 0; width: 5px; height: 5px; border-radius: 50%; background: #9aa6bd; margin-top: 7px; }
+.cl-repo { display: inline-block; margin: 10px 6px 0; font-size: 11px; }
+
+/* 타임라인 사건 눈금 */
+.tl-track { position: relative; }
+.tl-tick {
+  position: absolute; top: 0; width: 6px; height: 6px; margin-left: -3px; padding: 0;
+  border-radius: 50%; border: 1.5px solid #fff; background: #9aa6bd; cursor: pointer; z-index: 2;
+  box-shadow: 0 1px 2px rgba(30,45,90,0.25);
+}
+.tl-tick.future { background: var(--c-pending); }
+.tl-tick.on, .tl-tick:hover { transform: scale(1.5); }
+
+/* 고객 계약 배지 (보드판 북쪽 위) */
+.contract-badge {
+  display: flex; flex-direction: column; align-items: center; gap: 1px; white-space: nowrap;
+  background: rgba(255,255,255,0.97); border: 2px solid; border-radius: 10px; padding: 4px 10px;
+  box-shadow: 0 4px 14px rgba(30,45,90,0.14); pointer-events: none;
+}
+.cb-name { font-size: 12px; font-weight: 800; max-width: 230px; overflow: hidden; text-overflow: ellipsis; }
+.cb-meta { font-size: 10.5px; color: #44506c; }
+.record .contract-badge { display: none; }
+@media (max-width: 767px) { .cb-name { font-size: 10px; max-width: 120px; } .cb-meta { font-size: 9px; } }
+.sp-contracts { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.sp-contracts li { border-left: 3px solid; background: #f6f8fc; border-radius: 6px; padding: 6px 9px; }
+.sp-contracts li.before { opacity: 0.45; }
+.spc-head { display: flex; justify-content: space-between; gap: 8px; font-size: 12.5px; }
+.spc-head span { font-weight: 650; color: #34405e; white-space: nowrap; }
+.spc-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.spc-note { font-size: 11px; color: #44506c; margin-top: 2px; }

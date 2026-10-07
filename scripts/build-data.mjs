@@ -6,7 +6,7 @@
 // data/companies/<회사id>.json    { company_id, as_of, sites }
 // 다른 스크립트·테스트에서도 import { buildInfra } 로 같은 결과를 얻을 수 있습니다.
 // =============================================================
-import { readFileSync, readdirSync, writeFileSync, mkdirSync } from 'node:fs'
+import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 
 // DATA_DIR=data-fake 처럼 지정하면 다른 폴더의 데이터로 빌드 (성능 시험용 가짜 데이터 등)
@@ -23,7 +23,10 @@ export function buildInfra() {
     // 사이트마다 그 회사 파일의 기준일을 붙여 둠 (회사마다 조사 시점이 다를 수 있음)
     for (const s of file.sites) sites.push({ ...s, as_of: file.as_of })
   }
-  return { schema_version: 2, as_of: asOf, companies, programs, sites }
+  // 갱신 기록 (있으면): 최신 항목이 먼저
+  const logFile = new URL('changelog.json', DATA)
+  const changelog = existsSync(logFile) ? JSON.parse(readFileSync(logFile, 'utf8')).entries : undefined
+  return { schema_version: 2, as_of: asOf, companies, programs, sites, ...(changelog ? { changelog } : {}) }
 }
 
 // 직접 실행했을 때만 파일로 저장

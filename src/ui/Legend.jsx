@@ -55,6 +55,7 @@ export default function Legend() {
           ))}
         </div>
       )}
+      {SINGLE_COMPANY && view === 'globe' && <ContractToggle />}
       <div className="legend-title">
         {t.legend.title}
         {active.size > 0 && <button className="link-btn" onClick={clear}>reset</button>}
@@ -73,6 +74,18 @@ export default function Legend() {
         {t.panel.deliveries} · {t.panel.energized}
       </div>
       <div className="legend-hint">{t.legend.hint}</div>
+    </div>
+  )
+}
+
+// 보드판에서 고객 계약 연결선 켜기/끄기
+function ContractToggle() {
+  const t = useT()
+  const on = useAppStore((s) => s.showContracts)
+  const toggle = useAppStore((s) => s.toggleContracts)
+  return (
+    <div className="seg small">
+      <button className={on ? 'on' : ''} onClick={toggle}>{t.contracts.toggle}</button>
     </div>
   )
 }

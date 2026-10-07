@@ -5,6 +5,8 @@ import { STATUS } from '../data/status.js'
 import { parseHash, buildHash } from './hashState.js'
 import { viewInfra, asOfMonth } from '../data/view.js'
 import { toMonth, monthKey } from '../data/timeline.js'
+import { buildEvents } from '../data/events.js'
+import { SINGLE_COMPANY } from '../config.js'
 
 // 처음 열 때 URL 해시(#date=…&site=…&c=…&color=…)를 읽어 그 상태로 시작합니다.
 const initial = parseHash(window.location.hash)
@@ -40,7 +42,11 @@ export const useAppStore = create((set, get) => ({
   // 순위표 기준 지표: secured(확보) | ai(AI 가동) | building(건설·시운전)
   rankMetric: 'secured',
   // 왼쪽 패널 탭: 'rank'(회사 순위) | 'sites'(사이트 목록)
-  leftTab: 'rank',
+  leftTab: SINGLE_COMPANY ? 'sites' : 'rank',
+  // 사건 목록 (원본에서 한 번 계산): 타임라인 눈금·다가오는 일정·계약
+  events: [],
+  // 지도에 고객 계약 연결선 표시
+  showContracts: true,
   // 모바일: 순위·사이트 패널을 바텀시트로 열었는지
   sheetOpen: false,
 
@@ -49,7 +55,7 @@ export const useAppStore = create((set, get) => ({
   setRaw: (raw) => {
     const asOf = asOfMonth(raw.as_of)
     const m = initial.date ? Math.min(MONTH_MAX, Math.max(MONTH_MIN, toMonth(initial.date))) : asOf
-    set({ asOfMonth: asOf, month: m, data: viewInfra(raw, m) })
+    set({ asOfMonth: asOf, month: m, data: viewInfra(raw, m), events: buildEvents(raw) })
   },
   // 날짜 바꾸기 → 그 날짜의 상태로 화면용 데이터 다시 계산
   setMonth: (m) => {
@@ -120,6 +126,14 @@ export const useAppStore = create((set, get) => ({
   setColorMode: (mode) => { set({ colorMode: mode }); get().syncHash() },
   setRankMetric: (metric) => set({ rankMetric: metric }),
   setLeftTab: (tab) => set({ leftTab: tab }),
+  toggleContracts: () => set({ showContracts: !get().showContracts }),
+  // 일정 항목 클릭: 그 시점으로 이동하고 (사이트가 있으면) 그 사이트로
+  jumpTo: (month, siteId) => {
+    const st = get()
+    st.setPlaying(false)
+    st.setMonth(month)
+    if (siteId && siteId !== st.selectedSiteId) st.requestSite(siteId)
+  },
   toggleSheet: () => set({ sheetOpen: !get().sheetOpen }),
 }))
 

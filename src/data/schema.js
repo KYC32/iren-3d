@@ -45,6 +45,33 @@ const Colocation = z.object({
   source: Url,
 }).strict()
 
+// 회사 단위 일정 (실적 발표 등) — "다가오는 일정" 패널·타임라인 눈금에 표시
+const CompanyEvent = z.object({
+  date: When,
+  kind: z.enum(['earnings', 'contract', 'financing', 'other']),
+  title_ko: z.string(),
+  title_en: z.string(),
+  basis: Basis,             // estimate = 회사 미확정(외부 추정)
+  source: Url,
+}).strict()
+
+// 고객 계약 — 지도에서 고객 → 사이트 연결선으로 표시 (서명일 이후에만 보임)
+const Contract = z.object({
+  id: Id,
+  customer: z.string(),                     // 고객 이름 (미공개 다수면 묶음 이름)
+  customer_ko: z.string().optional(),
+  value_usd_bn: z.number().positive().nullable(), // 총 계약 금액 (미공개면 null)
+  term_years: z.number().positive().nullable(),
+  signed: When,
+  it_mw: z.number().positive().nullable(),  // 계약 IT 용량 (미공개면 null)
+  sites: z.array(Id),                       // 연결할 사이트 (미공개면 빈 배열)
+  buildings: z.array(Id).optional(),        // 연결할 건물 (있으면 패널에 표시)
+  color: Hex,                               // 연결선·배지 색
+  note_ko: z.string().optional(),
+  note_en: z.string().optional(),
+  source: Url,
+}).strict()
+
 export const Company = z.object({
   id: Id,
   name: z.string(),
@@ -58,6 +85,8 @@ export const Company = z.object({
   summary_en: z.string(),
   metrics: z.array(ReportedMetric).default([]),
   colocations: z.array(Colocation).optional(), // 코로케이션 입주 시설 (지도·순위 미포함)
+  events: z.array(CompanyEvent).optional(),    // 회사 단위 일정 (실적 발표 등)
+  contracts: z.array(Contract).optional(),     // 고객 계약 (지도 연결선)
   sources: z.array(Url).min(1),
 }).strict()
 
@@ -161,10 +190,20 @@ export const CompanySitesFile = z.object({
 }).strict()
 
 // 빌드 결과 (infra.json)
+// 데이터 갱신 기록 — 언제 어떤 수치가 바뀌었는지 (신뢰 장치)
+const ChangeItem = z.object({ ko: z.string(), en: z.string(), source: Url.optional() }).strict()
+export const ChangelogFile = z.object({
+  entries: z.array(z.object({
+    date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, '날짜 형식: YYYY-MM-DD'),
+    items: z.array(ChangeItem).min(1),
+  }).strict()).min(1),
+}).strict()
+
 export const InfraFile = z.object({
   schema_version: z.literal(2),
   as_of: z.string(),
   companies: z.array(Company),
   programs: z.array(Program),
   sites: z.array(Site.extend({ as_of: z.string() })),
+  changelog: ChangelogFile.shape.entries.optional(),
 }).strict()

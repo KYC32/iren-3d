@@ -11,14 +11,15 @@
 // =============================================================
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { Html, Line, RoundedBox } from '@react-three/drei'
+import { Html, Line, QuadraticBezierLine, RoundedBox } from '@react-three/drei'
 import { BufferGeometry, Color, Float32BufferAttribute, Object3D, Vector3 } from 'three'
 import { useAppStore, isSiteActive, EMPTY } from '../store/useAppStore.js'
 import { styleOf } from '../data/statusStyle.js'
 import { BOARDS, boardPos, projectLocal, projectToBoard } from './boards.js'
 import { spreadPins, labelRanks, fmtMw } from './geo.js'
 import { CITIES } from './cities.js'
-import { pickName } from '../i18n/useT.js'
+import { pickName, useT } from '../i18n/useT.js'
+import { toMonth } from '../data/timeline.js'
 
 const OCEAN = '#a8c3ef'
 const FRAME = '#f7f8fc'
@@ -41,7 +42,7 @@ export function boardPinPositions(sites) {
 }
 
 // 핀 높이: √MW 비례 (30MW ≈ 2.9, 1,600MW ≈ 11.5)
-const boardPinHeight = (mw) => 2 + Math.sqrt(Math.max(0, mw)) * 0.3
+export const boardPinHeight = (mw) => 2 + Math.sqrt(Math.max(0, mw)) * 0.3
 
 export default function BoardView({ visible }) {
   const [geo, setGeo] = useState(null)
@@ -55,6 +56,7 @@ export default function BoardView({ visible }) {
       {geo && <BoardLines geo={geo} />}
       {visible && <BoardCities />}
       {visible && <BoardPins />}
+      {visible && <ContractLinks />}
     </group>
   )
 }
@@ -286,6 +288,79 @@ function BoardPin({ site, pos, rank }) {
           </div>
         </Html>
       )}
+    </group>
+  )
+}
+
+// ---------- 고객 계약 연결선 ----------
+// 본판 북쪽 가장자리 위에 고객 배지를 띄우고, 배지 → 사이트 핀까지 흐르는 아치선을 그립니다.
+// 선 굵기 ∝ 계약 금액, 타임라인이 서명일 이전이면 그 계약은 보이지 않습니다.
+function ContractLinks() {
+  const show = useAppStore((s) => s.showContracts)
+  const month = useAppStore((s) => s.month)
+  const data = useAppStore((s) => s.data)
+  const contracts = useMemo(() => (data?.companies ?? []).flatMap((c) => c.contracts ?? []), [data])
+  const positions = useMemo(() => boardPinPositions(data?.sites ?? []), [data])
+  if (!show || !contracts.length) return null
+  const na = BOARDS.find((b) => b.id === 'na')
+  const [px, pz] = boardPos('na')
+  // 배지는 판 폭 전체에 퍼뜨리고 높이를 계단식으로 달리해 원근 때문에 겹치지 않게
+  const span = na.w - 24
+  return contracts.map((k, i) => {
+    if (month < toMonth(k.signed)) return null // 아직 서명 전
+    const x = contracts.length === 1 ? px : px - span / 2 + (span * i) / (contracts.length - 1)
+    const anchor = new Vector3(x, 5 + (i % 2) * 6, pz - na.d / 2 - 6)
+    return <Contract key={k.id} contract={k} anchor={anchor} positions={positions} sites={data.sites} />
+  })
+}
+
+function Contract({ contract: k, anchor, positions, sites }) {
+  const t = useT()
+  const lang = useAppStore((s) => s.lang)
+  const lineRefs = useRef([])
+  // 흐르는 점선: 매 프레임 점선 시작 위치를 옮김 (고객 → 사이트 방향)
+  useFrame((_, delta) => {
+    for (const l of lineRefs.current) if (l?.material) l.material.dashOffset -= delta * 3
+  })
+  const width = 1.5 + (k.value_usd_bn ?? 1) / 2.5
+  const targets = k.sites
+    .map((sid) => ({ site: sites.find((s) => s.id === sid), pos: positions[sid] }))
+    .filter((x) => x.site && x.pos)
+  const name = lang === 'ko' ? k.customer_ko ?? k.customer : k.customer
+  return (
+    <group>
+      {targets.map(({ site, pos }, i) => {
+        const end = new Vector3(pos.x, 0.9 + boardPinHeight(site.grid_mw) + 0.6, pos.z)
+        const mid = anchor.clone().lerp(end, 0.5)
+        mid.y = 22 + anchor.distanceTo(end) * 0.12 // 거리가 멀수록 높게 휘어짐
+        return (
+          <QuadraticBezierLine
+            key={site.id}
+            ref={(el) => (lineRefs.current[i] = el)}
+            start={anchor}
+            end={end}
+            mid={mid}
+            color={k.color}
+            lineWidth={width}
+            dashed
+            dashSize={2.2}
+            gapSize={1.2}
+            transparent
+            opacity={0.9}
+          />
+        )
+      })}
+      <Html position={anchor} center zIndexRange={[18, 0]}>
+        <div className="contract-badge" style={{ borderColor: k.color }}>
+          <span className="cb-name" style={{ color: k.color }}>{name}</span>
+          <span className="cb-meta">
+            {k.value_usd_bn != null && <b>${k.value_usd_bn}bn</b>}
+            {k.term_years != null && <> · {k.term_years}{t.contracts.years}</>}
+            {k.it_mw != null && <> · {k.it_mw}MW IT</>}
+            {!targets.length && <> · {t.contracts.undisclosed}</>}
+          </span>
+        </div>
+      </Html>
     </group>
   )
 }

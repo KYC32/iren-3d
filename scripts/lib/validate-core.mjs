@@ -8,13 +8,13 @@
 // =============================================================
 import { readFileSync, existsSync, readdirSync } from 'node:fs'
 import { feature } from 'topojson-client'
-import { CompaniesFile, CompanySitesFile } from '../../src/data/schema.js'
+import { CompaniesFile, CompanySitesFile, ChangelogFile } from '../../src/data/schema.js'
 import { toMonth, phaseMonth, statusAt, grossOf, powerAt, effectiveBuildingsAt } from '../../src/data/timeline.js'
 import { STATUS_STYLE } from '../../src/data/statusStyle.js'
 import { ISO2_TO_NUM } from '../iso.mjs'
 import { createHash } from 'node:crypto'
 
-export function validateAll({ companiesFile, files }) {
+export function validateAll({ companiesFile, files, changelogFile = null }) {
 const errors = []
 const warns = []
 const err = (m) => errors.push(m)
@@ -163,6 +163,35 @@ for (let i = 0; i < pinned.length; i++)
     const dist = Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])
     if (dist > 0 && dist < SIMILAR_RGB) warn(`${pinned[i].id} ↔ ${pinned[j].id}: 회사색이 너무 비슷함 (${pinned[i].color} / ${pinned[j].color}, 거리 ${dist.toFixed(0)})`)
   }
+
+// ---------- 10) 계약·회사 일정 참조 ----------
+const sitesById = Object.fromEntries(infra.sites.map((s) => [s.id, s]))
+for (const c of infra.companies) {
+  const ids = new Set()
+  for (const k of c.contracts ?? []) {
+    if (ids.has(k.id)) err(`${c.id}: 계약 id 중복 ${k.id}`)
+    ids.add(k.id)
+    for (const sid of k.sites) {
+      const s = sitesById[sid]
+      if (!s) { err(`${c.id}/${k.id}: 없는 사이트 ${sid}`); continue }
+      if (s.primary !== c.id) warn(`${c.id}/${k.id}: 사이트 ${sid} 의 대표 회사가 ${s.primary}`)
+      for (const bid of k.buildings ?? []) if (!s.buildings.some((b) => b.id === bid) && !k.sites.some((x) => sitesById[x]?.buildings.some((b) => b.id === bid))) err(`${c.id}/${k.id}: 없는 건물 ${bid}`)
+    }
+    if (k.buildings?.length && !k.sites.length) err(`${c.id}/${k.id}: 건물을 적었으면 사이트도 필요`)
+  }
+}
+
+// ---------- 11) 갱신 기록 ----------
+// 데이터 기준일(as_of) 이후의 갱신 기록이 없으면 오류 → 데이터를 고치면 기록도 반드시 남기게
+if (changelogFile) {
+  const r = ChangelogFile.safeParse(changelogFile)
+  if (!r.success) r.error.issues.forEach((i) => err(`changelog.json ${i.path.join('.')}: ${i.message}`))
+  else {
+    const dates = changelogFile.entries.map((e) => e.date)
+    if (dates.some((d, i) => i > 0 && d > dates[i - 1])) err('changelog.json: 최신 날짜가 먼저 오도록 정렬하세요')
+    if (dates[0] < infra.as_of) err(`changelog.json: 최신 기록(${dates[0]})이 데이터 기준일(${infra.as_of})보다 이전 — 바뀐 내용을 기록하세요`)
+  }
+}
 
 // ---------- 9) 지도 타일 갱신 필요 여부 ----------
 const hash = createHash('sha1').update(JSON.stringify(infra.sites.map((s) => [s.id, s.coord.lat, s.coord.lng]))).digest('hex').slice(0, 12)

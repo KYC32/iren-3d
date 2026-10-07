@@ -3,7 +3,7 @@
 // 실제 검사 내용은 scripts/lib/validate-core.mjs 에 있습니다.
 // 오류가 하나라도 있으면 빌드를 멈추고, 경고는 표시만 합니다.
 // =============================================================
-import { readFileSync, readdirSync } from 'node:fs'
+import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { validateAll } from './lib/validate-core.mjs'
 
 const DATA = new URL('../data/', import.meta.url)
@@ -14,7 +14,9 @@ const files = Object.fromEntries(
     .map((f) => [f.replace(/\.json$/, ''), JSON.parse(readFileSync(new URL(`companies/${f}`, DATA), 'utf8'))]),
 )
 
-const { errors, warns, infra } = validateAll({ companiesFile, files })
+const logUrl = new URL('changelog.json', DATA)
+const changelogFile = existsSync(logUrl) ? JSON.parse(readFileSync(logUrl, 'utf8')) : null
+const { errors, warns, infra } = validateAll({ companiesFile, files, changelogFile })
 warns.forEach((w) => console.warn('⚠️  ' + w))
 if (errors.length) {
   console.error('❌ 데이터 오류:')

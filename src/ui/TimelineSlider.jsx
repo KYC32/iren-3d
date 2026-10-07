@@ -4,11 +4,12 @@
 // - 기준일(데이터 조사 날짜) 표시, 그 이후 구간은 빗금 = "회사 발표 목표 기준"
 // - 키보드 ←/→ 로 한 달씩
 // =============================================================
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Play, Pause, RotateCcw } from 'lucide-react'
 import { useAppStore, MONTH_MIN, MONTH_MAX } from '../store/useAppStore.js'
 import { useT } from '../i18n/useT.js'
 import { monthLabel } from '../data/timeline.js'
+import { eventTicks } from '../data/events.js'
 
 const STEP_MS = 200 // 재생 속도: 한 달에 0.2초 → 60개월 = 12초
 
@@ -45,6 +46,12 @@ export default function TimelineSlider() {
   const playing = useAppStore((s) => s.playing)
   const setMonth = useAppStore((s) => s.setMonth)
   const setPlaying = useAppStore((s) => s.setPlaying)
+  const events = useAppStore((s) => s.events)
+  // 사건 눈금: 같은 달 사건을 묶고, 슬라이더 범위 안의 것만
+  const ticks = useMemo(
+    () => eventTicks(events, asOf ?? 0).filter((k) => k.month >= MONTH_MIN && k.month <= MONTH_MAX),
+    [events, asOf],
+  )
   usePlayer()
 
   // 키보드 ←/→ (입력창에 쓰는 중이 아닐 때)
@@ -91,6 +98,17 @@ export default function TimelineSlider() {
             aria-label={t.timeline.label}
           />
           <span className="tl-asof" style={{ left: `${pct(asOf)}%` }} />
+          {/* 사건 눈금: 회색 = 지난 일, 노랑 = 예정. 마우스를 올리면 내용, 누르면 그 달로 이동 */}
+          {ticks.map((k) => (
+            <button
+              key={k.month}
+              className={`tl-tick${k.future ? ' future' : ''}${k.month === month ? ' on' : ''}`}
+              style={{ left: `${pct(k.month)}%` }}
+              title={`${monthLabel(k.month, lang)}\n` + k.events.map((e) => '· ' + (lang === 'ko' ? e.title_ko : e.title_en)).join('\n')}
+              aria-label={monthLabel(k.month, lang)}
+              onClick={() => { setPlaying(false); setMonth(k.month) }}
+            />
+          ))}
         </div>
         <div className="tl-years">
           {years.map((y) => <span key={y} style={{ left: `${pct(y * 12)}%` }}>{y}</span>)}

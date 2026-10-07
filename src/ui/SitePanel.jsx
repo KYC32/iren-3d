@@ -1,9 +1,11 @@
 // 선택한 사이트의 상세 패널: 요약 → 스펙 → 건물/단계 → 납품 예정 → 타임라인 → 추정 → 출처
-import { ExternalLink, Truck, Clock, Building2, Info, Link2 } from 'lucide-react'
+import { ExternalLink, Truck, Clock, Building2, Info, Link2, Handshake } from 'lucide-react'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { useT, pickName } from '../i18n/useT.js'
 import { styleOf } from '../data/statusStyle.js'
 import { fmtMw } from '../scene/geo.js'
+import { toMonth } from '../data/timeline.js'
+import { fmtWhen } from '../data/events.js'
 
 function host(url) {
   try { return new URL(url).hostname.replace(/^www\./, '') } catch { return url }
@@ -13,6 +15,8 @@ export default function SitePanel() {
   const t = useT()
   const lang = useAppStore((s) => s.lang)
   const site = useAppStore(selectSelectedSite)
+  const month = useAppStore((s) => s.month)
+  const companies = useAppStore((s) => s.data?.companies)
   const hoverId = useAppStore((s) => s.hoverId)
   const setHover = useAppStore((s) => s.setHover)
   if (!site) return null
@@ -63,6 +67,8 @@ export default function SitePanel() {
         })}
       </ul>
 
+      <SiteContracts site={site} companies={companies} month={month} lang={lang} t={t} />
+
       {site.deliveries.length > 0 && (
         <>
           <h4><Truck size={14} /> {t.panel.deliveries}</h4>
@@ -111,5 +117,40 @@ export default function SitePanel() {
         ))}
       </ul>
     </aside>
+  )
+}
+
+// 이 사이트에 연결된 고객 계약 (타임라인이 서명일 이전이면 "서명 전"으로 흐리게)
+function SiteContracts({ site, companies, month, lang, t }) {
+  const list = (companies ?? []).flatMap((c) => c.contracts ?? []).filter((k) => k.sites.includes(site.id))
+  if (!list.length) return null
+  const bName = Object.fromEntries(site.buildings.map((b) => [b.id, pickName(b, lang)]))
+  return (
+    <>
+      <h4><Handshake size={14} /> {t.contracts.title}</h4>
+      <ul className="sp-contracts">
+        {list.map((k) => {
+          const before = month < toMonth(k.signed)
+          return (
+            <li key={k.id} className={before ? 'before' : ''} style={{ borderColor: k.color }}>
+              <div className="spc-head">
+                <b style={{ color: k.color }}>{lang === 'ko' ? k.customer_ko ?? k.customer : k.customer}</b>
+                <span>
+                  {k.value_usd_bn != null && `$${k.value_usd_bn}bn`}
+                  {k.term_years != null && ` · ${k.term_years}${t.contracts.years}`}
+                  {k.it_mw != null && ` · ${k.it_mw}MW IT`}
+                </span>
+              </div>
+              <div className="spc-meta">
+                {fmtWhen(k.signed, lang)}
+                {k.buildings?.length ? ` · ${k.buildings.map((id) => bName[id] ?? id).join(', ')}` : ''}
+                {' '}<a href={k.source} target="_blank" rel="noreferrer" aria-label="source"><Link2 size={11} /></a>
+              </div>
+              {(lang === 'ko' ? k.note_ko : k.note_en) && <div className="spc-note">{lang === 'ko' ? k.note_ko : k.note_en}</div>}
+            </li>
+          )
+        })}
+      </ul>
+    </>
   )
 }

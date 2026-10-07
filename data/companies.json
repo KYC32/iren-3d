@@ -56,6 +56,71 @@
         "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm",
         "https://iren.com/data-centers",
         "https://www.sec.gov/Archives/edgar/data/1878848/000114036126007905/ny20064909x3_ex99-1.htm"
+      ],
+      "events": [
+        {
+          "date": "2026-12",
+          "kind": "earnings",
+          "title_ko": "Q1 FY27 실적 발표 (예상)",
+          "title_en": "Q1 FY27 results (expected)",
+          "basis": "estimate",
+          "source": "https://www.investing.com/equities/iris-energy-earnings"
+        }
+      ],
+      "contracts": [
+        {
+          "id": "microsoft-2025",
+          "customer": "Microsoft",
+          "value_usd_bn": 9.7,
+          "term_years": 5,
+          "signed": "2025-11-03",
+          "it_mw": 200,
+          "sites": [
+            "childress"
+          ],
+          "buildings": [
+            "horizon-1",
+            "horizon-2",
+            "horizon-3",
+            "horizon-4"
+          ],
+          "color": "#5b8def",
+          "note_ko": "GB300 NVL72, 선급금 20%, Horizon 1~4 단계 인도",
+          "note_en": "GB300 NVL72, 20% prepayment, Horizon 1–4 delivered in tranches",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036125040072/ef20058139_ex99-1.htm"
+        },
+        {
+          "id": "nvidia-2026",
+          "customer": "NVIDIA",
+          "value_usd_bn": 3.4,
+          "term_years": 5,
+          "signed": "2026-05-07",
+          "it_mw": 60,
+          "sites": [
+            "childress"
+          ],
+          "buildings": [
+            "air-cooled-nvidia"
+          ],
+          "color": "#7fbf4d",
+          "note_ko": "공랭 Blackwell 관리형 GPU 클라우드, 2027년 초 가동 목표",
+          "note_en": "Managed air-cooled Blackwell GPU cloud, targeted early 2027",
+          "source": "https://www.globenewswire.com/news-release/2026/05/07/3290760/0/en/iren-secures-3-4bn-ai-cloud-contract-with-nvidia.html"
+        },
+        {
+          "id": "ai-developers-2026",
+          "customer": "AI developers",
+          "customer_ko": "AI 개발사 다수",
+          "value_usd_bn": 2.8,
+          "term_years": null,
+          "signed": "2026-07-20",
+          "it_mw": null,
+          "sites": [],
+          "color": "#b48be0",
+          "note_ko": "Perplexity·Figure AI·Together AI·Fluidstack 등 다년 계약(가중평균 약 4년), 배치 사이트는 회사 미공개",
+          "note_en": "Perplexity, Figure AI, Together AI, Fluidstack and others; multi-year (weighted avg ~4 yrs); sites not disclosed",
+          "source": "https://www.globenewswire.com/news-release/2026/07/20/3329624/0/en/iren-signs-2-8bn-in-new-customer-contracts-with-leading-ai-developers-raises-2026-arr-target-to-over-4bn.html"
+        }
       ]
     }
   ],
