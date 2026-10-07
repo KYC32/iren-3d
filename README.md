@@ -1,8 +1,12 @@
 # IREN 3D — 데이터센터 현황판
 
 IREN(NASDAQ: IREN)의 데이터센터 사이트 현황을 **전략게임처럼** 보여주는 비공식 3D 웹앱입니다.
-저폴리 지구본에서 사이트 핀을 누르면 카메라가 날아가 아이소메트릭 캠퍼스로 들어갑니다.
+북미 서부 보드판(+ 스페인·남호주 삽입판)에서 사이트 핀을 누르면 카메라가 날아가 아이소메트릭 캠퍼스로 들어갑니다.
 캠퍼스에서는 가동중·시운전·건설중·계획 건물과 GPU 납품 트럭, 변전소 통전 예정 등을 볼 수 있습니다.
+타임라인 슬라이더로 2024~2028년을 오가며 사이트가 지어지는 과정을 볼 수 있습니다.
+
+엔진은 [ai-infra-map](https://github.com/KYC32/ai-infra-map) `5257a98` 을 **단일 회사 모드**(`src/config.js`)로 가져온 것입니다.
+보드판 지도·사건 눈금·다가오는 일정·계약 연결선·갱신 기록은 이 레포에서 추가했습니다.
 
 > 본 프로젝트는 IREN Ltd 와 무관한 개인의 비공식 프로젝트입니다. 모든 수치는 공개 자료에서 수집했고 항목마다 출처를 표기했습니다. 투자 조언이 아닙니다.
 
@@ -10,29 +14,36 @@ IREN(NASDAQ: IREN)의 데이터센터 사이트 현황을 **전략게임처럼**
 
 | 화면 | 내용 |
 |---|---|
-| 지구본 | 육지 = 미리 계산한 h3 육각 타일, 핀 높이 = √계통전력, 링 펄스 속도 = 상태 |
+| 보드판 | 북미 서부 본판 + 스페인·남호주 삽입판(같은 축척). 육지 = 미리 계산한 h3 육각 타일, 핀 높이 = √계통전력, 링 펄스 속도 = 상태 |
+| 계약 연결선 | 고객 배지(Microsoft·NVIDIA·AI 개발사) → 사이트, 선 굵기 ∝ 계약 금액, 서명일 이후에만 표시 |
+| 타임라인 | 2024~2028 월 단위, 재생, 사건 눈금(회색=지난 일, 노랑=예정). 기준일 이후는 회사 발표 목표 기준 |
+| 왼쪽 패널 | 사이트 목록 / 다가오는 일정(클릭 → 그 시점·사이트로) / 데이터 갱신 기록 |
 | 캠퍼스 | 데이터홀 1블록 = 75MW gross(Horizon 1동). 상태별 외형, 크레인·트럭·전력 흐름 애니메이션 |
 | 오버레이 | KPI, 상태 범례(클릭 = 필터), 사이트 목록, 상세 패널(타임라인·추정·출처), 한/영 토글 |
 
-딥링크: `/#site=childress` 처럼 사이트 id 를 붙이면 그 캠퍼스로 바로 열립니다.
+딥링크: `/#site=childress&date=2027-06` 처럼 사이트·날짜를 붙이면 그 상태로 바로 열립니다.
+영상 인트로(녹화 모드)는 지구본을 그대로 씁니다.
 
 ## 개발
 
 ```bash
 npm install
 npm run dev        # http://localhost:5173
-npm test           # 캠퍼스 배치 로직 단위 테스트
+npm test           # 시간 함수·사건·캠퍼스 배치 단위 테스트
 npm run build      # validate → 빌드 (dist/)
 ```
 
 ## 데이터 갱신 방법 (가장 자주 하는 일)
 
-1. `public/data/sites.json` 을 수정합니다. 모든 수치에는 `sources`(URL)를 남깁니다.
-   - 건물 상태: `operating` · `commissioning` · `under_construction`(+ `progress` 0~1) · `planned` · `decommissioning`
-   - 기존 건물 전력을 재사용하는 전환(예: 채굴동 → AI 홀)은 `replaces: "<기존 건물 id>"` 로 표시해 이중 계산을 막습니다.
-   - 채용공고처럼 회사 발표가 아닌 추정은 `estimates` 에만 넣습니다.
-2. `npm run validate` 로 검사합니다. 스키마 오류·전력 합계 초과·중복 id 를 잡아 줍니다.
-3. `git commit` → `git push` 하면 Vercel 이 자동으로 다시 배포합니다.
+1. 사이트 데이터는 `data/companies/iren.json`, 회사 지표·계약·일정은 `data/companies.json` 에 있습니다.
+   - 건물 상태는 "바뀐 시점" 목록(`phases`)으로 적습니다. 예) `{ "status": "operating", "from": "2026-Q4", "basis": "target" }`
+   - `basis`: `reported`(발표된 사실) · `target`(회사 목표) · `estimate`(우리 추정, `estimates` 에 근거 필요)
+   - 기존 건물 전력을 재사용하는 전환(예: 채굴동 → AI 홀)은 `replaces: "<기존 건물 id>"`
+   - 고객 계약은 `contracts`(사이트·건물 연결), 실적 발표 같은 회사 일정은 `events`
+2. **`data/changelog.json` 맨 위에 오늘 날짜로 바뀐 내용을 적습니다.** 데이터 기준일보다 최신 기록이 없으면 빌드가 실패합니다.
+3. `npm run validate` 로 검사합니다. 스키마·날짜 순서·매달 전력 합계·좌표·계약 참조·갱신 기록을 확인합니다.
+4. 사이트를 추가하거나 좌표를 바꿨다면 `npm run geo` (보드판·지구본 타일 다시 계산).
+5. `git commit` → `git push` 하면 Vercel 이 자동으로 다시 배포합니다.
 
 ## 영상 만들기 (X·쇼츠용)
 
@@ -72,14 +83,18 @@ Vite 8 · React 19 · @react-three/fiber 9 · @react-three/drei 10 · three 0.18
 ## 폴더
 
 ```
-public/data/sites.json      사이트 현황 (유일한 진실)
-public/data/land-hex.json   지구본 육지 타일 (npm run geo 로 생성)
+data/companies.json         회사 지표·계약·일정
+data/companies/iren.json    사이트·건물(시점 이력) — 유일한 진실
+data/changelog.json         데이터 갱신 기록
+public/data/infra.json      위 원본을 합친 것 (npm run data 가 생성)
+public/data/board-hex.json  보드판 육각 타일·경계선 (npm run geo 로 생성)
+public/data/land-hex.json   지구본 육지 타일 (npm run geo 로 생성, 영상 인트로용)
 public/data/borders.json    국경·해안선·미국 주 경계 (npm run geo 로 생성)
-src/data/                   스키마(zod), 로더·KPI 계산, 상태 색상표
-src/scene/                  3D: GlobeView, SiteView, CameraRig, layoutCampus, buildings/
+src/data/                   스키마(zod), 시간 함수(timeline.js), 사건(events.js), 상태 색상표
+src/scene/                  3D: BoardView(boards.js), GlobeView, SiteView, CameraRig, layoutCampus, buildings/
 src/ui/                     HTML 오버레이 패널들
 src/i18n/                   한/영 문자열
-scripts/                    validate-sites, build-land-hex, build-borders
+scripts/                    build-data, validate, build-board-hex, build-land-hex, build-borders, record-server
 docs/research-brief.md      참고 사례·코드·데이터 출처 리서치
 ```
 
