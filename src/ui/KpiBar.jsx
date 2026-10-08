@@ -1,5 +1,6 @@
 // 핵심 지표 카드 줄: 지구본에서는 회사 전체, 캠퍼스에서는 선택한 사이트 기준
-import { Zap, HardHat, MapPinned, CircleDollarSign, Cpu, Plug } from 'lucide-react'
+import { useMemo } from 'react'
+import { Zap, HardHat, MapPinned, CircleDollarSign, Cpu, Plug, TrendingUp } from 'lucide-react'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { useT } from '../i18n/useT.js'
 import { siteMetrics } from '../data/loadSites.js'
@@ -7,6 +8,7 @@ import { totalsAt } from '../data/timeline.js'
 import { fmtMw } from '../data/format.js'
 import { reportedMetricsAt } from '../data/reportedMetrics.js'
 import { SINGLE_COMPANY } from '../config.js'
+import { growthPath } from '../data/outlook.js'
 
 // 회사 발표 지표 표시: 단위에 맞게 ($bn / $m / GW·MW / 개수)
 function fmtMetric(x) {
@@ -28,6 +30,9 @@ export default function KpiBar() {
   const view = useAppStore((s) => s.view)
   const site = useAppStore(selectSelectedSite)
   const activeCompanies = useAppStore((s) => s.activeCompanies)
+  const jumpTo = useAppStore((s) => s.jumpTo)
+  // 성장 경로(기준일 뒤 연말마다 AI 가동, 회사 목표 기준) — 원본 데이터가 바뀔 때만 다시 계산
+  const path = useMemo(() => (data?.raw ? growthPath(data.raw) : []), [data?.raw])
   const activeGroups = useAppStore((s) => s.activeGroups)
   if (!data) return null
 
@@ -49,6 +54,15 @@ export default function KpiBar() {
     cards = [
       { icon: Plug, label: t.kpi2.secured, value: fmtMw(m.secured, 2), sub: `${t.kpi2.energized} ${fmtMw(m.energized, 2)}` },
       { icon: Zap, label: t.kpi2.ai, value: fmtMw(m.ai), tone: 'operating', sub: [includedSub(t, lang, { delivered: m.delivered }), m.mining ? `${t.kpi2.mining} ${fmtMw(m.mining)}` : null].filter(Boolean).join(' · ') || null }, // AI 가동엔 인수분이 포함, 채굴은 별도
+      // AI 가동 전망: 큰 숫자 = 마지막 연말 값, 아래 = 연말별 경로(누르면 타임라인이 그 시점으로)
+      // 경로 숫자는 단위를 MW 로 통일 (380 과 1.1GW 가 섞여 보이지 않게)
+      ...(path.length ? [{
+        icon: TrendingUp, label: `${t.kpi2.outlook} · ${path.at(-1).year}`, value: fmtMw(path.at(-1).ai), tone: 'future',
+        subNode: <span className="kpi-path" title={t.kpi2.outlookNote}>{path.map((p, i) => (
+          <button key={p.month} type="button" onClick={() => jumpTo(p.month)} aria-label={`${p.year}-12 ${fmtMw(p.ai)}`}>
+            {i > 0 && <i aria-hidden="true">→</i>}{String(p.year).slice(2)}.12 <b>{p.ai.toLocaleString()}</b>
+          </button>))}<em>MW · {t.kpi2.outlookNote}</em></span>,
+      }] : []),
       { icon: HardHat, label: t.kpi2.building, value: fmtMw(m.building), tone: 'construction' },
       { icon: MapPinned, label: t.kpi2.sites, value: String(m.sites), sub: SINGLE_COMPANY ? null : `${t.kpi2.companies} ${ids.length}` },
     ]
@@ -74,7 +88,7 @@ export default function KpiBar() {
         <div key={k.label} className={`kpi tone-${k.tone ?? 'none'}`}>
           <div className="kpi-label"><k.icon size={13} strokeWidth={1.6} aria-hidden="true" /> {k.label}</div>
           <MetricValue value={k.value}/>
-          {k.sub && <div className="kpi-sub">{k.source ? <a href={k.source} target="_blank" rel="noreferrer">{k.sub}</a> : k.sub}</div>}
+          {k.subNode ? <div className="kpi-sub">{k.subNode}</div> : k.sub && <div className="kpi-sub">{k.source ? <a href={k.source} target="_blank" rel="noreferrer">{k.sub}</a> : k.sub}</div>}
         </div>
       ))}
       </div>

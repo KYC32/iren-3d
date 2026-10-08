@@ -655,3 +655,14 @@ button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit;
 .map-tabs button { font-size: 12px; padding: 6px 0; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
 .map-tabs .tab-count { font-size: 10.5px; font-weight: 700; color: #5d7a6d; background: #e3efe8; border-radius: 999px; padding: 0 6px; }
 .map-sidebar .upcoming, .map-sidebar .changelog { padding: 2px 0 8px; }
+
+/* AI 가동 전망 카드: 회사 목표 기준(미래) — 타임라인의 노란 빗금 구간과 같은 색 계열 */
+.kpi.tone-future .kpi-value { color: #8a6a00; }
+.kpi-path { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; white-space: normal; }
+.kpi-path button { border: 0; background: none; padding: 0; font: inherit; color: inherit; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; }
+.kpi-path button:hover b { text-decoration: underline; }
+.kpi-path b { color: #6b5200; font-weight: 700; }
+.kpi-path i { font-style: normal; color: #b39a4d; margin-right: 2px; }
+.kpi-path em { font-style: normal; color: #8a7a4a; margin-left: 4px; }
+/* 카드 아래 작은 글씨가 길면 줄바꿈 (옆 카드로 넘쳐 겹치지 않게) */
+.kpi-sub { white-space: normal; line-height: 1.35; }
