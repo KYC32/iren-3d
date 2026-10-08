@@ -2,6 +2,7 @@ import { useMemo, useEffect } from 'react'
 import { Instances, Instance } from '@react-three/drei'
 import { PlaneGeometry, Float32BufferAttribute, Color } from 'three'
 import { landscapePlants, terrainHeight } from '../campusLandscape.js'
+import Kangaroos from './Kangaroos.jsx'
 
 function LandscapeGround({ side, profile }) {
   const geometry = useMemo(() => {
@@ -27,8 +28,9 @@ function LandscapeGround({ side, profile }) {
 
 function Vegetation({ plants, profile }) {
   const trees = plants.filter(p => p.type === 0), shrubs = plants.filter(p => p.type === 1), grass = plants.filter(p => p.type === 2)
-  const conifers = profile.type === 'forest' ? trees.filter((_, i) => !profile.mixed || i % 4 !== 0) : []
-  const broadleaf = profile.type === 'forest' ? trees.filter((_, i) => profile.mixed && i % 4 === 0) : trees
+  const conifers = trees.filter(p => p.species === 'conifer')
+  const broadleaf = trees.filter(p => p.species === 'broadleaf')
+  const maples = trees.filter(p => p.species === 'maple')
   return <group>
     <Instances frames={1} limit={trees.length} castShadow>
       <cylinderGeometry args={[.1, .15, 1.7, 5]}/><meshStandardMaterial color={profile.trunk} roughness={1}/>
@@ -41,6 +43,12 @@ function Vegetation({ plants, profile }) {
     {broadleaf.length > 0 && <Instances frames={1} limit={broadleaf.length * 3} castShadow receiveShadow>
       <icosahedronGeometry args={[1, 1]}/><meshStandardMaterial roughness={1}/>
       {broadleaf.flatMap((p, i) => [0,1,2].map(t => <Instance key={`${i}-${t}`} color={p.color} position={[p.x+Math.cos(p.angle+t*2.1)*.45*p.scale,p.y+(1.45+(t===0?.35:0))*p.scale,p.z+Math.sin(p.angle+t*2.1)*.45*p.scale]} scale={[p.scale*.85,p.scale*.65,p.scale*.85]} rotation={[0,p.angle,0]}/>))}
+    </Instances>}
+    {maples.length > 0 && <Instances frames={1} limit={maples.length * 5} castShadow receiveShadow>
+      <icosahedronGeometry args={[1,1]}/><meshStandardMaterial roughness={1} flatShading/>
+      {maples.flatMap((p,i)=>[0,1,2,3,4].map(t=><Instance key={`${i}-${t}`} color={t===0?'#dda448':p.color}
+        position={[p.x+(t?Math.cos(p.angle+t*Math.PI/2)*.62*p.scale:0),p.y+(t?1.9:2.5)*p.scale,p.z+(t?Math.sin(p.angle+t*Math.PI/2)*.62*p.scale:0)]}
+        scale={[p.scale*(t?.78:.7),p.scale*(t?.8:.9),p.scale*(t?.78:.7)]} rotation={[0,p.angle+t*.4,0]}/>))}
     </Instances>}
     <Instances frames={1} limit={shrubs.length} castShadow>
       <icosahedronGeometry args={[1, 0]}/><meshStandardMaterial roughness={1}/>
@@ -71,6 +79,7 @@ export default function CampusLandscape({ siteId, layout, profile }) {
   return <group name="regional-landscape">
     <LandscapeGround side={side} profile={profile}/>
     <Vegetation plants={plants} profile={profile}/>
+    {profile.kangaroos && <Kangaroos side={side} relief={profile.relief}/>}
     {/* Cleared perimeter separates the facility from native vegetation. */}
     {[-1,1].map(s=><group key={s}>
       <mesh position={[s*(side/2+.65),-.16,0]} receiveShadow><boxGeometry args={[1.3,.1,side]}/><meshStandardMaterial color={profile.ground} roughness={1}/></mesh>

@@ -49,6 +49,7 @@ npm run build      # validate → 빌드 (dist/)
 - Oklahoma·Bundey는 공식 소개 이미지와 지역 사진을 참고한 분위기 표현입니다. Sweetwater 2의 정확한 주변 배치와 Badajoz 현장 경관은 미확인입니다. Badajoz 검색 결과의 계획 조감도는 현장 실사로 사용하지 않았습니다.
 - 토양·수목·완만한 기복은 `src/scene/campusLandscape.js`의 출처별 프로필로 관리합니다. 나무 배치는 사이트 ID로 고정하고 부지·납품 도로·전력선 구간을 비웁니다. 식생은 [pmndrs/drei Instances](https://github.com/pmndrs/drei/blob/master/docs/performances/instances.mdx)를 참고한 정적 인스턴싱으로 처리합니다. [procedural terrain 예제](https://github.com/dgreenheck/threejs-vibecode-rpg)에서 살펴본 지형·식생 분리 방식을 참고했으며 외부 코드는 복사하지 않았습니다.
 - 지도 카드 표식은 [MapLibre HTML cluster 예제](https://maplibre.org/maplibre-gl-js/docs/examples/display-html-clusters-with-custom-properties/)의 표식 캐시·그룹 조회 패턴을 참고합니다. 목록 접기 상태는 화면 전환 중 유지되며 모바일에서는 하단 목록으로 열립니다.
+- 캐나다 세 캠퍼스에는 침엽수 사이에 단풍나무를 섞고, 호주 번디에는 부지 밖에서 뛰는 캥거루 세 마리를 배치했습니다. 둘 다 지역 분위기를 위한 장식 요소입니다. 캥거루 경로는 도로·부지와 분리하고 주변 식생도 비우며, 모션 감소 설정을 켜면 멈춥니다.
 - 건물·울타리·도로·경관의 위치와 크기는 구성도입니다. 나무와 배경은 촬영 시점·현재 계절을 재현하지 않습니다. Sweetwater 1의 풍력발전기는 공식 사진에 보이는 주변 경관이며 캠퍼스 전력 공급원을 뜻하지 않습니다. 각 상세 패널의 ‘사진을 참고한 경관 · 출처’에서 확인할 수 있습니다.
 
 ## 데이터 갱신 방법 (가장 자주 하는 일)

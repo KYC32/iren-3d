@@ -9,6 +9,9 @@ const forest = {
   type: 'forest', background: '#eaf0ea', ground: '#c4c6b7', soil: '#adb5a0', field: '#9da98b',
   foliage: ['#50755e', '#678369', '#799478'], grass: '#8c9b74', trunk: '#827769',
   trees: 110, shrubs: 65, relief: .55, road: '#8b9690',
+  maples: true, mapleFoliage: ['#bc5540', '#ce7b39', '#d7aa47', '#be673f'],
+  decoration_ko: '단풍나무는 지역 분위기를 위한 연출입니다.',
+  decoration_en: 'Autumn maples are a decorative regional touch.',
 }
 const official = slug => `https://iren.com/data-centers/${slug}`
 export const CAMPUS_LANDSCAPES = {
@@ -41,11 +44,13 @@ export const CAMPUS_LANDSCAPES = {
     notes_en: 'Conifers and a mountain-valley setting follow official campus imagery and local references. Background ridges are simplified.',
   },
   bundey: {
-    ...texas, trees: 18, shrubs: 120, ground: '#d6c8ac', soil: '#c8ad89', field: '#baba95',
+    ...texas, trees: 18, shrubs: 120, kangaroos: true, ground: '#d6c8ac', soil: '#c8ad89', field: '#baba95',
     foliage: ['#849276', '#9ca386', '#a4aa8d'], source: official('bundey'),
     regionalSource: 'https://www.realestate.com.au/sold/property-lifestyle-sa-morgan-7156392',
     notes_ko: '공식 번디 소개 이미지와 남호주 지역 사진을 참고해 건조한 흙, 낮은 관목과 성긴 수목을 표현했습니다. 현장 경계·시설 배치는 미확인입니다.',
     notes_en: 'The official Bundey introduction and regional South Australian imagery inform dry soil, scrub and sparse trees. Site boundaries and facilities are unverified.',
+    decoration_ko: '부지 밖 캥거루는 장식 애니메이션입니다.',
+    decoration_en: 'Kangaroos outside the site are decorative animation.',
   },
   kiowa: {
     ...texas, trees: 46, shrubs: 65, relief: .5, ground: '#caccb3', soil: '#b5b396', field: '#a4b48b',
@@ -60,6 +65,13 @@ CAMPUS_LANDSCAPES['sweetwater-2'] = { ...CAMPUS_LANDSCAPES['sweetwater-1'], turb
   notes_en: 'Dry grassland and low scrub reflect the Sweetwater region; the precise surroundings of site 2 remain unverified.' }
 
 export const campusLandscape = id => CAMPUS_LANDSCAPES[id] ?? null
+
+// Decorative wildlife stays on open ground beyond the front boundary.
+export const kangarooHabitat = side => ({ x: side * .08, z: side / 2 + 6, rx: side * .18, rz: 2.2 })
+export function inKangarooHabitat(x, z, side) {
+  const habitat = kangarooHabitat(side)
+  return Math.abs(x - habitat.x) < habitat.rx + 3 && Math.abs(z - habitat.z) < habitat.rz + 3
+}
 
 export function terrainHeight(x, z, side, relief) {
   const edge = Math.max(Math.abs(x), Math.abs(z))
@@ -79,10 +91,14 @@ export function landscapePlants(siteId, side, roadZ, powerZ, profile) {
       const x = (random() - .5) * side * 2.15, z = (random() - .5) * side * 2.15
       if (Math.max(Math.abs(x), Math.abs(z)) < half + 1.7 || Math.hypot(x, z) > side * 1.13) continue
       if (Math.abs(z - roadZ) < 3.5 || (x < -half && Math.abs(z - powerZ) < 1.8)) continue
+      if (profile.kangaroos && inKangarooHabitat(x, z, side)) continue
       // Patchy vegetation, with more open ground at the front of the model.
       if (type === 0 && (Math.sin(x * .29) + Math.cos(z * .37) < -.2 || (z > half && random() < .5))) continue
       const scale = type === 0 ? .7 + random() * .7 : type === 1 ? .3 + random() * .5 : .14 + random() * .19
-      plants.push({ type, x, z, y: terrainHeight(x, z, side, profile.relief), scale, angle: random() * Math.PI * 2, color: profile.foliage[Math.floor(random() * profile.foliage.length)] })
+      const species = type !== 0 ? null : profile.maples && added % 5 === 0 ? 'maple'
+        : profile.type === 'forest' && (!profile.mixed || added % 4 !== 0) ? 'conifer' : 'broadleaf'
+      const palette = species === 'maple' ? profile.mapleFoliage : profile.foliage
+      plants.push({ type, species, x, z, y: terrainHeight(x, z, side, profile.relief), scale, angle: random() * Math.PI * 2, color: palette[Math.floor(random() * palette.length)] })
       added++
     }
   }
