@@ -693,3 +693,8 @@ button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit;
 
 /* 채용 선행지표 칩 (캠퍼스 목록) */
 .map-site-list .hiring-chip { display: inline-flex; align-items: center; gap: 4px; color: #3d5a8a; font-size: 10px; }
+
+/* 공유 버튼: 복사되면 초록으로 잠깐 */
+.share-btn { display: inline-flex; align-items: center; gap: 5px; }
+.share-btn.is-copied { color: #1f7f66; border-color: #9fd3c2; }
+@media (max-width: 767px) { .share-btn span { display: none; } }
