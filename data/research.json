@@ -354,11 +354,12 @@
       "locator": "Official website gallery · Childress Data Center Main Facility",
       "rights": "display",
       "rightsNote": "© IREN · 공식 홈페이지 공개 이미지 / Official website image",
-      "rightsBasis": "Project owner authorized use of IREN official website and IR images on 2026-10-08.",
+      "rightsBasis": "IREN official website image (publicly posted), shown with source credit and a link to the original; removed promptly on request by the rights holder.",
       "identification": "IREN Childress 페이지의 공식 이미지 설명. 특정 Horizon 건물로 식별하지 않음.",
       "thumbnail": "/media/iren/childress-main.avif",
       "full": "/media/iren/childress-main.avif",
-      "assetSource": "https://iren.com/api/media/file/iren-childress-43.avif"
+      "assetSource": "https://iren.com/api/media/file/iren-childress-43.avif",
+      "title_en": "Childress campus overview"
     },
     {
       "id": "childress-official-facility",
@@ -371,11 +372,12 @@
       "locator": "Official website gallery · Childress Data Center Facility View 56",
       "rights": "display",
       "rightsNote": "© IREN · 공식 홈페이지 공개 이미지 / Official website image",
-      "rightsBasis": "Project owner authorized use of IREN official website and IR images on 2026-10-08.",
+      "rightsBasis": "IREN official website image (publicly posted), shown with source credit and a link to the original; removed promptly on request by the rights holder.",
       "identification": "IREN Childress 페이지의 공식 이미지 설명. 특정 Horizon 건물로 식별하지 않음.",
       "thumbnail": "/media/iren/childress-facility.avif",
       "full": "/media/iren/childress-facility.avif",
-      "assetSource": "https://iren.com/api/media/file/iren-childress-56.avif"
+      "assetSource": "https://iren.com/api/media/file/iren-childress-56.avif",
+      "title_en": "Childress server facility"
     },
     {
       "id": "childress-official-interior",
@@ -388,11 +390,12 @@
       "locator": "Official website gallery · Childress Data Center Interior 1",
       "rights": "display",
       "rightsNote": "© IREN · 공식 홈페이지 공개 이미지 / Official website image",
-      "rightsBasis": "Project owner authorized use of IREN official website and IR images on 2026-10-08.",
+      "rightsBasis": "IREN official website image (publicly posted), shown with source credit and a link to the original; removed promptly on request by the rights holder.",
       "identification": "IREN Childress 공식 갤러리 이미지. 원문 alt는 Interior 1이지만 실제 이미지를 확인해 항공 전경으로 분류. 특정 Horizon 건물로 식별하지 않음.",
       "thumbnail": "/media/iren/childress-interior.avif",
       "full": "/media/iren/childress-interior.avif",
-      "assetSource": "https://iren.com/api/media/file/childress_1.avif"
+      "assetSource": "https://iren.com/api/media/file/childress_1.avif",
+      "title_en": "Childress campus aerial view"
     },
     {
       "id": "childress-apr2025",
@@ -406,7 +409,8 @@
       "rights": "link_only",
       "rightsNote": "© IREN · 공식 IR 자료 원문에서 확인 / View the original IR presentation",
       "identification": "공식 슬라이드 캡션 / Official slide caption",
-      "rightsBasis": "Project owner authorized use of IREN official website and IR images on 2026-10-08. Inline asset not yet imported."
+      "rightsBasis": "Link to the original IREN IR material only; image is not re-hosted.",
+      "title_en": "Childress campus overview"
     },
     {
       "id": "horizon-concept",
@@ -422,7 +426,8 @@
       "rights": "link_only",
       "rightsNote": "© IREN · 공식 IR 자료 원문에서 확인 / View the original IR presentation",
       "identification": "공식 슬라이드 캡션 / Official slide caption",
-      "rightsBasis": "Project owner authorized use of IREN official website and IR images on 2026-10-08. Inline asset not yet imported."
+      "rightsBasis": "Link to the original IREN IR material only; image is not re-hosted.",
+      "title_en": "Horizon 1 rendering"
     }
   ],
   "locations": [

@@ -68,7 +68,7 @@ export default function KpiBar() {
 
   return (
     <section className="kpis panel" aria-label={lang==='ko'?'핵심 현황':'Key metrics'}>
-      <div className="kpi-context"><small>{view==='site'?'CAMPUS':'PORTFOLIO'}</small><b>{lang==='ko'?(view==='site'?'전력 현황':'사업 현황'):(view==='site'?'Power overview':'At a glance')}</b><span>{lang==='ko'?(view==='site'?'시설 전력 기준':'공개 자료 기준'):(view==='site'?'Facility capacity':'Reported data')}</span></div>
+      <div className="kpi-context"><small>{lang==='ko'?(view==='site'?'캠퍼스':'포트폴리오'):(view==='site'?'CAMPUS':'PORTFOLIO')}</small><b>{lang==='ko'?(view==='site'?'전력 현황':'사업 현황'):(view==='site'?'Power overview':'At a glance')}</b><span>{lang==='ko'?(view==='site'?'시설 전력 기준':'공개 자료 기준'):(view==='site'?'Facility capacity':'Reported data')}</span></div>
       <div className="kpi-items" tabIndex={0} aria-label={lang==='ko'?'지표 목록, 좌우로 스크롤':'Metrics, scroll horizontally'}>
       {cards.map((k) => (
         <div key={k.label} className={`kpi tone-${k.tone ?? 'none'}`}>

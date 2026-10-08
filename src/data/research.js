@@ -1,3 +1,11 @@
+// =============================================================
+// research.js — 원문 근거(research.json)를 날짜에 맞춰 꺼내 쓰는 함수 모음
+// -------------------------------------------------------------
+// research.json 에는 출처(sources), 원문에서 확인한 사실(claims), 회사 목표 일정(milestones),
+// 사진(media), 위치 근거(locations)가 들어 있습니다.
+// 핵심 원칙: "그 날짜에 공개돼 있던 자료"만 보여 줍니다 (나중에 나온 발표로 과거를 고쳐 쓰지 않음).
+// observedSiteAt 은 투자자용 기본 화면 — 상태는 보고된 근거로만 앞으로 진행합니다.
+// =============================================================
 import { toMonth } from './timeline.js'
 
 export const EMPTY_RESEARCH = { sources: [], claims: [], milestones: [], media: [], locations: [] }
@@ -9,11 +17,11 @@ export function claimsAt(research, siteId, month, buildingId = null) {
 }
 export function mediaAt(research, siteId, month, buildingId = null) {
   return (research?.media ?? []).filter((p) => p.site === siteId && (!buildingId || p.buildings.includes(buildingId))
-    // Undated website imagery becomes visible only from the month we observed it.
-    // This is not evidence that it was publicly available in earlier periods.
+    // 게시일이 없는 홈페이지 사진은 우리가 확인한 달부터만 보여 줌
+    // (그 전에 공개돼 있었다는 증거가 아니므로)
     && (() => { const source = sourceById(research, p.sourceId); return source && toMonth(source.published ?? source.reviewedAt, 'end') <= month })())
 }
-// Date intervals preserve disclosure precision; a reporting date is not an occurrence date.
+// 날짜 범위: 발표된 정밀도(연·분기·월·일)를 그대로 유지. 발표일은 실제로 일어난 날과 다를 수 있음
 export function dateRange(when) {
   if (!when) return null
   const startMonth = toMonth(when), endMonth = toMonth(when, 'end')
@@ -107,7 +115,7 @@ export function observedSiteAt(site, research, month, companies) {
       const claim = own.filter((c) => c.field === field).at(-1)
       if (claim) result[field] = claim.value
     }
-    // This contract discloses ~60 MW data-center capacity, not an explicit IT-load figure.
+    // 이 계약(NVIDIA)은 데이터센터 용량 약 60MW 만 밝혔고 IT 부하 기준인지는 명시하지 않음 → IT MW 비움
     if (audited && !own.some((c) => c.field === 'it_mw')) result.it_mw = undefined
     const unspecified = own.find((c) => c.field === 'capacity_mw')
     if (unspecified) { result.disclosedMw = unspecified.value; result.gross_mw = undefined }
@@ -115,7 +123,7 @@ export function observedSiteAt(site, research, month, companies) {
   })
   const power = site.power.filter((p) => p.basis === 'reported' && isKnown(p) && toMonth(p.from, 'end') <= cutoff)
   return { ...site, buildings, power: power.length ? power : [{ from: site.announced, secured_mw: 0, energized_mw: 0, basis: 'reported', source: site.sources[0] }],
-    // Campus-level orders remain visible; a missing building link is not a cancelled delivery.
+    // 캠퍼스 단위 납품 주문은 계속 보여 줌 — 어느 건물로 가는지 모른다고 취소된 납품은 아님
     deliveries: site.deliveries.filter((d) => isKnown(d) && d.status !== 'done'),
     _research: research, _observed: true, _layoutSource: site,
     evidenceReview: research.auditedBuildings?.some((a) => a.site === site.id) ? 'partial' : 'pending' }

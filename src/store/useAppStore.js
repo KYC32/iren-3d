@@ -138,9 +138,8 @@ export const useAppStore = create((set, get) => ({
     set({
       activeCompanies: new Set((h.companies ?? []).filter((id) => next.data.companies.some((c) => c.id === id))),
       colorMode: h.color ?? 'status',
-      pending: id ? (id === next.selectedSiteId && next.view === 'site' && !next.pending ? null : { type: 'site', id })
-        : (next.view === 'site' || next.pending ? { type: 'globe' } : null),
     })
+    // 주소(해시)로 이동할 땐 카메라 전환 애니메이션 없이 바로 그 화면으로 (pending: null)
     set({ surface: id ? h.surface ?? 'map' : 'map', detailTab: h.tab ?? 'overview', selectedSiteId: id, view: id ? 'site' : 'globe', pending: null,
       campusPanelCollapsed: false,
       selectedBuildingId: next.data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? h.building : null,

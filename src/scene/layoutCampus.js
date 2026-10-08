@@ -136,7 +136,9 @@ export function campusStateAt(layout, site, m) {
     // 아직 생기기 전 / 철거·완전 전환 / 부분 전환으로 줄어든 칸 → 빈 부지 모습
     const liveBlocks = e ? Math.max(1, Math.round(e.mw / layout.blockMw)) : 0
     if (!e || blk.index >= liveBlocks) return { ...blk, kind: 'lot', h: 0.05, status: 'planned', progress: 0, asLot: true }
-    const progress = e.status === 'under_construction' ? (site._observed ? 0.4 : progressAt(byId.get(blk.buildingId), m, asOfM)) : e.status === 'planned' ? 0 : 1
+    // 확인 기록(observed) 화면은 공정률을 모름 → 0 (바닥판·기둥·펜스만 = "건설중, 진척 미상").
+    // 예전엔 0.4 로 고정해 근거 없이 벽이 40% 올라간 것처럼 보였음
+    const progress = e.status === 'under_construction' ? (site._observed ? 0 : progressAt(byId.get(blk.buildingId), m, asOfM)) : e.status === 'planned' ? 0 : 1
     return { ...blk, status: e.status, progress, asLot: false }
   })
 

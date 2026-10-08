@@ -629,3 +629,21 @@ button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit;
  .view-site .maplibregl-ctrl-bottom-right{bottom:calc(46dvh + 18px + env(safe-area-inset-bottom))!important}
  .view-site.detail-collapsed .maplibregl-ctrl-bottom-right{bottom:calc(90px + env(safe-area-inset-bottom))!important}
 }
+
+/* ---------- 가독성 보정 (2026-10-09 검토) ----------
+   7~9px 글씨와 흐린 회색(대비 2.4~3.3:1)을 최소 10px·대비 4.5:1 이상으로.
+   같은 선택자를 아래에 다시 써서 위쪽 규칙을 덮어씁니다. */
+.kpi-context>small { font-size: 10px; color: #4f6760; }
+.kpi-sub { font-size: 10px; color: #56675f; }
+.photo-card small { font-size: 10.5px; color: #4f5d61; }
+.map-marker-action { color: #5d7a6d; }
+.map-marker-action small { font-size: 10px; }
+.is-selected .map-marker-action { color: #e3efe8; }
+@media (max-width: 767px) {
+  .kpi-context>small { font-size: 9.5px; }
+  .kpis .kpi-sub { font-size: 9.5px; }
+}
+/* lucide 아이콘이 들어간 버튼·링크: 글자와 한 줄로 가지런히 */
+.surface-switch { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.campus-panel a svg, .evidence-card a svg, .photo-card a svg { vertical-align: -2px; margin-left: 2px; }
+.photo-placeholder svg { display: block; margin: 0 auto 6px; }

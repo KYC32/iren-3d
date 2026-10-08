@@ -141,6 +141,7 @@ export default function CameraRig() {
   const homeSeq = useAppStore((s) => s.cameraHomeSeq)
   const size = useThree((s) => s.size)
   const safeRect = useRef(null)
+  const lastOffset = useRef(null) // 마지막으로 적용한 캠퍼스 초점 이동값 (같으면 다시 안 함)
 
   // Explicit navigation resets the view. Panel/date changes preserve the user's close-up.
   useEffect(() => {
@@ -335,7 +336,15 @@ export default function CameraRig() {
     const st = useAppStore.getState()
     if (c && st.view === 'site') {
       const rect = safeRect.current ?? campusViewport(size.width, size.height)
-      c.setFocalOffset(...campusOffset(c.distance, size.width, size.height, rect), false)
+      const off = campusOffset(c.distance, size.width, size.height, rect)
+      // 값이 바뀔 때만 적용: 매 프레임 호출하면 카메라가 "계속 움직이는 중"으로 남아 쉬지 못함
+      const prev = lastOffset.current
+      if (!prev || off.some((v, i) => Math.abs(v - prev[i]) > 1e-4)) {
+        lastOffset.current = off
+        c.setFocalOffset(...off, false)
+      }
+    } else {
+      lastOffset.current = null // 캠퍼스를 벗어나면 잊음 → 다시 들어올 때 반드시 새로 적용
     }
     if (!c || OVERVIEW !== 'globe' || st.view !== 'globe' || st.pending || st.hoverId) return
     if (performance.now() - lastInteract.current < 4000) return

@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react'
+import { useMemo, useEffect, memo } from 'react'
 import { Instances, Instance } from '@react-three/drei'
 import { PlaneGeometry, Float32BufferAttribute, Color } from 'three'
 import { landscapePlants, terrainHeight } from '../campusLandscape.js'
@@ -79,7 +79,15 @@ function WindTurbine({ position, scale = 1 }) {
   </group>
 }
 
-export default function CampusLandscape({ siteId, layout, profile }) {
+// 실제로 쓰는 값(사이트·경관 설정·부지 크기·도로·송전선 위치)이 같으면 다시 그리지 않음.
+// SiteView 는 호버·타임라인마다 다시 그려지는데, 식생 인스턴스(숲 사이트 약 1,000개)까지 매번 다시
+// 계산하면 끊김이 생김. layout 객체는 날짜마다 새로 만들어지므로 안의 숫자만 비교합니다.
+const sameLandscape = (a, b) => a.siteId === b.siteId && a.profile === b.profile
+  && a.layout.side === b.layout.side && a.layout.road.z === b.layout.road.z
+  && a.layout.powerLine.from[1] === b.layout.powerLine.from[1]
+export default memo(CampusLandscape, sameLandscape)
+
+function CampusLandscape({ siteId, layout, profile }) {
   const {side, road, powerLine} = layout
   const plants = useMemo(() => landscapePlants(siteId, side, road.z, powerLine.from[1], profile), [siteId,side,road.z,powerLine.from[1],profile])
   return <group name="regional-landscape">

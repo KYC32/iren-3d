@@ -106,7 +106,7 @@ export default function SiteView({ site }) {
       {!detail && !zoneKey && <AreaLabels blocks={L.blocks} byId={byId} t={t} />}
 
       {!detail && L.blocks.filter(b=>b.isAnchor&&!b.asLot&&b.kind!=='miner_hall'&&['delivered','operating','commissioning'].includes(b.status)&&(!zoneKey||customerKey(byId[b.buildingId]?.customer)===zoneKey)&&selectedId!==b.buildingId&&hoverId!==b.buildingId).map(b=><CampusLabel key={`signal-${b.key}`} position={[b.x,b.h+1,b.z]} priority={55}>
-        <button className={`building-signal signal-${b.status}`} onClick={()=>selectBuilding(b.buildingId)} title={`${pickName(byId[b.buildingId],lang)} · ${t.status[b.status]}`}>
+        <button className={`building-signal signal-${b.status}`} onClick={(e)=>{e.stopPropagation();selectBuilding(b.buildingId)}/* 클릭이 3D 로 퍼져 뒤 블록이 선택을 다시 풀지 않게 */} title={`${pickName(byId[b.buildingId],lang)} · ${t.status[b.status]}`}>
           {b.status==='delivered'?<Check size={12}/>:b.status==='operating'?<Activity size={12}/>:<span className="signal-pending"/>}
           {b.status==='delivered'?(lang==='ko'?'인수 완료':'Accepted'):t.status[b.status]}
         </button>

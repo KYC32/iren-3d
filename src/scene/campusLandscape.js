@@ -22,7 +22,6 @@ const official = slug => `https://iren.com/data-centers/${slug}`
 export const CAMPUS_LANDSCAPES = {
   childress: {
     ...texas, source: official('childress'),
-    regionalSource: 'https://hallhall.com/property-for-sale/texas/diamond-h-headquarters/a09Nu000008tH6r/',
     notes_ko: '칠드레스 항공사진의 평탄한 흙빛 부지와 마른 초지, 낮은 수목 군락을 반영했습니다.',
     notes_en: 'Flat earth-toned terrain, dry grassland and clusters of low trees follow Childress aerial imagery.',
   },
@@ -51,7 +50,6 @@ export const CAMPUS_LANDSCAPES = {
   bundey: {
     ...scrub, trees: 18, shrubs: 120, kangaroos: true, ground: '#d6c8ac', soil: '#c8ad89', field: '#baba95',
     foliage: ['#849276', '#9ca386', '#a4aa8d'], source: official('bundey'),
-    regionalSource: 'https://www.realestate.com.au/sold/property-lifestyle-sa-morgan-7156392',
     notes_ko: '공식 번디 소개 이미지와 남호주 지역 사진을 참고해 건조한 흙, 낮은 관목과 성긴 수목을 표현했습니다. 현장 경계·시설 배치는 미확인입니다.',
     notes_en: 'The official Bundey introduction and regional South Australian imagery inform dry soil, scrub and sparse trees. Site boundaries and facilities are unverified.',
     decoration_ko: '부지 밖 캥거루는 장식 애니메이션입니다.',
@@ -60,7 +58,6 @@ export const CAMPUS_LANDSCAPES = {
   kiowa: {
     ...scrub, trees: 46, shrubs: 65, relief: .5, ground: '#caccb3', soil: '#b5b396', field: '#a4b48b',
     foliage: ['#64805b', '#7c9468', '#8e9f70'], source: official('oklahoma'),
-    regionalSource: 'https://www.land.com/property/250-acres-in-Pittsburg-County-Oklahoma/17419861/',
     notes_ko: '공식 오클라호마 소개 이미지와 피츠버그 카운티 지역 사진의 초지·활엽수 군락을 참고했습니다. 현장 주변 배치는 미확인입니다.',
     notes_en: 'Meadows and broadleaf clusters reference the official Oklahoma introduction and Pittsburg County photographs. The actual site surroundings are unverified.',
   },

@@ -1,6 +1,23 @@
 {
   "entries": [
     {
+      "date": "2026-10-09",
+      "items": [
+        {
+          "ko": "기본 화면 집계 수정: 퇴역(추정 시점)한 시범동·채굴동이 '가동'으로 되살아나던 문제 → 기준일 AI 가동 75MW · 채굴 380MW (이전 표시 2MW · 490MW)",
+          "en": "Default view totals fixed: pilot and mining halls retired on estimated dates no longer come back as operating → AI operating 75MW, mining 380MW as of date (previously shown 2MW, 490MW)"
+        },
+        {
+          "ko": "고객 인수(Horizon 1, 75MW)를 AI 가동에 포함해 집계 — 가동 카드에 '고객 인수 포함'으로 표시",
+          "en": "Customer-accepted capacity (Horizon 1, 75MW) now counts as AI operating — shown as 'incl. customer accepted' on the operating card"
+        },
+        {
+          "ko": "사진 영어 제목 추가, 사진 이용 근거 문구를 '공식 홈페이지 공개 이미지 · 출처 표시 · 요청 시 삭제'로 정정",
+          "en": "Added English photo titles; photo usage note corrected to 'official website image, credited, removed on request'"
+        }
+      ]
+    },
+    {
       "date": "2026-10-07",
       "items": [
         {

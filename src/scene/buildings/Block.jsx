@@ -13,6 +13,7 @@ import { useFrame } from '@react-three/fiber'
 import { RoundedBox, Line } from '@react-three/drei'
 import { styleOf, PENDING_COLOR } from '../../data/statusStyle.js'
 import { PhotoMiningHall } from './PhotoReferencedCampus.jsx'
+import { useReducedMotion } from '../useReducedMotion.js'
 
 const BODY = '#eef1f5'      // 건물 외벽 (밝은 흰색)
 const CONCRETE = '#d9dde8'  // 슬래브
@@ -92,14 +93,15 @@ function FinishedHall({ w, d, h, kind, status, spinning, beacon, appearance }) {
   const fans = useRef([])
   const beaconRef = useRef()
   const liquid = kind === 'datahall_liquid'
-  const reducedMotion=useMemo(()=>window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false,[])
+  const reducedMotion = useReducedMotion() // 모션 감소 설정 (설정을 바꾸면 바로 반영)
 
   useFrame(({ clock }, delta) => {
-    // Equipment animation is distinct from the reported status badge and power flow.
+    // 설비 연출(팬 회전)은 보고된 상태 배지·전력 흐름과 별개인 장식
     if (spinning && !reducedMotion) fans.current.forEach((f) => f && (f.rotation.y += delta * 6))
     // 경광등 점멸 (시운전)
+    // 모션 감소 설정이면 깜빡이지 않고 켜진 채로 둠
     if (beaconRef.current) {
-      const on = Math.sin(clock.elapsedTime * 5) > 0
+      const on = reducedMotion || Math.sin(clock.elapsedTime * 5) > 0
       beaconRef.current.material.emissiveIntensity = on ? 2.2 : 0.1
     }
   })

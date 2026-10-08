@@ -120,7 +120,7 @@ export function ReceivingBay({ bay }) {
 // 경로(path)를 일정 속도로 달려 하역 지점에 멈췄다가 다시 처음부터 반복합니다.
 export function Truck({ truck, index, lang }) {
   const ref = useRef()
-  const reducedMotion = useMemo(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false, [])
+  const reducedMotion = useReducedMotion() // 모션 감소 설정 (설정을 바꾸면 바로 반영)
   const { segs, total } = useMemo(() => {
     const segs = []
     let total = 0

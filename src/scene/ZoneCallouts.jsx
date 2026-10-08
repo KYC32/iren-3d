@@ -1,16 +1,30 @@
 import { useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Vector3 } from 'three'
+import { Matrix4, Vector3 } from 'three'
 import Html from './SafeHtml.jsx'
 import { campusViewport } from './campusCamera.js'
 import { placeZoneCallouts } from './zoneCalloutLayout.js'
 import { CustomerLogo } from '../ui/logos/index.jsx'
 
-const origin = () => [0,0]
+// =============================================================
+// ZoneCallouts — 고객 계약 구역(Microsoft·NVIDIA 등) 배지를 캠퍼스 밖 여백에 띄우고
+//                구역 중심까지 점선으로 잇는 HTML 오버레이
+// -------------------------------------------------------------
+// 화면 좌표 계산(3D → 2D 투영)과 겹침 없는 자리 찾기(placeZoneCallouts)는 꽤 무거워서
+// 카메라나 화면 크기가 바뀔 때만 다시 계산합니다. (가만히 있을 땐 0.5초에 한 번만 — 배지 글자 크기 변화 대비)
+// =============================================================
+const origin = () => [0,0] // Html 을 화면 왼쪽 위(0,0)에 고정 → 안쪽에서 직접 픽셀 좌표로 배치
+const IDLE_REFRESH = 0.5   // 카메라가 멈춰 있을 때 다시 계산하는 간격 (초)
 export default function ZoneCallouts({zones,side,selectedKey,onSelect,lang}){
   const size=useThree(s=>s.size), buttons=useRef({}), paths=useRef({}), dots=useRef({})
   const point=useMemo(()=>new Vector3(),[])
-  useFrame(({camera,size})=>{
+  // 마지막으로 계산했을 때의 카메라 행렬·화면 크기·구역 목록·시각 → 같으면 계산을 건너뜀
+  const last=useRef({ matrix: new Matrix4(), w: 0, h: 0, zones: null, sel: null, t: -Infinity })
+  useFrame(({camera,size,clock})=>{
+    const L=last.current
+    const same=L.matrix.equals(camera.matrixWorld)&&L.w===size.width&&L.h===size.height&&L.zones===zones&&L.sel===selectedKey
+    if(same&&clock.elapsedTime-L.t<IDLE_REFRESH)return
+    L.matrix.copy(camera.matrixWorld);L.w=size.width;L.h=size.height;L.zones=zones;L.sel=selectedKey;L.t=clock.elapsedTime
     const project=(x,y,z)=>{point.set(x,y,z).project(camera);return {x:(point.x+1)*size.width/2,y:(1-point.y)*size.height/2,z:point.z}}
     const half=side/2
     const footprint=[[-half,-half],[half,-half],[half,half],[-half,half]].map(([x,z])=>project(x,0,z))
