@@ -1,8 +1,9 @@
 // =============================================================
-// MapSidebar — 실제 지도 화면 왼쪽 패널: [캠퍼스 | 일정 | 갱신 기록] 탭
+// MapSidebar — 실제 지도 화면 왼쪽 패널: [캠퍼스 | 계약 | 일정 | 갱신 기록] 탭
 // -------------------------------------------------------------
 // 투자자가 첫 화면에서 바로 답을 얻도록:
 //   캠퍼스  : 어디에 무엇이 있나 (누르면 지도가 그 캠퍼스로 이동)
+//   계약    : 고객 계약이 실제 용량으로 얼마나 이행됐나 (ContractsPanel)
 //   일정    : 다음 이벤트·목표 일정은 언제인가 (실적 발표, 인도 목표 등)
 //   갱신 기록: 지난번에 본 뒤로 데이터가 무엇이 바뀌었나
 // 일정·갱신 기록 탭은 예전 3D 개요 화면에만 있어서 지금 흐름에선 볼 수 없었음 → 지도 화면으로 옮김
@@ -15,6 +16,7 @@ import { REGION_NAMES } from '../map/mapData.js'
 import { PanelLeftClose, PanelLeftOpen, MapPin } from 'lucide-react'
 import Upcoming from './Upcoming.jsx'
 import ChangeLog from './ChangeLog.jsx'
+import ContractsPanel from './ContractsPanel.jsx'
 
 // 지도 위 지역 바로가기 (북미·미국·캐나다…)
 export function RegionControls(){
@@ -22,25 +24,26 @@ export function RegionControls(){
  return <nav className="region-controls" aria-label={ko?'지역 이동':'Map regions'}>{Object.entries(REGION_NAMES).map(([id,n])=><button key={id} aria-pressed={st.mapRegion.country===id} onClick={()=>st.setMapRegion(id)}>{n[ko?0:1]}</button>)}</nav>
 }
 
-const TABS = ['sites', 'upcoming', 'log'] // 탭 순서 (스토어의 leftTab 값과 같음)
+const TABS = ['sites', 'contracts', 'upcoming', 'log'] // 탭 순서 (스토어의 leftTab 값과 같음)
 
 export default function MapSidebar(){
   const st=useAppStore(), t=useT(), ko=st.lang==='ko'
   const tab = TABS.includes(st.leftTab) ? st.leftTab : 'sites'
-  const label = { sites: ko?'캠퍼스':'Campuses', upcoming: t.upcoming.tab, log: t.changelog.tab }
+  const label = { sites: ko?'캠퍼스':'Campuses', contracts: ko?'계약':'Contracts', upcoming: t.upcoming.tab, log: t.changelog.tab }
   return <>
     {/* 목록을 접었을 때 보이는 작은 펼치기 버튼 */}
     <button className={`map-list-launcher${st.mapListCollapsed?' is-collapsed':''}${st.sheetOpen?' is-sheet-open':''}`} onClick={()=>st.setCampusListOpen(true)} aria-label={ko?'왼쪽 패널 펼치기':'Expand side panel'} aria-controls="campus-list" aria-expanded="false"><PanelLeftOpen size={16}/><span>{label[tab]}</span>{tab==='sites'&&<b>{st.data.sites.length}</b>}</button>
     <aside id="campus-list" aria-label={label[tab]} className={`map-sidebar panel${st.sheetOpen?' is-open':''}${st.mapListCollapsed?' is-collapsed':''}`}>
       <div className="map-list-heading">
-        <div><small>IREN / {tab==='sites'?'LOCATIONS':tab==='upcoming'?'CALENDAR':'UPDATES'}</small><h2>{label[tab]}</h2></div>
+        <div><small>IREN / {{sites:'LOCATIONS',contracts:'CONTRACTS',upcoming:'CALENDAR',log:'UPDATES'}[tab]}</small><h2>{label[tab]}</h2></div>
         <button className="collapse-campus-list" onClick={()=>st.setCampusListOpen(false)} aria-label={ko?'왼쪽 패널 접기':'Collapse side panel'} title={ko?'접기':'Collapse'} aria-controls="campus-list" aria-expanded="true"><PanelLeftClose size={18}/></button>
       </div>
       {/* 탭: 캠퍼스 | 일정 | 갱신 기록 */}
       <div className="tabs map-tabs" role="tablist" aria-label={ko?'왼쪽 패널 보기':'Side panel views'}>
-        {TABS.map((k)=><button key={k} role="tab" aria-selected={tab===k} className={tab===k?'on':''} onClick={()=>st.setLeftTab(k)}>{label[k]}{k==='sites'&&<span className="tab-count">{st.data.sites.length}</span>}</button>)}
+        {TABS.map((k)=><button key={k} role="tab" aria-selected={tab===k} className={tab===k?'on':''} onClick={()=>st.setLeftTab(k)}>{label[k]}</button>)}
       </div>
       {tab==='sites' && <CampusList />}
+      {tab==='contracts' && <ContractsPanel />}
       {tab==='upcoming' && <Upcoming />}
       {tab==='log' && <ChangeLog />}
     </aside>
