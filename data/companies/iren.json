@@ -339,7 +339,8 @@
               "from": "2023-04",
               "basis": "reported",
               "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm",
-              "published": "2023-04-26"
+              "published": "2023-04-26",
+              "published_source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036123020410/brhc20051994_ex99-1.htm"
             },
             {
               "status": "decommissioning",
@@ -1052,10 +1053,10 @@
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
         },
         {
-          "date": "2026-08-28",
-          "event": "Blue Owl/PIMCO $2.4bn 장비금융 (9.0%, GPU capex 90%)",
-          "event_en": "Blue Owl/PIMCO $2.4bn equipment financing (9.0%, 90% of GPU capex)",
-          "source": "https://www.unite.ai/blue-owl-funds-lead-2-4b-ai-factory-equipment-financing-for-iren/"
+          "date": "2026-08-27",
+          "event": "Blue Owl·PIMCO 주도 $2.4bn GPU 금융 (9.0% 고정, 매켄지 공랭 확장 GPU 설비투자의 90%)",
+          "event_en": "$2.4bn GPU financing led by Blue Owl and PIMCO (9.0% fixed; funds 90% of GPU capex for the Mackenzie air-cooled expansion)",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
         }
       ],
       "estimates": [
@@ -1330,12 +1331,6 @@
           "event": "1.6GW 오클라호마 캠퍼스 발표",
           "event_en": "1.6GW Oklahoma campus announced",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000014/a991irenreportsq2fy26res.htm"
-        },
-        {
-          "date": "2026-04-21",
-          "event": "Pittsburg County 위원회 승인(1차 관문)",
-          "event_en": "Pittsburg County commissioners approve (first gate)",
-          "source": "https://www.yahoo.com/news/us/articles/q-iren-representative-know-proposed-035900763.html"
         }
       ],
       "estimates": [

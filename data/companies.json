@@ -59,12 +59,12 @@
       ],
       "events": [
         {
-          "date": "2026-12",
+          "date": "2026-11",
           "kind": "earnings",
-          "title_ko": "Q1 FY27 실적 발표 (예상)",
-          "title_en": "Q1 FY27 results (expected)",
+          "title_ko": "Q1 FY27 실적 발표 (예상 · 회사 일정 미발표)",
+          "title_en": "Q1 FY27 results (expected · date not yet announced)",
           "basis": "estimate",
-          "source": "https://www.investing.com/equities/iris-energy-earnings"
+          "source": "https://iren.gcs-web.com/events-and-presentations"
         }
       ],
       "contracts": [

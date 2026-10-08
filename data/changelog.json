@@ -33,6 +33,25 @@
         {
           "ko": "매켄지·프린스조지 전력 시작 시점을 연 단위(2022)에서 가동 시작 월(2022-04, 2022-09)로 정밀화",
           "en": "Mackenzie / Prince George power start refined from year (2022) to operating start month (2022-04, 2022-09)"
+        },
+        {
+          "ko": "출처를 회사 자료 기준으로: 매켄지 $2.4bn GPU 금융 출처를 언론 기사 → 회사 FY26 실적 발표(2026-08-27)로, 날짜도 회사 발표일로",
+          "en": "Company materials as the baseline: Mackenzie $2.4bn GPU financing now cited to the company FY26 results release (2026-08-27) instead of a news article",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
+        },
+        {
+          "ko": "키오와 \"카운티 위원회 승인\" 사건 삭제 — 회사 자료에서 확인되지 않음(언론 보도만)",
+          "en": "Removed the Kiowa \"county commissioners approval\" event — not confirmed in company materials (news only)"
+        },
+        {
+          "ko": "다음 실적 발표 예상 2026-12 → 2026-11 (회사 IR 일정 미발표, 예년 1분기 실적이 11월 초 — Q1 FY26 2025-11-06)",
+          "en": "Next earnings estimate 2026-12 → 2026-11 (not yet announced; Q1 results came in early November last year — Q1 FY26 on 2025-11-06)",
+          "source": "https://iren.gcs-web.com/events-and-presentations"
+        },
+        {
+          "ko": "회사 보도자료로 재확인: 스위트워터 1 통전 2026-05-01(고압 변전소의 ERCOT 연결, 실제 전력 사용은 단계적), 번디 800MW 2026-06-03(2028년 통전 시작), 칠드레스 첫 20MW 가동 2023-04-26 6-K",
+          "en": "Re-verified from company releases: Sweetwater 1 energization 2026-05-01 (substation connected to ERCOT; power delivery ramps in phases), Bundey 800MW 2026-06-03 (energization from 2028), Childress first 20MW operational (2023-04-26 6-K)",
+          "source": "https://iren.gcs-web.com/news-releases/news-release-details/iren-announces-successful-energization-sweetwater-1"
         }
       ]
     },
