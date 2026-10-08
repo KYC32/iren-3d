@@ -8,13 +8,30 @@ import { siteFeatures, boundsFor } from '../map/mapData.js'
 const raw=buildInfra(), M=toMonth
 const childress=(date)=>viewInfra(raw,M(date)).sites.find(s=>s.id==='childress')
 describe('observed investor state',()=>{
- it('does not turn delivery into operation or advance on elapsed targets',()=>{
+ // 고객 인수(delivered)는 상태 이름은 그대로 두되 "AI 가동"으로 집계 (프로젝트 소유자 결정, 2026-10-09)
+ it('keeps the delivered label, counts it as AI operating, and does not advance on elapsed targets',()=>{
    for(const date of ['2026-10','2027-06','2028-12']){
      const s=childress(date)
      expect(s.buildings.find(b=>b.id==='horizon-1').status).toBe('delivered')
      expect(s.buildings.find(b=>b.id==='horizon-2').status).toBe('commissioning')
-     expect(siteMetricsAt(s._raw,M(date)).ai).toBe(0)
+     const mt=siteMetricsAt(s._raw,M(date))
+     expect(mt.delivered).toBe(75)
+     expect(mt.ai).toBe(75) // Horizon 1 인수분 = 가동
    }
+ })
+ // 퇴역은 추정(estimate)이어도 반영 — 줄어드는 변화까지 "보고된 근거"를 기다리면 퇴역한 건물이 가동으로 되살아남
+ it('applies retirements recorded as estimates, so retired halls do not come back to life',()=>{
+   const site=(id,date)=>viewInfra(raw,M(date)).sites.find(s=>s.id===id)
+   const status=(id,b,date)=>site(id,date).buildings.find(x=>x.id===b)?.status ?? null
+   expect(status('prince-george','pg-hopper-pilot','2026-10')).not.toBe('operating') // 2025-12 퇴역(추정)
+   expect(status('mackenzie','mk-miners','2026-10')).not.toBe('operating')           // 2026-05 퇴역(추정)
+   expect(status('canal-flats','cf-miners','2026-10')).not.toBe('operating')          // 2026-10 퇴역(추정)
+ })
+ // 원문을 검토한 건물(Horizon 1~4)도 iren.json 에 이미 보고된 이력은 유지
+ // (날짜별 노출은 "그때 공개된 자료" 기준이라, 공개일을 아는 기준일 시점에서 이력 목록을 확인)
+ it('keeps reported history for audited buildings',()=>{
+   const h1=childress('2026-10')._raw.buildings.find(b=>b.id==='horizon-1')
+   expect(h1.phases.map(p=>p.status)).toEqual(['under_construction','commissioning','delivered'])
  })
  it('does not invent numerical construction percentages or acceptance dates',()=>{
    const s=childress('2026-10')

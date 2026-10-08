@@ -50,7 +50,25 @@ export function locationFor(site, research) {
     lat: precise ? record.lat : site.coord.lat, lng: precise ? record.lng : site.coord.lng,
     maxZoom: precise ? 15 : 9 }
 }
-// Preserve legacy source data for the record/forecast view. The investor view only advances on reported evidence.
+// 단계 목록을 날짜순으로 정렬 (같은 달이면 원래 순서 유지)
+function sortPhases(list) {
+  return list.map((p, i) => [p, i]).sort((a, b) => toMonth(a[0].from) - toMonth(b[0].from) || a[1] - b[1]).map(([p]) => p)
+}
+// 두 단계 목록을 합쳐 날짜순으로 — 연달아 같은 상태가 오면 앞의 것(먼저 확인된 시점)만 남김.
+// 이미 건설·시운전 등으로 진행된 뒤에 오는 '계획'(예: 나중에 맺은 고객 계약 시점)은 뒤로 돌아가는 것이라 버림
+function mergePhases(a, b) {
+  const out = []
+  for (const p of sortPhases([...a, ...b])) {
+    const last = out.at(-1)?.status
+    if (last === p.status) continue
+    if (p.status === 'planned' && last && last !== 'planned') continue
+    out.push(p)
+  }
+  return out
+}
+
+// 투자자용 "확인 기록" 화면: 상태는 보고된 근거로만 앞으로 진행 (목표일이 지났다고 자동으로 가동 처리하지 않음).
+// 원본(iren.json)은 그대로 두고 녹화·전망용 화면에서 씁니다.
 export function observedSiteAt(site, research, month, companies) {
   const sourceForUrl = (url) => research.sources.find((s) => s.url === url)
   const cutoff = Math.min(month, toMonth(site.as_of, 'end'))
@@ -63,14 +81,25 @@ export function observedSiteAt(site, research, month, companies) {
     const own = claims.filter((c) => c.building === b.id)
     const audited = research.auditedBuildings?.some((a) => a.site === site.id && a.building === b.id)
     const statusClaims = own.filter((c) => c.field === 'status' && (c.basis === 'reported' || c.value === 'planned'))
-    const reported = audited ? statusClaims.map((c) => ({ status: c.value, from: c.effective ?? sourceById(research, c.sourceId).published,
+    // iren.json 에 이미 "보고(reported)"로 기록된 단계 — 상태를 앞으로 진행시키는 건 확인된 근거만
+    const ownReported = b.phases.filter((p) => p.basis === 'reported' && isKnown(p) && toMonth(p.from, 'end') <= cutoff)
+    // 원문을 검토한 건물은 원문 근거(claim) 단계를 쓰되, 기존 보고 이력도 합침
+    // (예전엔 claim 만 써서 Horizon 1 의 2025년 건설·시운전 이력이 통째로 사라졌음)
+    const claimPhases = statusClaims.map((c) => ({ status: c.value, from: c.effective ?? sourceById(research, c.sourceId).published,
       basis: 'reported', source: sourceById(research, c.sourceId).url, published: sourceById(research, c.sourceId).published }))
-      : b.phases.filter((p) => p.basis === 'reported' && isKnown(p) && toMonth(p.from, 'end') <= cutoff)
+    // 단, 기존 이력은 원문 근거의 첫 시점 "이전" 것만 — 같은 사건을 iren.json 은 '가동', 원문은 '고객 인수'로
+    // 다르게 기록한 경우(Horizon 1, 2026-08) 원문 쪽 분류를 따름
+    const firstClaim = Math.min(...claimPhases.map((p) => toMonth(p.from)))
+    const reported = audited ? mergePhases(ownReported.filter((p) => toMonth(p.from) < firstClaim), claimPhases) : ownReported
+    // 퇴역(retired)은 근거 종류와 상관없이 반영 (목표 제외) — "줄어드는" 변화까지 보고를 기다리면
+    // 퇴역 시점을 추정으로 기록한 건물(예: 프린스조지 Hopper 시범동)이 '가동'으로 되살아남
+    const retired = b.phases.filter((p) => p.status === 'retired' && p.basis !== 'target' && toMonth(p.from, 'start') <= cutoff)
     const knownContract = companies.flatMap((c) => c.contracts ?? []).find((c) => c.sites.includes(site.id) && c.buildings?.includes(b.id)
       && toMonth(c.published ?? c.signed, 'end') <= cutoff)
     const targets = b.phases.filter((p) => p.basis === 'target' && isKnown(p))
     const visible = reported.length > 0 || knownContract || targets.length > 0
-    const phases = reported.length ? reported : [{ status: 'planned', from: visible ? `${Math.floor(cutoff / 12)}-${String(cutoff % 12 + 1).padStart(2, '0')}` : '9999-01', basis: 'reported', source: b.sources[0] }]
+    const base = reported.length ? reported : [{ status: 'planned', from: visible ? `${Math.floor(cutoff / 12)}-${String(cutoff % 12 + 1).padStart(2, '0')}` : '9999-01', basis: 'reported', source: b.sources[0] }]
+    const phases = retired.length ? sortPhases([...base, ...retired]) : base
     const result = { ...b, phases, progress: undefined, customer: knownContract?.customer,
       evidenceReview: audited ? (own.length ? 'verified' : 'pending') : 'pending', targets,
       lastReported: phases.filter((p) => p.from !== '9999-01').at(-1)?.published ?? (visible ? site.as_of : null) }

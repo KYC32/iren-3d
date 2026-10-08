@@ -70,6 +70,6 @@ export default {
   timeline: { play: 'Play', pause: 'Pause', asOf: 'As of', future: 'Company targets', today: 'Back to as-of', label: 'Date' },
   campus: { home: 'Fit campus', controls: '3D camera controls', rotate: 'Rotate', pan: 'Pan', rotateLabel: 'Rotate view', panLabel: 'Pan view', liquid: 'Liquid cooling', air: 'Air cooling', mining: 'Mining', planned: 'Expansion area' },
   sceneLoading: 'Loading 3D map…',
-  kpi2: { reported: 'Reported', secured: 'Secured power', energized: 'energized', ai: 'AI live', mining: 'mining', building: 'Building / commissioning', sites: 'Sites', companies: 'companies' },
+  kpi2: { reported: 'Reported', secured: 'Secured power', energized: 'energized', ai: 'AI live', mining: 'mining', building: 'Building / commissioning', sites: 'Sites', companies: 'companies', delivered: 'customer accepted', incl: 'incl.' },
   empty: 'No announced buildings yet — grid power secured only',
 }

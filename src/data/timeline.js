@@ -154,7 +154,7 @@ export function siteStatusAt(site, m) {
 // TODO(학습 포인트): 시운전(commissioning)을 '가동'으로 볼지 '건설'로 볼지 직접 정해 보세요.
 export function siteMetricsAt(site, m) {
   const power = powerAt(site, m)
-  const empty = { secured: 0, energized: 0, operating: 0, ai: 0, mining: 0, building: 0, planned: 0, gpus: 0, hasEstimate: false }
+  const empty = { secured: 0, energized: 0, operating: 0, ai: 0, mining: 0, building: 0, planned: 0, delivered: 0, gpus: 0, hasEstimate: false }
   if (!power) return empty
   let ai = 0, mining = 0, building = 0, delivered = 0, gpus = 0, hasEstimate = false
   for (const { building: b, status: st, mw, estimated } of effectiveBuildingsAt(site, m)) {
@@ -162,11 +162,11 @@ export function siteMetricsAt(site, m) {
     // 채굴동은 상태와 상관없이 '채굴' 로 분류 (AI 가동에 섞이지 않게)
     const isMining = b.kind === 'miner_hall'
     if (isMining && (st === 'operating' || st === 'decommissioning')) mining += mw
-    else if (st === 'operating') ai += mw
-    else if (st === 'delivered') delivered += mw
+    // 고객 인수(delivered)도 "AI 가동"으로 집계 — 고객에게 넘어가 쓰이는 설비 (따로 보여 주려고 delivered 에도 기록)
+    else if (st === 'operating' || st === 'delivered') { ai += mw; if (st === 'delivered') delivered += mw }
     else if (st === 'decommissioning') mining += mw
     else if (st === 'commissioning' || st === 'under_construction') building += mw
-    if (st === 'operating' || st === 'commissioning') gpus += b.gpu?.count ?? 0
+    if (st === 'operating' || st === 'delivered' || st === 'commissioning') gpus += b.gpu?.count ?? 0
   }
   const operating = ai + mining
   const secured = power.secured
@@ -178,8 +178,8 @@ export function siteMetricsAt(site, m) {
     ai,
     mining,
     building: buildingClamped,
-    delivered,
-    planned: Math.max(0, secured - operating - buildingClamped - delivered),
+    delivered, // ai 안에 이미 포함된 고객 인수분 (표시용)
+    planned: Math.max(0, secured - operating - buildingClamped),
     gpus,
     hasEstimate,
   }
@@ -217,7 +217,7 @@ export function companyRanking(data, m, { lens = 'primary', metric = 'secured', 
 
 // 전체 합계 (필터 적용 가능)
 export function totalsAt(data, m, { companies = null } = {}) {
-  const t = { secured: 0, energized: 0, operating: 0, ai: 0, mining: 0, building: 0, planned: 0, gpus: 0, sites: 0 }
+  const t = { secured: 0, energized: 0, operating: 0, ai: 0, mining: 0, building: 0, planned: 0, delivered: 0, gpus: 0, sites: 0 }
   for (const site of data.sites) {
     if (companies && !companies.has(site.primary)) continue
     if (!powerAt(site, m)) continue

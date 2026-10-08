@@ -1,5 +1,5 @@
 // 핵심 지표 카드 줄: 지구본에서는 회사 전체, 캠퍼스에서는 선택한 사이트 기준
-import { PackageCheck as ServerDelivery, Zap, HardHat, MapPinned, CircleDollarSign, Cpu, Plug } from 'lucide-react'
+import { Zap, HardHat, MapPinned, CircleDollarSign, Cpu, Plug } from 'lucide-react'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { useT } from '../i18n/useT.js'
 import { siteMetrics } from '../data/loadSites.js'
@@ -36,11 +36,10 @@ export default function KpiBar() {
     const m = siteMetrics(site)
     cards = [
       { icon: Plug, label: t.panel.grid, value: fmtMw(site.grid_mw), tone: site.substation.status === 'energized' ? 'operating' : 'pending', sub: site.substation.status === 'energized' ? (lang === 'ko' ? '통전 완료' : 'Energized') : `${t.panel.energized} ${site.substation.dates?.target ?? ''}` },
-      { icon: Zap, label: t.kpi.operating, value: fmtMw(m.operating), tone: 'operating', sub: m.mining ? (lang === 'ko' ? `채굴 ${fmtMw(m.mining)} 포함` : `incl. ${fmtMw(m.mining)} mining`) : null },
+      { icon: Zap, label: t.kpi.operating, value: fmtMw(m.operating), tone: 'operating', sub: includedSub(t, lang, m) },
       { icon: HardHat, label: t.kpi.building, value: fmtMw(m.building), tone: 'construction' },
       { icon: MapPinned, label: t.kpi.planned, value: fmtMw(m.planned), tone: 'planned' },
     ]
-    if (m.delivered) cards.splice(2,0,{icon:ServerDelivery,label:lang==='ko'?'고객 인수':'Customer accepted',value:fmtMw(m.delivered),tone:'delivered',sub:lang==='ko'?'가동·매출과 별도':'Separate from live revenue'})
   } else {
     // 지구본: 회사·그룹 필터를 반영한 합계
     const ids = data.companies
@@ -49,7 +48,7 @@ export default function KpiBar() {
     const m = totalsAt(data.observedRaw ?? data.raw, data.month, { companies: new Set(ids) })
     cards = [
       { icon: Plug, label: t.kpi2.secured, value: fmtMw(m.secured, 2), sub: `${t.kpi2.energized} ${fmtMw(m.energized, 2)}` },
-      { icon: Zap, label: t.kpi2.ai, value: fmtMw(m.ai), tone: 'operating', sub: m.mining ? `${t.kpi2.mining} ${fmtMw(m.mining)}` : null },
+      { icon: Zap, label: t.kpi2.ai, value: fmtMw(m.ai), tone: 'operating', sub: [includedSub(t, lang, { delivered: m.delivered }), m.mining ? `${t.kpi2.mining} ${fmtMw(m.mining)}` : null].filter(Boolean).join(' · ') || null }, // AI 가동엔 인수분이 포함, 채굴은 별도
       { icon: HardHat, label: t.kpi2.building, value: fmtMw(m.building), tone: 'construction' },
       { icon: MapPinned, label: t.kpi2.sites, value: String(m.sites), sub: SINGLE_COMPANY ? null : `${t.kpi2.companies} ${ids.length}` },
     ]
@@ -81,4 +80,14 @@ export default function KpiBar() {
       </div>
     </section>
   )
+}
+
+// 가동 카드 아래 작은 글씨: 가동 전력 안에 들어 있는 고객 인수분·채굴분 (예: "고객 인수 75 MW 포함 · 채굴 300 MW 포함")
+// 고객 인수(delivered)도 가동으로 집계하므로 따로 카드를 두지 않고 여기서 내역만 보여 줌
+function includedSub(t, lang, m) {
+  const parts = []
+  if (m.delivered) parts.push(`${t.kpi2.delivered} ${fmtMw(m.delivered)}`)
+  if (m.mining) parts.push(`${t.kpi2.mining} ${fmtMw(m.mining)}`)
+  if (!parts.length) return null
+  return lang === 'ko' ? `${parts.join(' · ')} ${t.kpi2.incl}` : `${t.kpi2.incl} ${parts.join(' · ')}`
 }
