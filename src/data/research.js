@@ -79,7 +79,12 @@ function mergePhases(a, b) {
 // 원본(iren.json)은 그대로 두고 녹화·전망용 화면에서 씁니다.
 export function observedSiteAt(site, research, month, companies) {
   const sourceForUrl = (url) => research.sources.find((s) => s.url === url)
-  const cutoff = Math.min(month, toMonth(site.as_of, 'end'))
+  const asOfM = toMonth(site.as_of, 'end')
+  const cutoff = Math.min(month, asOfM)
+  // 기준일 이후(미래)를 보고 있나? → 그렇다면 기준일의 확인 상태에서 출발해 회사 목표·추정대로 진행
+  const forecast = month > asOfM
+  // 기준일 "뒤"에 잡힌 목표·추정 단계 (목표는 기간의 끝으로 — 2026-Q4 목표는 12월부터. timeline.js 와 같은 규칙)
+  const isFuture = (p) => p.basis !== 'reported' && toMonth(p.from, p.basis === 'target' ? 'end' : 'start') > asOfM
   const isKnown = (p) => {
     const source = sourceForUrl(p.source)
     return toMonth(p.published ?? source?.published ?? site.as_of, 'end') <= cutoff
@@ -106,8 +111,11 @@ export function observedSiteAt(site, research, month, companies) {
       && toMonth(c.published ?? c.signed, 'end') <= cutoff)
     const targets = b.phases.filter((p) => p.basis === 'target' && isKnown(p))
     const visible = reported.length > 0 || knownContract || targets.length > 0
-    const base = reported.length ? reported : [{ status: 'planned', from: visible ? `${Math.floor(cutoff / 12)}-${String(cutoff % 12 + 1).padStart(2, '0')}` : '9999-01', basis: 'reported', source: b.sources[0] }]
-    const phases = retired.length ? sortPhases([...base, ...retired]) : base
+    const future = forecast ? b.phases.filter(isFuture) : []
+    // 아직 확인 기록이 없는 건물: 보이는 건물이거나(계약·목표가 있음) 미래 목표가 있으면 기준일부터 '계획'
+    const plannedFrom = visible || future.length ? `${Math.floor(cutoff / 12)}-${String(cutoff % 12 + 1).padStart(2, '0')}` : '9999-01'
+    const base = reported.length ? reported : [{ status: 'planned', from: plannedFrom, basis: 'reported', source: b.sources[0] }]
+    const phases = retired.length || future.length ? sortPhases([...base, ...retired, ...future]) : base
     const result = { ...b, phases, progress: undefined, customer: knownContract?.customer,
       evidenceReview: audited ? (own.length ? 'verified' : 'pending') : 'pending', targets,
       lastReported: phases.filter((p) => p.from !== '9999-01').at(-1)?.published ?? (visible ? site.as_of : null) }
@@ -121,8 +129,10 @@ export function observedSiteAt(site, research, month, companies) {
     if (unspecified) { result.disclosedMw = unspecified.value; result.gross_mw = undefined }
     return result
   })
-  const power = site.power.filter((p) => p.basis === 'reported' && isKnown(p) && toMonth(p.from, 'end') <= cutoff)
+  const reportedPower = site.power.filter((p) => p.basis === 'reported' && isKnown(p) && toMonth(p.from, 'end') <= cutoff)
+  const power = [...reportedPower, ...(forecast ? site.power.filter(isFuture) : [])] // 미래면 전력 확보·통전 목표도 이어 붙임
   return { ...site, buildings, power: power.length ? power : [{ from: site.announced, secured_mw: 0, energized_mw: 0, basis: 'reported', source: site.sources[0] }],
+    _forecast: forecast, // 화면 안내용: 기준일 이후 = 회사 목표 기준 전망
     // 캠퍼스 단위 납품 주문은 계속 보여 줌 — 어느 건물로 가는지 모른다고 취소된 납품은 아님
     deliveries: site.deliveries.filter((d) => isKnown(d) && d.status !== 'done'),
     _research: research, _observed: true, _layoutSource: site,

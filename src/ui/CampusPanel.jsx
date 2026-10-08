@@ -62,7 +62,10 @@ export default function CampusPanel(){
     {detailTab==='overview'&&<>
       <dl className="sp-specs"><div><dt>{zone?(ko?'공개 IT 용량 합계':'Disclosed IT capacity'):(ko?'확보 전력':'Secured power')}</dt><dd>{zone?`${zone.itMw || '—'} MW`:`${site.grid_mw || '—'} MW`}</dd></div><div><dt>{ko?'정보 기준일':'Data as of'}</dt><dd>{site.as_of}</dd></div></dl>
       {zone&&<ul className="zone-statuses">{zone.statuses.map(s=><li key={s.status}><span className="dot" style={{background:styleOf(s.status).color}}/>{t.status[s.status]}<b>{s.count}{ko?'동':' bldgs'}{s.itMw?` · ${s.itMw} MW IT`: ''}</b></li>)}</ul>}
-      <p className="research-note">{ko?'상태는 마지막 확인 기록입니다. 목표일 경과만으로 가동으로 전환하지 않습니다. 일부 기존 수치는 원문 재검토가 필요합니다.':'Statuses follow reported records, not elapsed target dates. Some legacy figures still need source review.'}</p>
+      {/* 기준일 이후(미래)는 회사 목표 기준 전망, 기준일까지는 확인 기록 — 어느 쪽인지 안내 */}
+      <p className={`research-note${site._raw?._forecast?' is-forecast':''}`}>{site._raw?._forecast
+        ?(ko?'기준일 이후는 회사가 발표한 목표 일정대로 진행한 전망입니다. 실제 진행과 다를 수 있습니다.':'After the as-of date, this is an outlook that follows company-announced targets. Actual progress may differ.')
+        :(ko?'기준일까지의 상태는 마지막 확인 기록입니다. 목표일 경과만으로 가동으로 전환하지 않습니다. 일부 기존 수치는 원문 재검토가 필요합니다.':'Up to the as-of date, statuses follow reported records, not elapsed target dates. Some legacy figures still need source review.')}</p>
       {month>toMonth(site.as_of)&&<p className="research-note attention">{ko?'미래 선택: 실제 현황은 마지막 확인 시점에 고정되며 목표만 전망으로 표시합니다.':'Future date: reported status stays at the last evidence cutoff; targets remain projections.'}</p>}
       {month<toMonth(site.as_of)&&<p className="research-note attention">{ko?'과거 공개일이 확인되지 않은 항목은 제외했습니다. 과거 기록이 불완전할 수 있습니다.':'Items without historical publication dates are excluded; historical coverage may be incomplete.'}</p>}
       {targets.length>0&&<button className="next-target" onClick={()=>st.setDetailTab('history')}><small>{ko?'다음 확인 목표':'Target to monitor'}</small><b>{targets[0].latest?.target} · {ko?targets[0].title_ko:targets[0].title_en}</b><span>{ko?'계획 이력 확인 →':'View plan history →'}</span></button>}

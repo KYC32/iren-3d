@@ -647,3 +647,5 @@ button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit;
 .surface-switch { display: flex; align-items: center; justify-content: center; gap: 6px; }
 .campus-panel a svg, .evidence-card a svg, .photo-card a svg { vertical-align: -2px; margin-left: 2px; }
 .photo-placeholder svg { display: block; margin: 0 auto 6px; }
+/* 미래 전망 안내: 타임라인의 "회사 발표 목표" 구간과 같은 노란색 계열 */
+.research-note.is-forecast { background: #fff8db; color: #6b5200; border-radius: 6px; padding: 6px 8px; }

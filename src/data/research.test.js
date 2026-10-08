@@ -9,15 +9,28 @@ const raw=buildInfra(), M=toMonth
 const childress=(date)=>viewInfra(raw,M(date)).sites.find(s=>s.id==='childress')
 describe('observed investor state',()=>{
  // 고객 인수(delivered)는 상태 이름은 그대로 두되 "AI 가동"으로 집계 (프로젝트 소유자 결정, 2026-10-09)
- it('keeps the delivered label, counts it as AI operating, and does not advance on elapsed targets',()=>{
-   for(const date of ['2026-10','2027-06','2028-12']){
-     const s=childress(date)
-     expect(s.buildings.find(b=>b.id==='horizon-1').status).toBe('delivered')
-     expect(s.buildings.find(b=>b.id==='horizon-2').status).toBe('commissioning')
-     const mt=siteMetricsAt(s._raw,M(date))
-     expect(mt.delivered).toBe(75)
-     expect(mt.ai).toBe(75) // Horizon 1 인수분 = 가동
-   }
+ // 기준일까지는 목표일이 지났다고 자동으로 가동 처리하지 않음
+ it('keeps the delivered label, counts it as AI operating, and does not advance on targets up to the as-of date',()=>{
+   const s=childress('2026-10')
+   expect(s.buildings.find(b=>b.id==='horizon-1').status).toBe('delivered')
+   expect(s.buildings.find(b=>b.id==='horizon-2').status).toBe('commissioning')
+   const mt=siteMetricsAt(s._raw,M('2026-10'))
+   expect(mt.delivered).toBe(75)
+   expect(mt.ai).toBe(75) // Horizon 1 인수분 = 가동
+ })
+ // 기준일 이후(미래)는 회사 발표 목표대로 진행 — 기준일의 확인 상태에서 출발 (프로젝트 소유자 결정, 2026-10-09)
+ it('advances future months by company targets, starting from the as-of state',()=>{
+   const s=childress('2027-06')
+   expect(s.buildings.find(b=>b.id==='horizon-1').status).toBe('delivered')   // 확인 상태 유지
+   expect(s.buildings.find(b=>b.id==='horizon-2').status).toBe('operating')   // 2026-Q4 목표
+   expect(s.buildings.find(b=>b.id==='air-cooled-nvidia').status).toBe('operating') // 2027-Q1 목표
+   expect(siteMetricsAt(s._raw,M('2027-06')).ai).toBeGreaterThan(75)
+   // 목표 기간이 끝나기 전엔 아직 (2026-Q4 목표 → 12월부터)
+   expect(childress('2026-11').buildings.find(b=>b.id==='horizon-2').status).toBe('commissioning')
+   // 확보 전력도 목표대로 (키오와 1.6GW, 2028 목표)
+   const kiowa=viewInfra(raw,M('2028-12')).sites.find(x=>x.id==='kiowa')
+   expect(kiowa.grid_mw ?? siteMetricsAt(kiowa._raw,M('2028-12')).secured).toBe(1600)
+   expect(siteMetricsAt(viewInfra(raw,M('2028-12')).sites.find(x=>x.id==='sweetwater-1')._raw,M('2028-12')).ai).toBeGreaterThan(0)
  })
  // 퇴역은 추정(estimate)이어도 반영 — 줄어드는 변화까지 "보고된 근거"를 기다리면 퇴역한 건물이 가동으로 되살아남
  it('applies retirements recorded as estimates, so retired halls do not come back to life',()=>{
