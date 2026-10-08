@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { buildInfra } from '../../scripts/build-data.mjs'
 import { viewInfra } from './view.js'
 import { toMonth, siteMetricsAt } from './timeline.js'
-import { claimsAt, mediaAt, assessMilestone, dateRange, locationFor, observedSiteAt } from './research.js'
+import { claimsAt, mediaAt, assessMilestone, dateRange, locationFor, observedSiteAt, scheduleSignals } from './research.js'
 import { validateResearch } from './researchSchema.js'
 import { siteFeatures, boundsFor } from '../map/mapData.js'
 const raw=buildInfra(), M=toMonth
@@ -150,5 +150,15 @@ describe('location and media integrity',()=>{
    // 1) 처음 공개된 날(published)을 조사해 적으면 그게 우선
    const early=structuredClone(base); early.buildings[0].phases[0].published='2021-10-15'
    expect(status(early,'2022-01',later)).toBe('operating')
+ })
+ // 일정 신호: 이미 다음 단계로 간 건물의 지난 목표는 지연으로 치지 않음, 목표가 미뤄지면 지연
+ it('flags delayed / overdue schedule targets without false alarms',()=>{
+   const site=childress('2026-10')
+   const sig=scheduleSignals(raw.research,site,M('2026-10'))
+   expect(sig.overdue.map(m=>m.id)).not.toContain('horizon-1-shell') // Horizon 1 은 이미 고객 인수
+   const r=structuredClone(raw.research)
+   const h2=r.milestones.find(m=>m.id==='horizon-2-customer-delivery')
+   h2.revisions.push({...h2.revisions.at(-1),target:'2027-Q2'}) // 같은 출처로 목표를 뒤로 미룸
+   expect(scheduleSignals(r,site,M('2026-10')).delayed.map(m=>m.id)).toContain('horizon-2-customer-delivery')
  })
 })

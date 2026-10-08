@@ -10,7 +10,7 @@
 // =============================================================
 import { useAppStore } from '../store/useAppStore.js'
 import { pickName, useT } from '../i18n/useT.js'
-import { locationFor, milestonesAt } from '../data/research.js'
+import { locationFor, milestonesAt, scheduleSignals } from '../data/research.js'
 import { styleOf } from '../data/statusStyle.js'
 import { REGION_NAMES } from '../map/mapData.js'
 import { PanelLeftClose, PanelLeftOpen, MapPin } from 'lucide-react'
@@ -58,11 +58,16 @@ function CampusList(){
     <div className="map-site-list">{st.data.sites.map(s=>{
       const loc=locationFor(s,st.data.raw.research)
       const target=milestonesAt(st.data.raw.research,s.id,st.month).find(m=>!m.completion) // 아직 완료 안 된 가장 가까운 목표
+      const sig=scheduleSignals(st.data.raw.research,s,st.month) // 일정 신호: 목표가 밀림 / 목표일 지났는데 완료 미확인
       return <button key={s.id} aria-pressed={st.selectedSiteId===s.id} onClick={()=>st.focusSiteOnMap(s.id)}>
         <span className="map-site-top"><b>{pickName(s,st.lang)}</b><small>{s.country}</small></span>
         <span className="map-site-status"><i className="dot" style={{background:styleOf(s.status).color}}/>{t.status[s.status]}<strong>{s.grid_mw?`${s.grid_mw.toLocaleString()} MW`:'—'}</strong></span>
         <small>{loc.precise?(ko?'주소 위치':'Address location'):(ko?'지역 위치 · 부지 미확인':'Region · parcel unverified')}</small>
         {target&&<small className="map-next">{ko?'목표':'Target'} · {target.latest?.target}</small>}
+        {(sig.delayed.length>0||sig.overdue.length>0)&&<span className="schedule-flags">
+          {sig.delayed.length>0&&<em className="flag-delayed" title={sig.delayed.map(m=>ko?m.title_ko:m.title_en).join(', ')}>{ko?'일정 지연':'Delayed'} {sig.delayed.length}</em>}
+          {sig.overdue.length>0&&<em className="flag-overdue" title={sig.overdue.map(m=>ko?m.title_ko:m.title_en).join(', ')}>{ko?'목표 경과·미확인':'Past target, unconfirmed'} {sig.overdue.length}</em>}
+        </span>}
       </button>})}
     </div>
     <div className="map-list-note">{ko?'지도는 지리적 위치를, 3D는 사업 구성을 보여줍니다.':'Map shows geography. 3D explains the business layout.'}</div>

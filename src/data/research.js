@@ -46,6 +46,19 @@ export function assessMilestone(milestone, research, month) {
   return { ...milestone, revisions, first, latest, completion, status,
     revised: !!first && revisions.some((r, i) => i > 0 && dateRange(r.target).end > dateRange(revisions[i - 1].target).end) }
 }
+// 일정 신호 (캠퍼스 목록 배지·요약용): 회사 목표가 미뤄졌거나, 목표일이 지났는데 완료가 확인되지 않은 것
+//   site: 화면용 사이트(그 날짜 상태 포함). 건물이 이미 그 단계를 지나 더 진행됐으면(시운전·인수·가동)
+//   완료 기록이 없어도 "끝난 것"으로 봄 — 예) Horizon 1 은 2026-08 고객 인수 → 2025-Q4 골조 목표는 지연 아님
+const ADVANCED = new Set(['commissioning', 'delivered', 'operating'])
+export function scheduleSignals(research, site, month) {
+  const done = (m) => m.building && ADVANCED.has(site.buildings.find((b) => b.id === m.building)?.status)
+  const list = milestonesAt(research, site.id, month)
+  return {
+    delayed: list.filter((m) => m.revised || m.status === 'late'),                 // 목표가 뒤로 밀림 / 늦게 끝남
+    overdue: list.filter((m) => m.status === 'unconfirmed' && !m.revised && !done(m)), // 목표일 지남 + 완료 미확인
+  }
+}
+
 export function milestonesAt(research, siteId, month, buildingId = null) {
   return (research?.milestones ?? []).filter((m) => m.site === siteId && (!buildingId || m.building === buildingId))
     .map((m) => assessMilestone(m, research, month)).filter((m) => m.latest || m.completion)

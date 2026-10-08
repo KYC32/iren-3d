@@ -684,3 +684,9 @@ button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit;
 .contract-site { justify-self: start; border: 0; background: none; padding: 0; font: inherit; font-size: 10.5px; color: #3c6f9e; cursor: pointer; text-align: left; }
 .contract-site:hover { text-decoration: underline; }
 .contract-unknown { font-size: 10.5px; color: #7a6a3a; }
+
+/* 캠퍼스 목록의 일정 신호 배지: 지연(붉은색) / 목표 경과·완료 미확인(노란색) */
+.schedule-flags { display: flex; flex-wrap: wrap; gap: 4px; }
+.schedule-flags em { font-style: normal; font-size: 10px; font-weight: 700; border-radius: 999px; padding: 1px 7px; }
+.flag-delayed { background: #fde7e4; color: #a3321f; }
+.flag-overdue { background: #fff3cf; color: #7a5a00; }
