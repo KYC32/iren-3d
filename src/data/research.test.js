@@ -111,4 +111,11 @@ describe('location and media integrity',()=>{
    const errors=validateResearch(r,raw.sites)
    expect(errors.some(e=>e.includes('source'))).toBe(true);expect(errors.some(e=>e.includes('building'))).toBe(true)
  })
+ // 상태 claim 의 값이 오타면(예: 'operatng') 검증에서 잡혀야 함 — 안 그러면 화면에 이상한 상태로 나옴
+ it('rejects status claims with unknown status values',()=>{
+   const r=structuredClone(raw.research)
+   r.claims.push({...r.claims.find(c=>c.field==='status'),id:'typo-status',value:'operatng'})
+   expect(validateResearch(r,raw.sites).some(e=>e.includes('unknown status'))).toBe(true)
+   expect(validateResearch(raw.research,raw.sites).some(e=>e.includes('unknown status'))).toBe(false)
+ })
 })
