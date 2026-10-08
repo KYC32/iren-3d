@@ -13,7 +13,11 @@ import Legend from './ui/Legend.jsx'
 import LeftPanel from './ui/Leaderboard.jsx'
 import CampusPanel from './ui/CampusPanel.jsx'
 import MapSidebar, { RegionControls } from './ui/MapSidebar.jsx'
-const GeoMap = lazy(() => import('./map/GeoMap.jsx'))
+const loadGeoMap = () => import('./map/GeoMap.jsx')
+const GeoMap = lazy(loadGeoMap)
+// 첫 화면이 실제 지도면(주소에 surface=3d 가 없으면) 지도 코드(약 280KB)를 앱 시작과 동시에 받기 시작.
+// 예전엔 데이터(infra.json)를 받고 화면을 그린 "다음"에야 받기 시작해, 느린 휴대폰에선 그만큼 지도가 늦게 떴음
+if (typeof window !== 'undefined' && !/surface=3d/.test(window.location.hash)) loadGeoMap()
 import Footer from './ui/Footer.jsx'
 import TimelineSlider from './ui/TimelineSlider.jsx'
 import { RECORD } from './record/recordMode.js'

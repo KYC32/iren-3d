@@ -6,6 +6,10 @@
     <title>IREN 3D — 데이터센터 현황판</title>
     <meta name="description" content="IREN(NASDAQ: IREN)의 데이터센터 사이트 현황(가동·건설·예정)을 전략게임풍 3D로 보여주는 비공식 대시보드" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- 지도 타일 서버에 미리 연결(DNS·TLS) — 첫 지도 표시를 앞당김 -->
+    <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin />
+    <!-- 지도 스타일(작은 JSON, 하루 캐시)을 미리 받아 둠 — 지도 코드가 준비되자마자 바로 씀 -->
+    <link rel="preload" href="https://tiles.openfreemap.org/styles/positron" as="fetch" crossorigin="anonymous" />
     <!-- 링크 공유(X·카카오톡 등) 미리보기 -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content="IREN 3D — 데이터센터 현황판" />
