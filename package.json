@@ -11,7 +11,7 @@
     "preview": "vite preview --port 4174",
     "data": "node scripts/build-data.mjs",
     "validate": "node scripts/validate.mjs",
-    "geo": "node scripts/build-land-hex.mjs && node scripts/build-borders.mjs && node scripts/build-board-hex.mjs",
+    "geo": "node scripts/build-land-hex.mjs && node scripts/build-borders.mjs",
     "geo:fetch": "node scripts/fetch-natural-earth.mjs",
     "prebuild": "npm run data && npm run validate",
     "postbuild": "node scripts/check-size.mjs",

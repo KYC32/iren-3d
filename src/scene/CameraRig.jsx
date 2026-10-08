@@ -17,37 +17,11 @@ import { customerKey, zoneBounds } from '../data/customerZones.js'
 import { layoutCampus } from './layoutCampus.js'
 import { Box3, Vector3 } from 'three'
 import { SINGLE_COMPANY } from '../config.js'
-import { layoutBounds, layoutKind } from './boards.js'
-import { boardPinPositions, CONTRACT_GAP } from './BoardView.jsx'
 
-// 개요 화면 종류: 단일 회사 모드는 보드판 지도, 아니면 지구본
-const OVERVIEW = SINGLE_COMPANY ? 'board' : 'globe'
-
-// ---------- 보드판 카메라 ----------
-// 보드 전체가 UI 패널(위 KPI, 아래 슬라이더, 왼쪽 목록)을 피해 화면에 들어오는 거리와 시점
-const BOARD_DIR = new Vector3(0, 0.8, 0.6).normalize() // 위에서 약 37° 기울여 내려다봄
-function boardHome() {
-  const b = layoutBounds()
-  const aspect = window.innerWidth / Math.max(1, window.innerHeight)
-  const mobile = window.innerWidth < 768
-  const T = 0.536 // 2·tan(15°), fov 30
-  // 데스크톱은 왼쪽 목록(약 30%)·위아래 패널(약 38%)이 가리므로 보이는 영역 기준으로 맞춤
-  // 모바일은 카드 가장자리 사이트(예: 스페인 서쪽 끝 바다호스)의 라벨이 잘리지 않게 좌우 여백을 남김
-  const usableW = mobile ? 0.8 : 0.6
-  // 세로 화면은 아래 범례·슬라이더가 두 줄로 쌓여 더 많이 가림
-  const usableH = mobile ? 0.55 : layoutKind() === 'portrait' ? 0.58 : 0.66
-  // 계약 배지가 보드 북쪽으로 CONTRACT_GAP 만큼 떠 있으므로 그만큼 위쪽 여유를 더 담음
-  const extra = CONTRACT_GAP + 4
-  const needW = (b.w + 6) / (T * aspect * usableW)
-  const needH = ((b.d + extra) * 0.8 + 14) / (T * usableH)
-  const D = Math.max(needW, needH)
-  const target = new Vector3(b.cx, 0, b.cz + 2 - extra / 2)
-  return { target, pos: target.clone().addScaledVector(BOARD_DIR, D), D }
-}
-// 보드 위 한 지점을 가까이 내려다보는 시점
-function boardCloseUp(x, z) {
-  return { target: new Vector3(x, 0, z), pos: new Vector3(x + 4, 26, z + 20) }
-}
+// 3D 개요 화면은 지구본(다회사 모드 계보 · 영상 녹화 인트로).
+// 단일 회사(IREN) 모드에선 개요를 실제 지도(GeoMap)가 맡아서, 3D 는 캠퍼스 화면에만 쓰입니다.
+// (예전 국가 카드 보드판은 지도·계약 탭과 역할이 겹쳐 2026-10-09 삭제)
+const OVERVIEW = 'globe'
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 // camera-controls 의 이동 Promise 는 카메라가 완전히 멈춰야 끝나서 가끔 늦게 끝납니다.
@@ -75,13 +49,6 @@ function campusHome(side) {
 // focalOffset 은 "화면 기준" 평행이동이라 회전해도 패널 반대쪽에 머뭅니다.
 function applyFocalOffset(c, view, side, transition) {
   const mobile = window.innerWidth < 768
-  // 보드판: 데스크톱은 왼쪽 목록을 피해 보드를 오른쪽으로, 모바일은 하단 패널을 피해 위로
-  if (view !== 'site' && OVERVIEW === 'board') {
-    const { D } = boardHome()
-    const aspect = window.innerWidth / Math.max(1, window.innerHeight)
-    const visW = 0.536 * D * aspect
-    return c.setFocalOffset(mobile ? 0 : -visW * 0.12, mobile ? -0.536 * D * 0.012 : -0.536 * D * 0.02, 0, transition)
-  }
   // 지구본: 데스크톱에서는 왼쪽 사이트 목록을 피해 지구본을 오른쪽으로
   if (view !== 'site') return c.setFocalOffset(mobile ? 0 : -28, 0, 0, transition)
   const w = window.innerWidth, h = window.innerHeight
@@ -90,21 +57,6 @@ function applyFocalOffset(c, view, side, transition) {
 
 // 뷰별 카메라 제약
 function applyLimits(c, view, side = 30) {
-  if (view === 'globe' && OVERVIEW === 'board') {
-    const { D } = boardHome()
-    const b = layoutBounds()
-    c.minDistance = 25
-    c.maxDistance = D * 1.4
-    c.minPolarAngle = 0.12
-    c.maxPolarAngle = 1.15        // 판 옆면 아래로 내려가지 않게
-    c.minAzimuthAngle = -0.9      // 좌우 회전은 ±50° 정도까지만 (보드판 정면 유지)
-    c.maxAzimuthAngle = 0.9
-    c.truckSpeed = 1.5
-    c.dollySpeed = 0.8
-    // 평행이동은 보드 범위 안에서만
-    c.setBoundary(new Box3(new Vector3(b.x0, -5, b.z0), new Vector3(b.x1, 5, b.z1)))
-    return
-  }
   // 보드판 제약을 풀어 줌 (캠퍼스·지구본 전환 시)
   c.minAzimuthAngle = -Infinity
   c.maxAzimuthAngle = Infinity
@@ -185,11 +137,6 @@ export default function CameraRig() {
       applyLimits(c, 'site', L.side)
       c.setLookAt(...campusHome(L.side), false)
       applyFocalOffset(c, 'site', L.side, false)
-    } else if (OVERVIEW === 'board') {
-      applyLimits(c, 'globe')
-      applyFocalOffset(c, 'globe', 0, false)
-      const { pos, target } = boardHome()
-      c.setLookAt(pos.x, pos.y, pos.z, target.x, target.y, target.z, false)
     } else {
       applyLimits(c, 'globe')
       applyFocalOffset(c, 'globe', 0, false)
@@ -220,17 +167,7 @@ export default function CameraRig() {
     async function toSite(id) {
       const site = st.data?.sites.find((s) => s.id === id)
       if (!site) return
-      // 1) 보드판이면 그 핀을 가까이 내려다보도록 줌인
-      if (st.view === 'globe' && OVERVIEW === 'board') {
-        const p = boardPinPositions(st.data.sites)[id]
-        if (p) {
-          c.minDistance = 0
-          c.setBoundary(null)
-          const { pos, target } = boardCloseUp(p.x, p.z)
-          c.smoothTime = 0.45
-          await settle(c.setLookAt(pos.x, pos.y, pos.z, target.x, target.y, target.z, true), 1000)
-        }
-      } else if (st.view === 'globe') {
+      if (st.view === 'globe') {
         // 1) 지구본 상태라면 핀 쪽으로 줌인
         c.minDistance = 0
         const from = latLngToVec3(site.lat, site.lng, 0.7)
@@ -263,25 +200,6 @@ export default function CameraRig() {
       await sleep(FADE_MS)
       if (cancelled) return
       st.goGlobe()
-      if (OVERVIEW === 'board') {
-        // 방금 보던 사이트 핀 바로 위에서 시작해 보드 전체로 빠져나옴
-        applyLimits(c, 'globe')
-        applyFocalOffset(c, 'globe', 0, false)
-        c.minDistance = 0
-        c.setBoundary(null)
-        const p = prev ? boardPinPositions(st.data.sites)[prev.id] : null
-        const near = p ? boardCloseUp(p.x, p.z) : boardHome()
-        c.setLookAt(near.pos.x, near.pos.y, near.pos.z, near.target.x, near.target.y, near.target.z, false)
-        await sleep(30)
-        if (cancelled) return
-        st.setTransitioning(false)
-        const home = boardHome()
-        c.smoothTime = 0.5
-        await settle(c.setLookAt(home.pos.x, home.pos.y, home.pos.z, home.target.x, home.target.y, home.target.z, true), 1300)
-        if (cancelled) return
-        applyLimits(c, 'globe')
-        return
-      }
       applyLimits(c, 'globe')
       applyFocalOffset(c, 'globe', 0, false)
       c.minDistance = 0

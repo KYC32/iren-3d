@@ -8,7 +8,6 @@ import { PerformanceMonitor } from '@react-three/drei'
 import { useState, useMemo } from 'react'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 const GlobeView = lazy(() => import('./GlobeView.jsx'))
-import BoardView from './BoardView.jsx'
 import { SINGLE_COMPANY } from '../config.js'
 // 캠퍼스·녹화 코드는 필요할 때만 불러옵니다 (첫 화면 로딩을 가볍게)
 const SiteView = lazy(() => import('./SiteView.jsx'))
@@ -72,8 +71,8 @@ export default function Scene({ record = false }) {
       />
 
       <Suspense fallback={null}>
-        {/* 개요 화면: 단일 회사 모드는 보드판 지도, 녹화(영상 인트로)와 다회사 모드는 지구본 */}
-        {SINGLE_COMPANY && !record ? <BoardView visible={view === 'globe'} /> : <GlobeView visible={view === 'globe'} />}
+        {/* 3D 개요(지구본)는 영상 녹화 인트로와 다회사 모드에서만 — 단일 회사 모드의 개요는 실제 지도(GeoMap)가 맡음 */}
+        {(!SINGLE_COMPANY || record) && <GlobeView visible={view === 'globe'} />}
         {view === 'site' && site && <SiteView key={site.id} site={site} />}
       </Suspense>
       {record ? (

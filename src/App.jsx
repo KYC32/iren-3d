@@ -10,7 +10,6 @@ const Scene = lazy(() => import('./scene/Scene.jsx'))
 import TopBar from './ui/TopBar.jsx'
 import KpiBar from './ui/KpiBar.jsx'
 import Legend from './ui/Legend.jsx'
-import LeftPanel from './ui/Leaderboard.jsx'
 import CampusPanel from './ui/CampusPanel.jsx'
 import MapSidebar, { RegionControls } from './ui/MapSidebar.jsx'
 const loadGeoMap = () => import('./map/GeoMap.jsx')
@@ -84,7 +83,6 @@ export default function App() {
         {data && surface==='map' && <RegionControls/>}
         <div className="middle">
           {data && surface === 'map' && <MapSidebar />}
-          {data && surface === '3d' && view === 'globe' && <LeftPanel />}
           <div className="spacer" />
           {data && view === 'site' && <CampusPanel />}
         </div>

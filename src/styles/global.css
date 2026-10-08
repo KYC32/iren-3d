@@ -366,8 +366,6 @@ button { font: inherit; cursor: pointer; }
   .tl-play { width: 32px; height: 32px; }
 }
 
-/* 보드판 지도: 도시 라벨 (판 이름 명판은 캔버스 텍스처 — BoardView.jsx drawTagTexture) */
-.city-label.board { opacity: 1; }
 
 /* ---------- 다가오는 일정·갱신 기록 (왼쪽 패널 탭) ---------- */
 .upcoming, .changelog { overflow-y: auto; padding: 4px 6px 8px; font-size: 12.5px; }
@@ -402,37 +400,10 @@ button { font: inherit; cursor: pointer; }
 .tl-tick.on, .tl-tick:hover { transform: scale(1.5); }
 
 /* 고객 계약 배지 (보드판 북쪽 위): 로고 + 이름 + 금액 + 연결 사이트. 마우스를 올리면 그 계약선만 강조 */
-.contract-badge {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 1px; white-space: nowrap;
-  background: rgba(255,255,255,0.97); border: 2px solid; border-left-width: 6px; border-radius: 10px; padding: 5px 11px 5px 9px;
-  box-shadow: 0 4px 14px rgba(30,45,90,0.14); pointer-events: auto; cursor: pointer;
-  transition: opacity 150ms, transform 150ms, box-shadow 150ms;
-}
-.contract-badge.dim { opacity: 0.35; }
-.contract-badge.focus { transform: scale(1.06); box-shadow: 0 6px 20px color-mix(in srgb, var(--cb) 35%, transparent); }
-.cb-name { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 800; max-width: 230px; overflow: hidden; text-overflow: ellipsis; }
-.cb-meta { font-size: 11px; color: #34405e; }
-.cb-where { font-size: 10px; color: var(--text-muted); }
 /* 핀 옆 도착 로고 칩 */
-.contract-end {
-  display: flex; align-items: center; gap: 3px; white-space: nowrap;
-  background: #fff; border: 1.5px solid; border-radius: 6px; padding: 2px 4px;
-  font-size: 9.5px; font-weight: 700; color: #34405e; box-shadow: 0 2px 6px rgba(30,45,90,0.15);
-  transform: translateY(-14px); transition: opacity 150ms;
-}
-.contract-end.dim { opacity: 0.25; }
 .ce-dot { width: 8px; height: 8px; border-radius: 50%; }
-.record .contract-badge, .record .contract-end { display: none; }
 /* 모바일: 배지를 로고·이름·금액만 남긴 작은 형태로 (세 개가 375px 폭에 나란히 들어가게) */
 @media (max-width: 767px) {
-  .contract-badge { padding: 3px 7px 3px 6px; border-width: 1.5px; border-left-width: 4px; }
-  .cb-name { font-size: 10px; max-width: 92px; gap: 4px; }
-  .cb-name svg { width: 11px; height: 11px; }
-  .cb-meta { font-size: 9px; }
-  .cb-meta > :not(b) { display: none; }
-  .cb-where { display: none; }
-  .contract-end span { display: none; }
-  .contract-end { display: none; } /* 좁은 화면에선 핀 라벨을 가려서 숨김 — 위쪽 계약 배지로 충분 */
 }
 .sp-contracts { list-style: none; display: flex; flex-direction: column; gap: 6px; }
 .sp-contracts li { border-left: 3px solid; background: #f6f8fc; border-radius: 6px; padding: 6px 9px; }
