@@ -1,9 +1,14 @@
 // Visual environments, not surveyed site plans. Reviewed 2026-10-08.
 // Photo seasons/dates are not known: the timeline never changes these surroundings.
-const texas = {
+const scrub = {
   type: 'scrub', background: '#eff0e9', ground: '#d2c4a7', soil: '#beaa89', field: '#c1c09a',
   foliage: ['#75815b', '#8c966c', '#a4a378'], grass: '#a8a479', trunk: '#87775e',
   trees: 30, shrubs: 100, relief: .22, road: '#92968d',
+}
+const texas = {
+  ...scrub, mesquite: true, pricklyPear: true, longhorns: true,
+  decoration_ko: '롱혼 소·메스키트·가시배선인장은 지역 분위기를 위한 연출입니다.',
+  decoration_en: 'Longhorn cattle, mesquite and prickly pear are decorative regional touches.',
 }
 const forest = {
   type: 'forest', background: '#eaf0ea', ground: '#c4c6b7', soil: '#adb5a0', field: '#9da98b',
@@ -44,7 +49,7 @@ export const CAMPUS_LANDSCAPES = {
     notes_en: 'Conifers and a mountain-valley setting follow official campus imagery and local references. Background ridges are simplified.',
   },
   bundey: {
-    ...texas, trees: 18, shrubs: 120, kangaroos: true, ground: '#d6c8ac', soil: '#c8ad89', field: '#baba95',
+    ...scrub, trees: 18, shrubs: 120, kangaroos: true, ground: '#d6c8ac', soil: '#c8ad89', field: '#baba95',
     foliage: ['#849276', '#9ca386', '#a4aa8d'], source: official('bundey'),
     regionalSource: 'https://www.realestate.com.au/sold/property-lifestyle-sa-morgan-7156392',
     notes_ko: '공식 번디 소개 이미지와 남호주 지역 사진을 참고해 건조한 흙, 낮은 관목과 성긴 수목을 표현했습니다. 현장 경계·시설 배치는 미확인입니다.',
@@ -53,7 +58,7 @@ export const CAMPUS_LANDSCAPES = {
     decoration_en: 'Kangaroos outside the site are decorative animation.',
   },
   kiowa: {
-    ...texas, trees: 46, shrubs: 65, relief: .5, ground: '#caccb3', soil: '#b5b396', field: '#a4b48b',
+    ...scrub, trees: 46, shrubs: 65, relief: .5, ground: '#caccb3', soil: '#b5b396', field: '#a4b48b',
     foliage: ['#64805b', '#7c9468', '#8e9f70'], source: official('oklahoma'),
     regionalSource: 'https://www.land.com/property/250-acres-in-Pittsburg-County-Oklahoma/17419861/',
     notes_ko: '공식 오클라호마 소개 이미지와 피츠버그 카운티 지역 사진의 초지·활엽수 군락을 참고했습니다. 현장 주변 배치는 미확인입니다.',
@@ -71,6 +76,18 @@ export const kangarooHabitat = side => ({ x: side * .08, z: side / 2 + 6, rx: si
 export function inKangarooHabitat(x, z, side) {
   const habitat = kangarooHabitat(side)
   return Math.abs(x - habitat.x) < habitat.rx + 3 && Math.abs(z - habitat.z) < habitat.rz + 3
+}
+
+// Separate grazing patches keep both cattle outside the fence, truck route and each other.
+export const longhornPasture = (side, index) => ({
+  x: side * .06 + (index === 0 ? -4.6 : 4.6), z: side / 2 + 6.5 + index * 2,
+  rx: 1.65, rz: 1.1,
+})
+export function inLonghornPasture(x, z, side) {
+  return [0,1].some(index => {
+    const p = longhornPasture(side, index)
+    return Math.abs(x - p.x) < p.rx + 3 && Math.abs(z - p.z) < p.rz + 3
+  })
 }
 
 export function terrainHeight(x, z, side, relief) {
@@ -92,10 +109,12 @@ export function landscapePlants(siteId, side, roadZ, powerZ, profile) {
       if (Math.max(Math.abs(x), Math.abs(z)) < half + 1.7 || Math.hypot(x, z) > side * 1.13) continue
       if (Math.abs(z - roadZ) < 3.5 || (x < -half && Math.abs(z - powerZ) < 1.8)) continue
       if (profile.kangaroos && inKangarooHabitat(x, z, side)) continue
+      if (profile.longhorns && type < 2 && inLonghornPasture(x, z, side)) continue
       // Patchy vegetation, with more open ground at the front of the model.
       if (type === 0 && (Math.sin(x * .29) + Math.cos(z * .37) < -.2 || (z > half && random() < .5))) continue
       const scale = type === 0 ? .7 + random() * .7 : type === 1 ? .3 + random() * .5 : .14 + random() * .19
-      const species = type !== 0 ? null : profile.maples && added % 5 === 0 ? 'maple'
+      const species = type === 1 && profile.pricklyPear && added % 5 === 0 ? 'prickly-pear'
+        : type !== 0 ? null : profile.mesquite ? 'mesquite' : profile.maples && added % 5 === 0 ? 'maple'
         : profile.type === 'forest' && (!profile.mixed || added % 4 !== 0) ? 'conifer' : 'broadleaf'
       const palette = species === 'maple' ? profile.mapleFoliage : profile.foliage
       plants.push({ type, species, x, z, y: terrainHeight(x, z, side, profile.relief), scale, angle: random() * Math.PI * 2, color: palette[Math.floor(random() * palette.length)] })

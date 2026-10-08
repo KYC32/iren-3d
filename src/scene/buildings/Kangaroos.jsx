@@ -1,18 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { CircleGeometry, ConeGeometry, SphereGeometry, MeshBasicMaterial, MeshStandardMaterial } from 'three'
 import { kangarooPose } from '../kangarooMotion.js'
-
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false)
-  useEffect(() => {
-    const query = window.matchMedia?.('(prefers-reduced-motion: reduce)')
-    const update = () => setReduced(query?.matches ?? false)
-    query?.addEventListener('change', update)
-    return () => query?.removeEventListener('change', update)
-  }, [])
-  return reduced
-}
+import { useReducedMotion } from '../useReducedMotion.js'
 
 function Kangaroo({ index, side, relief, assets, reducedMotion }) {
   const root = useRef(), body = useRef(), tail = useRef(), legs = useRef([]), shadow = useRef()

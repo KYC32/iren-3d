@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { CAMPUS_LANDSCAPES, inKangarooHabitat, landscapePlants, terrainHeight } from './campusLandscape.js'
+import { CAMPUS_LANDSCAPES, inKangarooHabitat, inLonghornPasture, landscapePlants, terrainHeight } from './campusLandscape.js'
 import { kangarooPose } from './kangarooMotion.js'
+import { longhornPose } from './longhornMotion.js'
 import { layoutCampus } from './layoutCampus.js'
 import { buildInfra } from '../../scripts/build-data.mjs'
 
@@ -17,6 +18,7 @@ describe('사진 참고 경관의 배치', () => {
       if (p.x < -layout.side / 2) expect(Math.abs(p.z - layout.powerLine.from[1])).toBeGreaterThanOrEqual(1.8)
       expect(p.y).toBeCloseTo(terrainHeight(p.x, p.z, layout.side, profile.relief))
       if (profile.kangaroos) expect(inKangarooHabitat(p.x, p.z, layout.side)).toBe(false)
+      if (profile.longhorns && p.type < 2) expect(inLonghornPasture(p.x, p.z, layout.side)).toBe(false)
     }
     expect(landscapePlants(id, layout.side, layout.road.z, layout.powerLine.from[1], profile)).toEqual(plants)
   })
@@ -47,5 +49,43 @@ describe('사진 참고 경관의 배치', () => {
   })
   it('모션 감소 설정에서는 위치와 자세가 고정된다', () => {
     for (let i=0;i<3;i++) expect(kangarooPose(20,i,44,.22,true)).toEqual(kangarooPose(0,i,44,.22,true))
+    for (let i=0;i<2;i++) expect(longhornPose(150,i,44,.22,true)).toEqual(longhornPose(0,i,44,.22,true))
+  })
+  it('텍사스 캠퍼스에만 롱혼·메스키트·가시배선인장을 적용한다', () => {
+    for (const site of sites) {
+      const profile = CAMPUS_LANDSCAPES[site.id]
+      const texas = site.admin1 === 'US-TX'
+      expect(Boolean(profile?.longhorns)).toBe(texas)
+      if (!profile) continue
+      const layout = layoutCampus(site)
+      const plants = landscapePlants(site.id,layout.side,layout.road.z,layout.powerLine.from[1],profile)
+      expect(plants.some(p=>p.species==='mesquite')).toBe(texas)
+      expect(plants.some(p=>p.species==='prickly-pear')).toBe(texas)
+    }
+  })
+  it.each(['childress','sweetwater-1','sweetwater-2'])('%s: 롱혼이 도로·부지·서로를 침범하지 않고 지면을 따라 걷는다', id => {
+    const layout = layoutCampus(sites.find(s=>s.id===id)), profile = CAMPUS_LANDSCAPES[id]
+    for (let t=0;t<192;t+=.25) {
+      const pair = [0,1].map(i=>longhornPose(t,i,layout.side,profile.relief))
+      for (const p of pair) {
+        expect(p.z-layout.side/2).toBeGreaterThan(3)
+        expect(p.z-layout.road.z).toBeGreaterThan(layout.road.depth/2+3)
+        expect(p.y).toBeCloseTo(terrainHeight(p.x,p.z,layout.side,profile.relief)+.06)
+        expect(inLonghornPasture(p.x,p.z,layout.side)).toBe(true)
+        expect(Math.hypot(p.x,p.z)+2).toBeLessThan(layout.side*.95)
+      }
+      expect(Math.hypot(pair[0].x-pair[1].x,pair[0].z-pair[1].z)).toBeGreaterThan(5)
+    }
+  })
+  it('풀을 뜯을 때는 제자리에 서고 걷기 주기가 바뀌어도 자세가 튀지 않는다', () => {
+    const pose = t=>longhornPose(t,0,37.2,.22)
+    expect([pose(10).x,pose(10).z,pose(10).stride]).toEqual([pose(16).x,pose(16).z,0])
+    expect(pose(36).x).not.toBeCloseTo(pose(10).x)
+    for (const boundary of [24,48,72,96]) {
+      const before=pose(boundary-.0001), after=pose(boundary+.0001)
+      for (const key of ['x','y','z','head','stride','tail']) expect(before[key]).toBeCloseTo(after[key],3)
+      expect(Math.sin(before.heading)).toBeCloseTo(Math.sin(after.heading),3)
+      expect(Math.cos(before.heading)).toBeCloseTo(Math.cos(after.heading),3)
+    }
   })
 })

@@ -3,6 +3,8 @@ import { Instances, Instance } from '@react-three/drei'
 import { PlaneGeometry, Float32BufferAttribute, Color } from 'three'
 import { landscapePlants, terrainHeight } from '../campusLandscape.js'
 import Kangaroos from './Kangaroos.jsx'
+import Longhorns from './Longhorns.jsx'
+import TexasVegetation from './TexasVegetation.jsx'
 
 function LandscapeGround({ side, profile }) {
   const geometry = useMemo(() => {
@@ -27,15 +29,19 @@ function LandscapeGround({ side, profile }) {
 }
 
 function Vegetation({ plants, profile }) {
-  const trees = plants.filter(p => p.type === 0), shrubs = plants.filter(p => p.type === 1), grass = plants.filter(p => p.type === 2)
+  const trees = plants.filter(p => p.type === 0), shrubs = plants.filter(p => p.type === 1 && p.species !== 'prickly-pear'), grass = plants.filter(p => p.type === 2)
   const conifers = trees.filter(p => p.species === 'conifer')
   const broadleaf = trees.filter(p => p.species === 'broadleaf')
   const maples = trees.filter(p => p.species === 'maple')
+  const mesquite = trees.filter(p => p.species === 'mesquite')
+  const cacti = plants.filter(p => p.species === 'prickly-pear')
+  const upright = trees.filter(p => p.species !== 'mesquite')
   return <group>
-    <Instances frames={1} limit={trees.length} castShadow>
+    {upright.length > 0 && <Instances frames={1} limit={upright.length} castShadow>
       <cylinderGeometry args={[.1, .15, 1.7, 5]}/><meshStandardMaterial color={profile.trunk} roughness={1}/>
-      {trees.map((p, i) => <Instance key={i} position={[p.x,p.y+.85*p.scale,p.z]} scale={p.scale}/>)}
-    </Instances>
+      {upright.map((p, i) => <Instance key={i} position={[p.x,p.y+.85*p.scale,p.z]} scale={p.scale}/>)}
+    </Instances>}
+    {(mesquite.length > 0 || cacti.length > 0) && <TexasVegetation trees={mesquite} cacti={cacti} trunk={profile.trunk}/>}
     {conifers.length > 0 && <Instances frames={1} limit={conifers.length * 2} castShadow receiveShadow>
       <coneGeometry args={[.9, 2.2, 7]}/><meshStandardMaterial roughness={1}/>
       {conifers.flatMap((p, i) => [0,1].map(t => <Instance key={`${i}-${t}`} color={p.color} position={[p.x,p.y+(1.65+t*.8)*p.scale,p.z]} scale={[p.scale*(1-t*.2),p.scale,p.scale*(1-t*.2)]} rotation={[0,p.angle,0]}/>))}
@@ -80,6 +86,7 @@ export default function CampusLandscape({ siteId, layout, profile }) {
     <LandscapeGround side={side} profile={profile}/>
     <Vegetation plants={plants} profile={profile}/>
     {profile.kangaroos && <Kangaroos side={side} relief={profile.relief}/>}
+    {profile.longhorns && <Longhorns side={side} relief={profile.relief}/>}
     {/* Cleared perimeter separates the facility from native vegetation. */}
     {[-1,1].map(s=><group key={s}>
       <mesh position={[s*(side/2+.65),-.16,0]} receiveShadow><boxGeometry args={[1.3,.1,side]}/><meshStandardMaterial color={profile.ground} roughness={1}/></mesh>
