@@ -407,9 +407,9 @@
       ],
       "estimates": [
         {
-          "note": "채용공고 55건(커미셔닝 매니저·제어/자동화·액체냉각 플랜트 리드) → Horizon 2~4 커미셔닝 피크 진입 (추정)",
-          "note_en": "55 job posts (commissioning managers, controls, liquid-cooling leads) suggest Horizon 2-4 commissioning peak (estimate)",
-          "source": "https://www.simplyhired.com/search?q=iren&l=Childress%2C+TX"
+          "note": "2026-10-09 회사 채용 64건: 건설 29(시운전 매니저·감독 등 커미셔닝 직군 다수, 야간조) · 운영 28(정비·발전기·고압 기술자) → Horizon 2~4 시운전 막바지와 운영 인력 확충이 동시에 진행 (추정)",
+          "note_en": "2026-10-09 company postings: 64 — construction 29 (many commissioning managers/supervisors, night shifts), operations 28 (maintenance, generator, HV techs) → Horizon 2–4 commissioning wrapping up while operations staff ramps (estimate)",
+          "source": "https://iren.careers.hibob.com/jobs?site=2548682"
         },
         {
           "note": "공랭 Blackwell (NVIDIA): 착공 시점은 기준일 진행률(30%)과 목표일로 역산한 추정",
@@ -541,9 +541,9 @@
       ],
       "estimates": [
         {
-          "note": "채용공고 34건(HV 건설 감독·QA/QC·HPC 기계 매니저, 최근 1~2주 집중) → 변전소 통전 후 본공사(전기·기계) 단계 진입 (추정)",
-          "note_en": "34 recent job posts (HV construction, QA/QC, HPC mechanical) suggest main electrical/mechanical works have started (estimate)",
-          "source": "https://www.simplyhired.com/search?q=iren&l=Sweetwater%2C+TX"
+          "note": "2026-10-09 회사 채용 33건: 건설 25(시운전 리드·감독, 야간조, LOTO) · 운영 7(운영 총괄·고압 정비·HPC 기계) → 1단계 본공사 진행, 시운전·운영 준비 착수 (추정)",
+          "note_en": "2026-10-09 company postings: 33 — construction 25 (commissioning leads/supervisors, night shifts, LOTO), operations 7 (senior ops manager, HV maintenance, HPC mechanical) → phase 1 build underway, commissioning and operations prep starting (estimate)",
+          "source": "https://iren.careers.hibob.com/jobs?site=2549090"
         },
         {
           "note": "1단계: 착공 시점은 기준일 진행률(15%)과 목표일로 역산한 추정",
@@ -851,6 +851,11 @@
       ],
       "estimates": [
         {
+          "note": "2026-10-09 회사 채용 17건: 운영 12(데이터센터 교대 감독·기술자·냉방) + 기계 공사 감독·포맨 → 기존 GPU 운영 유지, 액체냉각(2027) 신규 공사 준비 (추정)",
+          "note_en": "2026-10-09 company postings: 17 — operations 12 (DC shift supervisor, technicians, HVAC) plus mechanical construction superintendent/foreman → running GPU ops, preparing the 2027 liquid-cooled build (estimate)",
+          "source": "https://iren.careers.hibob.com/jobs?site=2549092"
+        },
+        {
           "note": "초기 GPU 파일럿 2MW: H100 816개 × 1.93kW(IREN 이 쓰는 GPU당 전력, 부대설비 포함) × PUE 1.1 ≈ 1.7MW 로 계산. 2025-06엔 1.9k개(≈4MW)로 늘었지만 2024 기준값으로 고정 (추정)",
           "note_en": "Hopper pilot 2MW: 816 H100 × 1.93kW per GPU (IREN reference incl. ancillary) × PUE 1.1 ≈ 1.7MW; grew to ~1.9k GPUs (~4MW) by Jun 2025 (estimate)",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036125024747/ef20051566_ex99-1.htm"
@@ -1060,6 +1065,11 @@
         }
       ],
       "estimates": [
+        {
+          "note": "2026-10-09 회사 채용 14건 중 운영 12(데이터센터 기술자·HPC 냉방·GPU 장비 서비스 매니저·광케이블) → 공랭 B300 홀 운영 개시 준비 (추정)",
+          "note_en": "2026-10-09 company postings: 14, of which operations 12 (data center techs, HPC HVAC, GPU vendor service manager, fiber) → preparing to operate the air-cooled B300 halls (estimate)",
+          "source": "https://iren.careers.hibob.com/jobs?site=2549089"
+        },
         {
           "note": "채굴동 retired 2026-05: 2026-05-11 녹취에서 80MW 가 이미 GPU 설치용으로 준비됐다고 밝혀 그 전에 채굴이 끝난 것으로 봄. 정확한 종료 월은 미공개 (추정)",
           "note_en": "Mining retired by May 2026: the May 11, 2026 call says all 80MW was already prepared for GPUs; exact end month not disclosed (estimate)",
@@ -1335,9 +1345,9 @@
       ],
       "estimates": [
         {
-          "note": "Kiowa 현지 PM·조달 매니저 채용 공고 등장 → 2027 착공 선행 조직 구성 (추정)",
-          "note_en": "Local PM/procurement job posts suggest pre-construction team forming for 2027 (estimate)",
-          "source": "https://www.linkedin.com/jobs/search/?keywords=IREN%20Kiowa"
+          "note": "2026-10-09 회사 채용 3건뿐(키오와 PM·조달 매니저, 오클라호마 원격 계약 코디네이터), 현장 시공 인력 없음 → 착공 전 개발·조달 단계 (추정)",
+          "note_en": "2026-10-09 company postings: only 3 (Kiowa project manager, procurement manager, remote Oklahoma contracts coordinator), no field construction roles → pre-construction development/procurement (estimate)",
+          "source": "https://iren.careers.hibob.com/jobs?site=2591467"
         }
       ],
       "sources": [
@@ -1404,7 +1414,13 @@
           "source": "https://www.globenewswire.com/news-release/2026/06/03/3305925/0/en/iren-announces-first-australian-data-center-campus-800mw-in-south-australia.html"
         }
       ],
-      "estimates": [],
+      "estimates": [
+        {
+          "note": "2026-10-09 번디·애들레이드 현장 채용 없음, 시드니 본사에 전력 시스템·고압·전기 설계 리드 채용 → 설계 단계 (추정)",
+          "note_en": "2026-10-09 no field postings near Bundey/Adelaide; Sydney office hiring power systems, HV and electrical design leads → design stage (estimate)",
+          "source": "https://iren.careers.hibob.com/jobs?site=2549082"
+        }
+      ],
       "sources": [
         "https://iren.com/data-centers/bundey"
       ],
@@ -1473,8 +1489,8 @@
       ],
       "estimates": [
         {
-          "note": "Badajoz 건설 PM·슈퍼인텐던트·BIM 등 채용 25건+ 최근 집중 → 착공 준비 가시화 (추정)",
-          "note_en": "25+ recent construction PM/superintendent/BIM job posts suggest construction prep is under way (estimate)",
+          "note": "2026-10-09 LinkedIn 의 IREN 인증 공고 17건+(첫 페이지 기준), 대부분 최근 1주: 프로젝트 디렉터·총괄 현장소장·공정/원가/계약·전기/기계/토목(CSA)/전력 PM·BIM·안전 → 착공 직전 현장 조직 구성 (추정). 회사 채용 사이트에는 스페인 공고가 없음",
+          "note_en": "2026-10-09 IREN-verified LinkedIn postings: 17+ on the first page, mostly within the last week — project director, general superintendent, planning/cost/contracts, electrical/mechanical/CSA/power PMs, BIM, HSE → site team forming ahead of construction (estimate). None on the company careers site",
           "source": "https://www.linkedin.com/jobs/search/?keywords=IREN%20Badajoz"
         }
       ],
