@@ -649,3 +649,9 @@ button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit;
 .photo-placeholder svg { display: block; margin: 0 auto 6px; }
 /* 미래 전망 안내: 타임라인의 "회사 발표 목표" 구간과 같은 노란색 계열 */
 .research-note.is-forecast { background: #fff8db; color: #6b5200; border-radius: 6px; padding: 6px 8px; }
+
+/* 지도 화면 왼쪽 패널 탭 [캠퍼스 | 일정 | 갱신 기록] */
+.map-tabs { margin: 10px 0 8px; }
+.map-tabs button { font-size: 12px; padding: 6px 0; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
+.map-tabs .tab-count { font-size: 10.5px; font-weight: 700; color: #5d7a6d; background: #e3efe8; border-radius: 999px; padding: 0 6px; }
+.map-sidebar .upcoming, .map-sidebar .changelog { padding: 2px 0 8px; }

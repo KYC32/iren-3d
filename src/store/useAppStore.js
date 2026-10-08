@@ -260,7 +260,11 @@ export const useAppStore = create((set, get) => ({
     const st = get()
     st.setPlaying(false)
     st.setMonth(month)
-    if (siteId && siteId !== st.selectedSiteId) st.requestSite(siteId)
+    // 실제 지도 화면에선 지도를 그 캠퍼스로 옮기고, 3D 화면에선 그 캠퍼스 3D 로 이동
+    if (siteId && siteId !== st.selectedSiteId) {
+      if (st.surface === 'map') st.focusSiteOnMap(siteId)
+      else st.requestSite(siteId)
+    }
   },
   toggleSheet: () => set({ sheetOpen: !get().sheetOpen }),
   setCampusListOpen: (open) => set({ mapListCollapsed: !open, sheetOpen: open }),

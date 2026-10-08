@@ -231,3 +231,16 @@ describe('캠퍼스 설명 패널 접기', () => {
     expect(state().campusPanelCollapsed).toBe(false)
   })
 })
+
+describe('일정 탭에서 이동', () => {
+  // 지도 화면(기본)에서 일정 항목을 누르면 3D 로 넘어가지 않고 지도가 그 캠퍼스로 이동해야 함
+  it('지도 화면에선 그 시점·캠퍼스로 지도를 옮김', () => {
+    state().setRaw(raw)
+    expect(state().surface).toBe('map')
+    state().jumpTo(toMonth('2027-03'), 'childress')
+    expect(state().month).toBe(toMonth('2027-03'))
+    expect(state().selectedSiteId).toBe('childress')
+    expect(state().surface).toBe('map')
+    expect(state().pending).toBeNull()
+  })
+})
