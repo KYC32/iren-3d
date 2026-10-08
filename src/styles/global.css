@@ -690,3 +690,6 @@ button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit;
 .schedule-flags em { font-style: normal; font-size: 10px; font-weight: 700; border-radius: 999px; padding: 1px 7px; }
 .flag-delayed { background: #fde7e4; color: #a3321f; }
 .flag-overdue { background: #fff3cf; color: #7a5a00; }
+
+/* 채용 선행지표 칩 (캠퍼스 목록) */
+.map-site-list .hiring-chip { display: inline-flex; align-items: center; gap: 4px; color: #3d5a8a; font-size: 10px; }

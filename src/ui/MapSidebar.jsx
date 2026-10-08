@@ -13,7 +13,7 @@ import { pickName, useT } from '../i18n/useT.js'
 import { locationFor, milestonesAt, scheduleSignals } from '../data/research.js'
 import { styleOf } from '../data/statusStyle.js'
 import { REGION_NAMES } from '../map/mapData.js'
-import { PanelLeftClose, PanelLeftOpen, MapPin } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen, MapPin, Briefcase } from 'lucide-react'
 import Upcoming from './Upcoming.jsx'
 import ChangeLog from './ChangeLog.jsx'
 import ContractsPanel from './ContractsPanel.jsx'
@@ -59,11 +59,16 @@ function CampusList(){
       const loc=locationFor(s,st.data.raw.research)
       const target=milestonesAt(st.data.raw.research,s.id,st.month).find(m=>!m.completion) // 아직 완료 안 된 가장 가까운 목표
       const sig=scheduleSignals(st.data.raw.research,s,st.month) // 일정 신호: 목표가 밀림 / 목표일 지났는데 완료 미확인
+      const hire=st.data.raw.hiring?.sites.find(h=>h.site===s.id)   // 채용 공고 스냅샷 (선행지표)
       return <button key={s.id} aria-pressed={st.selectedSiteId===s.id} onClick={()=>st.focusSiteOnMap(s.id)}>
         <span className="map-site-top"><b>{pickName(s,st.lang)}</b><small>{s.country}</small></span>
         <span className="map-site-status"><i className="dot" style={{background:styleOf(s.status).color}}/>{t.status[s.status]}<strong>{s.grid_mw?`${s.grid_mw.toLocaleString()} MW`:'—'}</strong></span>
         <small>{loc.precise?(ko?'주소 위치':'Address location'):(ko?'지역 위치 · 부지 미확인':'Region · parcel unverified')}</small>
         {target&&<small className="map-next">{ko?'목표':'Target'} · {target.latest?.target}</small>}
+        {/* 채용 선행지표: 공고 수 + 한 줄 해석 (기준일·출처는 마우스를 올리면) */}
+        {hire&&<small className="hiring-chip" title={`${ko?'채용 공고':'Job postings'} ${st.data.raw.hiring.asOf} · ${hire.channel==='company'?(ko?'회사 채용 사이트':'company careers site'):(ko?'LinkedIn 의 IREN 공고':'IREN postings on LinkedIn')} — ${ko?st.data.raw.hiring.note_ko:st.data.raw.hiring.note_en}`}>
+          <Briefcase size={11} aria-hidden="true"/>{ko?'채용':'Hiring'} {hire.total}{hire.totalIsMinimum?'+':''} · {ko?hire.signal_ko:hire.signal_en}
+        </small>}
         {(sig.delayed.length>0||sig.overdue.length>0)&&<span className="schedule-flags">
           {sig.delayed.length>0&&<em className="flag-delayed" title={sig.delayed.map(m=>ko?m.title_ko:m.title_en).join(', ')}>{ko?'일정 지연':'Delayed'} {sig.delayed.length}</em>}
           {sig.overdue.length>0&&<em className="flag-overdue" title={sig.overdue.map(m=>ko?m.title_ko:m.title_en).join(', ')}>{ko?'목표 경과·미확인':'Past target, unconfirmed'} {sig.overdue.length}</em>}

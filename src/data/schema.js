@@ -156,6 +156,26 @@ const PowerStep = z.object({
   published_source: Url.optional(),
 }).strict()
 
+// 채용 공고 스냅샷 (data/hiring.json) — 사이트별 공개 공고 수와 한 줄 신호. 선행지표(추정)로만 씀
+//   channel: company = 회사 공식 채용 사이트, linkedin = 회사가 LinkedIn 에만 올린 공고
+//   totalIsMinimum: 첫 페이지만 센 경우처럼 "이상"인 숫자
+export const HiringFile = z.object({
+  asOf: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  note_ko: z.string(),
+  note_en: z.string(),
+  sites: z.array(z.object({
+    site: z.string(),
+    channel: z.enum(['company', 'linkedin']),
+    total: z.number().int().nonnegative(),
+    totalIsMinimum: z.boolean().optional(),
+    construction: z.number().int().nonnegative().optional(),
+    operations: z.number().int().nonnegative().optional(),
+    signal_ko: z.string(),
+    signal_en: z.string(),
+    source: Url,
+  }).strict()),
+}).strict()
+
 // 출처 문서의 실제 공개일 (data/source-dates.json) — 어떻게 확인했는지(method)도 함께 기록
 //   url-date    : 주소에 날짜가 들어 있음 (예: globenewswire.com/news-release/2026/08/27/…)
 //   x-post-id   : X 게시물 번호에 들어 있는 작성 시각
@@ -234,4 +254,5 @@ export const InfraFile = z.object({
   sites: z.array(Site.extend({ as_of: z.string() })),
   changelog: ChangelogFile.shape.entries.optional(),
   sourceDates: SourceDatesFile.shape.sources.optional(), // 출처 문서 공개일 (data/source-dates.json)
+  hiring: HiringFile.optional(),                         // 채용 공고 스냅샷 (data/hiring.json)
 }).strict()

@@ -1,0 +1,15 @@
+{
+  "asOf": "2026-10-09",
+  "note_ko": "회사 공식 채용 사이트(HiBob) 기준 공개 공고 수. 바다호스는 회사 사이트에 없어 LinkedIn 의 IREN 인증 공고(첫 페이지)로 셈. 선행지표로만 쓰며 공사 진척의 확정 근거가 아님",
+  "note_en": "Open roles on the company careers site (HiBob). Badajoz is counted from IREN-verified LinkedIn postings (first page) because it is not on the company site. A leading indicator only, not confirmation of progress",
+  "sites": [
+    { "site": "childress", "channel": "company", "total": 64, "construction": 29, "operations": 28, "signal_ko": "시운전·운영 확충", "signal_en": "Commissioning + ops ramp", "source": "https://iren.careers.hibob.com/jobs?site=2548682" },
+    { "site": "sweetwater-1", "channel": "company", "total": 33, "construction": 25, "operations": 7, "signal_ko": "본공사·시운전 준비 (허브 공통)", "signal_en": "Build + commissioning prep (hub-wide)", "source": "https://iren.careers.hibob.com/jobs?site=2549090" },
+    { "site": "kiowa", "channel": "company", "total": 3, "construction": 1, "operations": 0, "signal_ko": "착공 전 개발·조달", "signal_en": "Pre-construction", "source": "https://iren.careers.hibob.com/jobs?site=2591467" },
+    { "site": "prince-george", "channel": "company", "total": 17, "construction": 2, "operations": 12, "signal_ko": "운영 + 액체냉각 공사 준비", "signal_en": "Ops + liquid-cooled build prep", "source": "https://iren.careers.hibob.com/jobs?site=2549092" },
+    { "site": "mackenzie", "channel": "company", "total": 14, "construction": 2, "operations": 12, "signal_ko": "GPU 운영 준비", "signal_en": "GPU ops prep", "source": "https://iren.careers.hibob.com/jobs?site=2549089" },
+    { "site": "canal-flats", "channel": "company", "total": 2, "construction": 0, "operations": 1, "signal_ko": "소규모", "signal_en": "Minimal", "source": "https://iren.careers.hibob.com/jobs?site=2549081" },
+    { "site": "badajoz", "channel": "linkedin", "total": 17, "totalIsMinimum": true, "signal_ko": "착공 조직 구성 (최근 1주 집중)", "signal_en": "Site team forming (last week)", "source": "https://www.linkedin.com/jobs/search/?keywords=IREN%20Badajoz" },
+    { "site": "bundey", "channel": "company", "total": 0, "signal_ko": "현장 채용 없음 · 시드니 설계 인력", "signal_en": "No field roles · design team in Sydney", "source": "https://iren.careers.hibob.com/jobs?site=2549082" }
+  ]
+}

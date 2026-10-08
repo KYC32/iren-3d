@@ -57,6 +57,11 @@
           "ko": "채용 공고 근거를 2026-10-09 기준으로 갱신: 회사 공식 채용 사이트(264건) 사이트별 집계 + 바다호스는 LinkedIn 의 IREN 인증 공고. 키오와 LinkedIn 검색은 네브래스카 Kiowa 로 잡혀 회사 사이트로 교체, 매켄지·프린스조지·번디 추정 추가",
           "en": "Job-posting evidence refreshed as of 2026-10-09: company careers site (264 roles) by site, plus IREN-verified LinkedIn postings for Badajoz. Kiowa LinkedIn search resolved to Kiowa, Nebraska, so replaced with the company site; added Mackenzie, Prince George and Bundey estimates",
           "source": "https://iren.careers.hibob.com/jobs"
+        },
+        {
+          "ko": "캠퍼스 목록에 채용 선행지표 추가(data/hiring.json, 2026-10-09 기준): 공고 수와 한 줄 해석, 바다호스는 LinkedIn 의 IREN 인증 공고",
+          "en": "Hiring leading indicator added to the campus list (data/hiring.json, as of 2026-10-09): posting counts with a one-line read; Badajoz from IREN-verified LinkedIn postings",
+          "source": "https://iren.careers.hibob.com/jobs"
         }
       ]
     },
