@@ -131,4 +131,24 @@ describe('location and media integrity',()=>{
    expect(validateResearch(r,raw.sites).some(e=>e.includes('unknown status'))).toBe(true)
    expect(validateResearch(raw.research,raw.sites).some(e=>e.includes('unknown status'))).toBe(false)
  })
+ // 공개일 찾는 순서: 처음 공개일(published) → 원문 검토 출처 → 문서 공개일(source-dates) → (보고) 사건 날짜 / (목표) 기준일
+ it('decides when a record became public in the documented order',()=>{
+   const base=structuredClone(raw.sites.find(s=>s.id==='canal-flats'))
+   const url='https://example.com/later-annual-report'
+   base.buildings=[{...base.buildings[0],id:'t',phases:[{status:'operating',from:'2020-01',basis:'reported',source:url}]}]
+   const status=(site,date,dates=[])=>{
+     const o=observedSiteAt(site,{...raw.research,auditedBuildings:[]},M(date),raw.companies,dates)
+     const ph=o.buildings[0].phases.filter(p=>M(p.from)<=M(date)&&p.from!=='9999-01')
+     return ph.at(-1)?.status ?? null
+   }
+   // 4) 아무 날짜 정보가 없으면 보고된 사건 날짜(2020-01)에 공개된 것으로 봄
+   expect(status(base,'2020-06')).toBe('operating')
+   // 3) 문서 공개일이 2025-08 이면 그 전에는 모름
+   const later=[{url,published:'2025-08-20',method:'edgar-filing'}]
+   expect(status(base,'2024-06',later)).not.toBe('operating')
+   expect(status(base,'2025-09',later)).toBe('operating')
+   // 1) 처음 공개된 날(published)을 조사해 적으면 그게 우선
+   const early=structuredClone(base); early.buildings[0].phases[0].published='2021-10-15'
+   expect(status(early,'2022-01',later)).toBe('operating')
+ })
 })

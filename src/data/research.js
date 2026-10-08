@@ -77,18 +77,25 @@ function mergePhases(a, b) {
 
 // 투자자용 "확인 기록" 화면: 상태는 보고된 근거로만 앞으로 진행 (목표일이 지났다고 자동으로 가동 처리하지 않음).
 // 원본(iren.json)은 그대로 두고 녹화·전망용 화면에서 씁니다.
-export function observedSiteAt(site, research, month, companies) {
+export function observedSiteAt(site, research, month, companies, sourceDates = []) {
   const sourceForUrl = (url) => research.sources.find((s) => s.url === url)
+  const docDate = (url) => sourceDates.find((d) => d.url === url)?.published
   const asOfM = toMonth(site.as_of, 'end')
   const cutoff = Math.min(month, asOfM)
   // 기준일 이후(미래)를 보고 있나? → 그렇다면 기준일의 확인 상태에서 출발해 회사 목표·추정대로 진행
   const forecast = month > asOfM
   // 기준일 "뒤"에 잡힌 목표·추정 단계 (목표는 기간의 끝으로 — 2026-Q4 목표는 12월부터. timeline.js 와 같은 규칙)
   const isFuture = (p) => p.basis !== 'reported' && toMonth(p.from, p.basis === 'target' ? 'end' : 'start') > asOfM
-  const isKnown = (p) => {
-    const source = sourceForUrl(p.source)
-    return toMonth(p.published ?? source?.published ?? site.as_of, 'end') <= cutoff
-  }
+  // 이 기록이 "공개된 날" — 아래 순서로 찾고, 그날이 보고 있는 달(cutoff) 이전이면 보여 줌
+  //   1) published: 그 사실을 처음 공개한 날 (나중에 나온 정리 자료를 출처로 쓸 때 조사해 적어 둔 값)
+  //   2) research.json 출처의 공개일 (원문을 검토한 자료)
+  //   3) source-dates.json 의 문서 공개일 (주소 날짜·X 게시물 번호·EDGAR 제출일)
+  //   4) 그래도 모르면: 보고(reported)된 사실은 "사건 날짜에 공개된 것"으로 봄
+  //      (날짜 없는 회사 소개 페이지 등 — 대부분 실적·보도자료로 그 무렵 공개됨)
+  //      목표·추정·납품 주문은 발표 시점을 알 수 없어 기준일에 알려진 것으로 봄
+  const publishedOf = (p) => p.published ?? sourceForUrl(p.source)?.published ?? docDate(p.source)
+    ?? (p.basis === 'reported' && p.from ? p.from : site.as_of)
+  const isKnown = (p) => toMonth(publishedOf(p), 'end') <= cutoff
   const claims = claimsAt(research, site.id, cutoff)
   const buildings = site.buildings.map((b) => {
     const own = claims.filter((c) => c.building === b.id)

@@ -115,6 +115,10 @@ export const Phase = z.object({
   from: When,
   basis: Basis,
   source: Url,
+  // 이 사실이 "처음 공개된" 날 — source 가 나중에 나온 정리 자료(예: 몇 년 뒤 연차보고서)일 때만 적음.
+  // 타임라인은 이 날짜부터 이 사실을 보여 줌 (공개 전 과거로 미리 새어 나가지 않게)
+  published: When.optional(),
+  published_source: Url.optional(), // 처음 공개한 자료 주소 (source 와 다를 때)
 }).strict()
 
 export const Building = z.object({
@@ -148,6 +152,23 @@ const PowerStep = z.object({
   energized_mw: z.number().nonnegative(), // 실제 통전된 전력
   basis: Basis,
   source: Url,
+  published: When.optional(),        // 처음 공개된 날 (위 Phase 와 같은 뜻)
+  published_source: Url.optional(),
+}).strict()
+
+// 출처 문서의 실제 공개일 (data/source-dates.json) — 어떻게 확인했는지(method)도 함께 기록
+//   url-date    : 주소에 날짜가 들어 있음 (예: globenewswire.com/news-release/2026/08/27/…)
+//   x-post-id   : X 게시물 번호에 들어 있는 작성 시각
+//   edgar-filing: SEC EDGAR 의 제출일(Filing Date)
+//   page-date   : 문서 본문에 적힌 게시일
+export const SourceDatesFile = z.object({
+  checked: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // 마지막으로 확인한 날
+  sources: z.array(z.object({
+    url: Url,
+    published: When,
+    method: z.enum(['url-date', 'x-post-id', 'edgar-filing', 'page-date']),
+    note: z.string().optional(),
+  }).strict()),
 }).strict()
 
 export const Site = z.object({
@@ -212,4 +233,5 @@ export const InfraFile = z.object({
   programs: z.array(Program),
   sites: z.array(Site.extend({ as_of: z.string() })),
   changelog: ChangelogFile.shape.entries.optional(),
+  sourceDates: SourceDatesFile.shape.sources.optional(), // 출처 문서 공개일 (data/source-dates.json)
 }).strict()

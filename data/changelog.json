@@ -14,6 +14,25 @@
         {
           "ko": "사진 영어 제목 추가, 사진 이용 근거 문구를 '공식 홈페이지 공개 이미지 · 출처 표시 · 요청 시 삭제'로 정정",
           "en": "Added English photo titles; photo usage note corrected to 'official website image, credited, removed on request'"
+        },
+        {
+          "ko": "과거 타임라인 복원: 출처 18건의 실제 공개일을 조사해 기록(SEC 제출일·보도자료·X 게시 시각). 정리 자료를 출처로 쓴 사실은 처음 공개한 자료와 날짜를 따로 기록",
+          "en": "Past timeline restored: actual publication dates recorded for 18 sources (SEC filing dates, press releases, X post times); first-disclosure documents recorded where a later summary was cited",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036121035328/ny20000275x5_f1.htm"
+        },
+        {
+          "ko": "칠드레스 정정: 채굴 가동 2022 → 2023-04(600MW 변전소 2023-04-06 통전), 전력 600MW로 시작 → 2024-07 750MW 증설 (증설분 통전 시점은 미상이라 증설 발표 시점으로 둠)",
+          "en": "Childress corrected: mining start 2022 → 2023-04 (600MW substation energized 2023-04-06); power 600MW, raised to 750MW in 2024-07 (energization date of the added 150MW unknown; set at the announcement)",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036123018117/brhc20051418_ex99-1.htm"
+        },
+        {
+          "ko": "스위트워터 1 정정: 1단계(200MW IT) 계획 공개 시점 2025-02 → 2026-05 (2026-05-07 실적 콜에서 처음 공개)",
+          "en": "Sweetwater 1 corrected: phase 1 (200MW IT) plan first disclosed 2026-05 (Q3 FY26 call, 2026-05-07), not 2025-02",
+          "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000028/irentranscript.htm"
+        },
+        {
+          "ko": "매켄지·프린스조지 전력 시작 시점을 연 단위(2022)에서 가동 시작 월(2022-04, 2022-09)로 정밀화",
+          "en": "Mackenzie / Prince George power start refined from year (2022) to operating start month (2022-04, 2022-09)"
         }
       ]
     },

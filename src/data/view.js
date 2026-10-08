@@ -78,7 +78,7 @@ function metricMap(company) {
 
 export function viewInfra(raw, m, { observed = true } = {}) {
   const groupOf = Object.fromEntries(raw.companies.map((c) => [c.id, c.group]))
-  const observedRaw = !observed ? raw : { ...raw, sites: raw.sites.map((s) => observedSiteAt(s, raw.research ?? EMPTY_RESEARCH, m, raw.companies)) }
+  const observedRaw = !observed ? raw : { ...raw, sites: raw.sites.map((s) => observedSiteAt(s, raw.research ?? EMPTY_RESEARCH, m, raw.companies, raw.sourceDates)) }
   return {
     raw, observedRaw,
     month: m,

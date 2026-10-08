@@ -20,6 +20,18 @@ const changelogFile = existsSync(logUrl) ? JSON.parse(readFileSync(logUrl, 'utf8
 const { errors, warns, infra } = validateAll({ companiesFile, files, changelogFile })
 const researchUrl = new URL('research.json', DATA)
 if (infra && existsSync(researchUrl)) errors.push(...validateResearch(JSON.parse(readFileSync(researchUrl,'utf8')),infra.sites))
+// 공개일을 모르는 보고(reported) 기록 → 타임라인은 "사건 날짜에 공개됨"으로 대신 처리 (경고만)
+// 해결: 그 사실을 처음 공개한 자료를 찾아 published / published_source 를 적거나, data/source-dates.json 에 문서 공개일 추가
+if (infra) {
+  const datesUrl = new URL('source-dates.json', DATA)
+  const dated = new Set(existsSync(datesUrl) ? JSON.parse(readFileSync(datesUrl, 'utf8')).sources.map((s) => s.url) : [])
+  if (existsSync(researchUrl)) for (const s of JSON.parse(readFileSync(researchUrl, 'utf8')).sources) if (s.published) dated.add(s.url)
+  for (const site of infra.sites) {
+    const records = [...site.buildings.flatMap((b) => b.phases.map((p) => [`${site.id}/${b.id} ${p.status}@${p.from}`, p])),
+      ...site.power.map((p) => [`${site.id} 전력@${p.from}`, p])]
+    for (const [label, p] of records) if (p.basis === 'reported' && !p.published && !dated.has(p.source)) warns.push(`공개일 미상(사건 날짜로 대체): ${label}`)
+  }
+}
 warns.forEach((w) => console.warn('⚠️  ' + w))
 if (errors.length) {
   console.error('❌ 데이터 오류:')

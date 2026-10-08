@@ -32,11 +32,18 @@
       "summary_en": "750MW grid-connected freehold campus. Bitcoin mining winds down by end-2026 as the site converts to liquid-cooled Horizon 1-4 (200MW IT) for Microsoft and air-cooled Blackwell for NVIDIA.",
       "power": [
         {
-          "from": "2022",
+          "from": "2023-04",
+          "secured_mw": 600,
+          "energized_mw": 600,
+          "basis": "reported",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036123018117/brhc20051418_ex99-1.htm"
+        },
+        {
+          "from": "2024-07",
           "secured_mw": 750,
           "energized_mw": 750,
           "basis": "reported",
-          "source": "https://iren.com/data-centers/childress"
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000162828024032690/irenbusinessupdate24july.htm"
         }
       ],
       "substation": {
@@ -329,9 +336,10 @@
           "phases": [
             {
               "status": "operating",
-              "from": "2022",
+              "from": "2023-04",
               "basis": "reported",
-              "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm"
+              "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm",
+              "published": "2023-04-26"
             },
             {
               "status": "decommissioning",
@@ -449,14 +457,18 @@
           "secured_mw": 1400,
           "energized_mw": 0,
           "basis": "reported",
-          "source": "https://iren.com/data-centers/sweetwater"
+          "source": "https://iren.com/data-centers/sweetwater",
+          "published": "2025-02-12",
+          "published_source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000009/q2fy25resultspressreleas.htm"
         },
         {
           "from": "2026-05-01",
           "secured_mw": 1400,
           "energized_mw": 1400,
           "basis": "reported",
-          "source": "https://iren.com/data-centers/sweetwater"
+          "source": "https://iren.com/data-centers/sweetwater",
+          "published": "2026-05-01",
+          "published_source": "https://iren.gcs-web.com/news-releases/news-release-details/iren-announces-successful-energization-sweetwater-1"
         }
       ],
       "substation": {
@@ -478,9 +490,11 @@
           "phases": [
             {
               "status": "planned",
-              "from": "2025-02",
+              "from": "2026-05",
               "basis": "reported",
-              "source": "https://www.globenewswire.com/news-release/2026/09/08/3357498/0/en/iren-s-2gw-sweetwater-hub-included-as-base-load-in-ercot-batch-zero.html"
+              "source": "https://www.globenewswire.com/news-release/2026/09/08/3357498/0/en/iren-s-2gw-sweetwater-hub-included-as-base-load-in-ercot-batch-zero.html",
+              "published": "2026-05-07",
+              "published_source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000028/irentranscript.htm"
             },
             {
               "status": "under_construction",
@@ -576,7 +590,9 @@
           "secured_mw": 600,
           "energized_mw": 0,
           "basis": "reported",
-          "source": "https://iren.com/data-centers/sweetwater"
+          "source": "https://iren.com/data-centers/sweetwater",
+          "published": "2025-02-12",
+          "published_source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000009/q2fy25resultspressreleas.htm"
         },
         {
           "from": "2027-Q4",
@@ -641,11 +657,13 @@
       "summary_en": "50MW hydro-powered air-cooled site. Bitcoin mining from Sep 2022, with a small H100 AI cloud pilot from Feb 2024. Miner removal began Jul 2025 and all hashrate was displaced by GPUs by Dec 2025. All air-cooled GPUs (>23k) delivered by May 2026. New liquid-cooled deployment planned for 2027.",
       "power": [
         {
-          "from": "2022",
+          "from": "2022-09",
           "secured_mw": 50,
           "energized_mw": 50,
           "basis": "reported",
-          "source": "https://iren.com/data-centers/prince-george"
+          "source": "https://iren.com/data-centers/prince-george",
+          "published": "2021-12-09",
+          "published_source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036121040953/brhc10031628_ex99-1.htm"
         }
       ],
       "substation": {},
@@ -730,7 +748,9 @@
               "status": "operating",
               "from": "2024-02",
               "basis": "reported",
-              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000162828024038677/iren-20240630.htm"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000162828024038677/iren-20240630.htm",
+              "published": "2024-02-08",
+              "published_source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036124006216/ef20021117_ex99-1.htm"
             },
             {
               "status": "retired",
@@ -758,7 +778,9 @@
               "status": "operating",
               "from": "2022-09",
               "basis": "reported",
-              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000063/iren-20250630.htm"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000063/iren-20250630.htm",
+              "published": "2022-09-27",
+              "published_source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036122034785/brhc10042311_ex99-1.htm"
             },
             {
               "status": "decommissioning",
@@ -881,11 +903,13 @@
       "summary_en": "80MW hydro-powered air-cooled site. Bitcoin mining from Apr 2022; GPU retrofits began Q4 2025 (5.2→4.4 EH/s) and all 80MW was prepared for GPUs by May 2026. B300 (Blackwell Ultra) installation from H2 2026 with staged delivery through Dec 31, 2026 (Blue Owl/PIMCO $2.4bn equipment financing). Liquid-cooled expansion planned for 2027.",
       "power": [
         {
-          "from": "2022",
+          "from": "2022-04",
           "secured_mw": 80,
           "energized_mw": 80,
           "basis": "reported",
-          "source": "https://iren.com/data-centers/mackenzie"
+          "source": "https://iren.com/data-centers/mackenzie",
+          "published": "2022-03-08",
+          "published_source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036122008268/brhc10034779_ex99-1.htm"
         }
       ],
       "substation": {},
@@ -974,7 +998,9 @@
               "status": "operating",
               "from": "2022-04",
               "basis": "reported",
-              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000063/iren-20250630.htm"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000063/iren-20250630.htm",
+              "published": "2022-05-05",
+              "published_source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036122017746/brhc10037185_ex99-1.htm"
             },
             {
               "status": "decommissioning",
@@ -1092,7 +1118,9 @@
           "secured_mw": 30,
           "energized_mw": 30,
           "basis": "reported",
-          "source": "https://iren.com/data-centers/canal-flats"
+          "source": "https://iren.com/data-centers/canal-flats",
+          "published": "2021-10-25",
+          "published_source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036121035328/ny20000275x5_f1.htm"
         }
       ],
       "substation": {
@@ -1175,7 +1203,9 @@
               "status": "operating",
               "from": "2019",
               "basis": "reported",
-              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000063/iren-20250630.htm"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000063/iren-20250630.htm",
+              "published": "2021-10-25",
+              "published_source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036121035328/ny20000275x5_f1.htm"
             },
             {
               "status": "retired",
@@ -1279,7 +1309,9 @@
           "secured_mw": 1600,
           "energized_mw": 0,
           "basis": "reported",
-          "source": "https://iren.com/data-centers/oklahoma"
+          "source": "https://iren.com/data-centers/oklahoma",
+          "published": "2026-02-05",
+          "published_source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000014/a991irenreportsq2fy26res.htm"
         },
         {
           "from": "2028",
@@ -1352,7 +1384,9 @@
           "secured_mw": 800,
           "energized_mw": 0,
           "basis": "reported",
-          "source": "https://iren.com/data-centers/bundey"
+          "source": "https://iren.com/data-centers/bundey",
+          "published": "2026-06-03",
+          "published_source": "https://iren.gcs-web.com/news-releases/news-release-details/iren-announces-first-australian-data-center-campus-800mw-south"
         },
         {
           "from": "2028",

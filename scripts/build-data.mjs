@@ -8,6 +8,7 @@
 // =============================================================
 import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { validateResearch } from '../src/data/researchSchema.js'
+import { SourceDatesFile } from '../src/data/schema.js'
 import { fileURLToPath } from 'node:url'
 
 // DATA_DIR=data-fake 처럼 지정하면 다른 폴더의 데이터로 빌드 (성능 시험용 가짜 데이터 등)
@@ -30,7 +31,10 @@ export function buildInfra() {
   const researchUrl = new URL('research.json', DATA)
   const research = existsSync(researchUrl) ? JSON.parse(readFileSync(researchUrl, 'utf8')) : undefined
   if (research) { const errors = validateResearch(research, sites); if (errors.length) throw new Error(errors.join('\n')) }
-  return { ...(research ? { research } : {}), schema_version: 2, as_of: asOf, companies, programs, sites, ...(changelog ? { changelog } : {}) }
+  // 출처 문서의 실제 공개일 (타임라인이 "그때 공개된 자료"만 보여 주는 데 씀)
+  const datesUrl = new URL('source-dates.json', DATA)
+  const sourceDates = existsSync(datesUrl) ? SourceDatesFile.parse(JSON.parse(readFileSync(datesUrl, 'utf8'))).sources : undefined
+  return { ...(research ? { research } : {}), ...(sourceDates ? { sourceDates } : {}), schema_version: 2, as_of: asOf, companies, programs, sites, ...(changelog ? { changelog } : {}) }
 }
 
 // 직접 실행했을 때만 파일로 저장
