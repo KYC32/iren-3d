@@ -14,6 +14,8 @@ import { SINGLE_COMPANY } from '../config.js'
 const SiteView = lazy(() => import('./SiteView.jsx'))
 import { layoutCampus } from './layoutCampus.js'
 import CameraRig from './CameraRig.jsx'
+import { campusAppearance } from './campusAppearance.js'
+import { campusLandscape } from './campusLandscape.js'
 const RecordDirector = lazy(() => import('../record/RecordDirector.jsx'))
 
 const BG = '#eceffa' // 배경 = 안개 색 (지평선이 자연스럽게 사라짐)
@@ -25,7 +27,8 @@ export default function Scene({ record = false }) {
   const [dpr, setDpr] = useState(1.5)
   const campusSide = useMemo(() => site ? layoutCampus(site._raw).side : 32, [site?._raw])
   const campus = view === 'site'
-  const shadowSpan = campus ? campusSide * 0.85 : 110
+  const background = campusLandscape(site?.id)?.background ?? campusAppearance(site?.id)?.background ?? BG
+  const shadowSpan = campus ? campusSide * 1.15 : 110
   const boardMode = Boolean(SINGLE_COMPANY) && !record
 
   return (
@@ -37,15 +40,15 @@ export default function Scene({ record = false }) {
       camera={{ fov: 30, near: 0.5, far: 3000, position: [200, 150, 200] }}
       gl={{ antialias: true }}
       onCreated={(state) => {
-        state.gl.setClearColor(BG)
+        state.gl.setClearColor(background)
         // 개발 모드에서만: 브라우저 콘솔에서 window.__r3f 로 카메라·씬을 들여다볼 수 있게
         if (import.meta.env.DEV) window.__r3f = state
       }}
       onPointerMissed={() => useAppStore.getState().setHover(null)}
     >
       {!record && <PerformanceMonitor onDecline={() => setDpr(1)} onIncline={() => setDpr(1.5)} />}
-      <color attach="background" args={[BG]} />
-      {view === 'site' && <fog attach="fog" args={[BG, campusSide * 12, campusSide * 22]} />}
+      <color attach="background" args={[background]} />
+      {view === 'site' && <fog attach="fog" args={[background, campusSide * 12, campusSide * 22]} />}
 
       {/* 조명 */}
       <ambientLight intensity={campus ? 0.45 : 1.1} />

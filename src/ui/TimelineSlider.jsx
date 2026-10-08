@@ -60,6 +60,7 @@ export default function TimelineSlider() {
     const onKey = (e) => {
       if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return
       if (e.target instanceof Element && e.target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return
+      if (e.target instanceof Element && e.target.closest('.maplibregl-map, .kpi-items, [role=tablist], dialog')) return
       if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
       e.preventDefault()
       const st = useAppStore.getState()

@@ -11,6 +11,7 @@ import { SINGLE_COMPANY } from '../config.js'
 
 // 처음 열 때 URL 해시(#date=…&site=…&c=…&color=…)를 읽어 그 상태로 시작합니다.
 const initial = parseHash(window.location.hash)
+const snapshot = (raw, month) => viewInfra(raw, month, { observed: !new URLSearchParams(window.location.search).has('record') })
 
 // 타임라인 슬라이더 범위
 export const MONTH_MIN = toMonth('2024-01')
@@ -39,6 +40,10 @@ export const useAppStore = create((set, get) => ({
   hoverId: null,                           // 마우스 올린 사이트/건물 id
   selectedBuildingId: null,                // 캠퍼스에서 클릭해 고른 건물 id (패널 항목과 연동)
   selectedZoneKey: null,
+  surface: initial.surface ?? 'map',
+  detailTab: initial.tab ?? 'overview',
+  mapCamera: null,
+  mapRegion: { country: 'NA', seq: 0 },
   cameraHomeSeq: 0,
   buildingFly: null,                       // { id, seq } 패널에서 건물을 고르면 카메라가 그 건물로 (seq 로 같은 건물 재요청도 구분)
   transitioning: false,                    // 카메라 전환(페이드) 중인지
@@ -64,6 +69,7 @@ export const useAppStore = create((set, get) => ({
   hoverContract: null,
   // 모바일: 순위·사이트 패널을 바텀시트로 열었는지
   sheetOpen: false,
+  mapListCollapsed: false,
 
   // ----- 액션 -----
   // 원본(infra.json)을 받으면 시작 날짜를 정하고 화면용 데이터를 만듦
@@ -71,10 +77,13 @@ export const useAppStore = create((set, get) => ({
     const asOf = asOfMonth(raw.as_of)
     const h = parseHash(window.location.hash)
     const m = Math.min(MONTH_MAX, Math.max(MONTH_MIN, h.date ? toMonth(h.date) : asOf))
-    const data = viewInfra(raw, m)
+    const data = snapshot(raw, m)
     const id = data.sites.some((s) => s.id === h.site) ? h.site : null
     set({ asOfMonth: asOf, month: m, data, events: buildEvents(raw),
       selectedSiteId: id, view: id ? 'site' : 'globe', loadError: null,
+      surface: id ? h.surface ?? 'map' : 'map', detailTab: h.tab ?? 'overview',
+      selectedBuildingId: data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? h.building : null,
+      selectedZoneKey: customerZones(data.sites.find((s)=>s.id===id) ?? {buildings:[]},data.companies).some((z)=>z.key===h.zone) ? h.zone : null,
       activeCompanies: new Set((h.companies ?? []).filter((id) => raw.companies.some((c) => c.id === id))),
       colorMode: h.color ?? 'status',
     })
@@ -86,7 +95,7 @@ export const useAppStore = create((set, get) => ({
     const mm = Math.min(MONTH_MAX, Math.max(MONTH_MIN, Math.round(m)))
     const { data, month } = get()
     if (!data || mm === month) return
-    const nextData = viewInfra(data.raw, mm)
+    const nextData = snapshot(data.raw, mm)
     const st = get()
     const missing = (id) => id && !nextData.sites.some((s) => s.id === id)
     const leaveSite = (st.view === 'site' && missing(st.selectedSiteId)) ||
@@ -111,7 +120,7 @@ export const useAppStore = create((set, get) => ({
       site: st.view === 'site' ? st.selectedSiteId : null,
       date: st.month != null && st.month !== st.asOfMonth ? monthKey(st.month) : null,
       companies: [...st.activeCompanies],
-      color: st.colorMode,
+      color: st.colorMode, surface: st.surface, tab: st.detailTab, building: st.selectedBuildingId, zone: st.selectedZoneKey,
     })
     window.history.replaceState(null, '', hash || window.location.pathname + window.location.search)
   },
@@ -130,8 +139,32 @@ export const useAppStore = create((set, get) => ({
       pending: id ? (id === next.selectedSiteId && next.view === 'site' && !next.pending ? null : { type: 'site', id })
         : (next.view === 'site' || next.pending ? { type: 'globe' } : null),
     })
+    set({ surface: id ? h.surface ?? 'map' : 'map', detailTab: h.tab ?? 'overview', selectedSiteId: id, view: id ? 'site' : 'globe', pending: null,
+      selectedBuildingId: next.data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? h.building : null,
+      selectedZoneKey: customerZones(next.data.sites.find((s)=>s.id===id) ?? {buildings:[]},next.data.companies).some((z)=>z.key===h.zone) ? h.zone : null })
     get().syncHash()
   },
+  setSurface: (surface) => { if (surface === '3d' && !get().selectedSiteId) return; set({ surface, pending: null, transitioning: false }); get().syncHash() },
+  // Map markers, co-located campus choices and the list all enter the same 3D view.
+  // Set selection and surface atomically so no stale campus flashes during lazy loading.
+  enterSite3D: (id) => {
+    if (!get().data?.sites.some((site) => site.id === id)) return
+    set({ surface: '3d', view: 'site', selectedSiteId: id, detailTab: 'overview',
+      selectedBuildingId: null, selectedZoneKey: null, buildingFly: null, hoverId: null,
+      pending: null, transitioning: false, sheetOpen: false })
+    get().syncHash()
+  },
+  setDetailTab: (detailTab) => { set({ detailTab }); get().syncHash() },
+  mapFocusSeq: 0,
+  focusSiteOnMap: (id) => {
+    if (!get().data?.sites.some(site=>site.id===id)) return
+    set({surface:'map',view:'site',selectedSiteId:id,detailTab:'overview',sheetOpen:false,
+      selectedBuildingId:null,selectedZoneKey:null,buildingFly:null,hoverId:null,
+      pending:null,transitioning:false,mapCamera:null,mapFocusSeq:get().mapFocusSeq+1})
+    get().syncHash()
+  },
+  setMapCamera: (mapCamera) => set({ mapCamera }),
+  setMapRegion: (country) => { get().goGlobe(); set({ mapRegion: { country, seq: get().mapRegion.seq + 1 }, sheetOpen: false }) },
   setLoadError: (err) => set({ loadError: err }),
   // src: '3d'(캔버스 속 물체) | 'dom'(라벨·목록 등 HTML, 기본값)
   setHover: (id, src = 'dom') => {
@@ -162,30 +195,31 @@ export const useAppStore = create((set, get) => ({
       selectedZoneKey: next && customerKey(selectSelectedSite(st)?.buildings.find((b) => b.id === next)?.customer) !== st.selectedZoneKey ? null : st.selectedZoneKey,
       buildingFly: fly && next ? { id: next, seq: (st.buildingFly?.seq ?? 0) + 1 } : st.buildingFly,
     })
+    get().syncHash()
   },
   selectZone: (key) => {
     const st = get(), site = selectSelectedSite(st)
     if (st.pending || !site || !customerZones(site, st.data.companies).some((z) => z.key === key)) return
     if (st.selectedZoneKey === key) return st.requestCampusHome()
-    set({ selectedZoneKey: key, selectedBuildingId: null, buildingFly: null, hoverId: null })
+    set({ selectedZoneKey: key, selectedBuildingId: null, buildingFly: null, hoverId: null }); get().syncHash()
   },
-  requestCampusHome: () => { if (!get().pending) set({ cameraHomeSeq: get().cameraHomeSeq + 1, selectedBuildingId: null, buildingFly: null, hoverId: null, selectedZoneKey: null }) },
+  requestCampusHome: () => { if (!get().pending) { set({ cameraHomeSeq: get().cameraHomeSeq + 1, selectedBuildingId: null, buildingFly: null, hoverId: null, selectedZoneKey: null }); get().syncHash() } },
   toggleLang: () => set({ lang: get().lang === 'ko' ? 'en' : 'ko' }),
 
   // 전환 "요청" (애니메이션 포함) — UI 와 핀은 이것을 호출합니다
   requestSite: (id) => { if (get().data?.sites.some((s) => s.id === id) && !get().pending) set({ pending: { type: 'site', id } }) },
-  requestGlobe: () => { if (!get().pending) set({ pending: { type: 'globe' } }) },
+  requestGlobe: () => { if (!get().pending) { set({surface:'map'}); get().goGlobe() } },
   // 지구본에서 특정 지역(북미·유럽·아시아)으로 카메라 이동
   requestRegion: (lat, lng) => { if (!get().pending && get().view === 'globe') set({ pending: { type: 'region', lat, lng } }) },
   clearPending: () => set({ pending: null }),
 
   // 사이트 선택 → 캠퍼스 뷰로 (CameraRig 가 애니메이션 도중에 호출) (URL 해시도 갱신해 공유 가능하게)
   selectSite: (id) => {
-    set({ selectedSiteId: id, view: id ? 'site' : 'globe', hoverId: null, selectedBuildingId: null, buildingFly: null, selectedZoneKey: null })
+    set({ detailTab: 'overview', sheetOpen: false, selectedSiteId: id, view: id ? 'site' : 'globe', hoverId: null, selectedBuildingId: null, buildingFly: null, selectedZoneKey: null })
     get().syncHash()
   },
   goGlobe: () => {
-    set({ view: 'globe', selectedSiteId: null, hoverId: null, selectedBuildingId: null, buildingFly: null, selectedZoneKey: null })
+    set({ surface: 'map', detailTab: 'overview', view: 'globe', selectedSiteId: null, hoverId: null, selectedBuildingId: null, buildingFly: null, selectedZoneKey: null })
     get().syncHash()
   },
 
@@ -224,6 +258,13 @@ export const useAppStore = create((set, get) => ({
     if (siteId && siteId !== st.selectedSiteId) st.requestSite(siteId)
   },
   toggleSheet: () => set({ sheetOpen: !get().sheetOpen }),
+  setCampusListOpen: (open) => set({ mapListCollapsed: !open, sheetOpen: open }),
+  toggleCampusList: () => {
+    const st = get()
+    const overlay = window.innerWidth < 768 || (window.innerWidth <= 1100 && st.view === 'site')
+    const open = overlay ? st.sheetOpen : !st.mapListCollapsed
+    st.setCampusListOpen(!open)
+  },
 }))
 
 // 셀렉터 기본값용 빈 배열 — `?? []` 를 쓰면 매번 새 배열이 생겨 무한 리렌더가 날 수 있어 항상 같은 배열을 씀

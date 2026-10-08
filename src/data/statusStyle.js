@@ -7,6 +7,7 @@
 //   - 예: commissioning 을 operating 과 같은 색으로 합칠지, 별도 색으로 둘지 결정.
 
 export const STATUS_STYLE = {
+  delivered: { color: '#508fae', emissive: '#508fae', ringSpeed: 1, opacity: 1, order: 0.5 },
   operating: {
     color: '#2ea88a',      // 청록: 가동중
     emissive: '#1f7f66',   // 창문/점등 색
@@ -15,7 +16,7 @@ export const STATUS_STYLE = {
     order: 0,
   },
   commissioning: {
-    color: '#3fbf96',      // 밝은 청록: 완공 후 시운전
+    color: '#c4a246',      // 앰버: 완공 후 시운전, 실제 가동의 초록과 구분
     emissive: '#f5c518',   // 노란 점멸등
     ringSpeed: 2.5,
     opacity: 1,

@@ -32,7 +32,8 @@ export function CampusLabelLayout() {
     const labels = [...document.querySelectorAll('.campus-label')]
       .map((el) => ({ el, rect: el.getBoundingClientRect(), priority: Number(el.dataset.priority) }))
       .sort((a, b) => b.priority - a.priority)
-    const used = []
+    const used = [...document.querySelectorAll('.campus-callout')]
+      .filter(el=>el.style.visibility==='visible').map(el=>el.getBoundingClientRect())
     for (const { el, rect: measured } of labels) {
       const previous = Number(el.dataset.shift ?? 0)
       const previousX = Number(el.dataset.shiftX ?? 0)

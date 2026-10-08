@@ -5,6 +5,7 @@
 // 빌드 결과(브라우저가 읽음): public/data/infra.json  ← scripts/build-data.mjs
 // 검증: scripts/validate.mjs 가 이 스키마 + 추가 규칙(날짜 순서, 전력 합계 등)을 검사합니다.
 // =============================================================
+import { Research } from './researchSchema.js'
 import { z } from 'zod'
 import { STATUS } from './status.js'
 import { isValidWhen } from './timeline.js'
@@ -205,6 +206,7 @@ export const ChangelogFile = z.object({
 
 export const InfraFile = z.object({
   schema_version: z.literal(2),
+  research: Research.optional(),
   as_of: z.string(),
   companies: z.array(Company),
   programs: z.array(Program),

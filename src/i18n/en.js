@@ -6,6 +6,7 @@ export default {
   back: 'Back to globe',
   langToggle: '한',
   status: {
+    delivered: 'Customer accepted',
     operating: 'Operating',
     commissioning: 'Commissioning',
     under_construction: 'Under construction',

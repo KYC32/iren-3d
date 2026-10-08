@@ -139,10 +139,30 @@ export function Crane({ x, z, seed = 0 }) {
   )
 }
 
+// 건물까지의 연결이 확인되지 않은 납품은 도로 옆 공용 하역장으로 들어옵니다.
+export function ReceivingBay({ bay }) {
+  return <group position={[bay.x, 0, bay.z]}>
+    <mesh position={[0, .04, 0]} receiveShadow>
+      <boxGeometry args={[bay.w, .06, bay.d]}/>
+      <meshStandardMaterial color="#a4afa9" roughness={.95}/>
+    </mesh>
+    <Line points={[[-1, .09, 2.2], [-1, .09, -2], [1, .09, -2], [1, .09, 2.2]]} color="#f4e8b4" lineWidth={1.5}/>
+    {[-.5, .6].map(z=><group key={z} position={[1.7, 0, z]}>
+      <mesh position={[0, .43, 0]} castShadow>
+        <boxGeometry args={[.65, .8, .8]}/><meshStandardMaterial color="#c6b493" roughness={.9}/>
+      </mesh>
+      <mesh position={[0, .835, 0]}>
+        <boxGeometry args={[.14, .02, .81]}/><meshStandardMaterial color="#e6dcc8"/>
+      </mesh>
+    </group>)}
+  </group>
+}
+
 // ---------- 납품 트럭 (GPU 납품 예정) ----------
-// 경로(path)를 일정 속도로 달려 건물 앞에 멈췄다가 다시 처음부터 반복합니다.
+// 경로(path)를 일정 속도로 달려 하역 지점에 멈췄다가 다시 처음부터 반복합니다.
 export function Truck({ truck, index, lang }) {
   const ref = useRef()
+  const reducedMotion = useMemo(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false, [])
   const { segs, total } = useMemo(() => {
     const segs = []
     let total = 0
@@ -160,7 +180,7 @@ export function Truck({ truck, index, lang }) {
   useFrame(({ clock }) => {
     if (!ref.current || total === 0) return
     const cycle = total / SPEED + PAUSE
-    const t = (clock.elapsedTime + index * 3.3) % cycle
+    const t = reducedMotion ? cycle * ((index + 1) / (index + 2)) : (clock.elapsedTime + index * 3.3) % cycle
     const dist = Math.min(total, t * SPEED)
     const seg = segs.find((s) => dist <= s.start + s.len) ?? segs[segs.length - 1]
     const k = seg.len ? (dist - seg.start) / seg.len : 1
@@ -189,8 +209,8 @@ export function Truck({ truck, index, lang }) {
         </mesh>
       ))}
       <CampusLabel position={[0, 2, 0]} priority={0} hideOnOverlap>
-        {/* 괄호 속 상세(대상 건물·계약명)는 빼고 짧게 — 건물 라벨을 덮지 않게. 전체 내용은 오른쪽 패널 "납품 예정"에 */}
-        <div className="tag tag-pending truck-label">
+        {/* 모델·목표 시기만 짧게 표시하고, 다른 라벨과 겹치면 숨깁니다. */}
+        <div className="tag tag-pending truck-label" title={`${lang === 'ko' ? '납품 계획' : 'Delivery plan'} · ${d.what} · ${d.from}`}>
           {d.what.replace(/\s*\([^)]*\)/g, '')} · {d.eta}
         </div>
       </CampusLabel>
@@ -198,8 +218,9 @@ export function Truck({ truck, index, lang }) {
   )
 }
 
-// ---------- 전력 흐름 점: 변전소 → 가동/시운전 건물 ----------
+// ---------- 전력 흐름 점: 변전소 → 완공 설비 (지붕색과 연결) ----------
 export function FlowDots({ from, targets }) {
+  const reducedMotion = useMemo(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false, [])
   const curves = useMemo(
     () =>
       targets.map((tg) => {
@@ -220,24 +241,27 @@ export function FlowDots({ from, targets }) {
       for (let i = 0; i < PER; i++) {
         const m = refs.current[ci * PER + i]
         if (!m) continue
-        const t = (clock.elapsedTime * 0.25 + i / PER) % 1
-        m.position.copy(c.getPointAt(t))
+        const t = ((reducedMotion ? 0 : clock.elapsedTime * 0.25) + i / PER) % 1
+        c.getPointAt(t, m.position)
       }
     })
   })
   return (
     <group>
-      {curves.map((c, ci) => (
-        <group key={ci}>
-          <Line points={c.getPoints(20)} color="#9fd9c5" lineWidth={1} transparent opacity={0.8} />
-          {Array.from({ length: PER }, (_, i) => (
-            <mesh key={i} ref={(el) => (refs.current[ci * PER + i] = el)}>
-              <sphereGeometry args={[0.16, 8, 6]} />
-              <meshStandardMaterial color="#2ea88a" emissive="#2ea88a" emissiveIntensity={0.8} />
-            </mesh>
-          ))}
-        </group>
-      ))}
+      {curves.map((c, ci) => {
+        const color = styleOf(targets[ci].status === 'decommissioning' ? 'operating' : targets[ci].status).color
+        return (
+          <group key={ci}>
+            <Line points={c.getPoints(20)} color={color} lineWidth={1.5} transparent opacity={0.55} />
+            {Array.from({ length: PER }, (_, i) => (
+              <mesh key={i} ref={(el) => (refs.current[ci * PER + i] = el)}>
+                <sphereGeometry args={[0.18, 8, 6]} />
+                <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.8} />
+              </mesh>
+            ))}
+          </group>
+        )
+      })}
     </group>
   )
 }

@@ -4,6 +4,7 @@
 // 오류가 하나라도 있으면 빌드를 멈추고, 경고는 표시만 합니다.
 // =============================================================
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
+import { validateResearch } from '../src/data/researchSchema.js'
 import { validateAll } from './lib/validate-core.mjs'
 
 const DATA = new URL('../data/', import.meta.url)
@@ -17,6 +18,8 @@ const files = Object.fromEntries(
 const logUrl = new URL('changelog.json', DATA)
 const changelogFile = existsSync(logUrl) ? JSON.parse(readFileSync(logUrl, 'utf8')) : null
 const { errors, warns, infra } = validateAll({ companiesFile, files, changelogFile })
+const researchUrl = new URL('research.json', DATA)
+if (infra && existsSync(researchUrl)) errors.push(...validateResearch(JSON.parse(readFileSync(researchUrl,'utf8')),infra.sites))
 warns.forEach((w) => console.warn('⚠️  ' + w))
 if (errors.length) {
   console.error('❌ 데이터 오류:')

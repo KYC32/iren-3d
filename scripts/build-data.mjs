@@ -7,6 +7,7 @@
 // 다른 스크립트·테스트에서도 import { buildInfra } 로 같은 결과를 얻을 수 있습니다.
 // =============================================================
 import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
+import { validateResearch } from '../src/data/researchSchema.js'
 import { fileURLToPath } from 'node:url'
 
 // DATA_DIR=data-fake 처럼 지정하면 다른 폴더의 데이터로 빌드 (성능 시험용 가짜 데이터 등)
@@ -26,7 +27,10 @@ export function buildInfra() {
   // 갱신 기록 (있으면): 최신 항목이 먼저
   const logFile = new URL('changelog.json', DATA)
   const changelog = existsSync(logFile) ? JSON.parse(readFileSync(logFile, 'utf8')).entries : undefined
-  return { schema_version: 2, as_of: asOf, companies, programs, sites, ...(changelog ? { changelog } : {}) }
+  const researchUrl = new URL('research.json', DATA)
+  const research = existsSync(researchUrl) ? JSON.parse(readFileSync(researchUrl, 'utf8')) : undefined
+  if (research) { const errors = validateResearch(research, sites); if (errors.length) throw new Error(errors.join('\n')) }
+  return { ...(research ? { research } : {}), schema_version: 2, as_of: asOf, companies, programs, sites, ...(changelog ? { changelog } : {}) }
 }
 
 // 직접 실행했을 때만 파일로 저장

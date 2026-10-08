@@ -6,6 +6,7 @@ export default {
   back: '지구본으로',
   langToggle: 'EN',
   status: {
+    delivered: '고객 인수 확인',
     operating: '가동중',
     commissioning: '시운전',
     under_construction: '건설중',

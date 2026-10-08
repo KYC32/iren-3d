@@ -82,7 +82,7 @@ function Leaderboard() {
   const toggleCompany = useAppStore((s) => s.toggleCompany)
 
   const rows = useMemo(
-    () => companyRanking(data.raw, data.month, { metric, groups: activeGroups.size ? activeGroups : null }),
+    () => companyRanking(data.observedRaw ?? data.raw, data.month, { metric, groups: activeGroups.size ? activeGroups : null }),
     [data, metric, activeGroups],
   )
   const byId = Object.fromEntries(data.companies.map((c) => [c.id, c]))

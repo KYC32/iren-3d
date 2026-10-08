@@ -12,7 +12,7 @@
 export const PUE_DEFAULT = 1.3 // IT MW 만 공개된 경우 총 전력(gross)으로 환산할 때 쓰는 값 (추정)
 
 // 상태 우선순위: 사이트 대표 상태를 고를 때 "가장 앞선" 상태를 씁니다
-const PRECEDENCE = ['operating', 'commissioning', 'under_construction', 'decommissioning', 'planned']
+const PRECEDENCE = ['operating', 'delivered', 'commissioning', 'under_construction', 'decommissioning', 'planned']
 
 // ---------- 날짜 → 월 번호 ----------
 // 허용 형식: '2026' | '2026-Q4' | '2026-H2' | '2026-08' | '2026-08-13'
@@ -156,13 +156,14 @@ export function siteMetricsAt(site, m) {
   const power = powerAt(site, m)
   const empty = { secured: 0, energized: 0, operating: 0, ai: 0, mining: 0, building: 0, planned: 0, gpus: 0, hasEstimate: false }
   if (!power) return empty
-  let ai = 0, mining = 0, building = 0, gpus = 0, hasEstimate = false
+  let ai = 0, mining = 0, building = 0, delivered = 0, gpus = 0, hasEstimate = false
   for (const { building: b, status: st, mw, estimated } of effectiveBuildingsAt(site, m)) {
     if (estimated) hasEstimate = true
     // 채굴동은 상태와 상관없이 '채굴' 로 분류 (AI 가동에 섞이지 않게)
     const isMining = b.kind === 'miner_hall'
     if (isMining && (st === 'operating' || st === 'decommissioning')) mining += mw
     else if (st === 'operating') ai += mw
+    else if (st === 'delivered') delivered += mw
     else if (st === 'decommissioning') mining += mw
     else if (st === 'commissioning' || st === 'under_construction') building += mw
     if (st === 'operating' || st === 'commissioning') gpus += b.gpu?.count ?? 0
@@ -177,7 +178,8 @@ export function siteMetricsAt(site, m) {
     ai,
     mining,
     building: buildingClamped,
-    planned: Math.max(0, secured - operating - buildingClamped),
+    delivered,
+    planned: Math.max(0, secured - operating - buildingClamped - delivered),
     gpus,
     hasEstimate,
   }

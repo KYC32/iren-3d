@@ -22,3 +22,8 @@ describe('hashState', () => {
     expect(buildHash({ color: 'status' })).toBe('')
   })
 })
+
+ it('shares the map/diagram, selected building and evidence tab', () => {
+   const s={site:'childress',surface:'3d',building:'horizon-1',zone:'microsoft',tab:'evidence',date:'2026-08'}
+   expect(parseHash(buildHash(s))).toEqual(s)
+ })

@@ -23,6 +23,6 @@ export function siteMetrics(viewSite) {
 }
 
 export function companyMetrics(data) {
-  const t = totalsAt(data.raw, data.month)
+  const t = totalsAt(data.observedRaw ?? data.raw, data.month)
   return { ...t, gridTotal: t.secured }
 }

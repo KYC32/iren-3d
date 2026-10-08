@@ -12,6 +12,7 @@ import { useLayoutEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox, Line } from '@react-three/drei'
 import { styleOf, PENDING_COLOR } from '../../data/statusStyle.js'
+import { PhotoMiningHall } from './PhotoReferencedCampus.jsx'
 
 const BODY = '#eef1f5'      // 건물 외벽 (밝은 흰색)
 const CONCRETE = '#d9dde8'  // 슬래브
@@ -21,7 +22,7 @@ const GROW_SEC = 0.6 // 솟아오르는 애니메이션 길이 (초)
 // 살짝 튀어 오르는 이징 (끝에서 5% 넘쳤다 돌아옴)
 const easeOutBack = (t) => 1 + 2.2 * Math.pow(t - 1, 3) + 1.2 * Math.pow(t - 1, 2)
 
-export default function Block({ block, hovered, selected, dimmed, onHover, onLeave, onSelect }) {
+export default function Block({ block, appearance, hovered, selected, dimmed, onHover, onLeave, onSelect }) {
   const { x, z, w, d, h, kind, status } = block
   const handlers = block.buildingId
     ? {
@@ -34,6 +35,7 @@ export default function Block({ block, hovered, selected, dimmed, onHover, onLea
 
   // 필터에서 빠진 상태는 바닥 풋프린트만 남겨 "흐리게" 보이게 합니다
   const mode = dimmed ? 'dimmed' : kind === 'lot' ? 'planned' : status
+  const photoSheds = appearance && kind === 'miner_hall' && ['operating','delivered','decommissioning'].includes(mode)
 
   // ---- 솟아오르는 애니메이션 ----
   // "실제 상태"(빈 칸/계획/건설/가동…)가 바뀔 때만 재생. 필터로 흐려지는 건 상태 변화가 아니라서 제외.
@@ -72,11 +74,12 @@ export default function Block({ block, hovered, selected, dimmed, onHover, onLea
         </mesh>
       )}
       <group ref={growRef}>
-      {mode === 'operating' && <FinishedHall w={w} d={d} h={h} kind={kind} status={status} spinning />}
-      {mode === 'commissioning' && <FinishedHall w={w} d={d} h={h} kind={kind} status={status} beacon />}
+      {photoSheds && <PhotoMiningHall w={w} d={d} h={h} appearance={appearance} status={status}/>}
+      {!photoSheds && (mode === 'operating' || mode === 'delivered') && <FinishedHall w={w} d={d} h={h} kind={kind} status={status} appearance={appearance} spinning />}
+      {mode === 'commissioning' && <FinishedHall w={w} d={d} h={h} kind={kind} status={status} appearance={appearance} beacon />}
       {mode === 'under_construction' && <ConstructionHall w={w} d={d} h={h} progress={block.progress} />}
       {mode === 'planned' && <GhostFootprint w={w} d={d} h={kind === 'lot' ? 0.05 : h} solidish={kind !== 'lot'} />}
-      {mode === 'decommissioning' && <MinerHall w={w} d={d} h={h} />}
+      {!photoSheds && mode === 'decommissioning' && <MinerHall w={w} d={d} h={h} />}
       {mode === 'dimmed' && <GhostFootprint w={w} d={d} h={0.05} />}
       </group>
     </group>
@@ -84,15 +87,16 @@ export default function Block({ block, hovered, selected, dimmed, onHover, onLea
 }
 
 // ---------- 완성된 데이터홀 ----------
-function FinishedHall({ w, d, h, kind, status, spinning, beacon }) {
+function FinishedHall({ w, d, h, kind, status, spinning, beacon, appearance }) {
   const st = styleOf(status)
   const fans = useRef([])
   const beaconRef = useRef()
   const liquid = kind === 'datahall_liquid'
+  const reducedMotion=useMemo(()=>window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false,[])
 
   useFrame(({ clock }, delta) => {
-    // 지붕 냉각팬 회전 (가동중일 때만)
-    if (spinning) fans.current.forEach((f) => f && (f.rotation.y += delta * 6))
+    // Equipment animation is distinct from the reported status badge and power flow.
+    if (spinning && !reducedMotion) fans.current.forEach((f) => f && (f.rotation.y += delta * 6))
     // 경광등 점멸 (시운전)
     if (beaconRef.current) {
       const on = Math.sin(clock.elapsedTime * 5) > 0
@@ -130,8 +134,9 @@ function FinishedHall({ w, d, h, kind, status, spinning, beacon }) {
       {/* 앞면 창문 띠 (점등) */}
       <mesh position={[0, h * 0.55, d / 2 + 0.01]}>
         <planeGeometry args={[w * 0.8, h * 0.18]} />
-        <meshStandardMaterial color={st.color} emissive={st.emissive} emissiveIntensity={0.6} />
+        <meshStandardMaterial color={appearance?.endWall ?? st.color} emissive={st.emissive} emissiveIntensity={status==='operating' ? 0.35 : 0} />
       </mesh>
+      {appearance && <mesh position={[0,.08,d/2+.2]}><boxGeometry args={[w,.06,.16]}/><meshBasicMaterial color={st.color}/></mesh>}
       {/* 공랭 홀은 옆면에 루버(환기창) 줄무늬 */}
       {!liquid &&
         [-1, 0, 1].map((i) => (

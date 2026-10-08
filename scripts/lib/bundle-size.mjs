@@ -8,6 +8,7 @@ export function collectChunks(manifest, roots) {
     if (!entry) throw new Error(`번들 manifest에 없는 진입점: ${key}`)
     seen.add(key)
     if (entry.file.endsWith('.js')) files.add(entry.file)
+    for (const file of [...(entry.css ?? []), ...(entry.assets ?? [])]) if (/\.(js|css)$/.test(file)) files.add(file)
     for (const dependency of entry.imports ?? []) visit(dependency)
   }
   roots.forEach(visit)

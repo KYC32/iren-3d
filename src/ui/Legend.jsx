@@ -4,6 +4,7 @@ import { useAppStore } from '../store/useAppStore.js'
 import { useT } from '../i18n/useT.js'
 import { STATUS_ORDER, styleOf, PENDING_COLOR } from '../data/statusStyle.js'
 import { SINGLE_COMPANY } from '../config.js'
+import { Check, Activity } from 'lucide-react'
 
 // 지역 바로가기: 카메라가 바라볼 위도·경도
 const REGIONS = [
@@ -14,6 +15,7 @@ const REGIONS = [
 
 export default function Legend() {
   const t = useT()
+  const lang=useAppStore(s=>s.lang)
   const active = useAppStore((s) => s.activeStatuses)
   const toggle = useAppStore((s) => s.toggleStatus)
   const clear = useAppStore((s) => s.clearStatuses)
@@ -64,7 +66,7 @@ export default function Legend() {
         const on = active.size === 0 || active.has(st)
         return (
           <button key={st} className={`legend-item${on ? '' : ' off'}`} onClick={() => toggle(st)}>
-            <span className="swatch" style={{ background: styleOf(st).color }} />
+            {st==='delivered'?<Check size={13} color={styleOf(st).color}/>:st==='operating'?<Activity size={13} color={styleOf(st).color}/>:<span className="swatch" style={{ background: styleOf(st).color }} />}
             {t.status[st]}
           </button>
         )
@@ -74,6 +76,7 @@ export default function Legend() {
         {t.panel.deliveries} · {t.panel.energized}
       </div>
       <div className="legend-hint">{t.legend.hint}</div>
+      {view==='site'&&<div className="legend-hint">{lang==='ko'?<>팬·전력·트럭은 흐름 연출<br/>건물 상태는 지붕색·배지로 구분</>:<>Fans, power & trucks illustrate flows<br/>Roof colors & badges show status</>}</div>}
     </div>
   )
 }

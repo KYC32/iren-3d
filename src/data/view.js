@@ -5,6 +5,7 @@
 // "그 순간의 값" 을 기대합니다. 이 파일이 날짜 m 을 받아 그 값들을 계산해 채워 줍니다.
 // 타임라인 슬라이더가 날짜를 바꾸면 viewInfra(raw, 새 날짜) 만 다시 부르면 됩니다.
 // =============================================================
+import { observedSiteAt, EMPTY_RESEARCH, milestonesAt } from './research.js'
 import { toMonth, progressAt, powerAt, siteStatusAt, phaseMonth, effectiveBuildingsAt } from './timeline.js'
 
 export const asOfMonth = (dateStr) => toMonth(String(dateStr).slice(0, 7))
@@ -18,8 +19,8 @@ function datesOf(b, m) {
   for (const p of b.phases) {
     const pm = phaseMonth(p)
     if (pm <= m) {
-      if (p.status === 'commissioning' && p.basis === 'reported') dates.energized = p.from
-      if (p.status === 'operating' && p.basis === 'reported') dates.delivered = p.from
+      if (p.status === 'commissioning' && p.basis === 'reported') dates.commissioning = p.from
+      if (p.status === 'operating' && p.basis === 'reported') dates.operating = p.from
     } else {
       if (p.status === 'retired') dates.end = p.from
       else if (!dates.target) dates.target = p.from
@@ -43,8 +44,8 @@ export function viewSite(site, m, groupOf = {}) {
       gross_mw: mw,
       gross_estimated: estimated,
       it_mw: b.it_mw ?? 0,
-      progress: st === 'under_construction' ? progressAt(b, m, asOfM) : undefined,
-      dates: datesOf(b, m),
+      progress: site._observed ? undefined : st === 'under_construction' ? progressAt(b, m, asOfM) : undefined,
+      dates: site._observed ? { ...datesOf(b,m), target: milestonesAt(site._research,site.id,m,b.id).find((x)=>!x.completion)?.latest?.target } : datesOf(b, m),
     })
   }
   // 변전소: 통전 여부와 날짜는 전력 이력(power)에서 계산
@@ -75,16 +76,17 @@ function metricMap(company) {
   return Object.fromEntries((company?.metrics ?? []).map((x) => [x.key, x.value]))
 }
 
-export function viewInfra(raw, m) {
+export function viewInfra(raw, m, { observed = true } = {}) {
   const groupOf = Object.fromEntries(raw.companies.map((c) => [c.id, c.group]))
+  const observedRaw = !observed ? raw : { ...raw, sites: raw.sites.map((s) => observedSiteAt(s, raw.research ?? EMPTY_RESEARCH, m, raw.companies)) }
   return {
-    raw,
+    raw, observedRaw,
     month: m,
     as_of: raw.as_of,
     companies: raw.companies,
     programs: raw.programs,
     // 회사가 하나뿐인 초기 단계의 KPI 카드 호환용 (M2 에서 회사별 KPI 로 교체)
     company: metricMap(raw.companies[0]),
-    sites: raw.sites.map((s) => viewSite(s, m, groupOf)).filter(Boolean),
+    sites: observedRaw.sites.map((s) => viewSite(s, m, groupOf)).filter(Boolean),
   }
 }

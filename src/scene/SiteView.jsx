@@ -2,7 +2,7 @@
 // SiteView — 선택한 사이트의 아이소메트릭 캠퍼스
 // layoutCampus() 가 계산한 좌표를 받아 그리기만 합니다.
 // =============================================================
-import { CustomerLogo, logoKeyOf, BRAND_COLOR } from '../ui/logos/index.jsx'
+import { logoKeyOf, BRAND_COLOR } from '../ui/logos/index.jsx'
 import { customerKey } from '../data/customerZones.js'
 import { useMemo } from 'react'
 import { Line, RoundedBox } from '@react-three/drei'
@@ -13,9 +13,17 @@ import { styleOf } from '../data/statusStyle.js'
 import { layoutCampus, campusStateAt } from './layoutCampus.js'
 import { fmtMw } from './geo.js'
 import Block from './buildings/Block.jsx'
-import { Substation, PowerLine, Crane, Truck, FlowDots, Trees } from './buildings/Infrastructure.jsx'
+import { Substation, PowerLine, Crane, Truck, ReceivingBay, FlowDots, Trees } from './buildings/Infrastructure.jsx'
+import { campusAppearance } from './campusAppearance.js'
+import { campusLandscape } from './campusLandscape.js'
+import CampusLandscape from './buildings/CampusLandscape.jsx'
+import ZoneCallouts from './ZoneCallouts.jsx'
+import { Check, Activity } from 'lucide-react'
+import { DryCampusGround } from './buildings/PhotoReferencedCampus.jsx'
 
 export default function SiteView({ site }) {
+  const appearance = campusAppearance(site.id)
+  const landscape = campusLandscape(site.id)
   const t = useT()
   const lang = useAppStore((s) => s.lang)
   const hoverId = useAppStore((s) => s.hoverId)
@@ -40,8 +48,8 @@ export default function SiteView({ site }) {
   const half = L.side / 2
   const detail = useCampusDetail(L.side)
 
-  // 전력 흐름 점: 가동/시운전 건물의 첫 블록으로
-  const flowTargets = L.blocks.filter((b) => (!zoneKey || customerKey(byId[b.buildingId]?.customer) === zoneKey) && b.isAnchor && !b.asLot && (b.status === 'operating' || b.status === 'commissioning'))
+  const flowTargets = L.flowTargets.filter((b) => isStatusActive(activeStatuses, b.status)
+    && (!zoneKey || customerKey(byId[b.buildingId]?.customer) === zoneKey))
 
   return (
     <group name={`site-${site.id}`}>
@@ -49,7 +57,7 @@ export default function SiteView({ site }) {
       {/* 넓은 바닥 (그림자 받기) */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.32, 0]} receiveShadow>
         <circleGeometry args={[L.side * 3, 48]} />
-        <meshBasicMaterial color="#eceffa" toneMapped={false} />
+        <meshBasicMaterial color={landscape?.background ?? appearance?.background ?? '#eceffa'} toneMapped={false} />
       </mesh>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.31, 0]} receiveShadow>
         <circleGeometry args={[L.side * 3, 48]} />
@@ -57,12 +65,12 @@ export default function SiteView({ site }) {
       </mesh>
       {/* 부지 판 */}
       <RoundedBox args={[L.side, 0.5, L.side]} radius={0.25} position={[0, -0.25, 0]} receiveShadow>
-        <meshStandardMaterial color="#e5e5dd" roughness={0.95} />
+        <meshStandardMaterial color={landscape?.ground ?? appearance?.ground ?? '#e5e5dd'} roughness={0.95} />
       </RoundedBox>
       {/* 도로 */}
       <mesh position={[0, 0.01, L.road.z]} receiveShadow>
         <boxGeometry args={[L.side + 14, 0.04, L.road.depth]} />
-        <meshStandardMaterial color="#8997a9" roughness={1} />
+        <meshStandardMaterial color={landscape?.road ?? appearance?.road ?? '#8997a9'} roughness={1} />
       </mesh>
       {/* 도로 중앙 점선 */}
       {Array.from({ length: Math.floor((L.side + 14) / 2.4) }, (_, i) => (
@@ -83,6 +91,7 @@ export default function SiteView({ site }) {
         <Block
           key={b.key}
           block={b}
+          appearance={appearance}
           hovered={b.buildingId && hoverId === b.buildingId}
           selected={b.buildingId && selectedId === b.buildingId}
           dimmed={!isStatusActive(activeStatuses, b.status) || !!zoneKey && customerKey(byId[b.buildingId]?.customer) !== zoneKey}
@@ -93,8 +102,15 @@ export default function SiteView({ site }) {
       ))}
 
       {/* 고객 계약 구역: 건물마다 고객 칩을 반복하는 대신, 바닥 테두리 + 고객 배지 한 번 */}
-      <CustomerZones blocks={L.blocks} byId={byId} contracts={contracts} showLabels={!detail || !!zoneKey} selectedKey={zoneKey} onSelect={selectZone} lang={lang} />
+      <CustomerZones blocks={L.blocks} byId={byId} contracts={contracts} side={L.side} selectedKey={zoneKey} onSelect={selectZone} lang={lang} />
       {!detail && !zoneKey && <AreaLabels blocks={L.blocks} byId={byId} t={t} />}
+
+      {!detail && L.blocks.filter(b=>b.isAnchor&&!b.asLot&&b.kind!=='miner_hall'&&['delivered','operating','commissioning'].includes(b.status)&&(!zoneKey||customerKey(byId[b.buildingId]?.customer)===zoneKey)&&selectedId!==b.buildingId&&hoverId!==b.buildingId).map(b=><CampusLabel key={`signal-${b.key}`} position={[b.x,b.h+1,b.z]} priority={55}>
+        <button className={`building-signal signal-${b.status}`} onClick={()=>selectBuilding(b.buildingId)} title={`${pickName(byId[b.buildingId],lang)} · ${t.status[b.status]}`}>
+          {b.status==='delivered'?<Check size={12}/>:b.status==='operating'?<Activity size={12}/>:<span className="signal-pending"/>}
+          {b.status==='delivered'?(lang==='ko'?'인수 완료':'Accepted'):t.status[b.status]}
+        </button>
+      </CampusLabel>)}
 
       {/* 건물 라벨 (첫 블록 위) */}
       {L.blocks
@@ -118,7 +134,7 @@ export default function SiteView({ site }) {
                 onClick={(e) => { e.stopPropagation(); if (bld) selectBuilding(bld.id) }}
               >
                 <div className="row">
-                  <span className="dot" style={{ background: st.color }} />
+                  {b.status==='delivered'?<Check size={13} color={st.color}/>:<span className={`dot${b.status==='operating'?' operating-dot':''}`} style={{ background: st.color }} />}
                   <span className="name">{bld ? pickName(bld, lang) : `${fmtMw(L.remainingMw)}`}</span>
                   {/* 건설중이면 진행률 막대 (마우스를 올리지 않아도 보이게) */}
                   {pct != null && (
@@ -131,7 +147,7 @@ export default function SiteView({ site }) {
                 {bld && selected && (
                   <div className="selected-detail">
                     <div>{t.status[b.status]}{b.status === 'under_construction' && bld.progress != null ? ` · ${Math.round(bld.progress * 100)}%` : ''}</div>
-                    <div>{bld.it_mw ? `${bld.it_mw}MW IT / ` : ''}{bld.gross_mw}MW gross</div>
+                    <div>{bld.it_mw ? `${bld.it_mw} MW IT` : bld.disclosedMw ? `~${bld.disclosedMw} MW*` : ''}{bld.gross_mw != null ? `${bld.it_mw ? ' / ' : ''}${bld.gross_mw} MW gross` : ''}</div>
                     {bld.gpu && <div>GPU · {bld.gpu.model}{bld.gpu.count ? ` × ${bld.gpu.count.toLocaleString()}` : ''}</div>}
                     {date && <div className="pending">{t.panel.target} · {date}</div>}
                     {bld.dates?.delivered && <div>{t.panel.delivered} · {bld.dates.delivered}</div>}
@@ -147,17 +163,19 @@ export default function SiteView({ site }) {
         <div className="tag">{lang === 'ko' ? `1칸 = ${L.blockMw}MW` : `1 block = ${L.blockMw}MW`}</div>
       </CampusLabel>
       {L.cranes.filter((c) => !zoneKey || customerKey(byId[c.buildingId]?.customer) === zoneKey).map((c, i) => <Crane key={c.key} x={c.x} z={c.z} seed={i} />)}
+      {L.trucks.some(tr => !tr.targetBuildingId) && <ReceivingBay bay={L.receiving} />}
       {L.trucks.map((tr, i) => <Truck key={tr.key} truck={tr} index={i} lang={lang} />)}
-      <Trees side={L.side} seed={site.id.length * 7 + site.grid_mw} roadZ={L.road.z} />
+      {appearance && <DryCampusGround layout={L} appearance={appearance}/>}
+      {landscape ? <CampusLandscape siteId={site.id} layout={layout} profile={landscape}/> : <Trees side={L.side} seed={site.id.length * 7} roadZ={L.road.z} />}
     </group>
   )
 }
 
 // ---------- 고객 계약 구역 ----------
 // 같은 고객(예: Microsoft)의 건물 블록마다 바닥에 고객 색 테두리를 두르고, 고객 배지는 한 번만
-// (그 블록들의 가운데, 앞쪽 도로 쪽에). 계약 정보(색·금액)가 있으면 함께 표시합니다.
+// 배지는 투영된 부지 밖에 배치하고, 고객 구역 중심까지 점선으로 연결합니다.
 const ZONE_PAD = 0.55 // 블록 둘레에서 테두리까지 여백
-function CustomerZones({ blocks, byId, contracts, showLabels, selectedKey, onSelect, lang }) {
+function CustomerZones({ blocks, byId, contracts, side, selectedKey, onSelect, lang }) {
   const zones = useMemo(() => {
     const map = new Map()
     for (const b of blocks) {
@@ -175,26 +193,15 @@ function CustomerZones({ blocks, byId, contracts, showLabels, selectedKey, onSel
     return [...map.values()]
   }, [blocks, byId, contracts])
 
-  return zones.map((zn) => {
-    const cx = zn.blocks.reduce((a, b) => a + b.x, 0) / zn.blocks.length
-    const front = Math.max(...zn.blocks.map((b) => b.z + b.d / 2))
-    return (
-      <group key={zn.key}>
-        {zn.blocks.map((b) => {
-          const x0 = b.x - b.w / 2 - ZONE_PAD, x1 = b.x + b.w / 2 + ZONE_PAD
-          const z0 = b.z - b.d / 2 - ZONE_PAD, z1 = b.z + b.d / 2 + ZONE_PAD
-          return <Line key={b.key} points={[[x0, 0.1, z0], [x1, 0.1, z0], [x1, 0.1, z1], [x0, 0.1, z1], [x0, 0.1, z0]]} color={zn.color} lineWidth={selectedKey === zn.key ? 4 : 2.4} transparent opacity={selectedKey && selectedKey !== zn.key ? 0.2 : 1} />
-        })}
-        {showLabels && <CampusLabel position={[cx, 1, front + 1.4]} priority={selectedKey === zn.key ? 110 : 50}>
-          <button type="button" className={`zone-badge${selectedKey === zn.key ? ' is-selected' : ''}`} aria-label={`${zn.name} ${lang === 'ko' ? '구역' : 'zone'}`} aria-pressed={selectedKey === zn.key} onClick={(e) => { e.stopPropagation(); onSelect(zn.key) }} style={{ borderColor: zn.color, color: zn.color }}>
-            {zn.logo && <CustomerLogo name={zn.logo} size={12} />}
-            <b>{zn.name}</b>
-
-          </button>
-        </CampusLabel>}
-      </group>
-    )
-  })
+  return <>
+    {zones.map(zn=><group key={zn.key}>
+      {zn.blocks.map(b=>{
+        const x0=b.x-b.w/2-ZONE_PAD,x1=b.x+b.w/2+ZONE_PAD,z0=b.z-b.d/2-ZONE_PAD,z1=b.z+b.d/2+ZONE_PAD
+        return <Line key={b.key} points={[[x0,.1,z0],[x1,.1,z0],[x1,.1,z1],[x0,.1,z1],[x0,.1,z0]]} color={zn.color} lineWidth={selectedKey===zn.key?4:2.4} transparent opacity={selectedKey&&selectedKey!==zn.key? .2:1}/>
+      })}
+    </group>)}
+    <ZoneCallouts zones={zones} side={side} selectedKey={selectedKey} onSelect={onSelect} lang={lang}/>
+  </>
 }
 
 // 계약이 없는 건물도 전체 보기에서는 종류별 구역으로 묶습니다.
@@ -208,6 +215,6 @@ function AreaLabels({ blocks, byId, t }) {
   }
   return [...groups].map(([key, list]) => <CampusLabel key={key} priority={30}
     position={[list.reduce((sum, b) => sum + b.x, 0) / list.length, Math.max(...list.map((b) => b.h)) + 1.5, list.reduce((sum, b) => sum + b.z, 0) / list.length]}>
-    <div className="tag area-label">{t.campus[key]}</div>
+    <div className="tag area-label">{list.every(b=>b.status==='operating')&&<span className="dot operating-dot"/>}{t.campus[key]}{list.every(b=>b.status==='operating')&&<small>{t.status.operating}</small>}</div>
   </CampusLabel>)
 }

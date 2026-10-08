@@ -2,6 +2,7 @@
 import { describe, it, expect } from 'vitest'
 import { buildInfra } from '../../scripts/build-data.mjs'
 import { toMonth } from '../data/timeline.js'
+import { viewInfra } from '../data/view.js'
 import { layoutCampus, campusStateAt, blocksFor, ghostLotCount, blockMwFor, BLOCK_MW, MAX_BLOCKS } from './layoutCampus.js'
 
 const infra = buildInfra()
@@ -29,6 +30,27 @@ describe('blocksFor / ghostLotCount / blockMwFor', () => {
 })
 
 describe('layoutCampus — 실제 사이트 데이터', () => {
+  it('납품 대상 건물이 없으면 기록을 숨기거나 고객 건물을 추측하지 않고 공용 하역장으로 이동', () => {
+    const s = viewInfra(infra, asOf).sites.find(s => s.id === 'childress')._raw
+    const L = layoutCampus(s)
+    const S = campusStateAt(L, s, asOf)
+    expect(S.trucks).toHaveLength(2)
+    for (const tr of S.trucks) {
+      expect(tr.targetBuildingId).toBeNull()
+      expect(tr.path.at(-1)).toEqual([L.receiving.x, L.receiving.z])
+    }
+    expect(L.blocks.every(b => !overlaps(b, L.receiving))).toBe(true)
+    expect(campusStateAt(L, { ...s, deliveries: s.deliveries.map(d => ({ ...d, status: 'done' })) }, asOf).trucks).toEqual([])
+  })
+
+  it('전력 공급 연출은 인수·시운전·채굴 설비까지 복구하며 건설·계획 건물은 제외', () => {
+    const s = viewInfra(infra, asOf).sites.find(s => s.id === 'childress')._raw
+    const L = layoutCampus(s)
+    const S = campusStateAt(L, s, asOf)
+    expect(S.flowTargets.map(b => b.buildingId).sort()).toEqual(['horizon-1', 'horizon-2', 'miners'])
+    expect(campusStateAt(L, { ...s, power: s.power.map(p => ({ ...p, energized_mw: 0 })) }, asOf).flowTargets).toEqual([])
+  })
+
   for (const s of infra.sites) {
     const L = layoutCampus(s)
     it(`${s.id}: 블록 ≤ ${MAX_BLOCKS}, 서로 안 겹치고 모두 부지 안`, () => {

@@ -7,17 +7,18 @@ export default function TopBar() {
   const t = useT()
   const lang = useAppStore((s) => s.lang)
   const data = useAppStore((s) => s.data)
+  const surface = useAppStore((s) => s.surface)
   const view = useAppStore((s) => s.view)
   const site = useAppStore(selectSelectedSite)
   const toggleLang = useAppStore((s) => s.toggleLang)
   const requestGlobe = useAppStore((s) => s.requestGlobe)
-  const toggleSheet = useAppStore((s) => s.toggleSheet)
+  const toggleSheet = useAppStore((s) => s.toggleCampusList)
 
   return (
     <header className="topbar panel">
       <div className="brand">
         {view === 'site' ? (
-          <button className="icon-btn" onClick={requestGlobe} aria-label={t.back} title={t.back}>
+          <button className="icon-btn" onClick={requestGlobe} aria-label={lang==='ko'?'캠퍼스 목록으로':'Back to campuses'} title={lang==='ko'?'캠퍼스 목록으로':'Back to campuses'}>
             <ArrowLeft size={18} />
           </button>
         ) : (
@@ -25,7 +26,7 @@ export default function TopBar() {
         )}
         <div>
           <div className="title">
-            {view === 'site' && site ? pickName(site, lang) : t.appTitle}
+            {view === 'site' && site ? pickName(site, lang) : (lang==='ko'?'IREN 현장 리서치':'IREN Field Research')}
           </div>
           <div className="subtitle">
             {view === 'site' && site ? `${site.region} · ${site.grid_operator}` : t.subtitle}
@@ -34,11 +35,11 @@ export default function TopBar() {
         </div>
       </div>
       <div className="top-actions">
-      {view === 'site' && <button className="lang-btn home-btn" onClick={() => useAppStore.getState().requestCampusHome()} aria-label={t.campus.home} title={t.campus.home}>
+      {view === 'site' && surface==='3d' && <button className="lang-btn home-btn" onClick={() => useAppStore.getState().requestCampusHome()} aria-label={t.campus.home} title={t.campus.home}>
         <Maximize2 size={15} /><span>{t.campus.home}</span>
       </button>}
-      {view === 'globe' && (
-        <button className="icon-btn sheet-btn" onClick={toggleSheet} aria-label={t.rank.tab} title={t.rank.tab}>
+      {surface === 'map' && (
+        <button className="icon-btn sheet-btn" onClick={toggleSheet} aria-label={lang==='ko'?'캠퍼스 목록':'Campus list'} title={lang==='ko'?'캠퍼스 목록':'Campus list'}>
           <ListOrdered size={17} />
         </button>
       )}

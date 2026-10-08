@@ -1,5 +1,5 @@
 // 핵심 지표 카드 줄: 지구본에서는 회사 전체, 캠퍼스에서는 선택한 사이트 기준
-import { Zap, HardHat, MapPinned, CircleDollarSign, Cpu, Plug } from 'lucide-react'
+import { PackageCheck as ServerDelivery, Zap, HardHat, MapPinned, CircleDollarSign, Cpu, Plug } from 'lucide-react'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { useT } from '../i18n/useT.js'
 import { siteMetrics } from '../data/loadSites.js'
@@ -14,6 +14,11 @@ function fmtMetric(x) {
   if (x.unit === 'USD m') return `$${x.value}m`
   if (x.unit === 'GW' || x.unit === 'MW') return `${x.value} ${x.unit}`
   return x.value >= 1000 ? `~${Math.round(x.value / 1000)}k` : String(x.value)
+}
+
+function MetricValue({ value }) {
+  const parts = value.match(/^(.*?)\s+(MW|GW)$/)
+  return <div className="kpi-value"><span>{parts ? parts[1] : value}</span>{parts && <small>{parts[2]}</small>}</div>
 }
 
 export default function KpiBar() {
@@ -35,12 +40,13 @@ export default function KpiBar() {
       { icon: HardHat, label: t.kpi.building, value: fmtMw(m.building), tone: 'construction' },
       { icon: MapPinned, label: t.kpi.planned, value: fmtMw(m.planned), tone: 'planned' },
     ]
+    if (m.delivered) cards.splice(2,0,{icon:ServerDelivery,label:lang==='ko'?'고객 인수':'Customer accepted',value:fmtMw(m.delivered),tone:'delivered',sub:lang==='ko'?'가동·매출과 별도':'Separate from live revenue'})
   } else {
     // 지구본: 회사·그룹 필터를 반영한 합계
     const ids = data.companies
       .filter((c) => (!activeCompanies.size || activeCompanies.has(c.id)) && (!activeGroups.size || activeGroups.has(c.group)))
       .map((c) => c.id)
-    const m = totalsAt(data.raw, data.month, { companies: new Set(ids) })
+    const m = totalsAt(data.observedRaw ?? data.raw, data.month, { companies: new Set(ids) })
     cards = [
       { icon: Plug, label: t.kpi2.secured, value: fmtMw(m.secured, 2), sub: `${t.kpi2.energized} ${fmtMw(m.energized, 2)}` },
       { icon: Zap, label: t.kpi2.ai, value: fmtMw(m.ai), tone: 'operating', sub: m.mining ? `${t.kpi2.mining} ${fmtMw(m.mining)}` : null },
@@ -62,14 +68,17 @@ export default function KpiBar() {
   }
 
   return (
-    <div className="kpis">
+    <section className="kpis panel" aria-label={lang==='ko'?'핵심 현황':'Key metrics'}>
+      <div className="kpi-context"><small>{view==='site'?'CAMPUS':'PORTFOLIO'}</small><b>{lang==='ko'?(view==='site'?'전력 현황':'사업 현황'):(view==='site'?'Power overview':'At a glance')}</b><span>{lang==='ko'?(view==='site'?'시설 전력 기준':'공개 자료 기준'):(view==='site'?'Facility capacity':'Reported data')}</span></div>
+      <div className="kpi-items" tabIndex={0} aria-label={lang==='ko'?'지표 목록, 좌우로 스크롤':'Metrics, scroll horizontally'}>
       {cards.map((k) => (
-        <div key={k.label} className={`kpi panel tone-${k.tone ?? 'none'}`}>
-          <div className="kpi-label"><k.icon size={13} /> {k.label}</div>
-          <div className="kpi-value">{k.value}</div>
+        <div key={k.label} className={`kpi tone-${k.tone ?? 'none'}`}>
+          <div className="kpi-label"><k.icon size={13} strokeWidth={1.6} aria-hidden="true" /> {k.label}</div>
+          <MetricValue value={k.value}/>
           {k.sub && <div className="kpi-sub">{k.source ? <a href={k.source} target="_blank" rel="noreferrer">{k.sub}</a> : k.sub}</div>}
         </div>
       ))}
-    </div>
+      </div>
+    </section>
   )
 }

@@ -1,0 +1,534 @@
+{
+  "sources": [
+    {
+      "id": "ms-contract",
+      "title": "Microsoft GPU cloud contract",
+      "url": "https://www.sec.gov/Archives/edgar/data/1878848/000114036125040072/ef20058139_ex99-1.htm",
+      "published": "2025-11-03",
+      "publisher": "IREN",
+      "reviewedAt": "2026-10-07"
+    },
+    {
+      "id": "fy26-results",
+      "title": "FY26 results — Childress update",
+      "url": "https://irisenergy.gcs-web.com/news-releases/news-release-details/iren-reports-fy26-results",
+      "published": "2026-08-27",
+      "publisher": "IREN",
+      "reviewedAt": "2026-10-07"
+    },
+    {
+      "id": "h1-acceptance",
+      "title": "Horizon 1 customer acceptance",
+      "url": "https://www.globenewswire.com/news-release/2026/08/13/3344413/0/en/iren-delivers-horizon-1-to-microsoft-and-achieves-nvidia-exemplar-cloud-status-on-gb300-nvl72.html",
+      "published": "2026-08-13",
+      "publisher": "IREN",
+      "reviewedAt": "2026-10-07"
+    },
+    {
+      "id": "nvidia-contract",
+      "title": "NVIDIA managed GPU cloud contract",
+      "url": "https://www.globenewswire.com/news-release/2026/05/07/3290760/0/en/iren-secures-3-4bn-ai-cloud-contract-with-nvidia.html",
+      "published": "2026-05-07",
+      "publisher": "IREN",
+      "reviewedAt": "2026-10-07"
+    },
+    {
+      "id": "q3fy25-slides",
+      "title": "Q3 FY25 presentation",
+      "url": "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000043/q3fy25presentationvf.htm",
+      "published": "2025-05-14",
+      "publisher": "IREN",
+      "reviewedAt": "2026-10-07"
+    },
+    {
+      "id": "childress-official-gallery",
+      "title": "Childress — official campus gallery",
+      "url": "https://iren.com/data-centers/childress",
+      "published": null,
+      "publisher": "IREN",
+      "reviewedAt": "2026-10-08"
+    }
+  ],
+  "claims": [
+    {
+      "id": "horizon-1-it-mw-0",
+      "site": "childress",
+      "building": "horizon-1",
+      "field": "it_mw",
+      "value": 50,
+      "sourceId": "h1-acceptance",
+      "locator": "Opening paragraphs",
+      "summary_ko": "4개 배치 각각 50MW IT로 설명.",
+      "summary_en": "Each of four deployments is described as 50 MW IT.",
+      "basis": "reported",
+      "review": "verified"
+    },
+    {
+      "id": "horizon-1-status-1",
+      "site": "childress",
+      "building": "horizon-1",
+      "field": "status",
+      "value": "planned",
+      "sourceId": "ms-contract",
+      "locator": "Page 1",
+      "summary_ko": "Horizon 1~4 합계 200MW IT, 2026년 단계 배치 계획.",
+      "summary_en": "200 MW IT across Horizon 1–4, staged deployment during 2026.",
+      "basis": "target",
+      "review": "verified"
+    },
+    {
+      "id": "horizon-1-status-2",
+      "site": "childress",
+      "building": "horizon-1",
+      "field": "status",
+      "value": "delivered",
+      "sourceId": "h1-acceptance",
+      "locator": "Opening paragraph",
+      "summary_ko": "Microsoft 인수 완료 발표. 정확한 인수일과 매출 개시일은 별도 확인되지 않음.",
+      "summary_en": "Customer acceptance reported; exact occurrence and revenue start dates not established.",
+      "basis": "reported",
+      "review": "verified"
+    },
+    {
+      "id": "horizon-2-it-mw-3",
+      "site": "childress",
+      "building": "horizon-2",
+      "field": "it_mw",
+      "value": 50,
+      "sourceId": "h1-acceptance",
+      "locator": "Opening paragraphs",
+      "summary_ko": "4개 배치 각각 50MW IT로 설명.",
+      "summary_en": "Each of four deployments is described as 50 MW IT.",
+      "basis": "reported",
+      "review": "verified"
+    },
+    {
+      "id": "horizon-2-status-4",
+      "site": "childress",
+      "building": "horizon-2",
+      "field": "status",
+      "value": "planned",
+      "sourceId": "ms-contract",
+      "locator": "Page 1",
+      "summary_ko": "Horizon 1~4 합계 200MW IT, 2026년 단계 배치 계획.",
+      "summary_en": "200 MW IT across Horizon 1–4, staged deployment during 2026.",
+      "basis": "target",
+      "review": "verified"
+    },
+    {
+      "id": "horizon-2-status-5",
+      "site": "childress",
+      "building": "horizon-2",
+      "field": "status",
+      "value": "commissioning",
+      "sourceId": "fy26-results",
+      "locator": "Highlights / Horizon 1 delivered",
+      "summary_ko": "시운전 진행 중.",
+      "summary_en": "Commissioning underway.",
+      "basis": "reported",
+      "review": "verified"
+    },
+    {
+      "id": "horizon-3-it-mw-6",
+      "site": "childress",
+      "building": "horizon-3",
+      "field": "it_mw",
+      "value": 50,
+      "sourceId": "h1-acceptance",
+      "locator": "Opening paragraphs",
+      "summary_ko": "4개 배치 각각 50MW IT로 설명.",
+      "summary_en": "Each of four deployments is described as 50 MW IT.",
+      "basis": "reported",
+      "review": "verified"
+    },
+    {
+      "id": "horizon-3-status-7",
+      "site": "childress",
+      "building": "horizon-3",
+      "field": "status",
+      "value": "planned",
+      "sourceId": "ms-contract",
+      "locator": "Page 1",
+      "summary_ko": "Horizon 1~4 합계 200MW IT, 2026년 단계 배치 계획.",
+      "summary_en": "200 MW IT across Horizon 1–4, staged deployment during 2026.",
+      "basis": "target",
+      "review": "verified"
+    },
+    {
+      "id": "horizon-3-status-8",
+      "site": "childress",
+      "building": "horizon-3",
+      "field": "status",
+      "value": "under_construction",
+      "sourceId": "fy26-results",
+      "locator": "Highlights / Horizon 1 delivered",
+      "summary_ko": "후기 건설 단계. 수치 공정률은 공개되지 않음.",
+      "summary_en": "Late-stage construction; no numeric completion percentage.",
+      "basis": "reported",
+      "review": "verified"
+    },
+    {
+      "id": "horizon-4-it-mw-9",
+      "site": "childress",
+      "building": "horizon-4",
+      "field": "it_mw",
+      "value": 50,
+      "sourceId": "h1-acceptance",
+      "locator": "Opening paragraphs",
+      "summary_ko": "4개 배치 각각 50MW IT로 설명.",
+      "summary_en": "Each of four deployments is described as 50 MW IT.",
+      "basis": "reported",
+      "review": "verified"
+    },
+    {
+      "id": "horizon-4-status-10",
+      "site": "childress",
+      "building": "horizon-4",
+      "field": "status",
+      "value": "planned",
+      "sourceId": "ms-contract",
+      "locator": "Page 1",
+      "summary_ko": "Horizon 1~4 합계 200MW IT, 2026년 단계 배치 계획.",
+      "summary_en": "200 MW IT across Horizon 1–4, staged deployment during 2026.",
+      "basis": "target",
+      "review": "verified"
+    },
+    {
+      "id": "horizon-4-status-11",
+      "site": "childress",
+      "building": "horizon-4",
+      "field": "status",
+      "value": "under_construction",
+      "sourceId": "fy26-results",
+      "locator": "Highlights / Horizon 1 delivered",
+      "summary_ko": "후기 건설 단계. 수치 공정률은 공개되지 않음.",
+      "summary_en": "Late-stage construction; no numeric completion percentage.",
+      "basis": "reported",
+      "review": "verified"
+    },
+    {
+      "id": "air-cooled-nvidia-status-12",
+      "site": "childress",
+      "building": "air-cooled-nvidia",
+      "field": "status",
+      "value": "planned",
+      "sourceId": "nvidia-contract",
+      "locator": "Contract scope",
+      "summary_ko": "계약 발표로 배치 계획 확인. 이 원문으로 착공·가동은 확인할 수 없음.",
+      "summary_en": "Deployment planned under contract; construction or operation is not established by this source.",
+      "basis": "target",
+      "review": "verified"
+    },
+    {
+      "id": "air-cooled-nvidia-capacity-mw-13",
+      "site": "childress",
+      "building": "air-cooled-nvidia",
+      "field": "capacity_mw",
+      "value": 60,
+      "sourceId": "nvidia-contract",
+      "locator": "Contract scope",
+      "summary_ko": "기존 데이터센터 약 60MW. IT·총전력 기준은 명시되지 않아 분리 집계.",
+      "summary_en": "Approximately 60 MW of existing data centers; IT/gross basis is not explicit, so this is kept separate.",
+      "basis": "reported",
+      "review": "verified"
+    }
+  ],
+  "milestones": [
+    {
+      "id": "horizon-1-customer-delivery",
+      "site": "childress",
+      "building": "horizon-1",
+      "title_ko": "Microsoft 인도·인수",
+      "title_en": "Microsoft delivery / acceptance",
+      "scope_ko": "고객 GPU 클라우드 배치 인도. 매출 개시와 구분.",
+      "scope_en": "Customer GPU deployment delivery; distinct from revenue commencement.",
+      "revisions": [
+        {
+          "target": "2026",
+          "sourceId": "ms-contract",
+          "note_ko": "Horizon 1~4의 단계 배치 계획.",
+          "note_en": "Staged deployment of Horizon 1–4."
+        }
+      ],
+      "completion": {
+        "sourceId": "h1-acceptance",
+        "occurred": null
+      }
+    },
+    {
+      "id": "horizon-2-customer-delivery",
+      "site": "childress",
+      "building": "horizon-2",
+      "title_ko": "Microsoft 인도·인수",
+      "title_en": "Microsoft delivery / acceptance",
+      "scope_ko": "고객 GPU 클라우드 배치 인도. 매출 개시와 구분.",
+      "scope_en": "Customer GPU deployment delivery; distinct from revenue commencement.",
+      "revisions": [
+        {
+          "target": "2026",
+          "sourceId": "ms-contract",
+          "note_ko": "Horizon 1~4의 단계 배치 계획.",
+          "note_en": "Staged deployment of Horizon 1–4."
+        },
+        {
+          "target": "2026-Q4",
+          "sourceId": "fy26-results",
+          "note_ko": "잔여 배치의 인도 목표 구체화.",
+          "note_en": "Delivery window narrowed for remaining deployments."
+        }
+      ]
+    },
+    {
+      "id": "horizon-3-customer-delivery",
+      "site": "childress",
+      "building": "horizon-3",
+      "title_ko": "Microsoft 인도·인수",
+      "title_en": "Microsoft delivery / acceptance",
+      "scope_ko": "고객 GPU 클라우드 배치 인도. 매출 개시와 구분.",
+      "scope_en": "Customer GPU deployment delivery; distinct from revenue commencement.",
+      "revisions": [
+        {
+          "target": "2026",
+          "sourceId": "ms-contract",
+          "note_ko": "Horizon 1~4의 단계 배치 계획.",
+          "note_en": "Staged deployment of Horizon 1–4."
+        },
+        {
+          "target": "2026-Q4",
+          "sourceId": "fy26-results",
+          "note_ko": "잔여 배치의 인도 목표 구체화.",
+          "note_en": "Delivery window narrowed for remaining deployments."
+        }
+      ]
+    },
+    {
+      "id": "horizon-4-customer-delivery",
+      "site": "childress",
+      "building": "horizon-4",
+      "title_ko": "Microsoft 인도·인수",
+      "title_en": "Microsoft delivery / acceptance",
+      "scope_ko": "고객 GPU 클라우드 배치 인도. 매출 개시와 구분.",
+      "scope_en": "Customer GPU deployment delivery; distinct from revenue commencement.",
+      "revisions": [
+        {
+          "target": "2026",
+          "sourceId": "ms-contract",
+          "note_ko": "Horizon 1~4의 단계 배치 계획.",
+          "note_en": "Staged deployment of Horizon 1–4."
+        },
+        {
+          "target": "2026-Q4",
+          "sourceId": "fy26-results",
+          "note_ko": "잔여 배치의 인도 목표 구체화.",
+          "note_en": "Delivery window narrowed for remaining deployments."
+        }
+      ]
+    },
+    {
+      "id": "horizon-1-shell",
+      "site": "childress",
+      "building": "horizon-1",
+      "title_ko": "초기 데이터센터 인도 목표",
+      "title_en": "Original data-center delivery target",
+      "scope_ko": "2025년 시설 인도 목표. 이후 GPU 클라우드 고객 인수와 범위가 달라 직접 비교하지 않음.",
+      "scope_en": "2025 facility delivery scope differs from subsequent GPU cloud acceptance.",
+      "revisions": [
+        {
+          "target": "2025-Q4",
+          "sourceId": "q3fy25-slides",
+          "note_ko": "13쪽: 당시 시설 인도 목표.",
+          "note_en": "Page 13: facility delivery target at that time."
+        }
+      ]
+    }
+  ],
+  "media": [
+    {
+      "id": "childress-official-main",
+      "site": "childress",
+      "buildings": [],
+      "kind": "photo",
+      "title": "Childress 캠퍼스 전경",
+      "captured": null,
+      "sourceId": "childress-official-gallery",
+      "locator": "Official website gallery · Childress Data Center Main Facility",
+      "rights": "display",
+      "rightsNote": "© IREN · 공식 홈페이지 공개 이미지 / Official website image",
+      "rightsBasis": "Project owner authorized use of IREN official website and IR images on 2026-10-08.",
+      "identification": "IREN Childress 페이지의 공식 이미지 설명. 특정 Horizon 건물로 식별하지 않음.",
+      "thumbnail": "/media/iren/childress-main.avif",
+      "full": "/media/iren/childress-main.avif",
+      "assetSource": "https://iren.com/api/media/file/iren-childress-43.avif"
+    },
+    {
+      "id": "childress-official-facility",
+      "site": "childress",
+      "buildings": [],
+      "kind": "photo",
+      "title": "Childress 서버 시설",
+      "captured": null,
+      "sourceId": "childress-official-gallery",
+      "locator": "Official website gallery · Childress Data Center Facility View 56",
+      "rights": "display",
+      "rightsNote": "© IREN · 공식 홈페이지 공개 이미지 / Official website image",
+      "rightsBasis": "Project owner authorized use of IREN official website and IR images on 2026-10-08.",
+      "identification": "IREN Childress 페이지의 공식 이미지 설명. 특정 Horizon 건물로 식별하지 않음.",
+      "thumbnail": "/media/iren/childress-facility.avif",
+      "full": "/media/iren/childress-facility.avif",
+      "assetSource": "https://iren.com/api/media/file/iren-childress-56.avif"
+    },
+    {
+      "id": "childress-official-interior",
+      "site": "childress",
+      "buildings": [],
+      "kind": "aerial",
+      "title": "Childress 캠퍼스 항공 전경",
+      "captured": null,
+      "sourceId": "childress-official-gallery",
+      "locator": "Official website gallery · Childress Data Center Interior 1",
+      "rights": "display",
+      "rightsNote": "© IREN · 공식 홈페이지 공개 이미지 / Official website image",
+      "rightsBasis": "Project owner authorized use of IREN official website and IR images on 2026-10-08.",
+      "identification": "IREN Childress 공식 갤러리 이미지. 원문 alt는 Interior 1이지만 실제 이미지를 확인해 항공 전경으로 분류. 특정 Horizon 건물로 식별하지 않음.",
+      "thumbnail": "/media/iren/childress-interior.avif",
+      "full": "/media/iren/childress-interior.avif",
+      "assetSource": "https://iren.com/api/media/file/childress_1.avif"
+    },
+    {
+      "id": "childress-apr2025",
+      "site": "childress",
+      "buildings": [],
+      "kind": "photo",
+      "title": "Childress 캠퍼스 전경",
+      "captured": "2025-04",
+      "sourceId": "q3fy25-slides",
+      "locator": "Page 14",
+      "rights": "link_only",
+      "rightsNote": "© IREN · 공식 IR 자료 원문에서 확인 / View the original IR presentation",
+      "identification": "공식 슬라이드 캡션 / Official slide caption",
+      "rightsBasis": "Project owner authorized use of IREN official website and IR images on 2026-10-08. Inline asset not yet imported."
+    },
+    {
+      "id": "horizon-concept",
+      "site": "childress",
+      "buildings": [
+        "horizon-1"
+      ],
+      "kind": "rendering",
+      "title": "Horizon 1 조감도",
+      "captured": null,
+      "sourceId": "q3fy25-slides",
+      "locator": "Page 13",
+      "rights": "link_only",
+      "rightsNote": "© IREN · 공식 IR 자료 원문에서 확인 / View the original IR presentation",
+      "identification": "공식 슬라이드 캡션 / Official slide caption",
+      "rightsBasis": "Project owner authorized use of IREN official website and IR images on 2026-10-08. Inline asset not yet imported."
+    }
+  ],
+  "locations": [
+    {
+      "site": "childress",
+      "level": "region",
+      "review": "pending",
+      "reviewedAt": "2026-10-07",
+      "source": "https://iren.com/data-centers/childress",
+      "note_ko": "기존 좌표의 원문·부지 정합 검토 필요. 지역 위치로 표시.",
+      "note_en": "Legacy coordinate needs source / parcel verification. Displayed as regional location."
+    },
+    {
+      "site": "sweetwater-1",
+      "level": "region",
+      "review": "pending",
+      "reviewedAt": "2026-10-07",
+      "source": "https://iren.com/data-centers/sweetwater",
+      "note_ko": "기존 좌표의 원문·부지 정합 검토 필요. 지역 위치로 표시.",
+      "note_en": "Legacy coordinate needs source / parcel verification. Displayed as regional location."
+    },
+    {
+      "site": "sweetwater-2",
+      "level": "region",
+      "review": "pending",
+      "reviewedAt": "2026-10-07",
+      "source": "https://iren.com/data-centers/sweetwater",
+      "note_ko": "기존 좌표의 원문·부지 정합 검토 필요. 지역 위치로 표시.",
+      "note_en": "Legacy coordinate needs source / parcel verification. Displayed as regional location."
+    },
+    {
+      "site": "prince-george",
+      "level": "region",
+      "review": "pending",
+      "reviewedAt": "2026-10-07",
+      "source": "https://iren.com/data-centers/prince-george",
+      "note_ko": "기존 좌표의 원문·부지 정합 검토 필요. 지역 위치로 표시.",
+      "note_en": "Legacy coordinate needs source / parcel verification. Displayed as regional location."
+    },
+    {
+      "site": "mackenzie",
+      "level": "region",
+      "review": "pending",
+      "reviewedAt": "2026-10-07",
+      "source": "https://iren.com/data-centers/mackenzie",
+      "note_ko": "기존 좌표의 원문·부지 정합 검토 필요. 지역 위치로 표시.",
+      "note_en": "Legacy coordinate needs source / parcel verification. Displayed as regional location."
+    },
+    {
+      "site": "canal-flats",
+      "level": "region",
+      "review": "pending",
+      "reviewedAt": "2026-10-07",
+      "source": "https://iren.com/data-centers/canal-flats",
+      "note_ko": "기존 좌표의 원문·부지 정합 검토 필요. 지역 위치로 표시.",
+      "note_en": "Legacy coordinate needs source / parcel verification. Displayed as regional location."
+    },
+    {
+      "site": "kiowa",
+      "level": "region",
+      "review": "pending",
+      "reviewedAt": "2026-10-07",
+      "source": "https://iren.com/data-centers/oklahoma",
+      "note_ko": "기존 좌표의 원문·부지 정합 검토 필요. 지역 위치로 표시.",
+      "note_en": "Legacy coordinate needs source / parcel verification. Displayed as regional location."
+    },
+    {
+      "site": "bundey",
+      "level": "region",
+      "review": "pending",
+      "reviewedAt": "2026-10-07",
+      "source": "https://iren.com/data-centers/bundey",
+      "note_ko": "기존 좌표의 원문·부지 정합 검토 필요. 지역 위치로 표시.",
+      "note_en": "Legacy coordinate needs source / parcel verification. Displayed as regional location."
+    },
+    {
+      "site": "badajoz",
+      "level": "region",
+      "review": "pending",
+      "reviewedAt": "2026-10-07",
+      "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm",
+      "note_ko": "기존 좌표의 원문·부지 정합 검토 필요. 지역 위치로 표시.",
+      "note_en": "Legacy coordinate needs source / parcel verification. Displayed as regional location."
+    }
+  ],
+  "auditedBuildings": [
+    {
+      "site": "childress",
+      "building": "horizon-1"
+    },
+    {
+      "site": "childress",
+      "building": "horizon-2"
+    },
+    {
+      "site": "childress",
+      "building": "horizon-3"
+    },
+    {
+      "site": "childress",
+      "building": "horizon-4"
+    },
+    {
+      "site": "childress",
+      "building": "air-cooled-nvidia"
+    }
+  ],
+  "assessedThrough": "2026-10-07"
+}

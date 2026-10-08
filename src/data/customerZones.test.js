@@ -11,9 +11,9 @@ describe('customer zones', () => {
     const ms = zones.find((z) => z.key === 'microsoft')
     expect(ms.buildings.map((b) => b.id)).toEqual(['horizon-1', 'horizon-2', 'horizon-3', 'horizon-4'])
     expect(ms.itMw).toBe(200)
-    expect(ms.statuses.find((s) => s.status === 'operating').itMw).toBe(50)
+    expect(ms.statuses.find((s) => s.status === 'delivered').itMw).toBe(50)
     expect(ms.contracts.map((c) => c.id)).toEqual(['microsoft-2025'])
-    expect(zones.find((z) => z.key === 'nvidia').itMw).toBe(60)
+    expect(zones.find((z) => z.key === 'nvidia').itMw).toBe(0)
   })
   it('does not infer customer zones from a supplier or partnership', () => {
     expect(customerZones({ id: 'x', buildings: [{ id: 'a', gpu: { model: 'NVIDIA' }, gross_mw: 10 }] })).toEqual([])

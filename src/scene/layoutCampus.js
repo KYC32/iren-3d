@@ -69,6 +69,7 @@ const round2 = (v) => Math.round(v * 100) / 100
  * @param {{ defaultKind?: string }} opts  건물 종류가 없을 때 쓸 기본값 (회사 그룹별)
  */
 export function layoutCampus(site, { defaultKind = 'datahall_air' } = {}) {
+  site = site._layoutSource ?? site
   const blockMw = blockMwFor(site)
   // 첫 단계 날짜 순(같으면 데이터 순서) — 날짜가 바뀌어도 순서가 변하지 않음
   const ordered = site.buildings.map((b, i) => ({ b, i })).sort((x, y) => firstMonth(x.b) - firstMonth(y.b) || x.i - y.i)
@@ -114,6 +115,7 @@ export function layoutCampus(site, { defaultKind = 'datahall_air' } = {}) {
     substation,
     road: { z: roadZ, x0: -half, x1: half, depth: ROAD_DEPTH },
     gate: { x: round2(half), z: roadZ },
+    receiving: { x: substation.x, z: round2(roadZ - 4), w: 4.4, d: 5 },
     powerLine: { from: [round2(-half - 10), substation.z], to: [substation.x, substation.z] },
     lotCount,
     remainingMw,
@@ -134,7 +136,7 @@ export function campusStateAt(layout, site, m) {
     // 아직 생기기 전 / 철거·완전 전환 / 부분 전환으로 줄어든 칸 → 빈 부지 모습
     const liveBlocks = e ? Math.max(1, Math.round(e.mw / layout.blockMw)) : 0
     if (!e || blk.index >= liveBlocks) return { ...blk, kind: 'lot', h: 0.05, status: 'planned', progress: 0, asLot: true }
-    const progress = e.status === 'under_construction' ? progressAt(byId.get(blk.buildingId), m, asOfM) : e.status === 'planned' ? 0 : 1
+    const progress = e.status === 'under_construction' ? (site._observed ? 0.4 : progressAt(byId.get(blk.buildingId), m, asOfM)) : e.status === 'planned' ? 0 : 1
     return { ...blk, status: e.status, progress, asLot: false }
   })
 
@@ -155,20 +157,25 @@ export function campusStateAt(layout, site, m) {
     .filter((b) => b.status === 'under_construction' && b.isAnchor && !b.asLot)
     .map((b) => ({ key: `crane-${b.buildingId}`, buildingId: b.buildingId, x: round2(b.x + b.w / 2 + 0.6), z: round2(b.z - b.d / 2 + 0.6) }))
 
-  // 납품 트럭: 기준일 이전·이후 모두 "진행 중" 납품만, 시운전·건설중 건물 앞으로
+  // 공개된 납품 계획을 표현합니다. 건물 연결이 없으면 공용 하역장으로 보내
+  // 서로 다른 고객의 장비를 임의의 건물에 납품하는 모습이 생기지 않게 합니다.
   const targets = blocks.filter((b) => b.isAnchor && !b.asLot && (b.status === 'commissioning' || b.status === 'under_construction'))
-  const trucks = targets.length
-    ? site.deliveries.map((dlv, i) => {
-        const tgt = targets[i % targets.length]
-        const frontZ = round2(tgt.z + tgt.d / 2 + 0.9)
-        return {
-          key: `truck-${i}`,
-          delivery: dlv,
-          targetBuildingId: tgt.buildingId,
-          path: [[round2(layout.gate.x + 6), layout.road.z], [tgt.x, layout.road.z], [tgt.x, frontZ]],
-        }
-      })
-    : []
+  const trucks = site.deliveries.filter((d) => d.status !== 'done').map((dlv, i) => {
+    const tgt = dlv.buildingId ? targets.find((b) => b.buildingId === dlv.buildingId)
+      : site._observed ? null : targets[i % targets.length]
+    const x = tgt?.x ?? layout.receiving.x
+    const frontZ = tgt ? round2(tgt.z + tgt.d / 2 + 0.9) : layout.receiving.z
+    return {
+      key: `truck-${i}`,
+      delivery: dlv,
+      targetBuildingId: tgt?.buildingId ?? null,
+      path: [[round2(layout.gate.x + 6), layout.road.z], [x, layout.road.z], [x, frontZ]],
+    }
+  })
+
+  // 통전된 캠퍼스의 설비 공급을 표현하는 연출이며, 고객 가동 실적과는 별개입니다.
+  const flowTargets = energized ? blocks.filter((b) => b.isAnchor && !b.asLot
+    && ['operating', 'delivered', 'commissioning', 'decommissioning'].includes(b.status)) : []
 
   return {
     blocks,
@@ -176,6 +183,7 @@ export function campusStateAt(layout, site, m) {
     powerLine: { ...layout.powerLine, energized, dates: substation.dates },
     cranes,
     trucks,
+    flowTargets,
     remainingMw: layout.remainingMw,
   }
 }

@@ -14,3 +14,7 @@ it('동적 Scene을 포함해 정적 의존성을 합산하고 공유·순환 �
 it('진입점이 사라지면 조용히 과소계산하지 않고 실패', () => {
   expect(() => collectChunks({}, ['scene'])).toThrow('scene')
 })
+
+it('includes map worker and stylesheet assets in the startup budget', () => {
+  expect(new Set(collectChunks({map:{file:'map.js',assets:['worker.js'],css:['map.css']}},['map']))).toEqual(new Set(['map.js','worker.js','map.css']))
+})

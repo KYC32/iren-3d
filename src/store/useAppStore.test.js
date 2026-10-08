@@ -101,3 +101,95 @@ describe('고객 구역 선택', () => {
     expect(state().selectedZoneKey).toBeNull()
   })
 })
+
+
+describe('실제 지도와 3D 공유 상태', () => {
+  it('화면 전환 시 캠퍼스·구역·건물·탭과 지도 카메라를 유지', () => {
+    state().setRaw(raw)
+    state().selectSite('childress')
+    state().selectZone('microsoft')
+    state().selectBuilding('horizon-1')
+    state().setDetailTab('evidence')
+    const camera = { center: [-100.2, 34.4], zoom: 8 }
+    state().setMapCamera(camera)
+    state().setSurface('3d')
+    state().setSurface('map')
+    expect(state().selectedSiteId).toBe('childress')
+    expect(state().selectedZoneKey).toBe('microsoft')
+    expect(state().selectedBuildingId).toBe('horizon-1')
+    expect(state().detailTab).toBe('evidence')
+    expect(state().mapCamera).toEqual(camera)
+  })
+  it('공유 링크로 상세 상태를 복원', () => {
+    state().setRaw(raw)
+    state().applyHash('#site=childress&surface=3d&zone=microsoft&building=horizon-1&tab=history')
+    expect(state().surface).toBe('3d')
+    expect(state().selectedSiteId).toBe('childress')
+    expect(state().selectedBuildingId).toBe('horizon-1')
+    expect(state().selectedZoneKey).toBe('microsoft')
+    expect(state().detailTab).toBe('history')
+    expect(state().pending).toBeNull()
+  })
+})
+
+describe('캠퍼스 클릭으로 3D 진입', () => {
+  it('지도 카메라는 보존하고 이전 상세 선택은 초기화하여 바로 진입', () => {
+    state().setRaw(raw)
+    state().selectSite('childress')
+    state().selectZone('microsoft')
+    state().selectBuilding('horizon-1', true)
+    state().setDetailTab('evidence')
+    const camera = { center: [-100.2, 34.4], zoom: 8 }
+    state().setMapCamera(camera)
+    state().toggleSheet()
+    state().enterSite3D('childress')
+    expect(state()).toMatchObject({ surface:'3d', view:'site', selectedSiteId:'childress', detailTab:'overview',
+      selectedBuildingId:null, selectedZoneKey:null, buildingFly:null, pending:null, transitioning:false, sheetOpen:false })
+    expect(state().mapCamera).toEqual(camera)
+    expect(window.history.replaceState).toHaveBeenLastCalledWith(null, '', expect.stringContaining('surface=3d'))
+    state().requestGlobe()
+    expect(state().surface).toBe('map')
+    expect(state().mapCamera).toEqual(camera)
+  })
+  it('해당 날짜에 없는 캠퍼스는 진입하지 않음', () => {
+    state().setRaw(raw)
+    state().enterSite3D('missing')
+    expect(state().surface).toBe('map')
+    expect(state().selectedSiteId).toBeNull()
+    state().setMonth(toMonth('2024-01'))
+    state().enterSite3D('bundey')
+    expect(state().selectedSiteId).toBeNull()
+  })
+})
+
+describe('캠퍼스 목록은 지도 확대',()=>{
+ it.each([390,960,1440])('폭 %i에서 목록 열기·선택·다시 열기가 선택 상태를 보존',width=>{
+  window.innerWidth=width
+  state().setRaw(raw)
+  state().setCampusListOpen(false)
+  state().toggleCampusList()
+  expect(state()).toMatchObject({mapListCollapsed:false,sheetOpen:true})
+  state().focusSiteOnMap('childress')
+  expect(state()).toMatchObject({surface:'map',selectedSiteId:'childress',sheetOpen:false})
+  state().toggleCampusList()
+  if(width<1100) expect(state()).toMatchObject({mapListCollapsed:false,sheetOpen:true})
+  else expect(state()).toMatchObject({mapListCollapsed:true,sheetOpen:false})
+  state().setCampusListOpen(true)
+  expect(state().selectedSiteId).toBe('childress')
+  state().setCampusListOpen(false)
+  state().enterSite3D('childress')
+  state().requestGlobe()
+  expect(state().mapListCollapsed).toBe(true)
+ })
+ it('목록 선택은 3D 진입과 분리되고 같은 캠퍼스를 다시 눌러도 확대 요청',()=>{
+  state().setRaw(raw)
+  state().enterSite3D('childress')
+  state().focusSiteOnMap('childress')
+  expect(state()).toMatchObject({surface:'map',view:'site',selectedSiteId:'childress',pending:null})
+  const seq=state().mapFocusSeq
+  state().focusSiteOnMap('childress')
+  expect(state().mapFocusSeq).toBe(seq+1)
+  state().enterSite3D('childress')
+  expect(state().surface).toBe('3d')
+ })
+})

@@ -12,6 +12,7 @@ const mapRoots = ['index.html', 'src/scene/Scene.jsx']
 if (!SINGLE_COMPANY) mapRoots.push('src/scene/GlobeView.jsx')
 const budgets = [
   { label: 'HTML UI', roots: ['index.html'], limit: 120 },
+  { label: '실제 지도 포함 전체', roots: ['index.html', 'src/map/GeoMap.jsx'], limit: 550 },
   { label: '첫 3D 지도 포함 전체', roots: mapRoots, limit: 450 },
 ]
 for (const { label, roots, limit } of budgets) {

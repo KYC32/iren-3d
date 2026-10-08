@@ -22,16 +22,25 @@ export function parseHash(hash) {
   }
   const color = q.get('color')
   if (color === 'status' || color === 'company') out.color = color
+  const surface = q.get('surface')
+  if (surface === '3d') out.surface = surface
+  const tab = q.get('tab')
+  if (['history', 'evidence'].includes(tab)) out.tab = tab
+  for (const key of ['building','zone']) { const v=q.get(key); if (v && /^[a-z0-9-]+$/.test(v)) out[key]=v }
   return out
 }
 
 // 기본값과 같은 항목은 생략해 주소를 짧게 유지
-export function buildHash({ site = null, date = null, companies = [], color = 'status' } = {}) {
+export function buildHash({ site = null, date = null, companies = [], color = 'status', surface = 'map', tab = 'overview', building = null, zone = null } = {}) {
   const q = new URLSearchParams()
   if (date) q.set('date', date)
   if (site) q.set('site', site)
   if (companies.length) q.set('c', [...companies].join(','))
   if (color && color !== 'status') q.set('color', color)
+  if (site && surface === '3d') q.set('surface', surface)
+  if (site && tab !== 'overview') q.set('tab', tab)
+  if (site && building) q.set('building',building)
+  if (site && zone) q.set('zone',zone)
   const s = q.toString().replace(/%2C/g, ',')
   return s ? `#${s}` : ''
 }
