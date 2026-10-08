@@ -8,9 +8,11 @@ import { CampusLabel } from '../CampusLabel.jsx'
 import { CatmullRomCurve3, Vector3 } from 'three'
 import { styleOf, PENDING_COLOR } from '../../data/statusStyle.js'
 import { fmtMw } from '../geo.js'
+import { POWER_FLOW_COLOR } from '../powerFlow.js'
+import { useReducedMotion } from '../useReducedMotion.js'
 
 // ---------- 변전소 ----------
-export function Substation({ sub, t, showLabel = true }) {
+export function Substation({ sub, t, showLabel = true, children }) {
   const energized = sub.status === 'energized'
   const accent = energized ? styleOf('operating').color : PENDING_COLOR
   const ghost = !energized
@@ -48,6 +50,7 @@ export function Substation({ sub, t, showLabel = true }) {
         <boxGeometry args={[0.14, 0.14, 3.7]} />
         {mat('#8f99b3')}
       </mesh>
+      {children}
       {/* 라벨: 통전 완료면 전압·용량, 아니면 노란 "통전 예정" */}
       {showLabel && <CampusLabel position={[0, 3.6, 0]} priority={20}>
         <div className={`tag ${energized ? '' : 'tag-pending'}`}>
@@ -56,51 +59,6 @@ export function Substation({ sub, t, showLabel = true }) {
             : `${t.panel.energized} ${sub.dates?.target ?? ''}`}
         </div>
       </CampusLabel>}
-    </group>
-  )
-}
-
-// ---------- 송전선 (부지 밖 → 변전소) ----------
-export function PowerLine({ line }) {
-  const [fx, fz] = line.from
-  const [tx, tz] = line.to
-  const towers = [0, 0.5, 1].map((k) => [fx + (tx - fx) * k * 0.85, fz + (tz - fz) * k])
-  const wireY = 3.4
-  // 철탑 사이 전선은 살짝 처지게(현수선 근사)
-  const wire = useMemo(() => {
-    const pts = []
-    for (let i = 0; i < towers.length - 1; i++) {
-      const [ax, az] = towers[i], [bx, bz] = towers[i + 1]
-      for (let s = 0; s <= 8; s++) {
-        const k = s / 8
-        pts.push([ax + (bx - ax) * k, wireY - Math.sin(Math.PI * k) * 0.5, az + (bz - az) * k])
-      }
-    }
-    pts.push([tx + 1.2, 2.8, tz])
-    return pts
-  }, [fx, fz, tx, tz])
-  return (
-    <group>
-      {towers.map(([x, z], i) => (
-        <group key={i} position={[x, 0, z]}>
-          <mesh position={[0, 1.8, 0]} castShadow>
-            <cylinderGeometry args={[0.08, 0.22, 3.6, 4]} />
-            <meshStandardMaterial color="#8f99b3" />
-          </mesh>
-          <mesh position={[0, 3.45, 0]}>
-            <boxGeometry args={[0.1, 0.1, 1.4]} />
-            <meshStandardMaterial color="#8f99b3" />
-          </mesh>
-        </group>
-      ))}
-      <Line
-        points={wire}
-        color={line.energized ? '#55627f' : PENDING_COLOR}
-        lineWidth={line.energized ? 1.4 : 2}
-        dashed={!line.energized}
-        dashSize={0.5}
-        gapSize={0.35}
-      />
     </group>
   )
 }
@@ -218,9 +176,9 @@ export function Truck({ truck, index, lang }) {
   )
 }
 
-// ---------- 전력 흐름 점: 변전소 → 완공 설비 (지붕색과 연결) ----------
+// ---------- 전력 흐름 점: 변전소 → 완공 설비 (통전 표현, 건물 상태와 별도) ----------
 export function FlowDots({ from, targets }) {
-  const reducedMotion = useMemo(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false, [])
+  const reducedMotion = useReducedMotion()
   const curves = useMemo(
     () =>
       targets.map((tg) => {
@@ -249,7 +207,7 @@ export function FlowDots({ from, targets }) {
   return (
     <group>
       {curves.map((c, ci) => {
-        const color = styleOf(targets[ci].status === 'decommissioning' ? 'operating' : targets[ci].status).color
+        const color = POWER_FLOW_COLOR
         return (
           <group key={ci}>
             <Line points={c.getPoints(20)} color={color} lineWidth={1.5} transparent opacity={0.55} />

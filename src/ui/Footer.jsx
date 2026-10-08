@@ -6,9 +6,10 @@ import { REPO_URL, OFFICIAL_IR } from '../config.js'
 export default function Footer() {
   const t = useT()
   const view = useAppStore((s) => s.view)
+  const dragMode = useAppStore((s) => s.campusDragMode)
   return (
     <footer className="footer">
-      <div className="hint panel">{view === 'site' ? t.hintSite : t.hintGlobe}</div>
+      <div className="hint panel">{view === 'site' ? (dragMode==='pan'?t.hintSitePan:t.hintSite) : t.hintGlobe}</div>
       <div className="disclaimer">
         {t.disclaimer}{' '}
         <a href={REPO_URL} target="_blank" rel="noreferrer">{t.official}</a>

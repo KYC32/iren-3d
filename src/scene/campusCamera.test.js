@@ -1,6 +1,8 @@
-import { it, expect } from 'vitest'
+import { it, expect, vi, afterEach } from 'vitest'
 import { PerspectiveCamera, Vector3 } from 'three'
-import { campusFrame, campusOffset } from './campusCamera.js'
+import { campusFrame, campusOffset, campusViewport } from './campusCamera.js'
+
+afterEach(() => vi.unstubAllGlobals())
 
 it.each([
   [960, 968, { left: 24, right: 586, top: 174, bottom: 740 }],
@@ -23,5 +25,32 @@ it.each([
       expect(sy).toBeGreaterThanOrEqual(rect.top)
       expect(sy).toBeLessThanOrEqual(rect.bottom)
     }
+  }
+})
+
+it.each([
+  [1440, 900, false, false, { left:1066, top:170, bottom:650, width:358, height:480 }],
+  [1440, 900, false, true, { left:1164, top:170, bottom:224, width:260, height:54 }],
+  [390, 844, true, false, { left:8, top:448, bottom:836, width:374, height:388 }],
+  [390, 844, true, true, { left:8, top:764, bottom:836, width:374, height:72 }],
+  [1024, 900, true, false, { left:8, top:478, bottom:892, width:1008, height:414 }],
+])('패널 접힘·실제 하단 배치를 반영한 가용 영역: %s × %s, bottom=%s, collapsed=%s', (width, height, bottomDocked, collapsed, rect) => {
+  const panel = { getBoundingClientRect:()=>rect, classList:{ contains:()=>collapsed } }
+  const boxes = {
+    '.campus-panel':panel,
+    '.kpis':{ getBoundingClientRect:()=>({ width, height:70, bottom:152 }) },
+    '.bottom':{ getBoundingClientRect:()=>({ width, height:150, top:height-160 }) },
+  }
+  vi.stubGlobal('document', { querySelector:selector=>boxes[selector] })
+  vi.stubGlobal('window', { getComputedStyle:()=>({ position:bottomDocked?'fixed':'static' }) })
+  const safe=campusViewport(width,height)
+  if(bottomDocked){
+    expect(safe.bottom).toBeLessThan(rect.top)
+    expect(safe.right-safe.left).toBeGreaterThan(width-40)
+  }else if(collapsed){
+    expect(safe.right-safe.left).toBeGreaterThan(width-50)
+    expect(safe.top).toBeGreaterThan(rect.bottom)
+  }else{
+    expect(safe.right).toBeLessThan(rect.left)
   }
 })

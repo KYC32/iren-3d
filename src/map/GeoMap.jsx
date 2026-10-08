@@ -8,6 +8,7 @@ import { locationFor } from '../data/research.js'
 import { siteFeatures, boundsFor, MAP_HOME_CENTER, MAP_WORLD_BOUNDS, mapLongitude, minimumMapZoom } from './mapData.js'
 import CampusMarkers from './CampusMarkers.jsx'
 import { applyBasemapLabels } from './basemapStyle.js'
+import { campusPanelLayout } from '../ui/panelLayout.js'
 
 export default function GeoMap() {
   const container = useRef(null), mapRef = useRef(null), firstSelection = useRef(true), firstRegion = useRef(true), restoredCamera = useRef(useAppStore.getState().mapCamera)
@@ -15,12 +16,14 @@ export default function GeoMap() {
   const data = useAppStore(s=>s.data), site = useAppStore(selectSelectedSite)
   const region = useAppStore(s=>s.mapRegion), lang = useAppStore(s=>s.lang)
   const focusSeq=useAppStore(s=>s.mapFocusSeq), initialFocusSeq=useRef(focusSeq)
+  const panelCollapsed=useAppStore(s=>s.campusPanelCollapsed)
+  const previousLayout=useRef({collapsed:panelCollapsed,siteId:site?.id,focusSeq})
   const padding = () => {
     const width = window.innerWidth
     const list = document.querySelector('.map-sidebar')?.getBoundingClientRect()
-    const detail = document.querySelector('.campus-panel')?.getBoundingClientRect()
-    if (width < 768) return { top:235, bottom:site?window.innerHeight*.47:150, left:105, right:105 }
-    return { top:260, bottom:160, left:list?.width?list.right+85:100, right:detail?.width?width-detail.left+85:100 }
+    const detail = campusPanelLayout()
+    if (width < 768 || detail?.bottomDocked) return { top:235, bottom:detail?window.innerHeight-detail.rect.top+18:150, left:105, right:105 }
+    return { top:detail?.collapsed?Math.max(260,detail.rect.bottom+30):260, bottom:160, left:list?.width?list.right+85:100, right:detail&&!detail.collapsed?width-detail.rect.left+85:100 }
   }
   useEffect(()=>{
     let alive = true, map, resizeObserver
@@ -70,6 +73,13 @@ export default function GeoMap() {
     mapRef.current.flyTo({center:[mapLongitude(l.lng),l.lat],zoom:l.maxZoom,padding:padding(),duration:window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:900})
     setGroup(null)
   },[loaded,site?.id,focusSeq])
+  useEffect(()=>{
+    const previous=previousLayout.current
+    previousLayout.current={collapsed:panelCollapsed,siteId:site?.id,focusSeq}
+    // Campus navigation already fits the new panel; do not interrupt its flight.
+    if(previous.collapsed===panelCollapsed||previous.siteId!==site?.id||previous.focusSeq!==focusSeq)return
+    if(loaded&&site)mapRef.current?.easeTo({padding:padding(),duration:window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:250})
+  },[loaded,panelCollapsed,site?.id,focusSeq])
   useEffect(()=>{
     if(!loaded || !mapRef.current?.getSource('campuses'))return
     const initialRegion=firstRegion.current

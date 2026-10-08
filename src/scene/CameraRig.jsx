@@ -7,9 +7,9 @@
 //   → 페이드 아웃
 // 지구본으로 돌아갈 때는 역순입니다.
 // =============================================================
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { CameraControls } from '@react-three/drei'
+import { CameraControls, CameraControlsImpl } from '@react-three/drei'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { latLngToVec3 } from './geo.js'
 import { campusFrame, campusOffset, campusViewport } from './campusCamera.js'
@@ -121,7 +121,9 @@ function applyLimits(c, view, side = 30) {
     c.maxDistance = Math.max(side * 9, campusFrame(side, window.innerWidth, window.innerHeight, campusViewport(window.innerWidth, window.innerHeight)).distance * 1.8)
     c.minPolarAngle = 0.35 // 너무 위에서 수직으로 내려다보지 않게
     c.maxPolarAngle = 1.2  // 바닥 아래로 들어가지 않게
-    c.truckSpeed = 1
+    // Keep the focus near the campus and its landscape, while allowing screen-space panning.
+    c.setBoundary(new Box3(new Vector3(-side, -side*.15, -side), new Vector3(side, side*.35, side)))
+    c.truckSpeed = 1.8
     c.dollySpeed = 0.8
   }
 }
@@ -129,17 +131,23 @@ function applyLimits(c, view, side = 30) {
 export default function CameraRig() {
   const ref = useRef()
   const lastInteract = useRef(-Infinity)
+  const manualView = useRef(false)
+  const fittedContext = useRef(null)
   const pending = useAppStore((s) => s.pending)
   const view = useAppStore((s) => s.view)
   const zoneKey = useAppStore((s) => s.selectedZoneKey)
-  const month = useAppStore((s) => s.month)
+  const siteId = useAppStore((s) => s.selectedSiteId)
+  const dragMode = useAppStore((s) => s.campusDragMode)
   const homeSeq = useAppStore((s) => s.cameraHomeSeq)
   const size = useThree((s) => s.size)
   const safeRect = useRef(null)
 
-  // 패널·화면 크기가 바뀌거나 전체 보기를 누르면 안전 영역에 다시 맞춥니다.
+  // Explicit navigation resets the view. Panel/date changes preserve the user's close-up.
   useEffect(() => {
-    if (view !== 'site') return
+    if (view !== 'site') { fittedContext.current=null; return }
+    const context=`${siteId}:${zoneKey}:${homeSeq}`
+    if (context!==fittedContext.current) manualView.current=false
+    fittedContext.current=context
     const fit = () => {
       const st = useAppStore.getState(), c = ref.current
       safeRect.current = campusViewport(size.width, size.height)
@@ -147,6 +155,7 @@ export default function CameraRig() {
       if (!c || !site || st.pending) return
       const L = layoutCampus(site._raw)
       applyLimits(c, 'site', L.side)
+      if (manualView.current) return
       const ids = new Set(site.buildings.filter((b) => customerKey(b.customer) === st.selectedZoneKey).map((b) => b.id))
       const bounds = st.selectedZoneKey && zoneBounds(L.blocks.filter((b) => ids.has(b.buildingId)))
       if (bounds) {
@@ -162,7 +171,7 @@ export default function CameraRig() {
       if (el) observer.observe(el)
     }
     return () => observer.disconnect()
-  }, [view, size.width, size.height, homeSeq, zoneKey, month])
+  }, [view, size.width, size.height, homeSeq, zoneKey, siteId])
 
   // 처음 마운트: 딥링크(#site=...)면 캠퍼스, 아니면 지구본 시점
   useEffect(() => {
@@ -187,9 +196,17 @@ export default function CameraRig() {
       c.setLookAt(p.x, p.y, p.z, 0, 0, 0, false)
     }
     // 사용자가 직접 조작하면 자동 회전을 잠시 멈춥니다
-    const onStart = () => { lastInteract.current = performance.now() }
+    const onStart = () => {
+      lastInteract.current = performance.now()
+      if (useAppStore.getState().view==='site') manualView.current=true
+    }
     c.addEventListener('controlstart', onStart)
-    return () => c.removeEventListener('controlstart', onStart)
+    // Wheel events emit control without controlstart; zoom-only inspection must also persist.
+    c.addEventListener('control', onStart)
+    return () => {
+      c.removeEventListener('controlstart', onStart)
+      c.removeEventListener('control', onStart)
+    }
   }, [])
 
   // 전환 요청 처리
@@ -304,6 +321,7 @@ export default function CameraRig() {
     const L = layoutCampus(site._raw)
     const blocks = L.blocks.filter((b) => b.buildingId === buildingFly.id)
     if (!blocks.length) return
+    manualView.current = true
     const x = blocks.reduce((a, b) => a + b.x, 0) / blocks.length
     const z = blocks.reduce((a, b) => a + b.z, 0) / blocks.length
     c.smoothTime = 0.35
@@ -324,5 +342,13 @@ export default function CameraRig() {
     c.rotate(-delta * 0.035, 0, false)
   })
 
-  return <CameraControls ref={ref} makeDefault smoothTime={0.3} />
+  const inputs=useMemo(()=>{
+    const A=CameraControlsImpl.ACTION
+    const pan=view==='site' && dragMode==='pan'
+    return {
+      mouseButtons:{left:pan?A.TRUCK:A.ROTATE,right:A.TRUCK,middle:A.DOLLY,wheel:A.DOLLY},
+      touches:{one:pan?A.TOUCH_TRUCK:A.TOUCH_ROTATE,two:A.TOUCH_DOLLY_TRUCK,three:A.TOUCH_TRUCK},
+    }
+  },[view,dragMode])
+  return <CameraControls ref={ref} makeDefault smoothTime={0.3} mouseButtons={inputs.mouseButtons} touches={inputs.touches}/>
 }

@@ -1,3 +1,5 @@
+import { campusPanelLayout } from '../ui/panelLayout.js'
+
 // 화면 패널을 제외한 영역에 캠퍼스 경계 상자가 들어오도록 시점을 계산합니다.
 export function campusFrame(side, width, height, rect, fov = 30) {
   const direction = [1, 1.05, 1]
@@ -40,8 +42,10 @@ export function campusViewport(width, height) {
     return r?.width && r?.height ? r : null
   }
   const top = (box('.kpis')?.bottom ?? 150) + 18
-  const panel = box('.site-panel')
-  if (width < 768) return { left: 18, right: width - 18, top, bottom: (panel?.top ?? height * 0.58) - 14 }
+  const panel = campusPanelLayout()
+  if (panel?.bottomDocked || width < 768) return { left: 18, right: width - 18, top, bottom: (panel?.rect.top ?? height - 8) - 14 }
   const bottom = box('.bottom')
-  return { left: 24, right: (panel?.left ?? width - 356) - 18, top, bottom: (bottom?.top ?? height - 180) - 14 }
+  return { left: 24, right: panel && !panel.collapsed ? panel.rect.left - 18 : width - 24,
+    top: panel?.collapsed ? Math.max(top, panel.rect.bottom + 14) : top,
+    bottom: (bottom?.top ?? height - 180) - 14 }
 }

@@ -5,6 +5,7 @@ import { useT } from '../i18n/useT.js'
 import { STATUS_ORDER, styleOf, PENDING_COLOR } from '../data/statusStyle.js'
 import { SINGLE_COMPANY } from '../config.js'
 import { Check, Activity } from 'lucide-react'
+import { POWER_FLOW_COLOR } from '../scene/powerFlow.js'
 
 // 지역 바로가기: 카메라가 바라볼 위도·경도
 const REGIONS = [
@@ -75,6 +76,9 @@ export default function Legend() {
         <span className="swatch" style={{ background: PENDING_COLOR }} />
         {t.panel.deliveries} · {t.panel.energized}
       </div>
+      {view==='site'&&<div className="legend-item static" title={lang==='ko'?'송전선의 빛과 변전소 표시등은 확인된 통전을 표현합니다.':'Wire pulses and the substation lamp indicate reported energization.'}>
+        <span className="swatch" style={{background:POWER_FLOW_COLOR}}/>{lang==='ko'?'전력 흐름 · 통전 확인':'Power flow · energized'}
+      </div>}
       <div className="legend-hint">{t.legend.hint}</div>
       {view==='site'&&<div className="legend-hint">{lang==='ko'?<>팬·전력·트럭은 흐름 연출<br/>건물 상태는 지붕색·배지로 구분</>:<>Fans, power & trucks illustrate flows<br/>Roof colors & badges show status</>}</div>}
     </div>

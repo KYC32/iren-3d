@@ -13,7 +13,8 @@ import { styleOf } from '../data/statusStyle.js'
 import { layoutCampus, campusStateAt } from './layoutCampus.js'
 import { fmtMw } from './geo.js'
 import Block from './buildings/Block.jsx'
-import { Substation, PowerLine, Crane, Truck, ReceivingBay, FlowDots, Trees } from './buildings/Infrastructure.jsx'
+import { Crane, Truck, ReceivingBay, FlowDots, Trees } from './buildings/Infrastructure.jsx'
+import GridConnection from './buildings/GridConnection.jsx'
 import { campusAppearance } from './campusAppearance.js'
 import { campusLandscape } from './campusLandscape.js'
 import CampusLandscape from './buildings/CampusLandscape.jsx'
@@ -80,9 +81,8 @@ export default function SiteView({ site }) {
         </mesh>
       ))}
 
-      <PowerLine line={L.powerLine} />
-      <Substation sub={L.substation} t={t} showLabel={detail || site.buildings.length === 0} />
-      {L.powerLine.energized && flowTargets.length > 0 && (
+      <GridConnection line={L.powerLine} sub={L.substation} t={t} showLabel={detail || site.buildings.length === 0} />
+      {L.powerLine.flowActive && flowTargets.length > 0 && (
         <FlowDots from={[L.substation.x, L.substation.z]} targets={flowTargets} />
       )}
 

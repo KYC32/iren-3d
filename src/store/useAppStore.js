@@ -42,9 +42,11 @@ export const useAppStore = create((set, get) => ({
   selectedZoneKey: null,
   surface: initial.surface ?? 'map',
   detailTab: initial.tab ?? 'overview',
+  campusPanelCollapsed: false,
   mapCamera: null,
   mapRegion: { country: 'NA', seq: 0 },
   cameraHomeSeq: 0,
+  campusDragMode: 'rotate',
   buildingFly: null,                       // { id, seq } 패널에서 건물을 고르면 카메라가 그 건물로 (seq 로 같은 건물 재요청도 구분)
   transitioning: false,                    // 카메라 전환(페이드) 중인지
   // 카메라 전환 요청: UI/핀이 요청하면 CameraRig 가 애니메이션 후 실제로 view 를 바꿉니다
@@ -80,7 +82,7 @@ export const useAppStore = create((set, get) => ({
     const data = snapshot(raw, m)
     const id = data.sites.some((s) => s.id === h.site) ? h.site : null
     set({ asOfMonth: asOf, month: m, data, events: buildEvents(raw),
-      selectedSiteId: id, view: id ? 'site' : 'globe', loadError: null,
+      selectedSiteId: id, view: id ? 'site' : 'globe', loadError: null, campusPanelCollapsed: false,
       surface: id ? h.surface ?? 'map' : 'map', detailTab: h.tab ?? 'overview',
       selectedBuildingId: data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? h.building : null,
       selectedZoneKey: customerZones(data.sites.find((s)=>s.id===id) ?? {buildings:[]},data.companies).some((z)=>z.key===h.zone) ? h.zone : null,
@@ -140,6 +142,7 @@ export const useAppStore = create((set, get) => ({
         : (next.view === 'site' || next.pending ? { type: 'globe' } : null),
     })
     set({ surface: id ? h.surface ?? 'map' : 'map', detailTab: h.tab ?? 'overview', selectedSiteId: id, view: id ? 'site' : 'globe', pending: null,
+      campusPanelCollapsed: false,
       selectedBuildingId: next.data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? h.building : null,
       selectedZoneKey: customerZones(next.data.sites.find((s)=>s.id===id) ?? {buildings:[]},next.data.companies).some((z)=>z.key===h.zone) ? h.zone : null })
     get().syncHash()
@@ -151,16 +154,17 @@ export const useAppStore = create((set, get) => ({
     if (!get().data?.sites.some((site) => site.id === id)) return
     set({ surface: '3d', view: 'site', selectedSiteId: id, detailTab: 'overview',
       selectedBuildingId: null, selectedZoneKey: null, buildingFly: null, hoverId: null,
-      pending: null, transitioning: false, sheetOpen: false })
+      pending: null, transitioning: false, sheetOpen: false, campusPanelCollapsed: false })
     get().syncHash()
   },
   setDetailTab: (detailTab) => { set({ detailTab }); get().syncHash() },
+  setCampusPanelCollapsed: (collapsed) => set({ campusPanelCollapsed: collapsed }),
   mapFocusSeq: 0,
   focusSiteOnMap: (id) => {
     if (!get().data?.sites.some(site=>site.id===id)) return
     set({surface:'map',view:'site',selectedSiteId:id,detailTab:'overview',sheetOpen:false,
       selectedBuildingId:null,selectedZoneKey:null,buildingFly:null,hoverId:null,
-      pending:null,transitioning:false,mapCamera:null,mapFocusSeq:get().mapFocusSeq+1})
+      pending:null,transitioning:false,mapCamera:null,mapFocusSeq:get().mapFocusSeq+1,campusPanelCollapsed:false})
     get().syncHash()
   },
   setMapCamera: (mapCamera) => set({ mapCamera }),
@@ -192,6 +196,7 @@ export const useAppStore = create((set, get) => ({
     const next = id && st.selectedBuildingId === id && !fly ? null : id
     set({
       selectedBuildingId: next,
+      ...(next ? { campusPanelCollapsed: false } : {}),
       selectedZoneKey: next && customerKey(selectSelectedSite(st)?.buildings.find((b) => b.id === next)?.customer) !== st.selectedZoneKey ? null : st.selectedZoneKey,
       buildingFly: fly && next ? { id: next, seq: (st.buildingFly?.seq ?? 0) + 1 } : st.buildingFly,
     })
@@ -201,9 +206,10 @@ export const useAppStore = create((set, get) => ({
     const st = get(), site = selectSelectedSite(st)
     if (st.pending || !site || !customerZones(site, st.data.companies).some((z) => z.key === key)) return
     if (st.selectedZoneKey === key) return st.requestCampusHome()
-    set({ selectedZoneKey: key, selectedBuildingId: null, buildingFly: null, hoverId: null }); get().syncHash()
+    set({ selectedZoneKey: key, selectedBuildingId: null, buildingFly: null, hoverId: null, campusPanelCollapsed: false }); get().syncHash()
   },
   requestCampusHome: () => { if (!get().pending) { set({ cameraHomeSeq: get().cameraHomeSeq + 1, selectedBuildingId: null, buildingFly: null, hoverId: null, selectedZoneKey: null }); get().syncHash() } },
+  setCampusDragMode: (mode) => { if (mode === 'rotate' || mode === 'pan') set({ campusDragMode: mode }) },
   toggleLang: () => set({ lang: get().lang === 'ko' ? 'en' : 'ko' }),
 
   // 전환 "요청" (애니메이션 포함) — UI 와 핀은 이것을 호출합니다
@@ -215,7 +221,7 @@ export const useAppStore = create((set, get) => ({
 
   // 사이트 선택 → 캠퍼스 뷰로 (CameraRig 가 애니메이션 도중에 호출) (URL 해시도 갱신해 공유 가능하게)
   selectSite: (id) => {
-    set({ detailTab: 'overview', sheetOpen: false, selectedSiteId: id, view: id ? 'site' : 'globe', hoverId: null, selectedBuildingId: null, buildingFly: null, selectedZoneKey: null })
+    set({ detailTab: 'overview', sheetOpen: false, selectedSiteId: id, view: id ? 'site' : 'globe', hoverId: null, selectedBuildingId: null, buildingFly: null, selectedZoneKey: null, campusPanelCollapsed: false })
     get().syncHash()
   },
   goGlobe: () => {

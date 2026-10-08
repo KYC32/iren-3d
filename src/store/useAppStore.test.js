@@ -193,3 +193,41 @@ describe('캠퍼스 목록은 지도 확대',()=>{
   expect(state().surface).toBe('3d')
  })
 })
+
+describe('캠퍼스 설명 패널 접기', () => {
+  it('접기·펼치기와 화면 전환은 캠퍼스·고객·건물·탭을 보존', () => {
+    state().setRaw(raw)
+    state().enterSite3D('childress')
+    state().selectZone('microsoft')
+    state().selectBuilding('horizon-1')
+    state().setDetailTab('history')
+    const hashCalls = window.history.replaceState.mock.calls.length
+    state().setCampusPanelCollapsed(true)
+    expect(window.history.replaceState).toHaveBeenCalledTimes(hashCalls)
+    expect(state()).toMatchObject({ campusPanelCollapsed:true, surface:'3d', view:'site', selectedSiteId:'childress',
+      selectedZoneKey:'microsoft', selectedBuildingId:'horizon-1', detailTab:'history' })
+    state().setSurface('map')
+    expect(state().campusPanelCollapsed).toBe(true)
+    state().setCampusPanelCollapsed(false)
+    expect(state()).toMatchObject({ selectedSiteId:'childress', selectedZoneKey:'microsoft', selectedBuildingId:'horizon-1', detailTab:'history' })
+  })
+  it.each(['selectSite', 'enterSite3D', 'focusSiteOnMap'])('%s로 캠퍼스 선택 시 접힌 패널을 다시 표시', (action) => {
+    state().setRaw(raw)
+    state().enterSite3D('childress')
+    state().setCampusPanelCollapsed(true)
+    state()[action]('bundey')
+    expect(state()).toMatchObject({ selectedSiteId:'bundey', campusPanelCollapsed:false })
+  })
+  it('장면에서 새 고객·건물 선택 시 설명을 다시 표시하고 날짜 변경은 접기 유지', () => {
+    state().setRaw(raw)
+    state().enterSite3D('childress')
+    state().setCampusPanelCollapsed(true)
+    state().setMonth(toMonth('2026-10'))
+    expect(state().campusPanelCollapsed).toBe(true)
+    state().selectZone('microsoft')
+    expect(state().campusPanelCollapsed).toBe(false)
+    state().setCampusPanelCollapsed(true)
+    state().selectBuilding('horizon-1')
+    expect(state().campusPanelCollapsed).toBe(false)
+  })
+})

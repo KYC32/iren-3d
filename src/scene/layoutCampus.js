@@ -143,6 +143,9 @@ export function campusStateAt(layout, site, m) {
   // 변전소·송전선: 그 날짜에 통전됐는지
   const power = powerAt(site, m) ?? { secured: 0, energized: 0 }
   const energized = power.energized > 0
+  const currentPower = site.power.findLast(p => toMonth(p.from, p.basis === 'target' ? 'end' : 'start') <= m)
+  // Even the forecast/record view must not animate a target as confirmed electricity.
+  const flowActive = energized && currentPower?.basis === 'reported'
   const firstEnergized = site.power.find((p) => p.energized_mw > 0)
   const substation = {
     ...layout.substation,
@@ -174,13 +177,13 @@ export function campusStateAt(layout, site, m) {
   })
 
   // 통전된 캠퍼스의 설비 공급을 표현하는 연출이며, 고객 가동 실적과는 별개입니다.
-  const flowTargets = energized ? blocks.filter((b) => b.isAnchor && !b.asLot
+  const flowTargets = flowActive ? blocks.filter((b) => b.isAnchor && !b.asLot
     && ['operating', 'delivered', 'commissioning', 'decommissioning'].includes(b.status)) : []
 
   return {
     blocks,
     substation,
-    powerLine: { ...layout.powerLine, energized, dates: substation.dates },
+    powerLine: { ...layout.powerLine, energized, flowActive, dates: substation.dates },
     cranes,
     trucks,
     flowTargets,

@@ -46,7 +46,8 @@ export default {
     'Independent, unofficial project. Not affiliated with, endorsed by, or sponsored by any company shown. All data compiled from public sources; see each item for its source. Not investment advice. Company logos and trademarks belong to their owners and are used only to identify contract counterparties.',
   official: 'Data & sources',
   hintGlobe: 'Click a pin to enter a site · drag to rotate',
-  hintSite: 'Drag to rotate · wheel to zoom · hover buildings',
+  hintSite: 'Drag to rotate · right-drag / two fingers to pan · wheel / pinch to zoom',
+  hintSitePan: 'Drag to pan · wheel / pinch to zoom · Fit campus to reset',
   loading: 'Loading data…',
   rank: {
     tab: 'Ranking',
@@ -67,7 +68,7 @@ export default {
   basis: { reported: 'reported', target: 'company target', estimate: 'estimate' },
   contracts: { title: 'Customer contracts', toggle: 'Contract links', undisclosed: 'sites not disclosed', years: 'yrs' },
   timeline: { play: 'Play', pause: 'Pause', asOf: 'As of', future: 'Company targets', today: 'Back to as-of', label: 'Date' },
-  campus: { home: 'Fit campus', liquid: 'Liquid cooling', air: 'Air cooling', mining: 'Mining', planned: 'Expansion area' },
+  campus: { home: 'Fit campus', controls: '3D camera controls', rotate: 'Rotate', pan: 'Pan', rotateLabel: 'Rotate view', panLabel: 'Pan view', liquid: 'Liquid cooling', air: 'Air cooling', mining: 'Mining', planned: 'Expansion area' },
   sceneLoading: 'Loading 3D map…',
   kpi2: { reported: 'Reported', secured: 'Secured power', energized: 'energized', ai: 'AI live', mining: 'mining', building: 'Building / commissioning', sites: 'Sites', companies: 'companies' },
   empty: 'No announced buildings yet — grid power secured only',

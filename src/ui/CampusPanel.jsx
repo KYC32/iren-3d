@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { ChevronRight } from 'lucide-react'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { pickName, useT } from '../i18n/useT.js'
 import { customerZones } from '../data/customerZones.js'
@@ -14,7 +15,26 @@ import { CustomerLogo, logoKeyOf } from './logos/index.jsx'
 const TABS={overview:['현황','Overview'],history:['계획 이력','Plan history'],evidence:['사진·근거','Photos & evidence']}
 export default function CampusPanel(){
   const site=useAppStore(selectSelectedSite), st=useAppStore(), t=useT(), panel=useRef(null)
-  const {lang,month,detailTab,selectedBuildingId,selectedZoneKey}=st, ko=lang==='ko'
+  const {lang,month,detailTab,selectedBuildingId,selectedZoneKey,campusPanelCollapsed:collapsed}=st, ko=lang==='ko'
+  const gesture=useRef(null), dragged=useRef(false)
+  const togglePanel=()=>st.setCampusPanelCollapsed(!collapsed)
+  const panelAction=collapsed?(ko?'설명 패널 펼치기':'Expand details'):(ko?'설명 패널 접기':'Collapse details')
+  const startDrag=e=>{
+    if(e.button!==0)return
+    dragged.current=false
+    gesture.current={x:e.clientX,y:e.clientY}
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+  const endDrag=e=>{
+    const start=gesture.current
+    gesture.current=null
+    if(!start)return
+    const dy=e.clientY-start.y, dx=e.clientX-start.x
+    if(Math.abs(dy)>32&&Math.abs(dy)>Math.abs(dx)){
+      dragged.current=true
+      st.setCampusPanelCollapsed(dy>0)
+    }
+  }
   useEffect(()=>{panel.current?.scrollTo({top:0})},[site?.id,detailTab,selectedZoneKey,selectedBuildingId])
   if(!site)return null
   const appearance=campusAppearance(site.id)
@@ -24,8 +44,14 @@ export default function CampusPanel(){
   const building=site.buildings.find(b=>b.id===selectedBuildingId), buildings=zone?.buildings??site.buildings
   const claims=claimsAt(research,site.id,month,selectedBuildingId).filter(c=>!zone||zone.buildings.some(b=>b.id===c.building))
   const targets=milestonesAt(research,site.id,month,selectedBuildingId).filter(m=>!m.completion&&(!zone||zone.buildings.some(b=>b.id===m.building)))
-  return <aside className="site-panel panel campus-panel" ref={panel} aria-label={ko?'캠퍼스 상세':'Campus details'}>
-    <div className="campus-heading"><div><small>{site.country} / {site.region}</small><h2>{pickName(site,lang)}</h2></div><button className="close-small" onClick={st.requestGlobe} aria-label={ko?'캠퍼스 닫기':'Close campus'}>×</button></div>
+  return <aside className={`site-panel panel campus-panel${collapsed?' is-collapsed':''}`} aria-label={ko?'캠퍼스 상세':'Campus details'}>
+    <button className="campus-panel-handle" aria-label={ko?'설명 패널 손잡이':'Details panel handle'} title={ko?'누르거나 위아래로 끌어 펼치기·접기':'Tap or drag up/down to expand or collapse'} aria-expanded={!collapsed} aria-controls="campus-panel-content"
+      onPointerDown={startDrag} onPointerUp={endDrag} onPointerCancel={()=>{gesture.current=null;dragged.current=false}}
+      onClick={()=>{if(dragged.current){dragged.current=false;return}togglePanel()}}><span/></button>
+    <div className="campus-heading"><div className="campus-heading-title"><small>{site.country} / {site.region}</small><h2 title={pickName(site,lang)}>{pickName(site,lang)}</h2></div>
+      <div className="campus-heading-actions"><button className="campus-panel-toggle" onClick={togglePanel} aria-label={panelAction} title={panelAction} aria-expanded={!collapsed} aria-controls="campus-panel-content"><ChevronRight size={15} aria-hidden="true"/><span>{collapsed?(ko?'펼치기':'Expand'):(ko?'접기':'Collapse')}</span></button><button className="close-small" onClick={st.requestGlobe} aria-label={ko?'캠퍼스 닫기':'Close campus'} title={ko?'캠퍼스 닫기':'Close campus'}>×</button></div>
+    </div>
+    <div id="campus-panel-content" className="campus-panel-body" ref={panel} hidden={collapsed}>
     <div className="research-badges"><span className="research-badge">{location.precise?(ko?'주소 위치 · 경계 미확인':'Address · boundary unverified'):(ko?'지역 위치 · 부지 미확인':'Regional location · parcel unverified')}</span><span className="research-badge">{site.evidenceReview==='partial'?(ko?'건물별 근거 검토':'Building evidence reviewed'):(ko?'근거 이력 미정리':'Evidence history pending')}</span></div>
     <button className="surface-switch" onClick={()=>st.setSurface(st.surface==='map'?'3d':'map')}>{st.surface==='map'?(ko?'◇ 3D 사업 구성도':'◇ 3D business diagram'):(ko?'↗ 실제 지도로':'↗ Geographic map')}</button>
     <div className="zone-switch">{zones.map(z=><button key={z.key} aria-pressed={z.key===selectedZoneKey} onClick={()=>st.selectZone(z.key)}><span className="customer-mark" aria-hidden="true"><CustomerLogo name={logoKeyOf(z.name)} size={16}/></span><span>{z.name}</span></button>)}{(building||zone)&&<button onClick={()=>{st.requestCampusHome();st.syncHash()}}>{ko?'선택 해제':'Clear'}</button>}</div>
@@ -48,6 +74,7 @@ export default function CampusPanel(){
     </>}
     {detailTab==='history'&&<PlanHistory site={site} buildingId={selectedBuildingId} buildingIds={zone?.buildings.map(b=>b.id)} research={research} month={month} lang={lang}/>}
     {detailTab==='evidence'&&<><PhotoGallery site={site} buildingId={selectedBuildingId} buildingIds={zone?.buildings.map(b=>b.id)} research={research} month={month} lang={lang}/><h3>{ko?'검토된 근거':'Reviewed evidence'}</h3>{claims.map(c=><div key={c.id}><span className="research-badge">{c.basis==='target'?(ko?'회사 목표':'Company target'):(ko?'회사 발표':'Company reported')}</span><EvidenceCard sourceId={c.sourceId} research={research} locator={c.locator} summary={`${c.building??''} · ${ko?c.summary_ko:c.summary_en}`} lang={lang}/></div>)}{!claims.length&&<p className="research-empty">{ko?'이 범위의 원문 검토 기록이 없습니다.':'No reviewed claims for this selection.'}</p>}<h3>{ko?'연결된 고객 계약':'Linked customer contracts'}</h3>{st.data.companies.flatMap(c=>c.contracts??[]).filter(c=>c.sites.includes(site.id)&&toMonth(c.signed)<=month&&(!zone||zone.contracts.includes(c))&&(!building||c.buildings?.includes(building.id))).map(c=><article className="contract-research" key={c.id}><b>{c.customer}</b><span>{c.value_usd_bn!=null?`$${c.value_usd_bn}bn`: '—'} · {c.term_years} {ko?'년':'years'}</span><p>{ko?c.note_ko:c.note_en}</p><a href={c.source} target="_blank" rel="noreferrer">{ko?'계약 원문 ↗':'Contract source ↗'}</a></article>)}<p className="research-note">{ko?'계약금액·고객 인수는 실제 매출과 구분합니다.':'Contract value and customer acceptance are distinct from recognized revenue.'}</p></>}
+    </div>
     </div>
   </aside>
 }

@@ -1,5 +1,5 @@
 // 상단 바: 제목·기준일 / 뒤로가기 / 한영 토글
-import { ArrowLeft, Languages, Server, ListOrdered, Maximize2 } from 'lucide-react'
+import { ArrowLeft, Languages, Server, ListOrdered, Maximize2, Move, Rotate3D } from 'lucide-react'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { useT, pickName } from '../i18n/useT.js'
 
@@ -13,6 +13,8 @@ export default function TopBar() {
   const toggleLang = useAppStore((s) => s.toggleLang)
   const requestGlobe = useAppStore((s) => s.requestGlobe)
   const toggleSheet = useAppStore((s) => s.toggleCampusList)
+  const dragMode = useAppStore((s) => s.campusDragMode)
+  const setDragMode = useAppStore((s) => s.setCampusDragMode)
 
   return (
     <header className="topbar panel">
@@ -35,6 +37,10 @@ export default function TopBar() {
         </div>
       </div>
       <div className="top-actions">
+      {view === 'site' && surface==='3d' && <div className="camera-mode" role="group" aria-label={t.campus.controls}>
+        <button aria-pressed={dragMode==='rotate'} aria-label={t.campus.rotateLabel} title={t.campus.rotateLabel} onClick={()=>setDragMode('rotate')}><Rotate3D size={15}/><span>{t.campus.rotate}</span></button>
+        <button aria-pressed={dragMode==='pan'} aria-label={t.campus.panLabel} title={t.campus.panLabel} onClick={()=>setDragMode('pan')}><Move size={15}/><span>{t.campus.pan}</span></button>
+      </div>}
       {view === 'site' && surface==='3d' && <button className="lang-btn home-btn" onClick={() => useAppStore.getState().requestCampusHome()} aria-label={t.campus.home} title={t.campus.home}>
         <Maximize2 size={15} /><span>{t.campus.home}</span>
       </button>}

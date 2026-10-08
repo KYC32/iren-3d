@@ -34,6 +34,8 @@ export default function App() {
   const view = useAppStore((s) => s.view)
   const transitioning = useAppStore((s) => s.transitioning)
   const lang = useAppStore((s) => s.lang)
+  const dragMode = useAppStore((s) => s.campusDragMode)
+  const panelCollapsed = useAppStore((s) => s.campusPanelCollapsed)
 
   // 처음 한 번 infra.json 로드
   useEffect(() => {
@@ -66,7 +68,7 @@ export default function App() {
   }
 
   return (
-    <div className={`app view-${view} surface-${surface}`}>
+    <div className={`app view-${view} surface-${surface} camera-${dragMode}${panelCollapsed?' detail-collapsed':''}`}>
       <div className="canvas-wrap">{data && <Suspense fallback={<div className="scene-loading" role="status">{surface==='map'?(lang==='ko'?'실제 지도 불러오는 중…':'Loading geographic map…'):t.sceneLoading}</div>}>{surface==='map'?<GeoMap/>:<Scene />}</Suspense>}</div>
 
       {/* 뷰 전환 시 덮는 페이드 막 */}

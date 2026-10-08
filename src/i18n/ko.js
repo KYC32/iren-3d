@@ -46,7 +46,8 @@ export default {
     '본 사이트는 여기 등장하는 어떤 회사와도 무관한 개인의 비공식 프로젝트이며 승인·후원을 받지 않았습니다. 모든 데이터는 공개 자료에서 수집했고 항목별 출처를 표기했습니다. 투자 조언이 아닙니다. 기업 로고·상표는 각 소유자의 것이며 계약 상대를 표시하는 용도로만 씁니다.',
   official: '데이터·출처',
   hintGlobe: '핀을 클릭하면 사이트로 들어갑니다 · 드래그로 회전',
-  hintSite: '드래그로 회전 · 휠로 줌 · 건물에 마우스를 올려 보세요',
+  hintSite: '드래그로 회전 · 우클릭/두 손가락으로 이동 · 휠/핀치로 줌',
+  hintSitePan: '드래그로 이동 · 휠/핀치로 줌 · 전체 보기로 복귀',
   loading: '데이터 불러오는 중…',
   rank: {
     tab: '회사 순위',
@@ -67,7 +68,7 @@ export default {
   basis: { reported: '발표', target: '회사 목표', estimate: '추정' },
   contracts: { title: '고객 계약', toggle: '계약 연결선', undisclosed: '배치 사이트 미공개', years: '년' },
   timeline: { play: '재생', pause: '정지', asOf: '기준일', future: '회사 발표 목표 기준', today: '기준일로', label: '날짜' },
-  campus: { home: '전체 보기', liquid: '액체냉각 구역', air: '공랭 구역', mining: '채굴 구역', planned: '확장 예정 부지' },
+  campus: { home: '전체 보기', controls: '3D 시점 조작', rotate: '회전', pan: '이동', rotateLabel: '시점 회전', panLabel: '시점 이동', liquid: '액체냉각 구역', air: '공랭 구역', mining: '채굴 구역', planned: '확장 예정 부지' },
   sceneLoading: '3D 지도 불러오는 중…',
   kpi2: { reported: '발표값', secured: '확보 전력', energized: '통전', ai: 'AI 가동', mining: '채굴', building: '건설·시운전', sites: '사이트', companies: '회사' },
   empty: '발표된 건물 없음 — 계통 전력만 확보',
