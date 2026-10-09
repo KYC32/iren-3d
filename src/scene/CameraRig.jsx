@@ -69,7 +69,7 @@ function applyLimits(c, view, side = 30) {
     c.truckSpeed = 0 // 지구본에서는 평행이동 금지 (회전·줌만)
     c.dollySpeed = 0.6
   } else {
-    c.minDistance = side * 0.9
+    c.minDistance = side * 0.45 // 데이터홀 속(랙) 을 들여다볼 수 있을 만큼 가까이
     c.maxDistance = Math.max(side * 9, campusFrame(side, window.innerWidth, window.innerHeight, campusViewport(window.innerWidth, window.innerHeight)).distance * 1.8)
     c.minPolarAngle = 0.35 // 너무 위에서 수직으로 내려다보지 않게
     c.maxPolarAngle = 1.2  // 바닥 아래로 들어가지 않게
@@ -245,7 +245,12 @@ export default function CameraRig() {
     const z = blocks.reduce((a, b) => a + b.z, 0) / blocks.length
     c.smoothTime = 0.35
     c.moveTo(x, 0, z, true)
-    c.dollyTo(Math.max(c.minDistance * 1.15, Math.min(c.distance, L.side * 1.3)), true) // 이미 가까우면 그대로
+    // 완성된 데이터홀(속을 여는 건물)은 랙이 보이도록 더 가까이, 그 밖은 캠퍼스가 보이는 거리
+    const bld = site.buildings.find((b) => b.id === buildingFly.id)
+    const opens = bld && bld.kind !== 'miner_hall' && ['operating', 'delivered', 'commissioning'].includes(bld.status)
+    c.dollyTo(Math.max(c.minDistance * 1.15, Math.min(c.distance, L.side * (opens ? 1 : 1.3))), true) // 이미 가까우면 그대로
+    // 속을 여는 건물은 위에서 더 내려다보게(극각 0.6rad ≈ 지면에서 56°) → 옆 건물에 속이 가리지 않음
+    if (opens && c.polarAngle > 0.6) c.rotatePolarTo(0.6, true)
   }, [buildingFly])
 
   // 지구본 자동 회전: 조작 후 4초간, 핀 호버 중, 전환 중에는 멈춤

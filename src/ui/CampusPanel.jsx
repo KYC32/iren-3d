@@ -12,6 +12,7 @@ import PhotoGallery from './research/PhotoGallery.jsx'
 import { campusAppearance } from '../scene/campusAppearance.js'
 import { campusLandscape } from '../scene/campusLandscape.js'
 import { CustomerLogo, logoKeyOf } from './logos/index.jsx'
+import HallEstimateCard from './HallEstimateCard.jsx'
 const TABS={overview:['현황','Overview'],history:['계획 이력','Plan history'],evidence:['사진·근거','Photos & evidence']}
 export default function CampusPanel(){
   const site=useAppStore(selectSelectedSite), st=useAppStore(), t=useT(), panel=useRef(null)
@@ -56,6 +57,8 @@ export default function CampusPanel(){
     <button className="surface-switch" onClick={()=>st.setSurface(st.surface==='map'?'3d':'map')}>{st.surface==='map'?<><Box size={14} aria-hidden="true"/>{ko?'3D 사업 구성도':'3D business diagram'}</>:<><MapIcon size={14} aria-hidden="true"/>{ko?'실제 지도로':'Geographic map'}</>}</button>
     <div className="zone-switch">{zones.map(z=><button key={z.key} aria-pressed={z.key===selectedZoneKey} onClick={()=>st.selectZone(z.key)}><span className="customer-mark" aria-hidden="true"><CustomerLogo name={logoKeyOf(z.name)} size={16}/></span><span>{z.name}</span></button>)}{(building||zone)&&<button onClick={()=>{st.requestCampusHome();st.syncHash()}}>{ko?'선택 해제':'Clear'}</button>}</div>
     {building&&<div className="selected-building"><b>{pickName(building,lang)}</b><span>{t.status[building.status]} · {building.lastReported ?? site.as_of}</span></div>}
+    {/* 선택한 데이터홀: MW → GPU·랙·계약 기준 연 매출 (추정과 가정을 함께) */}
+    {building&&detailTab==='overview'&&<HallEstimateCard building={building}/>}
     {st.surface==='3d'&&((appearance||landscape)?<details className="model-reference"><summary>{ko?'사진을 참고한 경관 · 출처':'Photo-informed setting · sources'}</summary>{appearance&&<p>{ko?appearance.notes_ko:appearance.notes_en}</p>}{landscape&&<p>{ko?landscape.notes_ko:landscape.notes_en} {ko?landscape.decoration_ko:landscape.decoration_en}</p>}<p>{ko?'건물·도로·경계의 위치와 규모는 용량을 설명하는 구성도입니다. 현장 실측·현재 공정률·계절을 재현하지 않습니다.':'Buildings, roads and boundaries illustrate capacity, not surveyed positions, current progress or seasons.'}</p><a href={landscape?.source??appearance.source} target="_blank" rel="noreferrer">{ko?'IREN 공식 자료':'IREN official reference'}<ArrowUpRight size={12} aria-hidden="true"/></a>{landscape?.regionalSource&&<a href={landscape.regionalSource} target="_blank" rel="noreferrer">{ko?'지역 경관 참고':'Regional landscape reference'}<ArrowUpRight size={12} aria-hidden="true"/></a>}</details>:<p className="research-note">{ko?'3D 사업 구성도 · 실제 건물 배치·공정률을 재현한 모형이 아닙니다.':'Business diagram · not a surveyed layout or measured construction model.'}</p>)}
     <div className="research-tabs" role="tablist" aria-label={ko?'상세 정보':'Detail tabs'}>{Object.entries(TABS).map(([key,names])=><button role="tab" key={key} id={`tab-${key}`} aria-controls="campus-tabpanel"  aria-selected={detailTab===key} onClick={()=>st.setDetailTab(key)}>{names[ko?0:1]}</button>)}</div>
     <div role="tabpanel" id="campus-tabpanel" aria-labelledby={`tab-${detailTab}`}>
@@ -66,7 +69,6 @@ export default function CampusPanel(){
       <p className={`research-note${site._raw?._forecast?' is-forecast':''}`}>{site._raw?._forecast
         ?(ko?'기준일 이후는 회사가 발표한 목표 일정대로 진행한 전망입니다. 실제 진행과 다를 수 있습니다.':'After the as-of date, this is an outlook that follows company-announced targets. Actual progress may differ.')
         :(ko?'기준일까지의 상태는 마지막 확인 기록입니다. 목표일 경과만으로 가동으로 전환하지 않습니다. 일부 기존 수치는 원문 재검토가 필요합니다.':'Up to the as-of date, statuses follow reported records, not elapsed target dates. Some legacy figures still need source review.')}</p>
-      {month>toMonth(site.as_of)&&<p className="research-note attention">{ko?'미래 선택: 실제 현황은 마지막 확인 시점에 고정되며 목표만 전망으로 표시합니다.':'Future date: reported status stays at the last evidence cutoff; targets remain projections.'}</p>}
       {month<toMonth(site.as_of)&&<p className="research-note attention">{ko?'과거 공개일이 확인되지 않은 항목은 제외했습니다. 과거 기록이 불완전할 수 있습니다.':'Items without historical publication dates are excluded; historical coverage may be incomplete.'}</p>}
       {targets.length>0&&<button className="next-target" onClick={()=>st.setDetailTab('history')}><small>{ko?'다음 확인 목표':'Target to monitor'}</small><b>{targets[0].latest?.target} · {ko?targets[0].title_ko:targets[0].title_en}</b><span>{ko?'계획 이력 확인 →':'View plan history →'}</span></button>}
       <h3>{zone?`${zone.name} · `:''}{ko?'건물·단계':'Buildings & phases'}</h3><div className="research-buildings">{buildings.map(b=><button key={b.id} className={b.id===selectedBuildingId?'selected':''} onClick={()=>st.selectBuilding(b.id,true)}><span className="dot" style={{background:styleOf(b.status).color}}/><span><b>{pickName(b,lang)}</b><small>{t.status[b.status]} · {b.evidenceReview==='verified'?(ko?'원문 확인':'Source reviewed'):(ko?'재검토 필요':'Needs review')}</small></span><strong>{b.it_mw?`${b.it_mw} IT`:b.disclosedMw?`~${b.disclosedMw} MW*`:b.gross_mw?`${b.gross_mw} MW`:'—'}</strong></button>)}</div>

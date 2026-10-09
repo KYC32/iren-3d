@@ -8,6 +8,7 @@
 // 같은 건물(buildingId)의 블록들은 함께 하이라이트됩니다.
 // 타임라인에서 상태가 바뀌면(계획 → 건설 → 가동) 바닥에서 솟아오르는 짧은 애니메이션을 보여 줍니다.
 // 밤·노을(하늘 모드)에는 가동 중인 건물만 창문 불이 켜지고 바닥에 불빛이 번집니다 (nightLights.js).
+// 완성된 데이터홀을 선택하면 지붕을 걷어 낸 단면으로 바뀌고 추정 GPU 랙이 줄지어 솟아오릅니다 (HallInterior).
 // =============================================================
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
@@ -16,6 +17,7 @@ import { styleOf, PENDING_COLOR } from '../../data/statusStyle.js'
 import { PhotoMiningHall } from './PhotoReferencedCampus.jsx'
 import { useReducedMotion } from '../useReducedMotion.js'
 import { nightMaterials } from '../nightLights.js'
+import HallInterior from './HallInterior.jsx'
 
 const BODY = '#eef1f5'      // 건물 외벽 (밝은 흰색)
 const CONCRETE = '#d9dde8'  // 슬래브
@@ -28,7 +30,8 @@ const GROW_SEC = 0.6 // 솟아오르는 애니메이션 길이 (초)
 // 살짝 튀어 오르는 이징 (끝에서 5% 넘쳤다 돌아옴)
 const easeOutBack = (t) => 1 + 2.2 * Math.pow(t - 1, 3) + 1.2 * Math.pow(t - 1, 2)
 
-export default function Block({ block, appearance, hovered, selected, dimmed, onHover, onLeave, onSelect }) {
+// racks: 선택된 데이터홀이면 이 블록에 그릴 추정 랙 수 (아니면 0)
+export default function Block({ block, appearance, hovered, selected, dimmed, racks = 0, onHover, onLeave, onSelect }) {
   const { x, z, w, d, h, kind, status } = block
   const handlers = block.buildingId
     ? {
@@ -51,6 +54,8 @@ export default function Block({ block, appearance, hovered, selected, dimmed, on
     : mode === 'commissioning' ? nm.pendingWindow
     : mode === 'decommissioning' ? nm.fadingWindow : null
   const poolMat = live ? (miner ? nm.minerPool : nm.aiPool) : null
+  // 속 보기: 선택된 완성 데이터홀(가동·인수·시운전)만 지붕을 열고 랙을 보여 줌
+  const open = racks > 0 && !miner && (live || mode === 'commissioning')
 
   // ---- 솟아오르는 애니메이션 ----
   // "실제 상태"(빈 칸/계획/건설/가동…)가 바뀔 때만 재생. 필터로 흐려지는 건 상태 변화가 아니라서 제외.
@@ -96,8 +101,8 @@ export default function Block({ block, appearance, hovered, selected, dimmed, on
       )}
       <group ref={growRef}>
       {photoSheds && <PhotoMiningHall w={w} d={d} h={h} appearance={appearance} status={status} nightMaterial={windowMat}/>}
-      {!photoSheds && live && <FinishedHall w={w} d={d} h={h} kind={kind} status={status} appearance={appearance} spinning nightMaterial={windowMat} />}
-      {mode === 'commissioning' && <FinishedHall w={w} d={d} h={h} kind={kind} status={status} appearance={appearance} beacon nightMaterial={windowMat} />}
+      {!photoSheds && live && <FinishedHall w={w} d={d} h={h} kind={kind} status={status} appearance={appearance} spinning nightMaterial={windowMat} racks={open ? racks : 0} />}
+      {mode === 'commissioning' && <FinishedHall w={w} d={d} h={h} kind={kind} status={status} appearance={appearance} beacon nightMaterial={windowMat} racks={open ? racks : 0} />}
       {mode === 'under_construction' && <ConstructionHall w={w} d={d} h={h} progress={block.progress} />}
       {mode === 'planned' && <GhostFootprint w={w} d={d} h={kind === 'lot' ? 0.05 : h} solidish={kind !== 'lot'} />}
       {!photoSheds && mode === 'decommissioning' && <MinerHall w={w} d={d} h={h} nightMaterial={windowMat} />}
@@ -108,7 +113,8 @@ export default function Block({ block, appearance, hovered, selected, dimmed, on
 }
 
 // ---------- 완성된 데이터홀 ----------
-function FinishedHall({ w, d, h, kind, status, spinning, beacon, appearance, nightMaterial }) {
+function FinishedHall({ w, d, h, kind, status, spinning, beacon, appearance, nightMaterial, racks = 0 }) {
+  const open = racks > 0 // 지붕을 걷어 낸 단면 + 랙
   const st = styleOf(status)
   const fans = useRef([])
   const beaconRef = useRef()
@@ -144,31 +150,41 @@ function FinishedHall({ w, d, h, kind, status, spinning, beacon, appearance, nig
         <boxGeometry args={[w + 0.28, 0.14, d + 0.28]} />
         <meshStandardMaterial color="#9daab8" roughness={0.95} />
       </mesh>
-      {/* 본체 */}
-      <RoundedBox args={[w, h, d]} radius={0.12} smoothness={3} position={[0, h / 2, 0]} castShadow receiveShadow>
-        <meshStandardMaterial color={BODY} roughness={0.75} />
-      </RoundedBox>
-      {/* 지붕 상태색 띠 */}
-      <mesh position={[0, h + 0.03, 0]} castShadow>
-        <boxGeometry args={[w * 0.96, 0.08, d * 0.96]} />
-        <meshStandardMaterial color={st.color} roughness={0.6} />
-      </mesh>
-      {/* 앞면 창문 띠 (점등) */}
-      <mesh position={[0, h * 0.55, d / 2 + 0.01]}>
+      {open ? (
+        <>
+          {/* 단면: 뒤쪽 두 벽은 그대로, 카메라 쪽 두 벽은 낮게 잘라 속이 보이게 + 벽 위 상태색 띠 */}
+          <CutawayShell w={w} d={d} h={h} color={st.color} />
+          <HallInterior w={w} d={d} h={h} racks={racks} liquid={liquid} />
+        </>
+      ) : (
+        <>
+          {/* 본체 */}
+          <RoundedBox args={[w, h, d]} radius={0.12} smoothness={3} position={[0, h / 2, 0]} castShadow receiveShadow>
+            <meshStandardMaterial color={BODY} roughness={0.75} />
+          </RoundedBox>
+          {/* 지붕 상태색 띠 */}
+          <mesh position={[0, h + 0.03, 0]} castShadow>
+            <boxGeometry args={[w * 0.96, 0.08, d * 0.96]} />
+            <meshStandardMaterial color={st.color} roughness={0.6} />
+          </mesh>
+        </>
+      )}
+      {/* 앞면 창문 띠 (점등) — 단면일 땐 앞벽이 낮아져 생략 */}
+      {!open && <mesh position={[0, h * 0.55, d / 2 + 0.01]}>
         <planeGeometry args={[w * 0.8, h * 0.18]} />
         <meshStandardMaterial color={appearance?.endWall ?? st.color} emissive={st.emissive} emissiveIntensity={status==='operating' ? 0.35 : 0} />
-      </mesh>
+      </mesh>}
       {appearance && <mesh position={[0,.08,d/2+.2]}><boxGeometry args={[w,.06,.16]}/><meshBasicMaterial color={st.color}/></mesh>}
       {/* 공랭 홀은 옆면에 루버(환기창) 줄무늬 */}
-      {!liquid &&
+      {!liquid && !open &&
         [-1, 0, 1].map((i) => (
           <mesh key={i} position={[w / 2 + 0.01, h * 0.5 + i * 0.35, 0]} rotation={[0, Math.PI / 2, 0]}>
             <planeGeometry args={[d * 0.8, 0.12]} />
             <meshStandardMaterial color="#c5cbdb" />
           </mesh>
         ))}
-      {/* 지붕 설비 + 팬 */}
-      {units.map(([ux, uz], i) => (
+      {/* 지붕 설비 + 팬 (단면일 땐 지붕이 없으니 생략) */}
+      {!open && units.map(([ux, uz], i) => (
         <group key={i} position={[ux, h + 0.07, uz]}>
           <mesh position={[0, 0.22, 0]} castShadow>
             <boxGeometry args={[w / 3.6, 0.44, liquid ? d / 4 : d / 2.6]} />
@@ -181,16 +197,42 @@ function FinishedHall({ w, d, h, kind, status, spinning, beacon, appearance, nig
         </group>
       ))}
       {/* 밤 창문 띠 2줄: 건물보다 살짝 큰 얇은 상자 하나로 네 면을 한 번에 (건물마다 그리기 2번) */}
-      {nightMaterial && <NightWindows w={w} d={d} h={h} material={nightMaterial} />}
+      {nightMaterial && !open && <NightWindows w={w} d={d} h={h} material={nightMaterial} />}
       {/* 시운전 경광등 */}
       {beacon && (
-        <mesh ref={beaconRef} position={[w / 2 - 0.3, h + 0.45, d / 2 - 0.3]}>
+        <mesh ref={beaconRef} position={open ? [-w / 2 + 0.3, h + 0.45, -d / 2 + 0.3] : [w / 2 - 0.3, h + 0.45, d / 2 - 0.3]}>
           <sphereGeometry args={[0.22, 12, 10]} />
           <meshStandardMaterial color={PENDING_COLOR} emissive={PENDING_COLOR} emissiveIntensity={1} />
         </mesh>
       )}
     </group>
   )
+}
+
+// ---------- 단면 벽 (속 보기) ----------
+// 기본 카메라는 +x·+z 쪽에서 내려다봄 → 그쪽 두 벽(앞·오른쪽)은 낮게(28%), 반대쪽 두 벽은 원래 높이
+const WALL_T = 0.14
+function CutawayShell({ w, d, h, color }) {
+  const low = h * 0.28
+  const walls = [
+    { size: [w, h, WALL_T], pos: [0, h / 2, -d / 2 + WALL_T / 2] },   // 뒤
+    { size: [WALL_T, h, d], pos: [-w / 2 + WALL_T / 2, h / 2, 0] },   // 왼쪽
+    { size: [w, low, WALL_T], pos: [0, low / 2, d / 2 - WALL_T / 2] }, // 앞 (낮게)
+    { size: [WALL_T, low, d], pos: [w / 2 - WALL_T / 2, low / 2, 0] }, // 오른쪽 (낮게)
+  ]
+  return walls.map(({ size, pos }, i) => (
+    <group key={i}>
+      <mesh position={pos} castShadow receiveShadow>
+        <boxGeometry args={size} />
+        <meshStandardMaterial color={BODY} roughness={0.75} />
+      </mesh>
+      {/* 벽 윗면 상태색 띠 — 지붕이 없어도 상태색이 보이게 */}
+      <mesh position={[pos[0], pos[1] * 2 + 0.025, pos[2]]}>
+        <boxGeometry args={[size[0] + 0.01, 0.05, size[2] + 0.01]} />
+        <meshStandardMaterial color={color} roughness={0.6} />
+      </mesh>
+    </group>
+  ))
 }
 
 // ---------- 밤 창문 띠 ----------

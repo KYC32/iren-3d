@@ -23,6 +23,7 @@ import CampusLandscape from './buildings/CampusLandscape.jsx'
 import ZoneCallouts from './ZoneCallouts.jsx'
 import { Check, Activity } from 'lucide-react'
 import { DryCampusGround } from './buildings/PhotoReferencedCampus.jsx'
+import { estimateHall, roundNice } from '../data/hallEstimate.js'
 
 export default function SiteView({ site }) {
   const appearance = campusAppearance(site.id)
@@ -50,6 +51,11 @@ export default function SiteView({ site }) {
   const byId = useMemo(() => Object.fromEntries(site.buildings.map((b) => [b.id, b])), [site])
   const half = L.side / 2
   const detail = useCampusDetail(L.side)
+
+  // 선택한 데이터홀의 추정 랙 수 → 그 건물 블록들에 나눠 그림 (Block 이 완성된 홀일 때만 속을 엶)
+  const selectedEst = useMemo(() => (selectedId && byId[selectedId] ? estimateHall(byId[selectedId]) : null), [selectedId, byId])
+  const selectedBlockCount = L.blocks.filter((b) => b.buildingId === selectedId).length || 1
+  const racksPerBlock = selectedEst ? Math.ceil(selectedEst.racks / selectedBlockCount) : 0
 
   const flowTargets = L.flowTargets.filter((b) => isStatusActive(activeStatuses, b.status)
     && (!zoneKey || customerKey(byId[b.buildingId]?.customer) === zoneKey))
@@ -93,6 +99,7 @@ export default function SiteView({ site }) {
           appearance={appearance}
           hovered={b.buildingId && hoverId === b.buildingId}
           selected={b.buildingId && selectedId === b.buildingId}
+          racks={b.buildingId && selectedId === b.buildingId ? racksPerBlock : 0}
           dimmed={!isStatusActive(activeStatuses, b.status) || !!zoneKey && customerKey(byId[b.buildingId]?.customer) !== zoneKey}
           onHover={(id) => setHover(id, '3d')}
           onLeave={(id) => useAppStore.getState().clearHover(id, '3d')}
@@ -121,10 +128,12 @@ export default function SiteView({ site }) {
           const selected = bld && selectedId === bld.id
           const pct = bld && b.status === 'under_construction' && bld.progress != null ? Math.round(bld.progress * 100) : null
           const date = bld?.dates?.target ?? bld?.dates?.end
+          // 속을 연 데이터홀: 라벨이 랙을 가리지 않게 뒤쪽 벽 위로 올리고, 자세한 내용은 패널 카드에 맡겨 한 줄로 줄임
+          const opened = selected && selectedEst && b.kind !== 'miner_hall' && ['operating', 'delivered', 'commissioning'].includes(b.status)
           // zIndexRange 는 호버와 상관없이 고정: 호버할 때 라벨을 맨 위로 올리면 겹친 두 라벨이
           // 서로 위로 올라오며 마우스 아래 요소가 계속 바뀌는 진동(깜빡임)이 생김
           return (
-            <CampusLabel key={`lbl-${b.key}`} position={[b.x, b.h + 1.3, b.z]} priority={selected ? 100 : hovered ? 90 : bld ? 60 : 10}>
+            <CampusLabel key={`lbl-${b.key}`} position={opened ? [b.x, b.h + 0.5, b.z - b.d / 2] : [b.x, b.h + 1.3, b.z]} priority={selected ? 100 : hovered ? 90 : bld ? 60 : 10}>
               <div
                 className={`bld-label${hovered ? ' is-hover' : ''}${selected ? ' is-selected' : ''}`}
                 onPointerEnter={() => bld && setHover(bld.id)}
@@ -143,11 +152,20 @@ export default function SiteView({ site }) {
                   )}
                 </div>
                 {!bld && <div className="sub">{lang === 'ko' ? '용도 미발표 전력' : 'Unallocated power'}</div>}
-                {bld && selected && (
+                {opened && (
+                  <div className="selected-detail compact">
+                    <div>{t.status[b.status]}{bld.it_mw ? ` · ${bld.it_mw} MW IT` : bld.disclosedMw ? ` · ~${bld.disclosedMw} MW*` : ''}</div>
+                    <div className="est">≈ GPU {roundNice(selectedEst.gpus).toLocaleString()} · {lang === 'ko' ? '랙' : 'racks'} {roundNice(selectedEst.racks).toLocaleString()} <i>{selectedEst.gpusReported ? (lang === 'ko' ? '랙 추정' : 'racks est.') : (lang === 'ko' ? '추정' : 'est.')}</i></div>
+                  </div>
+                )}
+                {bld && selected && !opened && (
                   <div className="selected-detail">
                     <div>{t.status[b.status]}{b.status === 'under_construction' && bld.progress != null ? ` · ${Math.round(bld.progress * 100)}%` : ''}</div>
                     <div>{bld.it_mw ? `${bld.it_mw} MW IT` : bld.disclosedMw ? `~${bld.disclosedMw} MW*` : ''}{bld.gross_mw != null ? `${bld.it_mw ? ' / ' : ''}${bld.gross_mw} MW gross` : ''}</div>
                     {bld.gpu && <div>GPU · {bld.gpu.model}{bld.gpu.count ? ` × ${bld.gpu.count.toLocaleString()}` : ''}</div>}
+                    {/* MW → GPU·랙 환산 (회사가 GPU 수를 발표하지 않았으면 추정) — 자세한 가정은 오른쪽 패널 */}
+                    {selectedEst && !selectedEst.gpusReported && <div className="est">≈ GPU {roundNice(selectedEst.gpus).toLocaleString()} · {lang === 'ko' ? '랙' : 'racks'} {roundNice(selectedEst.racks).toLocaleString()} <i>{lang === 'ko' ? '추정' : 'est.'}</i></div>}
+                    {selectedEst && selectedEst.gpusReported && <div className="est">≈ {lang === 'ko' ? '랙' : 'racks'} {roundNice(selectedEst.racks).toLocaleString()} <i>{lang === 'ko' ? '추정' : 'est.'}</i></div>}
                     {date && <div className="pending">{t.panel.target} · {date}</div>}
                     {bld.dates?.delivered && <div>{t.panel.delivered} · {bld.dates.delivered}</div>}
                   </div>
