@@ -13,7 +13,8 @@ import { styleOf } from '../../data/statusStyle.js'
 // 반복되는 창고 모양은 Childress 공식 사진을 반영한 것
 // 용량 블록 하나는 도식적인 묶음일 뿐, 실제 건물 수를 주장하지 않음
 // w·d·h: 블록의 가로·세로·높이(월드 단위), appearance: 벽·지붕 색, status: 진행 상태
-export function PhotoMiningHall({ w, d, h, appearance, status }) {
+// nightMaterial: 밤에 켜지는 창문 띠 재질 (가동 중일 때만 전달됨, nightLights.js)
+export function PhotoMiningHall({ w, d, h, appearance, status, nightMaterial }) {
   // 창고 한 동: 가로는 블록의 27%, 세로는 거의 전체(97%), 높이는 85%
   const shedW = w * 0.27, shedD = d * 0.97, height = h * 0.85
   // 창고 3동의 x 위치: 블록을 3등분한 가운데들 (−w/3, 0, w/3)
@@ -52,6 +53,10 @@ export function PhotoMiningHall({ w, d, h, appearance, status }) {
       <boxGeometry args={[.045,height*.6,shedD*.9]}/><meshStandardMaterial color="#4c625f" roughness={.95}/>
       {rows.flatMap(x=>[-1,1].map(s=><Instance key={`${x}-${s}`} position={[x+s*shedW/2,height*.44,0]}/>))}
     </Instances>
+    {/* 밤 창문 띠: 창고마다 몸체를 두르는 얇은 상자 1개 (낮에는 재질이 꺼져 그려지지 않음) */}
+    {nightMaterial && rows.map(x=><mesh key={`night-${x}`} position={[x,height*.5,0]} material={nightMaterial} raycast={()=>null}>
+      <boxGeometry args={[shedW+.05,height*.2,shedD*.9]}/>
+    </mesh>)}
     {/* 블록 앞 바닥의 상태색 띠 — 진행 상태를 색으로 표시 */}
     <mesh position={[0,.04,d/2+.17]}><boxGeometry args={[w,.04,.14]}/><meshBasicMaterial color={styleOf(status).color}/></mesh>
   </group>

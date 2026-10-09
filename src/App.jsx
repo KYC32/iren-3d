@@ -20,6 +20,7 @@ if (typeof window !== 'undefined' && !/surface=3d/.test(window.location.hash)) l
 import Footer from './ui/Footer.jsx'
 import TimelineSlider from './ui/TimelineSlider.jsx'
 import { RECORD } from './record/recordMode.js'
+import { useSkyDark } from './ui/useSkyDark.js'
 
 export default function App() {
   const t = useT()
@@ -39,6 +40,7 @@ export default function App() {
   const lang = useAppStore((s) => s.lang)
   const dragMode = useAppStore((s) => s.campusDragMode)
   const panelCollapsed = useAppStore((s) => s.campusPanelCollapsed)
+  const skyDark = useSkyDark() // 3D 배경이 밤하늘이면 캔버스 위 글자를 밝게
 
   // 처음 한 번 infra.json 로드
   useEffect(() => {
@@ -71,7 +73,7 @@ export default function App() {
   }
 
   return (
-    <div className={`app view-${view} surface-${surface} camera-${dragMode}${panelCollapsed?' detail-collapsed':''}`}>
+    <div className={`app view-${view} surface-${surface} camera-${dragMode}${panelCollapsed?' detail-collapsed':''}${skyDark?' sky-dark':''}`}>
       <div className="canvas-wrap">{data && <Suspense fallback={<div className="scene-loading" role="status">{surface==='map'?(lang==='ko'?'실제 지도 불러오는 중…':'Loading geographic map…'):t.sceneLoading}</div>}>{surface==='map'?<GeoMap/>:<Scene />}</Suspense>}</div>
 
       {/* 뷰 전환 시 덮는 페이드 막 */}

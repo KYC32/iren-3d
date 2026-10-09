@@ -5,6 +5,7 @@
 //   site  : 열려 있는 캠퍼스
 //   c     : 회사 필터 (쉼표로 여러 개)
 //   color : 핀 색 기준 (status | company)
+//   sky   : 3D 캠퍼스 하늘 (dusk 노을 | night 밤 | live 지금 현지 시각) — 낮(day)은 생략
 // 옛 링크(#site=childress)도 그대로 동작합니다.
 // =============================================================
 
@@ -26,12 +27,14 @@ export function parseHash(hash) {
   if (surface === '3d') out.surface = surface
   const tab = q.get('tab')
   if (['history', 'evidence'].includes(tab)) out.tab = tab
+  const sky = q.get('sky')
+  if (['dusk', 'night', 'live'].includes(sky)) out.sky = sky
   for (const key of ['building','zone']) { const v=q.get(key); if (v && /^[a-z0-9-]+$/.test(v)) out[key]=v }
   return out
 }
 
 // 기본값과 같은 항목은 생략해 주소를 짧게 유지
-export function buildHash({ site = null, date = null, companies = [], color = 'status', surface = 'map', tab = 'overview', building = null, zone = null } = {}) {
+export function buildHash({ site = null, date = null, companies = [], color = 'status', surface = 'map', tab = 'overview', building = null, zone = null, sky = 'day' } = {}) {
   const q = new URLSearchParams()
   if (date) q.set('date', date)
   if (site) q.set('site', site)
@@ -41,6 +44,7 @@ export function buildHash({ site = null, date = null, companies = [], color = 's
   if (site && tab !== 'overview') q.set('tab', tab)
   if (site && building) q.set('building',building)
   if (site && zone) q.set('zone',zone)
+  if (site && surface === '3d' && sky && sky !== 'day') q.set('sky', sky)
   const s = q.toString().replace(/%2C/g, ',')
   return s ? `#${s}` : ''
 }

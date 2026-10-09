@@ -47,6 +47,7 @@ export const useAppStore = create((set, get) => ({
   mapRegion: { country: 'NA', seq: 0 },
   cameraHomeSeq: 0,
   campusDragMode: 'rotate',
+  skyMode: initial.sky ?? 'day',           // 3D 캠퍼스 하늘: 'day' 낮 | 'dusk' 노을 | 'night' 밤 | 'live' 지금(현지 시각)
   buildingFly: null,                       // { id, seq } 패널에서 건물을 고르면 카메라가 그 건물로 (seq 로 같은 건물 재요청도 구분)
   transitioning: false,                    // 카메라 전환(페이드) 중인지
   // 카메라 전환 요청: UI/핀이 요청하면 CameraRig 가 애니메이션 후 실제로 view 를 바꿉니다
@@ -87,7 +88,7 @@ export const useAppStore = create((set, get) => ({
       selectedBuildingId: data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? h.building : null,
       selectedZoneKey: customerZones(data.sites.find((s)=>s.id===id) ?? {buildings:[]},data.companies).some((z)=>z.key===h.zone) ? h.zone : null,
       activeCompanies: new Set((h.companies ?? []).filter((id) => raw.companies.some((c) => c.id === id))),
-      colorMode: h.color ?? 'status',
+      colorMode: h.color ?? 'status', skyMode: h.sky ?? 'day',
     })
     get().syncHash()
   },
@@ -123,6 +124,7 @@ export const useAppStore = create((set, get) => ({
       date: st.month != null && st.month !== st.asOfMonth ? monthKey(st.month) : null,
       companies: [...st.activeCompanies],
       color: st.colorMode, surface: st.surface, tab: st.detailTab, building: st.selectedBuildingId, zone: st.selectedZoneKey,
+      sky: st.skyMode,
     })
     window.history.replaceState(null, '', hash || window.location.pathname + window.location.search)
   },
@@ -137,7 +139,7 @@ export const useAppStore = create((set, get) => ({
     const id = next.data.sites.some((s) => s.id === h.site) ? h.site : null
     set({
       activeCompanies: new Set((h.companies ?? []).filter((id) => next.data.companies.some((c) => c.id === id))),
-      colorMode: h.color ?? 'status',
+      colorMode: h.color ?? 'status', skyMode: h.sky ?? 'day',
     })
     // 주소(해시)로 이동할 땐 카메라 전환 애니메이션 없이 바로 그 화면으로 (pending: null)
     set({ surface: id ? h.surface ?? 'map' : 'map', detailTab: h.tab ?? 'overview', selectedSiteId: id, view: id ? 'site' : 'globe', pending: null,
@@ -208,6 +210,7 @@ export const useAppStore = create((set, get) => ({
     set({ selectedZoneKey: key, selectedBuildingId: null, buildingFly: null, hoverId: null, campusPanelCollapsed: false }); get().syncHash()
   },
   requestCampusHome: () => { if (!get().pending) { set({ cameraHomeSeq: get().cameraHomeSeq + 1, selectedBuildingId: null, buildingFly: null, hoverId: null, selectedZoneKey: null }); get().syncHash() } },
+  setSkyMode: (mode) => { if (['day', 'dusk', 'night', 'live'].includes(mode)) { set({ skyMode: mode }); get().syncHash() } },
   setCampusDragMode: (mode) => { if (mode === 'rotate' || mode === 'pan') set({ campusDragMode: mode }) },
   toggleLang: () => set({ lang: get().lang === 'ko' ? 'en' : 'ko' }),
 

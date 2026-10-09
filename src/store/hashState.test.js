@@ -27,3 +27,13 @@ describe('hashState', () => {
    const s={site:'childress',surface:'3d',building:'horizon-1',zone:'microsoft',tab:'evidence',date:'2026-08'}
    expect(parseHash(buildHash(s))).toEqual(s)
  })
+
+describe('하늘 모드 (sky)', () => {
+  it('3D 캠퍼스에서만 주소에 남기고, 낮(day)은 생략', () => {
+    expect(buildHash({ site: 'childress', surface: '3d', sky: 'night' })).toContain('sky=night')
+    expect(buildHash({ site: 'childress', surface: '3d', sky: 'day' })).not.toContain('sky')
+    expect(buildHash({ site: 'childress', surface: 'map', sky: 'night' })).not.toContain('sky')
+    expect(parseHash('#site=childress&surface=3d&sky=live')).toMatchObject({ sky: 'live' })
+    expect(parseHash('#sky=noon')).toEqual({})
+  })
+})

@@ -10,6 +10,7 @@ import { styleOf, PENDING_COLOR } from '../../data/statusStyle.js'
 import { fmtMw } from '../geo.js'
 import { POWER_FLOW_COLOR } from '../powerFlow.js'
 import { useReducedMotion } from '../useReducedMotion.js'
+import { nightMaterials } from '../nightLights.js'
 
 // ---------- 변전소 ----------
 export function Substation({ sub, t, showLabel = true, children }) {
@@ -74,6 +75,10 @@ export function Crane({ x, z, seed = 0 }) {
         <boxGeometry args={[0.28, H, 0.28]} />
         <meshStandardMaterial color={PENDING_COLOR} roughness={0.6} />
       </mesh>
+      {/* 마스트 꼭대기 항공 장애등 */}
+      <mesh position={[0, H + 0.45, 0]} material={nightMaterials().aviation} raycast={() => null}>
+        <sphereGeometry args={[0.15, 8, 6]} />
+      </mesh>
       <group ref={jib} position={[0, H, 0]} rotation={[0, seed * 1.7, 0]}>
         <mesh position={[1.8, 0, 0]} castShadow>
           <boxGeometry args={[5.2, 0.22, 0.24]} />
@@ -82,6 +87,10 @@ export function Crane({ x, z, seed = 0 }) {
         <mesh position={[-1.4, -0.15, 0]} castShadow>
           <boxGeometry args={[0.7, 0.45, 0.5]} />
           <meshStandardMaterial color="#6f7a95" />
+        </mesh>
+        {/* 밤에 깜빡이는 빨간 항공 장애등 (지브 끝) — 낮에는 재질이 꺼져 있음 */}
+        <mesh position={[4.3, 0.2, 0]} material={nightMaterials().aviation} raycast={() => null}>
+          <sphereGeometry args={[0.13, 8, 6]} />
         </mesh>
         {/* 갈고리 줄 */}
         <mesh position={[3.6, -1.2, 0]}>
@@ -154,6 +163,12 @@ export function Truck({ truck, index, lang }) {
         <boxGeometry args={[1, 0.85, 0.8]} />
         <meshStandardMaterial color="#2f6bed" roughness={0.5} />
       </mesh>
+      {/* 밤 전조등 (낮에는 재질이 꺼져 있음) */}
+      {[-0.32, 0.32].map((x) => (
+        <mesh key={x} position={[x, 0.36, 1.56]} material={nightMaterials().headlight} raycast={() => null}>
+          <boxGeometry args={[0.2, 0.12, 0.04]} />
+        </mesh>
+      ))}
       {/* 컨테이너 (노랑 = 납품 예정) */}
       <mesh position={[0, 0.7, -0.35]} castShadow>
         <boxGeometry args={[1.05, 1.05, 2.1]} />

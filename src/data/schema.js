@@ -198,6 +198,9 @@ export const Site = z.object({
   country: Iso2,
   admin1: z.string().regex(/^[A-Z]{2}-[A-Z0-9]{1,3}$/).optional(), // 예: US-TX, CA-BC, KR-31
   region: z.string(),
+  // 현지 시간대 (IANA 이름, 예: America/Chicago) — 3D 캠퍼스 "지금" 하늘·현지 시각 표시에 씀
+  // 캐나다 Canal Flats 처럼 같은 주(BC) 안에서도 시간대가 다를 수 있어 사이트마다 적음
+  tz: z.string().refine((v) => { try { new Intl.DateTimeFormat('en', { timeZone: v }); return true } catch { return false } }, '알 수 없는 시간대').optional(),
   coord: z.object({
     lat: z.number().min(-90).max(90),
     lng: z.number().min(-180).max(180),

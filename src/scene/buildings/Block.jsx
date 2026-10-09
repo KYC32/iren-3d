@@ -4,9 +4,10 @@
 //   commissioning    : 완성 건물 + 노란 점멸 경광등
 //   under_construction: 콘크리트 슬래브 + 기둥 골조 + 진행률만큼 올라온 반투명 벽
 //   planned / lot    : 점선 풋프린트 + 옅은 유령 박스
-//   decommissioning  : 낮은 회색 채굴동 (반투명)
+//   decommissioning  : 낮은 회색 채굴동 (반투명) — 밤에는 희미한 주황 불 (아직 채굴 중)
 // 같은 건물(buildingId)의 블록들은 함께 하이라이트됩니다.
 // 타임라인에서 상태가 바뀌면(계획 → 건설 → 가동) 바닥에서 솟아오르는 짧은 애니메이션을 보여 줍니다.
+// 밤·노을(하늘 모드)에는 가동 중인 건물만 창문 불이 켜지고 바닥에 불빛이 번집니다 (nightLights.js).
 // =============================================================
 import { useLayoutEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
@@ -14,10 +15,14 @@ import { RoundedBox, Line } from '@react-three/drei'
 import { styleOf, PENDING_COLOR } from '../../data/statusStyle.js'
 import { PhotoMiningHall } from './PhotoReferencedCampus.jsx'
 import { useReducedMotion } from '../useReducedMotion.js'
+import { nightMaterials } from '../nightLights.js'
 
 const BODY = '#eef1f5'      // 건물 외벽 (밝은 흰색)
 const CONCRETE = '#d9dde8'  // 슬래브
 const STEEL = '#8f99b3'     // 골조
+
+// 마우스 판정에서 빼는 표시 (불빛 웅덩이는 건물보다 넓어서, 판정에 넣으면 옆 빈 땅에서도 호버가 걸림)
+export const noHit = () => null
 
 const GROW_SEC = 0.6 // 솟아오르는 애니메이션 길이 (초)
 // 살짝 튀어 오르는 이징 (끝에서 5% 넘쳤다 돌아옴)
@@ -37,6 +42,15 @@ export default function Block({ block, appearance, hovered, selected, dimmed, on
   // 필터에서 빠진 상태는 바닥 풋프린트만 남겨 "흐리게" 보이게 합니다
   const mode = dimmed ? 'dimmed' : kind === 'lot' ? 'planned' : status
   const photoSheds = appearance && kind === 'miner_hall' && ['operating','delivered','decommissioning'].includes(mode)
+  // 밤 불빛: 가동·고객 인수 = 환하게, 시운전 = 희미하게, 그 밖(건설·계획·필터로 흐림)은 꺼짐
+  //   채굴 홀은 주황, AI 데이터홀은 하늘색 → 밤에 보면 "지금 돈을 버는 건물"과 그 종류가 한눈에
+  const nm = nightMaterials()
+  const live = mode === 'operating' || mode === 'delivered'
+  const miner = kind === 'miner_hall'
+  const windowMat = live ? (miner ? nm.minerWindow : nm.aiWindow)
+    : mode === 'commissioning' ? nm.pendingWindow
+    : mode === 'decommissioning' ? nm.fadingWindow : null
+  const poolMat = live ? (miner ? nm.minerPool : nm.aiPool) : null
 
   // ---- 솟아오르는 애니메이션 ----
   // "실제 상태"(빈 칸/계획/건설/가동…)가 바뀔 때만 재생. 필터로 흐려지는 건 상태 변화가 아니라서 제외.
@@ -74,13 +88,19 @@ export default function Block({ block, appearance, hovered, selected, dimmed, on
           <meshBasicMaterial color="#2f6bed" transparent opacity={0.45} />
         </mesh>
       )}
+      {/* 밤에 건물 둘레 바닥으로 번지는 불빛 (낮에는 재질이 꺼져 있어 그려지지 않음) */}
+      {poolMat && (
+        <mesh position={[0, 0.06, 0]} rotation={[-Math.PI / 2, 0, 0]} material={poolMat} renderOrder={1} raycast={noHit}>
+          <planeGeometry args={[w + 6, d + 6]} />
+        </mesh>
+      )}
       <group ref={growRef}>
-      {photoSheds && <PhotoMiningHall w={w} d={d} h={h} appearance={appearance} status={status}/>}
-      {!photoSheds && (mode === 'operating' || mode === 'delivered') && <FinishedHall w={w} d={d} h={h} kind={kind} status={status} appearance={appearance} spinning />}
-      {mode === 'commissioning' && <FinishedHall w={w} d={d} h={h} kind={kind} status={status} appearance={appearance} beacon />}
+      {photoSheds && <PhotoMiningHall w={w} d={d} h={h} appearance={appearance} status={status} nightMaterial={windowMat}/>}
+      {!photoSheds && live && <FinishedHall w={w} d={d} h={h} kind={kind} status={status} appearance={appearance} spinning nightMaterial={windowMat} />}
+      {mode === 'commissioning' && <FinishedHall w={w} d={d} h={h} kind={kind} status={status} appearance={appearance} beacon nightMaterial={windowMat} />}
       {mode === 'under_construction' && <ConstructionHall w={w} d={d} h={h} progress={block.progress} />}
       {mode === 'planned' && <GhostFootprint w={w} d={d} h={kind === 'lot' ? 0.05 : h} solidish={kind !== 'lot'} />}
-      {!photoSheds && mode === 'decommissioning' && <MinerHall w={w} d={d} h={h} />}
+      {!photoSheds && mode === 'decommissioning' && <MinerHall w={w} d={d} h={h} nightMaterial={windowMat} />}
       {mode === 'dimmed' && <GhostFootprint w={w} d={d} h={0.05} />}
       </group>
     </group>
@@ -88,7 +108,7 @@ export default function Block({ block, appearance, hovered, selected, dimmed, on
 }
 
 // ---------- 완성된 데이터홀 ----------
-function FinishedHall({ w, d, h, kind, status, spinning, beacon, appearance }) {
+function FinishedHall({ w, d, h, kind, status, spinning, beacon, appearance, nightMaterial }) {
   const st = styleOf(status)
   const fans = useRef([])
   const beaconRef = useRef()
@@ -160,6 +180,8 @@ function FinishedHall({ w, d, h, kind, status, spinning, beacon, appearance }) {
           </mesh>
         </group>
       ))}
+      {/* 밤 창문 띠 2줄: 건물보다 살짝 큰 얇은 상자 하나로 네 면을 한 번에 (건물마다 그리기 2번) */}
+      {nightMaterial && <NightWindows w={w} d={d} h={h} material={nightMaterial} />}
       {/* 시운전 경광등 */}
       {beacon && (
         <mesh ref={beaconRef} position={[w / 2 - 0.3, h + 0.45, d / 2 - 0.3]}>
@@ -169,6 +191,17 @@ function FinishedHall({ w, d, h, kind, status, spinning, beacon, appearance }) {
       )}
     </group>
   )
+}
+
+// ---------- 밤 창문 띠 ----------
+// 건물 몸체보다 사방으로 0.03 큰 얇은 상자 → 네 옆면에 빛나는 띠가 둘러짐 (위·아래 면은 건물 속에 숨음)
+// material 은 모든 건물이 함께 쓰는 재질이라 SkyRig 가 투명도만 바꾸면 한 번에 켜지고 꺼짐
+export function NightWindows({ w, d, h, material, rows = [0.34, 0.66] }) {
+  return rows.map((y) => (
+    <mesh key={y} position={[0, h * y, 0]} material={material} raycast={noHit}>
+      <boxGeometry args={[w + 0.06, h * 0.13, d + 0.06]} />
+    </mesh>
+  ))
 }
 
 // ---------- 건설중 데이터홀 ----------
@@ -245,10 +278,11 @@ function GhostFootprint({ w, d, h, solidish }) {
 }
 
 // ---------- 폐쇄중 채굴동 ----------
-function MinerHall({ w, d, h }) {
+function MinerHall({ w, d, h, nightMaterial }) {
   const st = styleOf('decommissioning')
   return (
     <group>
+      {nightMaterial && <NightWindows w={w} d={d} h={h} material={nightMaterial} rows={[0.5]} />}
       <mesh position={[0, h / 2, 0]} castShadow receiveShadow>
         <boxGeometry args={[w, h, d]} />
         <meshStandardMaterial color={st.color} transparent opacity={0.8} roughness={0.9} />

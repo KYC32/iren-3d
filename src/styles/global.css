@@ -57,7 +57,7 @@ button { font: inherit; cursor: pointer; }
 }
 
 /* ---------- 상단 바 ---------- */
-.topbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; }
+.topbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; position: relative; z-index: 6; } /* z-index: 하늘 안내 말풍선이 아래 KPI 판 위로 */
 .brand { display: flex; align-items: center; gap: 10px; }
 .brand-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; background: #e2f3ec; color: var(--c-operating); }
 .icon-btn { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--panel-border); background: #fff; color: var(--text); }
@@ -669,3 +669,28 @@ button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit;
 .share-btn { display: inline-flex; align-items: center; gap: 5px; }
 .share-btn.is-copied { color: #1f7f66; border-color: #9fd3c2; }
 @media (max-width: 767px) { .share-btn span { display: none; } }
+
+/* ---- 3D 하늘 모드 (낮·노을·밤·지금) ---- */
+.sky-control { position: relative; display: flex; }
+.sky-cycle { display: none; padding: 6px 9px; }
+.sky-mode .sky-live { font-variant-numeric: tabular-nums; }
+/* 밤 읽는 법 말풍선: 밤하늘 색 배경 위에 불빛 색 점 */
+.sky-hint { position: absolute; top: calc(100% + 8px); right: 0; z-index: 70; width: max-content; max-width: min(300px, calc(100vw - 24px));
+  display: flex; flex-direction: column; gap: 4px; padding: 8px 11px; border-radius: 10px; background: #16203a; color: #e8eefc;
+  font-size: 11.5px; line-height: 1.4; box-shadow: 0 6px 18px #0b122440; pointer-events: none; }
+.sky-hint b { font-weight: 650; }
+.sky-hint span { display: flex; align-items: center; gap: 5px; color: #b9c6e6; }
+.sky-hint i { width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 6px currentColor; }
+.sky-hint i + i, .sky-hint em { margin-left: 6px; }
+.sky-hint em { font-style: normal; color: #8f9dc2; }
+@media (max-width: 767px) {
+  /* 좁은 화면: 네 칸 대신 누를 때마다 바뀌는 버튼 하나 (상단 바가 화면 밖으로 넘치지 않게) */
+  .sky-mode { display: none; }
+  .sky-cycle { display: flex; }
+  .sky-hint { right: auto; left: 0; } /* 좁은 화면에선 버튼이 왼쪽에 있으므로 말풍선도 왼쪽 기준 */
+}
+/* 밤하늘(배경이 어두울 때): 캔버스 위에 바로 놓인 글자를 밝게 */
+.sky-dark .disclaimer { color: #b9c4dd; }
+.sky-dark .disclaimer a { color: #d6e4ff; }
+.night-swatch { box-shadow: 0 0 0 1.5px #1c2744; } /* 옅은 불빛 색이 흰 범례 위에서도 보이게 */
+.legend-item .night-swatch + .night-swatch { margin-left: -3px; }

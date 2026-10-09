@@ -4,7 +4,9 @@
 // =============================================================
 import { logoKeyOf, BRAND_COLOR } from '../ui/logos/index.jsx'
 import { customerKey } from '../data/customerZones.js'
-import { useMemo } from 'react'
+import { useMemo, useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { SKY } from './nightLights.js'
 import { Line, RoundedBox } from '@react-three/drei'
 import { CampusLabel, CampusLabelLayout, useCampusDetail } from './CampusLabel.jsx'
 import { useAppStore, isStatusActive, EMPTY } from '../store/useAppStore.js'
@@ -56,10 +58,7 @@ export default function SiteView({ site }) {
     <group name={`site-${site.id}`}>
       <CampusLabelLayout />
       {/* 넓은 바닥 (그림자 받기) */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.32, 0]} receiveShadow>
-        <circleGeometry args={[L.side * 3, 48]} />
-        <meshBasicMaterial color={landscape?.background ?? appearance?.background ?? '#eceffa'} toneMapped={false} />
-      </mesh>
+      <SkyGround radius={L.side * 3} color={landscape?.background ?? appearance?.background ?? '#eceffa'} />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.31, 0]} receiveShadow>
         <circleGeometry args={[L.side * 3, 48]} />
         <shadowMaterial transparent opacity={0.2} />
@@ -168,6 +167,19 @@ export default function SiteView({ site }) {
       {appearance && <DryCampusGround layout={L} appearance={appearance}/>}
       {landscape ? <CampusLandscape siteId={site.id} layout={layout} profile={landscape}/> : <Trees side={L.side} seed={site.id.length * 7} roadZ={L.road.z} />}
     </group>
+  )
+}
+
+// ---------- 넓은 바닥 ----------
+// 배경과 같은 색이라 지평선이 자연스럽게 사라짐. 밤·노을엔 SkyRig 가 바꾼 배경색(SKY.bg)을 따라감
+function SkyGround({ radius, color }) {
+  const mat = useRef()
+  useFrame(() => { if (mat.current && SKY.bg) mat.current.color.copy(SKY.bg) })
+  return (
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.32, 0]} receiveShadow>
+      <circleGeometry args={[radius, 48]} />
+      <meshBasicMaterial ref={mat} color={color} toneMapped={false} />
+    </mesh>
   )
 }
 

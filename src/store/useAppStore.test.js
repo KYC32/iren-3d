@@ -120,6 +120,18 @@ describe('실제 지도와 3D 공유 상태', () => {
     expect(state().detailTab).toBe('evidence')
     expect(state().mapCamera).toEqual(camera)
   })
+  it('하늘 모드는 공유 링크에 담기고 링크로 복원', () => {
+    state().setRaw(raw)
+    state().enterSite3D('childress')
+    state().setSkyMode('night')
+    expect(window.history.replaceState).toHaveBeenLastCalledWith(null, '', expect.stringContaining('sky=night'))
+    state().setSkyMode('noon') // 모르는 값은 무시
+    expect(state().skyMode).toBe('night')
+    state().applyHash('#site=childress&surface=3d')
+    expect(state().skyMode).toBe('day')
+    state().applyHash('#site=childress&surface=3d&sky=dusk')
+    expect(state().skyMode).toBe('dusk')
+  })
   it('공유 링크로 상세 상태를 복원', () => {
     state().setRaw(raw)
     state().applyHash('#site=childress&surface=3d&zone=microsoft&building=horizon-1&tab=history')
