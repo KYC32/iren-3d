@@ -62,21 +62,22 @@ describe('실제 데이터 (IREN)', () => {
 
   const IREN = { companies: new Set(['iren']) } // 다른 회사가 병합돼도 IREN 수치만 비교
   // 2026-10-07 IREN BC 3곳 채굴 이력 보정(사용자 승인) 반영: 커낼플랫츠는 2026-10 기준 AI 홀이 아직 계획 단계
-  it('기준일 IREN KPI (iren-3d 대비 BC 보정 반영: AI 155→125MW)', () => {
+  // 프린스조지 공랭 홀(50MW)은 회사가 가동·시운전 비율을 공개하지 않아 시운전으로 둠 (2026-10-12 결정) → AI 가동은 Horizon 1 의 75MW 뿐
+  it('기준일 IREN KPI (iren-3d 대비 BC 보정 반영: AI 155→75MW)', () => {
     const t = totalsAt(infra, toMonth('2026-10'), IREN)
     expect(t.secured).toBe(5610)
     expect(t.energized).toBe(2310)
-    expect(t.operating).toBe(505)
-    expect(t.ai).toBe(125)
+    expect(t.operating).toBe(455)
+    expect(t.ai).toBe(75)
     expect(t.mining).toBe(380)
-    expect(t.building).toBe(665)
+    expect(t.building).toBe(715) // 건설·시운전: 프린스조지 50MW 시운전 포함
     expect(t.planned).toBe(4440)
     expect(t.gpus).toBe(23000)
   })
 
   it('채굴동은 폐쇄 전(가동 단계)에도 AI 가동이 아닌 채굴로 집계', () => {
     const t = totalsAt(infra, M('2026-09'), IREN)
-    expect(t.ai).toBe(125)
+    expect(t.ai).toBe(75)
     expect(t.mining).toBe(410) // Childress 380 + 커낼플랫츠 30 (채굴 종료 2026-10)
   })
 
@@ -85,7 +86,7 @@ describe('실제 데이터 (IREN)', () => {
     expect(st.childress).toBe('operating')
     expect(st['sweetwater-1']).toBe('under_construction')
     expect(st['sweetwater-2']).toBe('planned')
-    expect(st['prince-george']).toBe('operating')
+    expect(st['prince-george']).toBe('commissioning') // 가동 비율 미공개 → 시운전 유지
     expect(st.kiowa).toBe('planned')
   })
 

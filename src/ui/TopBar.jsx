@@ -1,6 +1,6 @@
 // 상단 바: 제목·기준일 / 뒤로가기 / 하늘(낮·노을·밤·지금) / 공유 / 한영 토글
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, Languages, Server, ListOrdered, Maximize2, Move, Rotate3D, Share2, Check, Sun, Sunset, Moon, Clock } from 'lucide-react'
+import { ArrowLeft, Languages, Server, ListOrdered, Maximize2, Move, Rotate3D, Share2, Check, Sun, Sunset, Moon, Clock, Compass } from 'lucide-react'
 import { localClock } from '../scene/sun.js'
 import { AI_LIGHT, MINER_LIGHT } from '../scene/nightColors.js'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
@@ -53,6 +53,10 @@ export default function TopBar() {
           <ListOrdered size={17} />
         </button>
       )}
+      {/* 자동 투어: 처음 온 사람이 90초 안에 전체 그림을 보게 */}
+      {data && <button className="lang-btn tour-btn" onClick={() => useAppStore.getState().startTour()} aria-label={t.tour.startTitle} title={t.tour.startTitle}>
+        <Compass size={15} aria-hidden="true" /><span>{t.tour.start}</span>
+      </button>}
       <ShareButton lang={lang} title={view === 'site' && site ? pickName(site, lang) : 'IREN'} />
       <button className="lang-btn" onClick={toggleLang} aria-label="language">
         <Languages size={15} /> {t.langToggle}

@@ -40,7 +40,7 @@ export default function HallEstimateCard({ building }) {
         <div>
           <small>GPU</small>
           <strong>{est.gpusReported ? est.gpus.toLocaleString() : `≈ ${roundNice(est.gpus).toLocaleString()}`}</strong>
-          <em>{est.gpusReported ? (ko ? '회사 발표' : 'Company reported')
+          <em>{est.gpusReported ? (building.gpu?.basis === 'installed_or_ordered' ? (ko ? '회사 발표 · 설치·주문 포함' : 'Company figure · installed or on order') : (ko ? '회사 발표' : 'Company reported'))
             : est.itBasis === 'it' ? (ko ? `IT ${itText} 기준 추정` : `Est. from ${itText} IT`)
             : (ko ? `용량 ~${itText} 기준 추정` : `Est. from ~${itText} capacity`)}</em>
         </div>
@@ -59,7 +59,9 @@ export default function HallEstimateCard({ building }) {
       </div>
       <p className="hall-est-note">
         {est.gpusReported
-          ? (ko ? '회사가 발표한 GPU 수를 랙 수로만 환산했습니다.' : 'Company-reported GPU count, converted to racks only.')
+          ? (building.gpu?.basis === 'installed_or_ordered'
+            ? (ko ? '회사 홈페이지의 GPU 수(설치 또는 주문 포함)를 랙 수로만 환산했습니다. 실제 설치·가동 수는 미공개입니다.' : 'Company website GPU figure (installed or on order), converted to racks only; the installed and live count is undisclosed.')
+            : (ko ? '회사가 발표한 GPU 수를 랙 수로만 환산했습니다.' : 'Company-reported GPU count, converted to racks only.'))
           : (ko
             ? `IT 전력 ÷ GPU 1개당 약 ${p.kwPerGpu.toFixed(1)}kW(CPU·네트워크·스토리지 몫 포함)로 계산했습니다.${p.modelKnown ? '' : ' GPU 모델 미발표 — 냉각 방식으로 최신 세대를 가정.'}${est.itBasis === 'gross' ? ' IT 전력 미공개 — 전체 전력 ÷ 1.3 으로 환산.' : ''}${est.itBasis === 'disclosed' ? ' 발표 용량이 IT 기준인지 미공개 — IT 로 보고 계산.' : ''}`
             : `IT power ÷ ~${p.kwPerGpu.toFixed(1)} kW per GPU (incl. CPU, network, storage share).${p.modelKnown ? '' : ' GPU model undisclosed — latest generation assumed from cooling type.'}${est.itBasis === 'gross' ? ' IT undisclosed — gross ÷ 1.3.' : ''}${est.itBasis === 'disclosed' ? ' Disclosed capacity basis unclear — treated as IT.' : ''}`)}

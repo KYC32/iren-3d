@@ -711,3 +711,30 @@ button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit;
 .hall-est-grid em { font-style: normal; font-size: 10.5px; color: #7a889c; overflow-wrap: anywhere; }
 .hall-est-note { margin: 8px 0 0; font-size: 10.5px; line-height: 1.5; color: #6b7a90; }
 .selected-detail.compact { width: max-content; max-width: 240px; }
+
+/* ---- 자동 투어 자막 카드 (화면 아래 가운데) ---- */
+.tour-card { position: absolute; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 72; width: min(560px, calc(100vw - 24px));
+  display: flex; flex-direction: column; gap: 6px; padding: 0 0 8px; overflow: hidden; pointer-events: auto; }
+.tour-progress { height: 3px; background: #e3e9ef; }
+.tour-progress i { display: block; height: 100%; background: #2ea88a; transition: width 100ms linear; }
+.tour-body { display: flex; flex-direction: column; gap: 3px; padding: 6px 14px 0; }
+.tour-body small { font-size: 10.5px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.tour-body b { font-size: 14px; color: #1f3550; }
+.tour-body p { margin: 0; font-size: 12.5px; line-height: 1.5; color: var(--text); }
+.tour-actions { display: flex; gap: 6px; align-items: center; padding: 2px 12px 0; }
+.tour-actions button { display: flex; align-items: center; gap: 4px; height: 30px; padding: 0 9px; border: 1px solid var(--panel-border); border-radius: 8px; background: #fff; color: var(--text); font-size: 12px; }
+.tour-actions button:disabled { opacity: 0.4; }
+.tour-actions button[aria-pressed="true"] { background: #eef6f2; border-color: #9fd0bd; }
+.tour-actions .tour-stop { margin-left: auto; color: #6b4a1f; background: #fbf1d3; border-color: #ecd9a2; }
+.tour-hint { padding: 0 14px; font-size: 10px; color: var(--text-muted); }
+.tour-btn { white-space: nowrap; }
+/* 투어 중엔 타임라인·범례·안내를 숨겨 자막 카드와 겹치지 않게 (3D 캠퍼스 패널은 그대로 — 자막이 가리키는 카드가 거기 있음) */
+.touring .bottom, .touring .geographic-note, .touring .sky-hint { visibility: hidden; }
+@media (max-width: 767px) {
+  .tour-btn span, .tour-hint { display: none; }
+  .tour-card { bottom: 6px; width: calc(100vw - 16px); }
+  .tour-body b { font-size: 13px; }
+  .tour-body p { font-size: 11.5px; }
+  /* 좁은 화면에서는 아래 패널(캠퍼스 설명·목록)이 자막을 가리므로 그 위로 */
+  .tour-card { z-index: 90; }
+}

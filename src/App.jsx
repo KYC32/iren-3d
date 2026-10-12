@@ -21,6 +21,8 @@ import Footer from './ui/Footer.jsx'
 import TimelineSlider from './ui/TimelineSlider.jsx'
 import { RECORD } from './record/recordMode.js'
 import { useSkyDark } from './ui/useSkyDark.js'
+// 자동 투어는 버튼을 누를 때만 불러옴 (첫 화면 코드 크기를 한도 안에 유지)
+const TourPlayer = lazy(() => import('./ui/TourPlayer.jsx'))
 
 export default function App() {
   const t = useT()
@@ -41,6 +43,7 @@ export default function App() {
   const dragMode = useAppStore((s) => s.campusDragMode)
   const panelCollapsed = useAppStore((s) => s.campusPanelCollapsed)
   const skyDark = useSkyDark() // 3D 배경이 밤하늘이면 캔버스 위 글자를 밝게
+  const touring = useAppStore((s) => !!s.tour)
 
   // 처음 한 번 infra.json 로드
   useEffect(() => {
@@ -73,7 +76,7 @@ export default function App() {
   }
 
   return (
-    <div className={`app view-${view} surface-${surface} camera-${dragMode}${panelCollapsed?' detail-collapsed':''}${skyDark?' sky-dark':''}`}>
+    <div className={`app view-${view} surface-${surface} camera-${dragMode}${panelCollapsed?' detail-collapsed':''}${skyDark?' sky-dark':''}${touring?' touring':''}`}>
       <div className="canvas-wrap">{data && <Suspense fallback={<div className="scene-loading" role="status">{surface==='map'?(lang==='ko'?'실제 지도 불러오는 중…':'Loading geographic map…'):t.sceneLoading}</div>}>{surface==='map'?<GeoMap/>:<Scene />}</Suspense>}</div>
 
       {/* 뷰 전환 시 덮는 페이드 막 */}
@@ -95,6 +98,7 @@ export default function App() {
         </div>
       </div>
 
+      {data && touring && <Suspense fallback={null}><TourPlayer /></Suspense>}
       {!data && !loadError && <div className="center-msg">{t.loading}</div>}
       {loadError && <pre className="center-msg error">{loadError}</pre>}
     </div>

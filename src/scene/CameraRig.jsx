@@ -269,6 +269,8 @@ export default function CameraRig() {
     } else {
       lastOffset.current = null // 캠퍼스를 벗어나면 잊음 → 다시 들어올 때 반드시 새로 적용
     }
+    // 자동 투어 중 캠퍼스: 카메라가 천천히 돌아 입체감을 줌 (사용자가 직접 조작하면 그때부터 멈춤)
+    if (c && st.tour && st.view === 'site' && !st.pending && !manualView.current) c.rotate(delta * 0.06, 0, false)
     if (!c || OVERVIEW !== 'globe' || st.view !== 'globe' || st.pending || st.hoverId) return
     if (performance.now() - lastInteract.current < 4000) return
     c.rotate(-delta * 0.035, 0, false)

@@ -47,7 +47,8 @@ export const useAppStore = create((set, get) => ({
   mapRegion: { country: 'NA', seq: 0 },
   cameraHomeSeq: 0,
   campusDragMode: 'rotate',
-  skyMode: initial.sky ?? 'day',           // 3D 캠퍼스 하늘: 'day' 낮 | 'dusk' 노을 | 'night' 밤 | 'live' 지금(현지 시각)
+  skyMode: initial.sky ?? 'day',
+  tour: null,                              // 자동 투어 진행 상태: null | { step: 몇 번째 단계(0부터), seq } (TourPlayer 가 읽음)           // 3D 캠퍼스 하늘: 'day' 낮 | 'dusk' 노을 | 'night' 밤 | 'live' 지금(현지 시각)
   buildingFly: null,                       // { id, seq } 패널에서 건물을 고르면 카메라가 그 건물로 (seq 로 같은 건물 재요청도 구분)
   transitioning: false,                    // 카메라 전환(페이드) 중인지
   // 카메라 전환 요청: UI/핀이 요청하면 CameraRig 가 애니메이션 후 실제로 view 를 바꿉니다
@@ -210,6 +211,16 @@ export const useAppStore = create((set, get) => ({
     set({ selectedZoneKey: key, selectedBuildingId: null, buildingFly: null, hoverId: null, campusPanelCollapsed: false }); get().syncHash()
   },
   requestCampusHome: () => { if (!get().pending) { set({ cameraHomeSeq: get().cameraHomeSeq + 1, selectedBuildingId: null, buildingFly: null, hoverId: null, selectedZoneKey: null }); get().syncHash() } },
+  // 자동 투어: 시작 → 단계 이동 → 끝. 끝낼 땐 날짜·하늘을 기본으로 되돌림 (투어가 바꿔 둔 값이 남지 않게)
+  startTour: () => { if (get().data) set({ tour: { step: 0, seq: (get().tour?.seq ?? 0) + 1 }, playing: false }) },
+  setTourStep: (step) => { const t = get().tour; if (t) set({ tour: { ...t, step } }) },
+  stopTour: () => {
+    const st = get()
+    if (!st.tour) return
+    set({ tour: null })
+    if (st.skyMode !== 'day') st.setSkyMode('day')
+    if (st.month !== st.asOfMonth) st.setMonth(st.asOfMonth)
+  },
   setSkyMode: (mode) => { if (['day', 'dusk', 'night', 'live'].includes(mode)) { set({ skyMode: mode }); get().syncHash() } },
   setCampusDragMode: (mode) => { if (mode === 'rotate' || mode === 'pan') set({ campusDragMode: mode }) },
   toggleLang: () => set({ lang: get().lang === 'ko' ? 'en' : 'ko' }),

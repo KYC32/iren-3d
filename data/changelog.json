@@ -1,6 +1,20 @@
 {
   "entries": [
     {
+      "date": "2026-10-12",
+      "items": [
+        {
+          "ko": "프린스조지 재확인: 2026-05-08 실적 콜에서 \"공랭 GPU 전량 납품, 50MW 전체 가동 중이거나 시운전 중\" 확인 — 비율 미공개라 시운전 유지(보수적), 회사 발언은 근거 카드로 표시. GPU 23,000개는 홈페이지 기준 \"설치 또는 주문\"으로 정정",
+          "en": "Prince George re-checked: Q3 FY26 call (2026-05-08) says all air-cooled GPUs delivered and \"either operating or undergoing commissioning\" across 50MW — split undisclosed, kept at commissioning (conservative), statement shown as evidence. 23,000 GPUs relabeled as \"installed or on order\" per company website",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
+        },
+        {
+          "ko": "자동 투어 추가: 지도 → 주요 캠퍼스 3D → 계약·건물 → 전망 순서로 약 90초 안내 (상단 \"투어\" 버튼)",
+          "en": "Guided tour added: map → key campuses in 3D → contracts and buildings → outlook, about 90 seconds (\"Tour\" button in the top bar)"
+        }
+      ]
+    },
+    {
       "date": "2026-10-09",
       "items": [
         {

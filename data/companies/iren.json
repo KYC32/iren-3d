@@ -682,7 +682,8 @@
           "gross_mw": 50,
           "gpu": {
             "model": "H200 / B200 / B300 / MI350X (mixed)",
-            "count": 23000
+            "count": 23000,
+            "basis": "installed_or_ordered"
           },
           "sources": [
             "https://iren.com/data-centers/prince-george",
@@ -696,12 +697,6 @@
               "from": "2025-12",
               "basis": "reported",
               "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000015/iren-20251231.htm"
-            },
-            {
-              "status": "operating",
-              "from": "2026-08",
-              "basis": "estimate",
-              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
             }
           ]
         },
@@ -872,6 +867,11 @@
         {
           "note": "공랭 GPU 홀 가동 2026-08: 2026-05 녹취는 \"가동 또는 시운전 중\"까지만 확인. 전량 가동 월은 Tier 1 에서 확인 못함 (추정)",
           "note_en": "GPU halls operating from Aug 2026: May 2026 call only confirms \"operating or commissioning\"; full-operation month not found in Tier 1 (estimate)",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
+        },
+        {
+          "note": "2026-05-08 실적 발표 콜: 프린스조지 공랭 GPU 는 모두 납품됐고 50MW 전체에서 \"가동 중이거나 시운전 중\" — 가동·시운전 비율이 미공개라 보수적으로 시운전으로 둠. 홈페이지의 \">23,000 GPU\" 는 설치 또는 주문 기준",
+          "note_en": "Q3 FY26 call (2026-05-08): all air-cooled GPUs delivered and \"either operating or undergoing commissioning\" across the 50MW site — split undisclosed, so kept at commissioning (conservative). Website \">23,000 GPUs\" is installed-or-on-order",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
         }
       ],

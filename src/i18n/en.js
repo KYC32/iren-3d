@@ -71,6 +71,7 @@ export default {
   campus: { home: 'Fit campus', controls: '3D camera controls', rotate: 'Rotate', pan: 'Pan', rotateLabel: 'Rotate view', panLabel: 'Pan view', liquid: 'Liquid cooling', air: 'Air cooling', mining: 'Mining', planned: 'Expansion area' },
   sky: { label: 'Sky & lighting', day: 'Day', dusk: 'Dusk', night: 'Night', live: 'Now', liveTitle: 'Real sun position at local time',
     hint: 'Lit buildings = live on this date (incl. customer-accepted)', ai: 'AI', mining: 'Mining', pending: 'Dim = commissioning / mining wind-down' },
+  tour: { start: 'Tour', startTitle: '90-second guided tour — map → campuses in 3D → contracts → outlook', stop: 'End', prev: 'Back', next: 'Next', pause: 'Pause', resume: 'Resume', of: '/', hint: 'Esc to end · ← → to move · Space to pause' },
   sceneLoading: 'Loading 3D map…',
   kpi2: { reported: 'Reported', secured: 'Secured power', energized: 'energized', ai: 'AI live', mining: 'mining', building: 'Building / commissioning', sites: 'Sites', companies: 'companies', delivered: 'customer accepted', incl: 'incl.', outlook: 'AI live outlook', outlookNote: 'company targets' },
   empty: 'No announced buildings yet — grid power secured only',

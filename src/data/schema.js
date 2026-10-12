@@ -134,7 +134,8 @@ export const Building = z.object({
   progress: z.number().min(0).max(1).optional(),  // 기준일(as_of) 시점 건설 진행률
   replaces: Id.optional(),                        // 기존 건물 전력을 넘겨받는 전환
   customer: z.string().optional(),
-  gpu: z.object({ model: z.string(), count: z.number().nullable() }).strict().optional(),
+  // gpu.basis: count 가 무엇을 세는지 — installed(설치됨) | installed_or_ordered(설치 또는 주문, 회사 홈페이지식 표기). 없으면 installed
+  gpu: z.object({ model: z.string(), count: z.number().nullable(), basis: z.enum(['installed', 'installed_or_ordered']).optional() }).strict().optional(),
   sources: z.array(Url).min(1),
 }).strict()
 

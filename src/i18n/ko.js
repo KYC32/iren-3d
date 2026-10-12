@@ -72,6 +72,8 @@ export default {
   // 3D 캠퍼스 하늘 모드 (낮·노을·밤·지금)
   sky: { label: '하늘·조명', day: '낮', dusk: '노을', night: '밤', live: '지금', liveTitle: '현지 시각의 실제 해 위치',
     hint: '불 켜진 건물 = 이 날짜에 가동 중 (고객 인수 포함)', ai: 'AI', mining: '채굴', pending: '희미한 불 = 시운전·채굴 축소 중' },
+  // 자동 투어
+  tour: { start: '투어', startTitle: '90초 자동 투어 — 지도 → 캠퍼스 3D → 계약 → 전망', stop: '끝내기', prev: '이전', next: '다음', pause: '일시정지', resume: '계속', of: '/', hint: 'Esc 끝내기 · ← → 이동 · 스페이스 일시정지' },
   sceneLoading: '3D 지도 불러오는 중…',
   kpi2: { reported: '발표값', secured: '확보 전력', energized: '통전', ai: 'AI 가동', mining: '채굴', building: '건설·시운전', sites: '사이트', companies: '회사', delivered: '고객 인수', incl: '포함', outlook: 'AI 가동 전망', outlookNote: '회사 목표 기준' },
   empty: '발표된 건물 없음 — 계통 전력만 확보',

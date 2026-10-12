@@ -47,6 +47,14 @@
       "published": null,
       "publisher": "IREN",
       "reviewedAt": "2026-10-08"
+    },
+    {
+      "id": "q3fy26-call",
+      "title": "Q3 FY26 earnings call transcript",
+      "url": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm",
+      "published": "2026-05-11",
+      "publisher": "IREN",
+      "reviewedAt": "2026-10-12"
     }
   ],
   "claims": [
@@ -229,6 +237,19 @@
       "locator": "Contract scope",
       "summary_ko": "기존 데이터센터 약 60MW. IT·총전력 기준은 명시되지 않아 분리 집계.",
       "summary_en": "Approximately 60 MW of existing data centers; IT/gross basis is not explicit, so this is kept separate.",
+      "basis": "reported",
+      "review": "verified"
+    },
+    {
+      "id": "pg-air-status-2026-05",
+      "site": "prince-george",
+      "building": "pg-air",
+      "field": "status",
+      "value": "commissioning",
+      "sourceId": "q3fy26-call",
+      "locator": "Prepared remarks — 2026 expansion, British Columbia air-cooled capacity",
+      "summary_ko": "\"프린스조지는 공랭 GPU 가 모두 납품됐고 50MW 전체에서 가동 중이거나 시운전 중\" — 가동 비율 미공개라 시운전으로 유지.",
+      "summary_en": "\"At Prince George, all air-cooled GPUs have now been delivered and are either operating or undergoing commissioning across the 50 megawatt site\" — split undisclosed, kept at commissioning.",
       "basis": "reported",
       "review": "verified"
     }
