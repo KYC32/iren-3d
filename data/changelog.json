@@ -1,6 +1,19 @@
 {
   "entries": [
     {
+      "date": "2026-10-14",
+      "items": [
+        {
+          "ko": "주가 페이지 추가: 상장(2021-11-17, 공모가 $28)부터 현재까지 Nasdaq 공개 일봉 — 기간·로그 눈금·거래량, 회사 사건(계약·실적·가동 단계) 마커, 현재가·상장가 대비·52주·최대 낙폭",
+          "en": "Stock page added: Nasdaq daily prices since IPO (2021-11-17, $28) with range/log scale/volume, company event markers (contracts, earnings, milestones), and summary stats"
+        },
+        {
+          "ko": "뉴스 페이지 추가: [회사 발표] SEC EDGAR 제출(8-K 첨부 보도자료 제목·실적·공시·내부자 거래) · [언론] Google 뉴스 검색. 두 데이터는 GitHub Action 이 평일 매일 자동 갱신",
+          "en": "News page added: [Company] SEC EDGAR filings (press-release headlines from 8-K exhibits, earnings, filings, insider) · [Press] Google News search. Both feeds refresh daily on weekdays via GitHub Actions"
+        }
+      ]
+    },
+    {
       "date": "2026-10-12",
       "items": [
         {

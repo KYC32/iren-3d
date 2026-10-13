@@ -1,6 +1,6 @@
 // 상단 바: 제목·기준일 / 뒤로가기 / 하늘(낮·노을·밤·지금) / 공유 / 한영 토글
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, Languages, Server, ListOrdered, Maximize2, Move, Rotate3D, Share2, Check, Sun, Sunset, Moon, Clock, Compass } from 'lucide-react'
+import { ArrowLeft, Languages, Server, ListOrdered, Maximize2, Move, Rotate3D, Share2, Check, Sun, Sunset, Moon, Clock, Compass, Map as MapIcon, ChartLine, Newspaper } from 'lucide-react'
 import { localClock } from '../scene/sun.js'
 import { AI_LIGHT, MINER_LIGHT } from '../scene/nightColors.js'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
@@ -18,11 +18,16 @@ export default function TopBar() {
   const toggleSheet = useAppStore((s) => s.toggleCampusList)
   const dragMode = useAppStore((s) => s.campusDragMode)
   const setDragMode = useAppStore((s) => s.setCampusDragMode)
+  const page = useAppStore((s) => s.page)
+  const setPage = useAppStore((s) => s.setPage)
+  const inMap = !page // 지도·3D 화면일 때만 보이는 버튼들
 
   return (
     <header className="topbar panel">
       <div className="brand">
-        {view === 'site' ? (
+        {page ? (
+          <span className="brand-icon">{page === 'stock' ? <ChartLine size={18} /> : <Newspaper size={18} />}</span>
+        ) : view === 'site' ? (
           <button className="icon-btn" onClick={requestGlobe} aria-label={lang==='ko'?'캠퍼스 목록으로':'Back to campuses'} title={lang==='ko'?'캠퍼스 목록으로':'Back to campuses'}>
             <ArrowLeft size={18} />
           </button>
@@ -31,30 +36,35 @@ export default function TopBar() {
         )}
         <div>
           <div className="title">
-            {view === 'site' && site ? pickName(site, lang) : (lang==='ko'?'IREN 현장 리서치':'IREN Field Research')}
+            {page ? t.nav[page === 'stock' ? 'stockTitle' : 'newsTitle'] : view === 'site' && site ? pickName(site, lang) : (lang==='ko'?'IREN 현장 리서치':'IREN Field Research')}
           </div>
           <div className="subtitle">
-            {view === 'site' && site ? `${site.region} · ${site.grid_operator}` : t.subtitle}
-            {data && <> · {t.asOf} {data.as_of}</>}
+            {page ? t.nav[page === 'stock' ? 'stockSub' : 'newsSub'] : <>{view === 'site' && site ? `${site.region} · ${site.grid_operator}` : t.subtitle}{data && <> · {t.asOf} {data.as_of}</>}</>}
           </div>
         </div>
       </div>
+      {/* 페이지 네비: 지도 | 주가 | 뉴스 */}
+      <nav className="camera-mode page-nav" aria-label={t.nav.label}>
+        {[[null, MapIcon, t.nav.map], ['stock', ChartLine, t.nav.stock], ['news', Newspaper, t.nav.news]].map(([key, Icon, label]) => (
+          <button key={key ?? 'map'} aria-pressed={page === key} onClick={() => setPage(key)} aria-label={label} title={label}><Icon size={15} aria-hidden="true" /><span>{label}</span></button>
+        ))}
+      </nav>
       <div className="top-actions">
-      {view === 'site' && surface==='3d' && site && <SkyControl t={t} site={site} />}
-      {view === 'site' && surface==='3d' && <div className="camera-mode" role="group" aria-label={t.campus.controls}>
+      {inMap && view === 'site' && surface==='3d' && site && <SkyControl t={t} site={site} />}
+      {inMap && view === 'site' && surface==='3d' && <div className="camera-mode" role="group" aria-label={t.campus.controls}>
         <button aria-pressed={dragMode==='rotate'} aria-label={t.campus.rotateLabel} title={t.campus.rotateLabel} onClick={()=>setDragMode('rotate')}><Rotate3D size={15}/><span>{t.campus.rotate}</span></button>
         <button aria-pressed={dragMode==='pan'} aria-label={t.campus.panLabel} title={t.campus.panLabel} onClick={()=>setDragMode('pan')}><Move size={15}/><span>{t.campus.pan}</span></button>
       </div>}
-      {view === 'site' && surface==='3d' && <button className="lang-btn home-btn" onClick={() => useAppStore.getState().requestCampusHome()} aria-label={t.campus.home} title={t.campus.home}>
+      {inMap && view === 'site' && surface==='3d' && <button className="lang-btn home-btn" onClick={() => useAppStore.getState().requestCampusHome()} aria-label={t.campus.home} title={t.campus.home}>
         <Maximize2 size={15} /><span>{t.campus.home}</span>
       </button>}
-      {surface === 'map' && (
+      {inMap && surface === 'map' && (
         <button className="icon-btn sheet-btn" onClick={toggleSheet} aria-label={lang==='ko'?'캠퍼스 목록':'Campus list'} title={lang==='ko'?'캠퍼스 목록':'Campus list'}>
           <ListOrdered size={17} />
         </button>
       )}
       {/* 자동 투어: 처음 온 사람이 90초 안에 전체 그림을 보게 */}
-      {data && <button className="lang-btn tour-btn" onClick={() => useAppStore.getState().startTour()} aria-label={t.tour.startTitle} title={t.tour.startTitle}>
+      {inMap && data && <button className="lang-btn tour-btn" onClick={() => useAppStore.getState().startTour()} aria-label={t.tour.startTitle} title={t.tour.startTitle}>
         <Compass size={15} aria-hidden="true" /><span>{t.tour.start}</span>
       </button>}
       <ShareButton lang={lang} title={view === 'site' && site ? pickName(site, lang) : 'IREN'} />

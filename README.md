@@ -67,6 +67,15 @@ npm run build      # validate → 빌드 (dist/)
 4. 사이트를 추가하거나 좌표를 바꿨다면 `npm run geo` (보드판·지구본 타일 다시 계산).
 5. `git commit` → `git push` 하면 Vercel 이 자동으로 다시 배포합니다.
 
+## 주가·뉴스 페이지와 자동 갱신
+
+상단 네비 [지도 | 주가 | 뉴스] 로 전환합니다 (`#page=stock`, `#page=news`, 주가 강조 날짜 `&at=YYYY-MM-DD`).
+
+- 주가: `public/data/stock.json` — Nasdaq 공개 일봉(상장 2021-11-17부터). `node scripts/fetch-stock.mjs` (증분, `--full` 전체)
+- 뉴스: `public/data/news.json` — [회사 발표] SEC EDGAR 제출(8-K 첨부 보도자료 제목·실적·공시·내부자), [언론] Google 뉴스 RSS. `node scripts/fetch-news.mjs [--max=N] [--retry-titles]`
+- `.github/workflows/refresh.yml` 이 평일 22:30 UTC 에 두 스크립트를 돌려 바뀐 파일을 커밋 → Vercel 자동 배포. 소스가 막히면 기존 파일 유지(사이트는 정상). 수동 실행: GitHub Actions → refresh-data → Run workflow
+- 차트의 사건 마커는 이 레포의 타임라인 데이터(회사 발표 기준)이며 주가 인과를 뜻하지 않습니다. 투자 조언이 아닙니다.
+
 ## 영상 만들기 (X·쇼츠용)
 
 같은 스토리보드로 16:9(1920×1080)와 9:16(1080×1920) 영상을 자동으로 만듭니다.

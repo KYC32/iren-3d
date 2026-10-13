@@ -37,3 +37,19 @@ describe('하늘 모드 (sky)', () => {
     expect(parseHash('#sky=noon')).toEqual({})
   })
 })
+
+describe('페이지 (page · at)', () => {
+  it('주가·뉴스 페이지와 강조 날짜 왕복, 지도 상태는 그대로 유지', () => {
+    expect(parseHash(buildHash({ page: 'news' }))).toEqual({ page: 'news' })
+    const s = { page: 'stock', at: '2025-11-03', site: 'childress', date: '2026-08' }
+    expect(parseHash(buildHash(s))).toEqual(s)
+    expect(buildHash(s).startsWith('#page=stock&at=2025-11-03')).toBe(true)
+  })
+  it('모르는 페이지·page 없는 at·잘못된 날짜는 무시', () => {
+    expect(parseHash('#page=foo')).toEqual({})
+    expect(parseHash('#at=2025-11-03')).toEqual({})
+    expect(parseHash('#page=news&at=2025-11-03')).toEqual({ page: 'news' })
+    expect(parseHash('#page=stock&at=2025-13-40')).toEqual({ page: 'stock' })
+    expect(buildHash({ page: 'news', at: '2025-11-03' })).toBe('#page=news')
+  })
+})

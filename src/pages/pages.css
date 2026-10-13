@@ -1,0 +1,73 @@
+/* 주가·뉴스 페이지 전용 스타일 — PageShell 이 import 하므로 페이지와 함께 지연 로딩됨 (첫 화면 번들 밖) */
+.page-error { padding: 40px 0; text-align: center; color: var(--text-muted); font-size: 13px; }
+.page-error { color: #b23a3a; }
+.page-error .lang-btn { display: inline-flex; margin-left: 8px; }
+.page-warn { font-size: 12px; color: #8a6400; background: #fbf1d3; border-radius: 8px; padding: 7px 10px; margin: 6px 0 10px; }
+.page-note { font-size: 11.5px; color: var(--text-muted); line-height: 1.5; margin: 14px 0 0; }
+.page-note a, .page-disclaimer a { color: var(--text-muted); }
+.page-disclaimer { font-size: 10.5px; color: var(--text-muted); margin: 18px 0 0; }
+
+/* ---- 주가 ---- */
+.stock-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-bottom: 12px; }
+.stock-stats .stat { display: flex; flex-direction: column; gap: 2px; padding: 9px 12px; border: 1px solid #e3eaf3; border-radius: 10px; background: #fff; min-width: 0; }
+.stock-stats small { font-size: 10.5px; color: var(--text-muted); }
+.stock-stats b { display: flex; align-items: center; gap: 5px; font-size: 19px; color: #1f3550; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.stock-stats span { font-size: 10.5px; color: #7a889c; }
+.stock-stats .tone-up b { color: #1f7f66; }  .stock-stats .tone-down b { color: #b23a3a; }
+.stock-controls { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 0 0 8px; }
+.chip-toggle { display: flex; align-items: center; gap: 5px; font-size: 12px; color: #71877e; padding: 5px 9px; border: 1px solid #dce5e0; border-radius: 10px; background: #f0f5f2; cursor: pointer; }
+.chip-toggle input { accent-color: #28594a; margin: 0; }
+.stock-chart { position: relative; width: 100%; touch-action: pan-y; }
+.stock-chart svg { display: block; width: 100%; height: auto; }
+.chart-grid line { stroke: #e3e8f2; }
+.chart-axis text { font-size: 10.5px; fill: #56675f; }
+.chart-line { fill: none; stroke: var(--accent); stroke-width: 1.6; }
+.chart-area { fill: var(--accent); opacity: .08; }
+.chart-ipo { stroke: #8a6400; stroke-dasharray: 3 3; }
+.chart-ipo-label { font-size: 10px; fill: #8a6400; }
+.chart-vol rect { fill: #c7d6d2; }
+.chart-marker { cursor: pointer; }
+.chart-more { font-size: 9.5px; fill: var(--text-muted); }
+.chart-cross line { stroke: #16213a; stroke-dasharray: 2 3; }
+.chart-cross circle { fill: #fff; stroke: var(--accent); stroke-width: 2; }
+.chart-highlight { stroke: #e2b11c; stroke-width: 2; }
+.chart-tip { position: absolute; pointer-events: none; z-index: 2; background: #fff; border: 1px solid var(--panel-border); border-radius: 8px; padding: 6px 9px; font-size: 11.5px; line-height: 1.45; box-shadow: 0 4px 14px rgba(30,45,90,.12); width: max-content; max-width: 240px; }
+.chart-tip.pinned { pointer-events: auto; }
+.chart-tip b { color: #1f3550; }  .chart-tip strong { font-variant-numeric: tabular-nums; }
+.chart-tip small { display: block; color: var(--text-muted); font-size: 10.5px; }
+.chart-tip .up { color: #1f7f66; }  .chart-tip .down { color: #b23a3a; }
+.tip-event { display: flex; gap: 6px; align-items: flex-start; margin-top: 4px; }
+.tip-event i { flex: none; width: 8px; height: 8px; border-radius: 50%; margin-top: 4px; }
+.tip-event a { color: var(--accent); }
+.chart-legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--text-muted); margin-top: 6px; }
+.chart-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.chart-legend i.hollow { background: #fff; border: 1.5px solid #8a93ab; }
+
+/* ---- 뉴스 ---- */
+.news-page .map-tabs { margin-bottom: 8px; }
+.news-page .map-tabs small { font-weight: 500; color: var(--text-muted); margin-left: 2px; }
+.news-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+.chip { border: 1px solid #dce5e0; background: #f7faf8; color: #71877e; border-radius: 999px; padding: 4px 10px; font-size: 12px; }
+.chip.on { background: #28594a; border-color: #28594a; color: #fff; }
+.chip small { opacity: .75; }
+.news-list { list-style: none; margin: 0; padding: 0; }
+.news-list h5 { font-size: 11.5px; color: #34405e; margin: 12px 4px 4px; }
+.news-row { display: flex; gap: 10px; align-items: flex-start; padding: 7px 6px; border-radius: 9px; }
+.news-row:hover { background: #eef2fb; }
+.news-row .basis { flex: none; margin-top: 2px; white-space: nowrap; }
+.news-body { min-width: 0; }
+.news-row a { color: var(--text); text-decoration: none; font-size: 13px; line-height: 1.4; }
+.news-row a:hover { text-decoration: underline; }
+.news-row a svg { vertical-align: -1px; color: var(--text-muted); }
+.news-row small { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; color: var(--text-muted); font-size: 11px; margin-top: 2px; }
+.basis.kind-press { background: #e2f3ec; color: #1f7f66; }  .basis.kind-earnings { background: #fff3cc; color: #8a6400; }
+.basis.kind-filing { background: #eef0f5; color: #6b7591; }  .basis.kind-insider { background: #f3e8f6; color: #6d3b86; }
+.basis.kind-press-media { background: #eef0f5; color: #4c5a72; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+.news-chart-btn { display: inline-flex; align-items: center; gap: 3px; border: 0; background: none; color: var(--accent); font-size: 11px; padding: 0; cursor: pointer; }
+.news-more { margin: 12px auto 0; display: flex; }
+@media (max-width: 767px) {
+  .stock-stats { grid-template-columns: repeat(2, 1fr); }
+  .stock-stats b { font-size: 16px; }
+  .chart-tip { max-width: 200px; }
+  .news-row .basis.kind-press-media { max-width: 80px; }
+}

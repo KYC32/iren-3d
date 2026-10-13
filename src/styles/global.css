@@ -738,3 +738,11 @@ button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit;
   /* 좁은 화면에서는 아래 패널(캠퍼스 설명·목록)이 자막을 가리므로 그 위로 */
   .tour-card { z-index: 90; }
 }
+
+/* ================= 주가·뉴스 페이지 (공통 부분 — 나머지 스타일은 src/pages/pages.css, 페이지와 함께 지연 로딩) ================= */
+.page-nav { margin-left: 10px; }
+.page-nav button[aria-pressed="true"] { background: #fff; color: #28594a; box-shadow: 0 1px 4px #21453716; }
+.page-scroll { flex: 1; min-height: 0; overflow-y: auto; pointer-events: auto; background: rgba(255,255,255,.97); padding: 16px 18px 20px; }
+.page-loading { padding: 40px 0; text-align: center; color: var(--text-muted); font-size: 13px; }
+.has-page .maplibregl-ctrl, .has-page .map-marker, .has-page .map-list-launcher, .has-page .campus-map-marker { display: none !important; }
+@media (max-width: 767px) { .page-nav { margin-left: 0; } .page-nav button span { display: none; } .page-scroll { padding: 12px; } }

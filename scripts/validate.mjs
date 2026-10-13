@@ -6,6 +6,7 @@
 import { readFileSync, readdirSync, existsSync } from 'node:fs'
 import { validateResearch } from '../src/data/researchSchema.js'
 import { validateAll } from './lib/validate-core.mjs'
+import { StockFile, NewsFile } from '../src/data/feedSchema.js'
 
 const DATA = new URL('../data/', import.meta.url)
 const companiesFile = JSON.parse(readFileSync(new URL('companies.json', DATA), 'utf8'))
@@ -18,6 +19,13 @@ const files = Object.fromEntries(
 const logUrl = new URL('changelog.json', DATA)
 const changelogFile = existsSync(logUrl) ? JSON.parse(readFileSync(logUrl, 'utf8')) : null
 const { errors, warns, infra } = validateAll({ companiesFile, files, changelogFile })
+// 자동 갱신 파일(주가·뉴스)은 스키마가 깨져도 빌드를 막지 않고 경고만 (GitHub Action 이 만든 파일이 사이트를 멈추지 않게)
+for (const [name, schema] of [['stock.json', StockFile], ['news.json', NewsFile]]) {
+  const url = new URL(`../public/data/${name}`, import.meta.url)
+  if (!existsSync(url)) { warns.push(`${name} 없음 — node scripts/fetch-${name.split('.')[0]}.mjs 로 생성`); continue }
+  const r = schema.safeParse(JSON.parse(readFileSync(url, 'utf8')))
+  if (!r.success) warns.push(`${name} 스키마 오류: ${r.error.issues[0]?.path.join('.')} — ${r.error.issues[0]?.message}`)
+}
 const researchUrl = new URL('research.json', DATA)
 if (infra && existsSync(researchUrl)) errors.push(...validateResearch(JSON.parse(readFileSync(researchUrl,'utf8')),infra.sites))
 // 공개일을 모르는 보고(reported) 기록 → 타임라인은 "사건 날짜에 공개됨"으로 대신 처리 (경고만)

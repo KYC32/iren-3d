@@ -256,3 +256,26 @@ describe('일정 탭에서 이동', () => {
     expect(state().pending).toBeNull()
   })
 })
+
+describe('주가·뉴스 페이지', () => {
+  it('페이지 전환은 해시에 page·at 을 남기고 지도 상태는 보존', () => {
+    state().setRaw(raw)
+    state().selectSite('childress')
+    state().setPage('stock', '2025-11-03')
+    expect(state()).toMatchObject({ page: 'stock', stockAt: '2025-11-03', selectedSiteId: 'childress' })
+    expect(window.history.replaceState).toHaveBeenLastCalledWith(null, '', expect.stringContaining('page=stock&at=2025-11-03'))
+    state().setPage('news')
+    expect(state()).toMatchObject({ page: 'news', stockAt: null })
+    state().setPage(null)
+    expect(state().page).toBeNull()
+    expect(state().selectedSiteId).toBe('childress')
+  })
+  it('시설 데이터가 없어도 해시로 페이지를 열 수 있고, 투어 중 페이지로 가면 투어 종료', () => {
+    state().applyHash('#page=news')
+    expect(state().page).toBe('news')
+    state().setRaw(raw)
+    state().startTour()
+    state().setPage('stock')
+    expect(state().tour).toBeNull()
+  })
+})

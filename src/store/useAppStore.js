@@ -48,6 +48,8 @@ export const useAppStore = create((set, get) => ({
   cameraHomeSeq: 0,
   campusDragMode: 'rotate',
   skyMode: initial.sky ?? 'day',
+  page: initial.page ?? null,              // 지도 대신 보여 줄 페이지: null(지도) | 'stock'(주가) | 'news'(뉴스)
+  stockAt: initial.at ?? null,             // 주가 차트에서 강조할 날짜 (뉴스에서 "차트에서 보기")
   tour: null,                              // 자동 투어 진행 상태: null | { step: 몇 번째 단계(0부터), seq } (TourPlayer 가 읽음)           // 3D 캠퍼스 하늘: 'day' 낮 | 'dusk' 노을 | 'night' 밤 | 'live' 지금(현지 시각)
   buildingFly: null,                       // { id, seq } 패널에서 건물을 고르면 카메라가 그 건물로 (seq 로 같은 건물 재요청도 구분)
   transitioning: false,                    // 카메라 전환(페이드) 중인지
@@ -89,7 +91,7 @@ export const useAppStore = create((set, get) => ({
       selectedBuildingId: data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? h.building : null,
       selectedZoneKey: customerZones(data.sites.find((s)=>s.id===id) ?? {buildings:[]},data.companies).some((z)=>z.key===h.zone) ? h.zone : null,
       activeCompanies: new Set((h.companies ?? []).filter((id) => raw.companies.some((c) => c.id === id))),
-      colorMode: h.color ?? 'status', skyMode: h.sky ?? 'day',
+      colorMode: h.color ?? 'status', skyMode: h.sky ?? 'day', page: h.page ?? null, stockAt: h.at ?? null,
     })
     get().syncHash()
   },
@@ -125,15 +127,16 @@ export const useAppStore = create((set, get) => ({
       date: st.month != null && st.month !== st.asOfMonth ? monthKey(st.month) : null,
       companies: [...st.activeCompanies],
       color: st.colorMode, surface: st.surface, tab: st.detailTab, building: st.selectedBuildingId, zone: st.selectedZoneKey,
-      sky: st.skyMode,
+      sky: st.skyMode, page: st.page, at: st.stockAt,
     })
     window.history.replaceState(null, '', hash || window.location.pathname + window.location.search)
   },
   // 해시에서 생략된 값도 기본값으로 복원합니다. 데이터 로딩 전에는 setRaw가 처리합니다.
   applyHash: (hash) => {
     const st = get()
-    if (!st.data) return
     const h = parseHash(hash)
+    set({ page: h.page ?? null, stockAt: h.at ?? null }) // 페이지(주가·뉴스)는 시설 데이터 없이도 열림 → 먼저 반영
+    if (!st.data) return
     set({ playing: false })
     st.setMonth(h.date ? toMonth(h.date) : st.asOfMonth)
     const next = get()
@@ -211,6 +214,12 @@ export const useAppStore = create((set, get) => ({
     set({ selectedZoneKey: key, selectedBuildingId: null, buildingFly: null, hoverId: null, campusPanelCollapsed: false }); get().syncHash()
   },
   requestCampusHome: () => { if (!get().pending) { set({ cameraHomeSeq: get().cameraHomeSeq + 1, selectedBuildingId: null, buildingFly: null, hoverId: null, selectedZoneKey: null }); get().syncHash() } },
+  // 페이지 전환: null(지도) | 'stock' | 'news'. at = 주가 차트 강조 날짜. 지도 상태(캠퍼스·날짜)는 그대로 둬서 돌아오면 복원
+  setPage: (page, at = null) => {
+    if (get().tour) get().stopTour()
+    set({ page: page ?? null, stockAt: page === 'stock' ? at : null, sheetOpen: false, playing: false })
+    get().syncHash()
+  },
   // 자동 투어: 시작 → 단계 이동 → 끝. 끝낼 땐 날짜·하늘을 기본으로 되돌림 (투어가 바꿔 둔 값이 남지 않게)
   startTour: () => { if (get().data) set({ tour: { step: 0, seq: (get().tour?.seq ?? 0) + 1 }, playing: false }) },
   setTourStep: (step) => { const t = get().tour; if (t) set({ tour: { ...t, step } }) },
