@@ -6,12 +6,12 @@
 //   readJsonOr         : 파일이 없거나 깨졌으면 대체값
 //   writeJsonIfChanged : 내용이 바뀐 경우에만 저장 → git 에 쓸데없는 변경이 생기지 않음
 // 외부 요청에는 사용자 개인정보(이메일)를 넣지 않습니다.
-// SEC 는 User-Agent 에 "이름 이메일" 꼴을 요구(없으면 403)하므로 레포 주소 + 예시 주소(example.com)를 씁니다.
+// SEC 는 User-Agent 에 "이름 이메일" 꼴을 요구하고(없으면 403) 괄호·URL 이 섞여도 거절하므로 단순한 꼴로 둡니다.
 // =============================================================
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
 import { dirname } from 'node:path'
 
-export const BOT_UA = 'iren-3d research bot (github.com/KYC32/iren-3d) research@example.com'
+export const BOT_UA = 'iren-3d research bot research@example.com' // SEC 는 괄호·URL 이 들어간 UA 를 403 으로 거절함
 // 일부 공개 API 는 브라우저처럼 보이지 않으면 거절 → 브라우저 UA
 export const BROWSER_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0 Safari/537.36'
 

@@ -41,7 +41,7 @@ async function fetchCompany(prev, { max, retryTitles }) {
     if (/^(8-K|6-K)/.test(f.form)) {
       try {
         const idx = await fetchWithUa(folder + 'index.json', { as: 'json', headers: EDGAR_HEADERS }); fetched++
-        const ex = pickExhibit(idx)
+        const ex = pickExhibit(idx, f.primaryDocument)
         if (ex) {
           await sleep(260)
           const html = await fetchWithUa(folder + ex, { headers: { Accept: 'text/html' } }); fetched++

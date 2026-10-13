@@ -92,23 +92,31 @@ export function recentFilings(submissions) {
 }
 export const filingFolder = (accession) => `${EDGAR_BASE}/${String(accession).replace(/-/g, '')}/`
 
-// 제출 폴더의 파일 목록(index.json) → 보도자료 첨부 파일명. ex99-1 (또는 ex99_1·ex991) 우선, 없으면 ex99 로 시작하는 첫 .htm
-export function pickExhibit(indexJson) {
+// 제출 폴더의 파일 목록(index.json) → 보도자료 첨부 파일명
+//   1) ex99-1 (또는 ex99_1·ex991) 우선  2) ex99 로 시작하는 첫 .htm
+//   3) 둘 다 없으면 본문(primaryDocument)·R*.htm(재무 표)·_8k.htm 을 뺀 나머지 .htm — IREN 은 첨부를 'irenreportsfy26results.htm' 처럼 이름 짓기도 함
+export function pickExhibit(indexJson, primaryDocument = '') {
   const names = (indexJson?.directory?.item ?? []).map((i) => i.name).filter((n) => /\.htm$/i.test(n))
   const ex99 = names.filter((n) => /ex[-_]?99/i.test(n))
-  return ex99.find((n) => /ex[-_]?99[-_.]?1\b/i.test(n)) ?? ex99[0] ?? null
+  if (ex99.length) return ex99.find((n) => /ex[-_]?99[-_.]?1\b/i.test(n)) ?? ex99[0]
+  // ex10-1(계약서)·ex3-1(정관)·ex5-1(법률의견) 같은 다른 첨부는 보도자료가 아니므로 제외
+  const rest = names.filter((n) => n !== primaryDocument && !/^R\d+\.htm$/i.test(n) && !/_?8k\.htm$/i.test(n) && !/^iren-\d{8}\.htm$/i.test(n) && !/ex[-_]?\d/i.test(n))
+  return rest[0] ?? null
 }
 
 // 첨부 HTML → 헤드라인: 태그 제거 후 "Exhibit 99.1" 같은 머리말을 건너뛰고 첫 의미 있는 줄 (최대 160자)
 export function headlineFromHtml(html) {
-  const text = String(html ?? '')
+  // EDGAR 원본은 <DOCUMENT><TYPE>EX-99.1<FILENAME>…<TEXT> 머리말로 시작 → <TEXT> 뒤부터
+  const body = String(html ?? '').replace(/^[\s\S]*?<TEXT>/i, '')
+  const text = body
+    .replace(/<head[\s\S]*?<\/head>/gi, ' ') // <title> 에 파일명이 들어 있는 경우가 있음
     .replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ')
     .replace(/<br\s*\/?>|<\/(p|div|tr|h\d|li)>/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
   const lines = decodeEntities(text).split('\n').map((l) => l.replace(/\s+/g, ' ').trim()).filter(Boolean)
-  const skip = /^(exhibit\s*99|ex-?99|press release|news release|for immediate release)/i
-  const line = lines.find((l) => l.length >= 10 && !skip.test(l) && !/^\(?[A-Z]{3,6}:\s*[A-Z]+\)?$/.test(l))
-  return line ? line.slice(0, 160) : null
+  const skip = /^(exhibit\s*\d|ex-?\d|press release|news release|for immediate release)/i
+  const line = lines.find((l) => l.length >= 10 && !skip.test(l) && !/^\(?[A-Z]{3,6}:\s*[A-Z]+\)?$/.test(l) && !/\.(htm|html|pdf)$/i.test(l) && !/^iren (limited|ltd\.?)$/i.test(l))
+  return line ? line.replace(/^\d{1,2}\s+(?=[A-Z])/, '').slice(0, 160) : null // 슬라이드형 첨부의 쪽 번호("1 ") 제거
 }
 
 // 헤드라인이 없을 때의 기본 제목

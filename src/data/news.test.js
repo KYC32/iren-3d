@@ -51,11 +51,18 @@ describe('SEC EDGAR 분류', () => {
     expect(pickExhibit(idx)).toBe('ef_ex99-1.htm')
     expect(pickExhibit({ directory: { item: [{ name: 'a_ex99.htm' }, { name: 'a_8k.htm' }] } })).toBe('a_ex99.htm')
     expect(pickExhibit({ directory: { item: [{ name: 'a_8k.htm' }] } })).toBeNull()
+    // ex99 이름이 없으면 본문·R*.htm 을 뺀 나머지 (IREN 식 이름)
+    expect(pickExhibit({ directory: { item: [{ name: 'iren-20260827.htm' }, { name: 'irenreportsfy26results.htm' }, { name: 'R1.htm' }] } }, 'iren-20260827.htm')).toBe('irenreportsfy26results.htm')
+    expect(pickExhibit({ directory: { item: [{ name: 'ef_8k.htm' }, { name: 'ef_ex10-1.htm' }, { name: 'ef_ex5-1.htm' }] } }, 'ef_8k.htm')).toBeNull() // 계약서·법률의견은 보도자료 아님
   })
   it('첨부 HTML → 헤드라인 (Exhibit 99.1 머리말 건너뜀)', () => {
     const html = '<html><body><p>Exhibit 99.1</p><p><b>IREN Secures $9.7bn AI Cloud Contract with Microsoft</b></p><p>NEW YORK, November 3, 2025 (GLOBE NEWSWIRE) &#8211; IREN Limited…</p></body></html>'
     expect(headlineFromHtml(html)).toBe('IREN Secures $9.7bn AI Cloud Contract with Microsoft')
     expect(headlineFromHtml('<p>EX-99.1</p><p>short</p>')).toBeNull()
+    // EDGAR 원본의 SGML 머리말(파일명 포함)은 건너뜀
+    const raw = '<DOCUMENT>\n<TYPE>EX-99.1\n<SEQUENCE>2\n<FILENAME>ef20080141_ex99-1.htm\n<DESCRIPTION>EXHIBIT 99.1\n<TEXT>\n<html><body><p>Exhibit 99.1</p><p>IREN Reports Q4 FY26 Results</p></body></html>'
+    expect(headlineFromHtml(raw)).toBe('IREN Reports Q4 FY26 Results')
+    expect(headlineFromHtml('<html><head><title>irenreportsfy26results</title></head><body><p>IREN Reports FY26 Results</p></body></html>')).toBe('IREN Reports FY26 Results')
   })
   it('기본 제목·정렬·도메인', () => {
     expect(filingTitle({ form: '10-K', report_date: '2026-06-30' })).toBe('Annual report (10-K) (FY2026)')
