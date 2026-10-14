@@ -4,8 +4,11 @@
 // "물건이 곧 설명": 랙 1대 = 컴퓨트 트레이 18개 × GPU 4개 = GPU 72개, 약 130 kW.
 // 트레이 하나를 당기면 GPU·CPU·냉각판이 보이고, 부하를 올리면 GPU 위에 열(WebGL 잉크)이 번집니다.
 // 사이트의 "MW → GPU" 환산(hallEstimate.js)이 눈앞의 물건으로 보이는 게 목적입니다.
+// 색은 실물 사진(IREN 이 들이는 Dell XE9712 GB300 NVL72, GTC 2025 GB300 기판·HPE 트레이) 기준:
+//   검정 랙, 은색 컴퓨트 트레이, 검정 메인보드, 구리 냉각판, 검정 호스, 파랑/빨강은 냉각수 연결부 고리에만.
 //
-// 사용법: node scripts/anatomy/rack/build.mjs
+// 사용법: node scripts/anatomy/rack/build.mjs           (그림 만들기)
+//         node scripts/anatomy/rack/build.mjs --audit   (+ 관통·끝점·칠하는 순서 검사 결과 출력)
 //   → scripts/anatomy/rack/rack-light.html  (검수용 독립 페이지)
 //   → src/boot/rack.html                    (index.html 에 끼워 넣는 조각: 스타일 + 무대 + 스크립트)
 // 단위: 1 = 5 mm.  x = 랙 가로, y = 깊이(+y 가 보는 쪽 = 앞면), z = 위.
@@ -14,8 +17,11 @@ import { writeFileSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as k from "../kit/iso-kit.mjs";
+import * as G from "../kit/lathe.mjs";
+import * as A from "../kit/audit.mjs";
 import { glCamera } from "../kit/gl.mjs";
 import { gpuFigure, GPU } from "./gpu.mjs";
+import { workshop, auditAll } from "./shop.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..", "..");
@@ -123,6 +129,7 @@ function sidePanel() {
 
 // ---------- 3) 트레이 앞면들 (정적) ----------
 const FRONT_X0 = X0 + POST + 1, FRONT_W = W - 2 * POST - 2;
+// 트레이 앞판 한 장. 컴퓨트 = 은색 판금(Dell XE9712 사진), 스위치·전원 = 검정
 function frontPlate(s, lit = false) {
   const out = [];
   const z0 = s.z + 0.4, h = s.h - 0.8;
@@ -132,11 +139,21 @@ function frontPlate(s, lit = false) {
   const rect = [[FRONT_X0 + inset, z0 + inset], [FRONT_X0 + FRONT_W - inset, z0 + inset], [FRONT_X0 + FRONT_W - inset, z0 + h - inset], [FRONT_X0 + inset, z0 + h - inset]];
   out.push(L(rect.map((a, i) => { const b = rect[(i + 1) % 4]; return k.segment([a[0], Y1, a[1]], [b[0], Y1, b[1]], P); }).join(""), { tone: "faint" }));
   if (s.kind === "compute") {
-    // 양쪽 손잡이(분리 레버) + 상태 LED 2개 + 가운데 라벨 홈
-    for (const x of [FRONT_X0 + 6, FRONT_X0 + FRONT_W - 14]) out.push(S(slab(x, Y1, 8, 1.6, z0 + 2.2, h - 4.4, 0.6, 2), { tone: "mid", crease: "none" }));
-    out.push(`<g class="rk-led-g">${Dt([at([FRONT_X0 + 20, Y1 + 0.05, z0 + h / 2]), at([FRONT_X0 + 24, Y1 + 0.05, z0 + h / 2])], { size: 0.6, tone: "hi" })}</g>`);
-    out.push(L(k.segment([FRONT_X0 + 40, Y1 + 0.05, z0 + h / 2 - 1.5], [FRONT_X0 + 74, Y1 + 0.05, z0 + h / 2 - 1.5], P), { tone: "lo", free: true })); // 라벨 글줄
-    out.push(L(k.segment([FRONT_X0 + 40, Y1 + 0.05, z0 + h / 2 + 1.5], [FRONT_X0 + 62, Y1 + 0.05, z0 + h / 2 + 1.5], P), { tone: "lo", free: true }));
+    // 양 끝 고정 나사(둥근 손잡이) 2개
+    for (const x of [FRONT_X0 + 4.2, FRONT_X0 + FRONT_W - 4.2]) {
+      const F = G.frameAlong([x, Y1, z0 + h / 2], [0, 1, 0]);
+      out.push(`<g class="rk-steel">${S(G.disc(0, 1.1, 1.9, F, P, { bevel: 0.2, steps: 12 }), { tone: "mid" })}</g>`);
+    }
+    // 저장장치(E1.S) 칸 4개 + 네트워크 포트(OSFP, ConnectX-8) 4개: 검정 사각 구멍
+    const dark = [];
+    for (let i = 0; i < 4; i++) dark.push(S(slab(FRONT_X0 + 9 + i * 3.4, Y1, 2.5, 0.3, z0 + 1.3, h - 2.6, 0.2, 2), { tone: "mid", crease: "none", flat: true }));
+    for (let i = 0; i < 4; i++) dark.push(S(slab(FRONT_X0 + 44 + i * 6.6, Y1, 5.4, 0.35, z0 + 2.0, h - 4.0, 0.3, 2), { tone: "mid", crease: "none", flat: true }));
+    out.push(`<g class="rk-chip">${dark.join("")}</g>`);
+    // 상태 LED 2개(초록) + 라벨 글줄
+    out.push(`<g class="rk-led-g">${Dt([at([FRONT_X0 + 26, Y1 + 0.05, z0 + h / 2 - 1.2]), at([FRONT_X0 + 26, Y1 + 0.05, z0 + h / 2 + 1.2])], { size: 0.6, tone: "hi" })}</g>`);
+    out.push(L(k.segment([FRONT_X0 + 76, Y1 + 0.05, z0 + h / 2 - 1.3], [FRONT_X0 + 98, Y1 + 0.05, z0 + h / 2 - 1.3], P), { tone: "lo", free: true }));
+    out.push(L(k.segment([FRONT_X0 + 76, Y1 + 0.05, z0 + h / 2 + 1.3], [FRONT_X0 + 90, Y1 + 0.05, z0 + h / 2 + 1.3], P), { tone: "lo", free: true }));
+    return `<g class="rk-silver">${out.join("")}</g>`;
   } else if (s.kind === "switch") {
     // NVLink 스위치 트레이: QSFP 포트 블록 2묶음(튀어나온 케이지) + LED
     for (const x of [FRONT_X0 + 10, FRONT_X0 + FRONT_W - 46]) out.push(S(slab(x, Y1, 36, 1.2, z0 + 1.6, h - 3.2, 0.3, 2), { tone: "mid", crease: "none" }));
@@ -150,7 +167,16 @@ function frontPlate(s, lit = false) {
   }
   return out.join("");
 }
-function fronts() { return stack.filter((s) => s !== PULLED).map((s) => frontPlate(s)).join(""); }
+// 앞판들: 종류마다 처음 하나만 그리고 나머지는 <use> 로 높이만 옮겨 복사 (z 이동 = 화면 세로 이동이라 똑같음)
+function fronts() {
+  const up = k.axisVector(P, [0, 0, 1]), firstOf = {};
+  return stack.filter((s) => s !== PULLED).map((s) => {
+    const first = firstOf[s.kind];
+    if (!first) { firstOf[s.kind] = s; return `<g id="rk-front-${s.kind}">${frontPlate(s)}</g>`; }
+    const dz = s.z - first.z;
+    return `<use href="#rk-front-${s.kind}" transform="translate(${(up[0] * dz).toFixed(2)} ${(up[1] * dz).toFixed(2)})"/>`;
+  }).join("");
+}
 
 // 뽑힌 트레이의 빈 슬롯: 어두운 안쪽 (토큰을 바꾼 그룹)
 function cavity() {
@@ -186,58 +212,91 @@ function cap() {
   return out.join("");
 }
 
-// ---------- 4) 뽑히는 컴퓨트 트레이 (주제, lit) ----------
+// ---------- 4) 뽑히는 컴퓨트 트레이 (주제): GB300 실물 배치 ----------
 // 트레이 좌표: 앞판이 y = Y1 에, 몸통은 뒤로 TRAY_D 만큼. 나중에 translateAlong(P, [0, pull, 0]) 로 움직임
+// 뒤 → 앞 (GTC 2025 GB300 기판 사진 순서): GPU 4개 한 줄 → 냉각수 매니폴드 막대 → CPU 2개 + 메모리 → NIC 4개 → 저장장치·포트 → 앞판
+// 다 당겨도 뒤쪽 50(250 mm)은 랙 안에 남음 → 보이는 띠는 y = Y1 - STROKE(= -30) 부터 앞판까지
 const TZ = PULLED.z + 0.8;             // 트레이 바닥 아래면
 const TX0 = FRONT_X0 + 0.8, TW = FRONT_W - 1.6;
 const TY0 = Y1 - TRAY_D;
 const FLOOR_T = 1.2;
-const TOPZ = TZ + FLOOR_T;             // 부품이 놓이는 바닥 윗면
-// 부품 배치 (트레이 안 좌표, y 는 앞판에서 뒤로 갈수록 작아짐)
-const GPUS = [];                       // 냉각판 4개: [x, y, w, d, h]
-for (const [i, x] of [TX0 + 10, TX0 + TW / 2 + 4].entries()) for (const yy of [Y1 - 54, Y1 - 100]) GPUS.push({ x, y: yy, w: 34, d: 38, h: 5.2, id: GPUS.length });
-const CPU = [TX0 + 12, TX0 + TW / 2 + 8].map((x) => ({ x, y: Y1 - 150, w: 24, d: 24, h: 3.6 }));
-const MANIFOLD = [{ x: TX0 + TW / 2 - 4, y: TY0 + 6, w: 2.4, d: TRAY_D - 24 }, { x: TX0 + TW / 2 + 1.6, y: TY0 + 6, w: 2.4, d: TRAY_D - 24 }]; // 냉각수 공급·회수 관 (중앙)
+const TOPZ = TZ + FLOOR_T;             // 트레이 바닥 윗면
+const BZ = TOPZ + 0.6, BT = BZ + 0.5;  // 메인보드 아래·윗면 (짧은 받침 위)
+const GPU_H = 4.4;                     // GPU 냉각판 높이 (22 mm)
+const GPUS = [-39, -13, 13, 39].map((cx, id) => ({ x: cx - 10.5, y: -28, w: 21, d: 24, r: 0.6, h: GPU_H, id, cx }));
+const BAR = { x: -53, y: 6, w: 106, d: 4, r: 0.6 }, BAR_H = 2.8;   // 매니폴드 막대 (안에 공급·회수 두 칸)
+const CPUS = [-26, 26].map((cx) => ({ x: cx - 8, y: 18, w: 16, d: 16, r: 0.6, h: 3.4, cx }));
+const NICS = [-39, -13, 13, 39].map((cx) => ({ x: cx - 6, y: 48, w: 12, d: 10, r: 0.5, cx }));
+const HR = 0.75;                       // 호스 반지름 (지름 7.5 mm)
+const HZ_GPU = BT + 1.6, HZ_CPU = BT + 1.8;   // 호스 높이 (냉각판 옆면 가운데쯤). CPU 쪽은 조금 높게: 호스 끝 고리가 매니폴드 아래 윤곽에 걸치지 않게
+// 냉각판마다 호스 2개: 왼쪽 = 공급(매니폴드 쪽 고리 파랑), 오른쪽 = 회수(빨강)
+const PAIR = [{ dx: -4, cls: "rk-supply", name: "supply" }, { dx: 4, cls: "rk-return", name: "return" }];
+
+// 트레이 몸통 (움직이는 작은 SVG, 열 잉크 아래)
 function trayBody() {
-  const out = [];
-  out.push(S(slab(TX0, TY0, TW, TRAY_D - FRONT_T, TZ, FLOOR_T, 0.6, 3), { tone: "hi", crease: "lo" }));                      // 바닥판
-  for (const x of [TX0, TX0 + TW - 1.2]) out.push(S(slab(x, TY0, 1.2, TRAY_D - FRONT_T, TZ, PULLED.h - 2.2, 0.3, 2), { tone: "mid", crease: "none" })); // 옆 레일
-  out.push(S(slab(TX0 + 1.2, TY0, TW - 2.4, 2, TZ, PULLED.h - 2.6, 0.3, 2), { tone: "mid", crease: "none" }));                   // 뒤판(미드플레인 커넥터 자리)
-  // 뒤판의 NVLink 커넥터 6개 (작은 블록)
-  for (let i = 0; i < 6; i++) out.push(`<g class="rk-chip">${S(slab(TX0 + 8 + i * 16, TY0 + 2, 10, 2.4, TOPZ + 0.6, 3.4, 0.3, 2), { tone: "mid", crease: "none" })}</g>`);
-  // 냉각수 관 2줄 + 앞쪽 퀵커넥터 2개
-  const LINE_CLS = ["rk-supply", "rk-return"];      // 왼쪽 관 = 냉각수 공급(파랑), 오른쪽 = 회수(빨강)
-  MANIFOLD.forEach((m, i) => out.push(`<g class="${LINE_CLS[i]}">${S(slab(m.x, m.y, m.w, m.d, TOPZ, 2.4, 1.1, 3), { tone: "mid", crease: "none" })}${S(k.cylinder(m.x + m.w / 2, m.y + m.d + 3, 1.9, TOPZ, 2.8, P, 16), { tone: "hi" })}</g>`));
-  // CPU 2개 (낮은 블록, 윗면 홈 1줄)
-  for (const c of CPU) {
-    out.push('<g class="rk-chip">');
-    out.push(S(slab(c.x, c.y, c.w, c.d, TOPZ, c.h, 0.6, 3, 0.4), { tone: "hi", crease: "lo" }));
-    out.push(L(k.planOutline(k.insetPlan({ x: c.x, y: c.y, w: c.w, d: c.d, r: 0.6 }, 3), TOPZ + c.h, P, 2), { tone: "faint" }));
-    out.push('</g>');
+  const T = workshop(P, { piece: "tray" });
+  const { box, disc, hose, ghost } = T;
+  // 판금 트레이 (은색): 바닥판 + 옆 레일 2개
+  box("stand.floor", { x: TX0, y: TY0, w: TW, d: TRAY_D - FRONT_T, r: 0.6 }, TZ, FLOOR_T, { cls: "rk-silver", steps: 3, tone: "hi", crease: "lo" });
+  for (const x of [TX0, TX0 + TW - 1.2]) box("stand.rail", { x, y: TY0, w: 1.2, d: TRAY_D - FRONT_T, r: 0.3 }, TOPZ, PULLED.h - 3.4, { cls: "rk-silver", steps: 2, tone: "mid", crease: "none" });
+  // 메인보드 (검정 PCB, 짧은 받침 위) — 받침은 보이지 않아 모양만 기록
+  const BOARD = { x: TX0 + 2, y: TY0 + 3, w: TW - 4, d: Y1 - FRONT_T - 2 - (TY0 + 3), r: 0.6 };
+  for (const [x, y] of k.corners(BOARD, 3)) ghost(A.cylinder(x, y, 0.8, TOPZ, BZ - TOPZ, { name: "tray.standoff" }));
+  box("board", BOARD, BZ, BT - BZ, { cls: "rk-pcb", steps: 3, tone: "mid", flat: true });
+  // GPU 4개: 구리 냉각판 (윗면 나사·홈은 열 잉크 위 SVG 에서) + 앞면 바브 2개
+  for (const gp of GPUS) {
+    box("gpu", gp, BT, gp.h, { cls: "rk-copper", steps: 3, bevel: 0.4, tone: "hi", crease: "lo", className: "rk-gpu", stamp: "gpu", inner: L(k.sideSeam(gp, BT + 1.0, P, 3), { tone: "faint" }) });
+    for (const p of PAIR) disc("gpu.barb", G.frameAlong([gp.cx + p.dx, gp.y + gp.d, HZ_GPU], [0, 1, 0]), 0, 1.0, 0.95, { cls: "rk-steel", stamp: "barb-gpu" });
   }
-  // 냉각판 다리: 관에서 각 GPU·CPU 로 가는 짧은 가지 (관 옆면에서 시작해 블록 옆면에서 끝남)
-  for (const g of GPUS) {
-    const fromX = g.x < TX0 + TW / 2 ? MANIFOLD[0].x : MANIFOLD[1].x + MANIFOLD[1].w;
-    const toX = g.x < TX0 + TW / 2 ? g.x + g.w : g.x;
-    out.push(`<g class="${g.x < TX0 + TW / 2 ? "rk-supply" : "rk-return"}">${S(slab(Math.min(fromX, toX), g.y + g.d / 2 - 1, Math.abs(toX - fromX), 2, TOPZ, 1.6, 0.8, 2), { tone: "mid", crease: "none" })}</g>`);
+  // 매니폴드 막대 (스테인리스) + 양 끝 공급·회수 본선 (뒤쪽 퀵커넥터로 → 랙 매니폴드)
+  box("bar", BAR, BT, BAR_H, {
+    cls: "rk-steel", steps: 2, bevel: 0.3, owner: "bar",
+    extra: Dt([-30, 0, 30].map((x) => at([x, BAR.y + BAR.d / 2, BT + BAR_H])), { size: 0.45, tone: "mid" }),
+  });
+  for (const gp of GPUS) for (const p of PAIR) {
+    const x = gp.cx + p.dx;
+    disc(`bar.fit.${p.name}`, G.frameAlong([x, BAR.y, HZ_GPU], [0, -1, 0]), 0, 1.0, 1.05, { cls: p.cls, tone: "hi", owner: "bar", stamp: `fitb-${p.name}` }); // 이음쇠 = 막대의 일부
+    hose(`hose.gpu.${p.name}`, [[x, gp.y + gp.d + 1.0, HZ_GPU], [x, BAR.y - 1.0, HZ_GPU]], HR, { cls: "rk-hose", tone: "mid", maxLength: 12, stamp: "hose-gpu" });
   }
-  // GPU 히트싱크 4개: 블록 + 핀 줄(윗면을 가로지르는 선, 양 끝이 윤곽에 닿음)
-  for (const g of GPUS) out.push(`<g class="rk-copper">${S(slab(g.x, g.y, g.w, g.d, TOPZ, g.h, 0.6, 3, 0.5), { tone: "hi", crease: "lo", className: "rk-gpu" })}</g>`);
-  return out.join("");
+  for (const [x, p] of [[-51, PAIR[0]], [51, PAIR[1]]]) {
+    disc(`bar.feed.${p.name}`, G.frameAlong([x, BAR.y, HZ_GPU], [0, -1, 0]), 0, 1.0, 1.05, { cls: p.cls, tone: "hi", owner: "bar", stamp: `fitb-${p.name}` });
+    ghost(A.slab({ x: x - 2, y: TY0 + 2, w: 4, d: 4, r: 0.4 }, BT, 3, { name: `rear.uqd.${p.name}` }));  // 뒤쪽 퀵커넥터 (랙 안이라 안 보임)
+    hose(`hose.feed.${p.name}`, [[x, BAR.y - 1.0, HZ_GPU], [x, TY0 + 6, HZ_GPU]], HR, { cls: "rk-hose", tone: "mid", maxLength: 20, stamp: "hose-feed" });
+  }
+  // CPU 2개: 구리 냉각판 + 양옆 메모리(SOCAMM) 4개씩 + 매니폴드에서 오는 호스 2개
+  for (const c of CPUS) {
+    box("cpu", c, BT, c.h, { cls: "rk-copper", steps: 3, bevel: 0.4, tone: "mid", crease: "lo", stamp: "cpu", inner: L(k.sideSeam(c, BT + 0.9, P, 3), { tone: "faint" }), extra: L(k.planOutline(k.insetPlan(c, 2.4), BT + c.h, P, 3), { tone: "lo" }) });
+    for (const dx of [-15.6, -12.4, 9.8, 13.0]) box("socamm", { x: c.cx + dx, y: c.y, w: 2.6, d: 16, r: 0.3 }, BT, 0.6, { cls: "rk-chip", steps: 2, stamp: "socamm", extra: L(k.planOutline({ x: c.cx + dx + 0.5, y: c.y + 1.2, w: 1.6, d: 13.6, r: 0.2 }, BT + 0.6, P, 2), { tone: "lo" }) });
+    for (const p of PAIR) {
+      const x = c.cx + p.dx;
+      disc(`bar.fit.${p.name}`, G.frameAlong([x, BAR.y + BAR.d, HZ_CPU], [0, 1, 0]), 0, 3.0, 1.05, { cls: p.cls, tone: "hi", owner: "bar", stamp: `fitf-${p.name}` }); // 앞쪽 이음쇠는 길게: 호스 끝이 막대 윤곽에 붙어 보이지 않게
+      disc("cpu.barb", G.frameAlong([x, c.y, HZ_CPU], [0, -1, 0]), 0, 1.0, 0.95, { cls: "rk-steel", stamp: "barb-cpu" });
+      hose(`hose.cpu.${p.name}`, [[x, BAR.y + BAR.d + 3.0, HZ_CPU], [x, c.y - 1.0, HZ_CPU]], HR, { cls: "rk-hose", tone: "mid", maxLength: 12, stamp: "hose-cpu" });
+    }
+  }
+  // NIC 4개 (ConnectX-8): 구리 틀 + 검정 칩
+  for (const n of NICS) {
+    box("nic", n, BT, 0.8, { cls: "rk-copper", steps: 2, tone: "mid", crease: "lo", stamp: "nic" });
+    box("nic.chip", { x: n.cx - 3, y: n.y + 2.5, w: 6, d: 5, r: 0.3 }, BT + 0.8, 0.5, { cls: "rk-chip", steps: 2, tone: "mid", stamp: "nicchip" });
+  }
+  // 앞쪽: 저장장치(E1.S) 케이지 + OSFP 포트 케이지 4개 + 관리 칩(BMC) — 앞판 바로 뒤
+  const E1S = { x: -48, y: 74, w: 18, d: 42, r: 0.5 };
+  box("e1s.cage", E1S, BT, 5.4, { cls: "rk-chip", steps: 2, bevel: 0.3, extra: L([1, 2, 3].map((i) => k.lineOnTop([E1S.x + i * E1S.w / 4, E1S.y], [E1S.x + i * E1S.w / 4, E1S.y + E1S.d], BT + 5.4, P)).join(""), { tone: "lo" }) }); // 칸 나눔 줄: 윤곽에서 윤곽까지
+  for (let i = 0; i < 4; i++) box("osfp", { x: FRONT_X0 + 44 + i * 6.6, y: 100, w: 5.4, d: 16.8, r: 0.3 }, BT, 3.4, { cls: "rk-chip", steps: 2, bevel: 0.2, stamp: "osfp" }); // 앞판 포트 구멍과 같은 x
+  box("bmc", { x: 30, y: 80, w: 7, d: 7, r: 0.4 }, BT, 0.7, { cls: "rk-chip", steps: 2, extra: Dt([at([31.2, 86, BT + 0.7])], { size: 0.4, tone: "hi" }) });
+  return T;
 }
-// 핀 줄은 열 잉크(캔버스) 위에 그려져야 하므로 앞쪽 SVG 로
-function trayFins() {
+// 열 잉크(캔버스) 위에 그려야 하는 것: GPU 냉각판 윗면의 홈·나사 (잉크가 덮으면 안 됨)
+function trayTops() {
   const out = [];
-  for (const g of GPUS) {
-    const lines = [];
-    for (let yy = g.y + 2.2; yy < g.y + g.d - 1.5; yy += 2.2) lines.push(k.lineOnTop([g.x, yy], [g.x + g.w, yy], TOPZ + g.h, P));
-    out.push(`<g class="rk-copper">${L(lines.join(""), { tone: "lo" })}</g>`);
+  for (const gp of GPUS) {
+    const top = BT + gp.h;
+    out.push(`<g class="rk-copper">${L(k.planOutline(k.insetPlan(gp, 2.2), top, P, 3), { tone: "lo" })}${Dt(k.corners(gp, 1.3).map(([x, y]) => at([x, y, top])), { size: 0.5, tone: "hi" })}${L(k.lineOnTop([gp.x + 5, gp.y + gp.d - 4.6], [gp.x + 14, gp.y + gp.d - 4.6], top, P), { tone: "lo", free: true })}</g>`);
   }
   return out.join("");
 }
 function trayFront() {
-  const out = [frontPlate(PULLED, true)];
-  return out.join("");
+  return frontPlate(PULLED, true);
 }
 // 트레이 몸통은 랙 앞면 밖(y > Y1)에 있는 부분만 보임 → 그 공간의 화면 껍질로 클립
 const CLIP = hull(k.boxCorners({ x: TX0 - 1, y: Y1 - 0.2, w: TW + 2, d: STROKE + 6, r: 0 }, TZ - 1, TZ + PULLED.h + 1).map(at));
@@ -245,7 +304,7 @@ const clipPath = k.pathOf(CLIP, true);
 
 // ---------- 5) 합치기 ----------
 const LABEL = `${RACK.name} GPU rack: ${RACK.computeTrays} compute trays, ${RACK.switchTrays} NVLink switch trays and power shelves in a 19-inch rack. One compute tray slides out to show its ${RACK.gpuPerTray} GPUs, ${RACK.cpuPerTray} CPUs and liquid cold plates; heat on the GPUs rises with load.`;
-// 색: 랙 골격·앞판은 짙은 흑연색(.rk-metal), 빈 슬롯은 더 어둡게(.rk-cavity), 트레이 판금은 밝은 회색(기본)
+// 색: 랙 골격·스위치·전원 앞판은 검정(.rk-metal), 컴퓨트 트레이 앞판·판금은 은색(.rk-silver), 빈 슬롯은 더 어둡게(.rk-cavity)
 // 층 나누기 (아래 → 위): 정지한 랙(back) → 움직이는 트레이 몸통(tray, 작은 SVG) → 열 잉크(canvas) → 핀 줄·트레이 앞판(front)
 //   움직이는 부분을 작은 SVG 로 떼어 두면, 트레이가 움직일 때 1,000개 넘는 랙 경로를 매 프레임 다시 그리지 않음
 //   트레이는 랙 앞면 밖으로만 나오고 윗판과 화면에서 겹치지 않아, 랙 전체 위에 얹어도 그리는 순서가 맞음
@@ -254,10 +313,11 @@ const back = [
   `<g class="rk-metal">${cap()}</g>`,
 ];
 // 클립은 움직이는 그룹 "바깥"에: 안에 두면 트레이와 함께 움직여 몸통을 통째로 잘라 버림
-const tray = [`<clipPath id="rk-clip"><path d="${clipPath}"/></clipPath><g clip-path="url(#rk-clip)"><g data-part="tray-body">${trayBody()}</g></g>`];
+const TRAY_SHOP = trayBody();
+const tray = [`<clipPath id="rk-clip"><path d="${clipPath}"/></clipPath><g clip-path="url(#rk-clip)"><g data-part="tray-body">${TRAY_SHOP.render()}</g></g>`];
 // 트레이 앞판은 열 잉크보다 위: 가까운 냉각판을 앞판이 가리는 곳에 잉크가 덮이지 않게
-const front = [`<clipPath id="rk-clip-front"><path d="${clipPath}"/></clipPath><g clip-path="url(#rk-clip-front)"><g data-part="tray-fins">${trayFins()}</g></g>`,
-  `<g data-part="tray-plate" class="rk-metal">${trayFront()}</g>`];
+const front = [`<clipPath id="rk-clip-front"><path d="${clipPath}"/></clipPath><g clip-path="url(#rk-clip-front)"><g data-part="tray-fins">${trayTops()}</g></g>`,
+  `<g data-part="tray-plate">${trayFront()}</g>`];
 const backSvg = k.figureSvg({ width: WIDTH, height: HEIGHT, label: LABEL, body: back, className: "rk-back" });
 const layerSvg = (cls, body) => `<svg xmlns="http://www.w3.org/2000/svg" class="iso-svg rk-layer ${cls}" viewBox="0 0 ${WIDTH} ${HEIGHT}" aria-hidden="true">${body.join("")}</svg>`;
 const traySvg = layerSvg("rk-tray", tray);
@@ -267,8 +327,8 @@ const frontSvg = layerSvg("rk-front", front);
 const pullVec = k.axisVector(P, [0, 1, 0]);     // 세계 +y 1단위의 화면 벡터
 const DATA = {
   W: WIDTH, H: HEIGHT, camera: glCamera(P), pull: pullVec, stroke: STROKE, // 이동 벡터는 반올림하지 않음: 150 단위 당기면 0.05 오차가 7px 로 커져 열 잉크가 냉각판에서 어긋남
-  zTop: tenth(TOPZ + GPUS[0].h), zFloor: tenth(TOPZ), front: Y1,
-  gpu: GPUS.map((g) => [g.x, g.y, g.w, g.d].map(tenth)), cpu: CPU.map((c) => [c.x, c.y, c.w, c.d].map(tenth)),
+  zTop: tenth(BT + GPU_H), zFloor: tenth(TOPZ), front: Y1,
+  gpu: GPUS.map((g) => [g.x, g.y, g.w, g.d].map(tenth)), cpu: CPUS.map((c) => [c.x, c.y, c.w, c.d].map(tenth)),
   rack: RACK, tray: PULLED.index,
 };
 
@@ -285,7 +345,17 @@ const CSS = `
 .rk-supply{--anatomy-paper:#3c79d2;--anatomy-face:#4586dd;--anatomy-top:#6fa6ee;--anatomy-shade-0:#2a5ca8;--anatomy-shade-1:#3066b5;--anatomy-shade-2:#3670c2;--anatomy-shade-3:#3d7acd;--anatomy-hi:#0f2a52;--anatomy-mid:#1f4c8c;--anatomy-lo:#2c63b0;--anatomy-faint:#5f97e0}
 .rk-return{--anatomy-paper:#d0533c;--anatomy-face:#da6149;--anatomy-top:#ef8468;--anatomy-shade-0:#a63a27;--anatomy-shade-1:#b54330;--anatomy-shade-2:#c24c38;--anatomy-shade-3:#cd5641;--anatomy-hi:#4a130a;--anatomy-mid:#8a2a1a;--anatomy-lo:#b03f2c;--anatomy-faint:#e2876f}
 .rk-chip{--anatomy-paper:#2b2e34;--anatomy-face:#33363d;--anatomy-top:#41454d;--anatomy-shade-0:#1f2227;--anatomy-shade-1:#24272c;--anatomy-shade-2:#292c32;--anatomy-shade-3:#2f3238;--anatomy-hi:#e1e5ea;--anatomy-mid:#8d949e;--anatomy-lo:#626973;--anatomy-faint:#4a4f58}
-.rk-pcb{--anatomy-paper:#2f6f4c;--anatomy-face:#367a55;--anatomy-top:#41915f;--anatomy-shade-0:#245b3d;--anatomy-shade-1:#296444;--anatomy-shade-2:#2e6d4b;--anatomy-shade-3:#347753;--anatomy-hi:#e2f3e8;--anatomy-mid:#9fd1b1;--anatomy-lo:#6aa886;--anatomy-faint:#5a9b75;--anatomy-dot:#f2d27a}
+.rk-pcb{--anatomy-paper:#24282d;--anatomy-face:#2a2e34;--anatomy-top:#30353c;--anatomy-shade-0:#191c20;--anatomy-shade-1:#1e2125;--anatomy-shade-2:#23262b;--anatomy-shade-3:#282c31;--anatomy-hi:#dde2e8;--anatomy-mid:#7c8590;--anatomy-lo:#5d6570;--anatomy-faint:#3d434b;--anatomy-dot:#d8b45c}
+.rk-modpcb{--anatomy-paper:#1f2a2b;--anatomy-face:#243031;--anatomy-top:#2c393a;--anatomy-shade-0:#152021;--anatomy-shade-1:#192425;--anatomy-shade-2:#1d2829;--anatomy-shade-3:#212c2d;--anatomy-hi:#d6e2e2;--anatomy-mid:#7d8f90;--anatomy-lo:#546364;--anatomy-faint:#34403f;--anatomy-dot:#d8b45c}
+.rk-frame{--anatomy-paper:#20242b;--anatomy-face:#262b33;--anatomy-top:#303642;--anatomy-shade-0:#15181e;--anatomy-shade-1:#191d23;--anatomy-shade-2:#1d2128;--anatomy-shade-3:#22262e;--anatomy-hi:#cfd7e2;--anatomy-mid:#7a8594;--anatomy-lo:#5a6474;--anatomy-faint:#3a424e;--anatomy-dot:#cfd7e2}
+.rk-silver{--anatomy-paper:#c4c9d0;--anatomy-face:#ced3d9;--anatomy-top:#e2e6ea;--anatomy-shade-0:#9ba2ac;--anatomy-shade-1:#a7aeb7;--anatomy-shade-2:#b3b9c1;--anatomy-shade-3:#bec4cb;--anatomy-lit-top:#eef1f4;--anatomy-lit-shade:#c6ccd3;--anatomy-hi:#2a2f36;--anatomy-mid:#68707a;--anatomy-lo:#8a919b;--anatomy-faint:#a9b0b9;--anatomy-lit:#111418;--anatomy-dot:#3a3f46}
+.rk-hose{--anatomy-paper:#2b2f35;--anatomy-face:#30353b;--anatomy-top:#555c66;--anatomy-shade-0:#121417;--anatomy-shade-1:#191c20;--anatomy-shade-2:#25292e;--anatomy-shade-3:#2b2f35;--anatomy-hi:#08090b;--anatomy-mid:#0c0d10;--anatomy-lo:#3a3f46;--anatomy-faint:#2b2f35}
+.rk-lid{--anatomy-paper:#bfc4ca;--anatomy-face:#c9ced4;--anatomy-top:#dce0e4;--anatomy-shade-0:#9aa0a8;--anatomy-shade-1:#a5abb3;--anatomy-shade-2:#b0b6bd;--anatomy-shade-3:#bac0c6;--anatomy-lit-top:#e9ecef;--anatomy-hi:#2c3036;--anatomy-mid:#5f666f;--anatomy-lo:#8b929b;--anatomy-faint:#a9afb7;--anatomy-dot:#2c3036}
+.rk-interposer{--anatomy-paper:#4b5563;--anatomy-face:#556070;--anatomy-top:#6b7686;--anatomy-shade-0:#363e4a;--anatomy-shade-1:#3c4451;--anatomy-shade-2:#434c59;--anatomy-shade-3:#4a5361;--anatomy-hi:#e6ebf2;--anatomy-mid:#9aa5b5;--anatomy-lo:#76818f;--anatomy-faint:#5d6878}
+.rk-hbm{--anatomy-paper:#353a42;--anatomy-face:#3c424a;--anatomy-top:#4b525c;--anatomy-shade-0:#24282e;--anatomy-shade-1:#2a2e35;--anatomy-shade-2:#30353c;--anatomy-shade-3:#353a42;--anatomy-hi:#e1e5ea;--anatomy-mid:#8d949e;--anatomy-lo:#6a717b;--anatomy-faint:#4a5058}
+.rk-mlcc{--anatomy-paper:#b89a6a;--anatomy-face:#c4a676;--anatomy-top:#d6bb8c;--anatomy-shade-0:#9a7e52;--anatomy-shade-1:#a5895c;--anatomy-shade-2:#ae9262;--anatomy-shade-3:#b79b6a;--anatomy-hi:#3b2c14;--anatomy-mid:#6e5631;--anatomy-lo:#94784d;--anatomy-faint:#c9ad80}
+.rk-choke{--anatomy-paper:#4a4f57;--anatomy-face:#545a63;--anatomy-top:#6a717b;--anatomy-shade-0:#363a41;--anatomy-shade-1:#3c4148;--anatomy-shade-2:#43484f;--anatomy-shade-3:#4a4f57;--anatomy-hi:#e3e7ec;--anatomy-mid:#9aa1ab;--anatomy-lo:#7a818b;--anatomy-faint:#5c636c}
+.rk-orange{--anatomy-paper:#e07b2e;--anatomy-face:#e8893c;--anatomy-top:#f4a564;--anatomy-shade-0:#b85e1c;--anatomy-shade-1:#c66620;--anatomy-shade-2:#d16e25;--anatomy-shade-3:#da7629;--anatomy-hi:#4a1f05;--anatomy-mid:#8a3f10;--anatomy-lo:#b35a1d;--anatomy-faint:#f0a060}
 .rk-substrate{--anatomy-paper:#3a4a3f;--anatomy-face:#415246;--anatomy-top:#4f6355;--anatomy-shade-0:#2c3a31;--anatomy-shade-1:#314036;--anatomy-shade-2:#36463b;--anatomy-shade-3:#3c4d41;--anatomy-hi:#e3ece5;--anatomy-mid:#9db3a3;--anatomy-lo:#73897a;--anatomy-faint:#5b6f61;--anatomy-dot:#f0d27a}
 .rk-die{--anatomy-paper:#8f9bb0;--anatomy-face:#9aa7bd;--anatomy-top:#b9c6dc;--anatomy-shade-0:#6f7a8e;--anatomy-shade-1:#788397;--anatomy-shade-2:#818ca1;--anatomy-shade-3:#8a96ab;--anatomy-lit-top:#cfdaee;--anatomy-lit-shade:#97a4ba;--anatomy-lit:#1d2533;--anatomy-hi:#1d2533;--anatomy-mid:#4a5568;--anatomy-lo:#6b7689;--anatomy-faint:#a3afc4}
 .rk-brass{--anatomy-paper:#c9a54a;--anatomy-face:#d3b057;--anatomy-top:#ead07f;--anatomy-shade-0:#a5832e;--anatomy-shade-1:#b18d36;--anatomy-shade-2:#bd983f;--anatomy-shade-3:#c8a349;--anatomy-hi:#3f2e07;--anatomy-mid:#7d6118;--anatomy-lo:#a48530;--anatomy-faint:#c2a55a}
@@ -362,7 +432,7 @@ const LIVE = `
 const D=__DATA__, D2=__DATA2__, KO=__KO__;
 const stage=document.querySelector(".rk-stage[data-fig=rack]"), stage2=document.querySelector(".rk-stage[data-fig=gpu]");
 const svg=stage.querySelector("svg.rk-back"), svg2=stage2.querySelector("svg.rk-back");
-const trays=[...stage.querySelectorAll('[data-part^="tray-"]')], plate=stage2.querySelector('[data-part="plate"]');
+const trays=[...stage.querySelectorAll('[data-part^="tray-"]')], plate=stage2.querySelector('[data-part="plate"]'), lidG=stage2.querySelector('[data-part="lid"]');
 const read1=document.querySelector("[data-readout=rack]"), read2=document.querySelector("[data-readout=gpu]");
 const still=matchMedia("(prefers-reduced-motion: reduce)");
 const layer=glLayer({canvas:stage.querySelector("canvas.rk-gl"),fragment:${JSON.stringify(FRAGMENT)},view:[D.W,D.H],camera:D.camera,uniforms:["uLoad","uPull","uFirst"]});
@@ -371,34 +441,39 @@ if(layer)stage.setAttribute("data-gl","");if(layer2)stage2.setAttribute("data-gl
 const R=D.rack, G=D2.gpu, perTrayKw=R.kw/R.computeTrays;
 let lastLv="",pull=0,target=0,lift=0,liftTarget=0,load={x:0,v:0},first={x:0,v:0},clock=0,last=0,frame=0,visible=true,touring=!still.matches,idle=0,touched=false,hand=null;
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
-// 둘러보기 14초: 트레이 당김(0~3s) → 냉각판 들림(3~5s) → 부하 올림(4.5~9.5s) → 냉각판 내림(10~11.5s) → 트레이 밀어 넣음(11~13.5s)
+const sm=(a,b,x)=>{const q=clamp((x-a)/(b-a),0,1);return q*q*(3-2*q);};
+// GPU 그림의 들림 0..1 → 냉각판 높이 mm (먼저 0~0.65) · 뚜껑 진행 0..1 (나중 0.35~1, 위로 뜨며 왼쪽으로 비켜남)
+const plateOf=(u)=>D2.plateMax*sm(0,.65,u), lidOf=(u)=>sm(.35,1,u);
+// 둘러보기 14초: 트레이 당김(0~3s) → 냉각판·뚜껑 들림(3~6s) → 부하 올림(5~9.5s) → 내림(9.5~11.5s) → 트레이 밀어 넣음(11~13.5s)
 function tourAt(t){const u=t%14;const ramp=(a,b)=>clamp((u-a)/(b-a),0,1);
-  return {pull:D.stroke*(ramp(0,3)-ramp(11,13.5)),lift:D2.liftMax*(ramp(3,5)-ramp(10,11.5)),load:u>4.5&&u<9.5?1:0};}
+  return {pull:D.stroke*(ramp(0,3)-ramp(11,13.5)),lift:ramp(3,6)-ramp(9.5,11.5),load:u>5&&u<9.5?1:0};}
 const say=(el,text)=>{if(el&&el.textContent!==text)el.textContent=text;};
 function draw(){
   const tr="translate("+(D.pull[0]*pull).toFixed(2)+" "+(D.pull[1]*pull).toFixed(2)+")";
   for(const t of trays){if(pull>.01)t.setAttribute("transform",tr);else t.removeAttribute("transform");}
-  if(lift>.01)plate.setAttribute("transform","translate("+(D2.lift[0]*lift).toFixed(2)+" "+(D2.lift[1]*lift).toFixed(2)+")");else plate.removeAttribute("transform");
+  const pl=plateOf(lift), ld=lidOf(lift);
+  const mv=(el,dx,dy)=>{if(Math.abs(dx)+Math.abs(dy)>.01)el.setAttribute("transform","translate("+dx.toFixed(2)+" "+dy.toFixed(2)+")");else el.removeAttribute("transform");};
+  mv(plate,D2.up[0]*pl,D2.up[1]*pl);mv(lidG,D2.lidVec[0]*ld,D2.lidVec[1]*ld);
   const lv=load.x.toFixed(2);if(lv!==lastLv){lastLv=lv;if(!layer)stage.style.setProperty("--rk-load",lv);if(!layer2)stage2.style.setProperty("--rk-load",lv);} // WebGL 없을 때만 CSS 색으로
   const t=still.matches?0.8:clock;
   if(layer){(load.x>1e-3&&pull>.5)?layer.draw({uLoad:load.x,uPull:pull,uFirst:first.x},t):layer.clear();}
-  if(layer2){(load.x>1e-3&&lift>2)?layer2.draw({uLoad:load.x,uFirst:first.x},t):layer2.clear();}
-  const out=pull/D.stroke, up=lift/D2.liftMax, pOut=Math.round(out*100), pUp=Math.round(up*100);
+  if(layer2){(load.x>1e-3&&ld>.05)?layer2.draw({uLoad:load.x,uFirst:first.x},t):layer2.clear();}  // 다이는 뚜껑이 비켜난 뒤에만 보임
+  const out=pull/D.stroke, pOut=Math.round(out*100), pPl=Math.round(pl/D2.plateMax*100);
   // 수치 줄: 트레이가 얼마나 나왔는지 / 냉각판이 얼마나 들렸는지 + 지금 부하의 전력 (KO 면 한국어)
   const trayText=KO?(out<.05?"트레이 "+D.tray+" · 장착됨":out<.98?"트레이 "+D.tray+" · "+pOut+"% 빠짐":"트레이 "+D.tray+" · 열림 · GPU "+R.gpuPerTray+" · CPU "+R.cpuPerTray)
     :(out<.05?"tray "+D.tray+" seated":out<.98?"tray "+D.tray+" · "+pOut+"% out":"tray "+D.tray+" open · "+R.gpuPerTray+" GPU · "+R.cpuPerTray+" CPU");
-  const plateText=KO?(up<.05?"냉각판 덮임":up<.98?"냉각판 "+pUp+"% 들림":"냉각판 들림 · 다이 "+G.dies+" · HBM3e "+G.hbm+" ("+G.hbmGb+" GB)")
-    :(up<.05?"cold plate on":up<.98?"lifting "+pUp+"%":"dies open · "+G.dies+" dies · "+G.hbm+" HBM3e "+G.hbmGb+" GB");
+  const plateText=KO?(lift<.02?"냉각판 덮임":ld<.03?"냉각판 "+pPl+"% 들림":lift<.98?"뚜껑 들리는 중":"냉각판·뚜껑 들림 · 다이 "+G.dies+" · HBM3e "+G.hbm+" ("+G.hbmGb+" GB)")
+    :(lift<.02?"cold plate on":ld<.03?"lifting plate "+pPl+"%":lift<.98?"lifting lid":"plate and lid off · "+G.dies+" dies · "+G.hbm+" HBM3e "+G.hbmGb+" GB");
   say(read1,trayText+" · "+(perTrayKw*load.x).toFixed(1)+" kW");
   say(read2,plateText+" · "+(G.kw*load.x).toFixed(2)+" kW");
-  stage.setAttribute("aria-valuenow",String(Math.round(out*100)));stage2.setAttribute("aria-valuenow",String(Math.round(up*100)));
+  stage.setAttribute("aria-valuenow",String(Math.round(out*100)));stage2.setAttribute("aria-valuenow",String(Math.round(lift*100)));
 }
 function tick(now){
   const dt=last?Math.min((now-last)/1000,1/30):1/60;last=now;clock+=dt;const calm=still.matches;
   let wantLoad=0;
-  if(touring){const t=tourAt(clock);target=t.pull;liftTarget=t.lift;wantLoad=t.load;}else wantLoad=(pull>D.stroke*.6||lift>D2.liftMax*.6)?1:0;
+  if(touring){const t=tourAt(clock);target=t.pull;liftTarget=t.lift;wantLoad=t.load;}else wantLoad=(pull>D.stroke*.6||lift>.6)?1:0;
   pull=calm?target:pull+(target-pull)*(1-Math.exp(-dt/.6));if(Math.abs(target-pull)<.05)pull=target;
-  lift=calm?liftTarget:lift+(liftTarget-lift)*(1-Math.exp(-dt/.6));if(Math.abs(liftTarget-lift)<.05)lift=liftTarget;
+  lift=calm?liftTarget:lift+(liftTarget-lift)*(1-Math.exp(-dt/.6));if(Math.abs(liftTarget-lift)<.002)lift=liftTarget;
   settle(load,wantLoad,dt,1.8,calm);settle(first,(layer||layer2)?1:0,dt,.6,calm);
   draw();
   frame=visible?requestAnimationFrame(tick):0;
@@ -408,20 +483,22 @@ const hold=()=>{touched=true;touring=false;clearTimeout(idle);idle=setTimeout(()
 const shareOf=(e,el)=>{const b=el.getBoundingClientRect();return clamp(((e.clientX-b.left)/b.width-.2)/.6,0,1);};
 for(const ev of ["pointermove","pointerdown"]){
   stage.addEventListener(ev,(e)=>{target=shareOf(e,svg)*D.stroke;hold();});
-  stage2.addEventListener(ev,(e)=>{const b=svg2.getBoundingClientRect();liftTarget=clamp(1-((e.clientY-b.top)/b.height-.25)/.5,0,1)*D2.liftMax;hold();});
+  stage2.addEventListener(ev,(e)=>{const b=svg2.getBoundingClientRect();liftTarget=clamp(1-((e.clientY-b.top)/b.height-.25)/.5,0,1);hold();});
 }
 const keys=(el,get,set,max)=>el.addEventListener("keydown",(e)=>{let to=null;if(e.key==="ArrowRight"||e.key==="ArrowUp")to=get()+max/4;if(e.key==="ArrowLeft"||e.key==="ArrowDown")to=get()-max/4;if(e.key==="Home")to=0;if(e.key==="End")to=max;if(to===null)return;e.preventDefault();set(clamp(to,0,max));hold();});
-keys(stage,()=>target,(v)=>target=v,D.stroke);keys(stage2,()=>liftTarget,(v)=>liftTarget=v,D2.liftMax);
+keys(stage,()=>target,(v)=>target=v,D.stroke);keys(stage2,()=>liftTarget,(v)=>liftTarget=v,1);
 document.addEventListener("visibilitychange",()=>{visible=!document.hidden;if(visible)run();});
-if(still.matches){touring=false;target=pull=D.stroke;liftTarget=lift=D2.liftMax;load.x=1;first.x=(layer||layer2)?1:0;}
+if(still.matches){touring=false;target=pull=D.stroke;liftTarget=lift=1;load.x=1;first.x=(layer||layer2)?1:0;}
 draw();run();
 window.__rackTouched=()=>touched;
 window.__rackStop=()=>{visible=false;if(frame)cancelAnimationFrame(frame);frame=0;};
+// 검수용: 둘러보기의 t 초 장면으로 바로 이동 (따라가는 값들을 목표에 붙여서 그 순간을 그림)
+window.__rackSeek=(t)=>{clock=t;const s=tourAt(t);pull=target=s.pull;lift=liftTarget=s.lift;load.x=s.load;first.x=1;draw();};
 `;
 
 // 그림 칸 (ko = 한국어 부팅 화면용 / 아니면 영어 검수 페이지용). role="slider" 안의 SVG 는 낭독기가 읽지 않으므로 설명은 여기 한 곳에만
 const stageHtml = (ko) => `<div class="rk-stage" data-fig="rack" tabindex="0" role="slider" aria-label="${ko ? "GPU 랙: 포인터를 좌우로 움직이거나 화살표 키로 컴퓨트 트레이를 꺼냅니다" : "GPU rack: move the pointer across or press the arrow keys to slide the compute tray out"}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">${backSvg}${traySvg}<canvas class="rk-layer rk-gl" aria-hidden="true"></canvas>${frontSvg}</div>`;
-const stage2Html = (ko) => `<div class="rk-stage" data-fig="gpu" tabindex="0" role="slider" aria-label="${ko ? "GPU 모듈: 포인터를 위아래로 움직이거나 화살표 키로 냉각판을 들어 올립니다" : "GPU module: move the pointer up or press the arrow keys to lift the cold plate"}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">${G2.backSvg}<canvas class="rk-layer rk-gl" aria-hidden="true"></canvas>${G2.frontSvg}</div>`;
+const stage2Html = (ko) => `<div class="rk-stage" data-fig="gpu" tabindex="0" role="slider" aria-label="${ko ? "GPU 모듈: 포인터를 위아래로 움직이거나 화살표 키로 냉각판과 뚜껑을 들어 올립니다" : "GPU module: move the pointer up or press the arrow keys to lift the cold plate and the lid"}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">${G2.backSvg}<canvas class="rk-layer rk-gl" aria-hidden="true"></canvas>${G2.frontSvg}</div>`;
 const pairHtml = (ko) => `<div class="rk-pair">
   <div class="rk-fig"><h2>${ko ? "랙" : "Rack"} · ${RACK.name} <small>${ko ? `GPU ${RACK.gpus}개 ≈ ${RACK.kw} kW` : `${RACK.gpus} GPUs ≈ ${RACK.kw} kW`}</small></h2>${stageHtml(ko)}<div class="rk-read" data-readout="rack">${ko ? `트레이 ${PULLED.index} · 장착됨` : `tray ${PULLED.index} seated`} · 0.0 kW</div></div>
   <div class="rk-fig"><h2>GPU · ${GPU.name} <small>${ko ? `트레이 속 GPU 1개 확대 · 다이 ${GPU.dies} · HBM3e ${GPU.hbm} (${GPU.hbmGb} GB) · ≈${GPU.kw} kW` : `one GPU from the tray · ${GPU.dies} dies · ${GPU.hbm} HBM3e (${GPU.hbmGb} GB) · ≈${GPU.kw} kW`}</small></h2>${stage2Html(ko)}<div class="rk-read" data-readout="gpu">${ko ? "냉각판 덮임" : "cold plate on"} · 0.00 kW</div></div>
@@ -435,7 +512,9 @@ const liveScriptFor = (ko) => gl + "\n" + LIVE.replace("__DATA__", JSON.stringif
 writeFileSync(join(HERE, "rack-light.html"), k.pageHtml({ title: `${RACK.name} rack + ${GPU.name}`, theme: "light", body: `<style>${CSS}</style><div class="iso-plate" style="padding:18px">${pairHtml(false)}</div>`, script: liveScriptFor(false), width: 1100 }));
 
 // 앱에 끼워 넣는 조각 (index.html 의 <!-- rack --> 자리에)
-const fragment = `<style>${k.ISO_CSS}${CSS}</style>
+// 두 그림의 가로:세로 비율을 CSS 변수로 넘김 → index.html 이 화면 높이에 맞춰 그림 크기를 정할 때 씀 (숫자를 손으로 맞출 필요 없음)
+const ASPECT = `.rk-wrap{--rk-a1:${(WIDTH / HEIGHT).toFixed(3)};--rk-a2:${(G2.DATA.W / G2.DATA.H).toFixed(3)}}`;
+const fragment = `<style>${k.ISO_CSS}${CSS}${ASPECT}</style>
 <div class="iso rk-wrap" data-theme="light">
   ${pairHtml(true)}
   <div class="rk-ui"><span class="rk-hint">마우스 · 터치 · 화살표 키로 조작</span><button class="rk-go" type="button" data-boot-go>건너뛰기 →</button></div>
@@ -443,3 +522,6 @@ const fragment = `<style>${k.ISO_CSS}${CSS}</style>
 <script>(function(){${liveScriptFor(true)}})();</script>`;
 writeFileSync(join(ROOT, "src", "boot", "rack.html"), fragment);
 console.log(`wrote rack-light.html (${(readFileSync(join(HERE, "rack-light.html")).length / 1024).toFixed(0)} KB) and src/boot/rack.html (${(fragment.length / 1024).toFixed(0)} KB)`);
+
+// 검사 (node build.mjs --audit): 각 층의 관통·끝점·지지·칠하는 순서
+auditAll({ "rack.tray": TRAY_SHOP, ...G2.shops });
