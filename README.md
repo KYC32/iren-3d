@@ -67,9 +67,13 @@ npm run build      # validate → 빌드 (dist/)
 4. 사이트를 추가하거나 좌표를 바꿨다면 `npm run geo` (보드판·지구본 타일 다시 계산).
 5. `git commit` → `git push` 하면 Vercel 이 자동으로 다시 배포합니다.
 
-## 첫 화면 부팅 그림 (GPU 랙)
+## 첫 화면 부팅 그림 (GPU 랙 + GPU)
 
-지도 코드(약 430KB)를 받는 1~3초 동안 `index.html` 안의 GPU 랙 그림이 먼저 보입니다. `anatomy` 스킬 방식(아이소메트릭 SVG + 같은 카메라의 WebGL 열 잉크)으로 `scripts/anatomy/rack/build.mjs` 가 만들고, `src/boot/rack.html` 조각을 Vite 플러그인이 `<!-- rack -->` 자리에 끼웁니다 (JS 번들과 무관). 지도·3D·페이지가 준비되면 `window.__bootReady()` 로 넘어가고, 사용자가 그림을 만지는 중이면 "지도 보기" 버튼으로 넘어갑니다. 다시 만들기: `node scripts/anatomy/rack/build.mjs` (검수용 `scripts/anatomy/rack/rack-light.html`).
+첫 화면에는 `index.html` 안에 든 그림 두 개가 먼저 보입니다. 왼쪽은 GB300 NVL72 식 GPU 랙이고, 트레이를 당기면 GPU 4개와 냉각판이 보입니다. 오른쪽은 B300 GPU 1개로, 구리 냉각판을 들면 다이 2개와 HBM3e 8개가 보입니다. 색은 파랑 = 냉각수 공급, 빨강 = 회수, 주황 = 열입니다.
+
+- **만드는 법**: `anatomy` 스킬 방식(아이소메트릭 SVG + 같은 카메라의 WebGL 열 잉크)으로 `scripts/anatomy/rack/build.mjs` 가 만듭니다 (GPU 그림은 `gpu.mjs`). 결과물 `src/boot/rack.html` 조각을 Vite 플러그인이 `<!-- rack -->` 자리에 끼우므로 JS 번들과 무관합니다 (압축 약 62KB).
+- **넘김 규칙**: 둘러보기 한 바퀴인 최소 14초를 보여 주고, 지도·3D·페이지가 `window.__bootReady()` 를 부르면 넘어갑니다. 그림을 만지는 중이면 손을 뗀 뒤 6초를 더 기다리고, 30초가 지나면 신호가 없어도 넘어갑니다. "건너뛰기 / 지도 보기" 버튼은 언제든 바로 넘깁니다.
+- **다시 만들기**: `node scripts/anatomy/rack/build.mjs` (영어 검수용 페이지 `scripts/anatomy/rack/rack-light.html` 도 함께 생김).
 
 ## 주가·뉴스 페이지와 자동 갱신
 

@@ -12,8 +12,8 @@
           "en": "News page added: [Company] SEC EDGAR filings (press-release headlines from 8-K exhibits, earnings, filings, insider) · [Press] Google News search. Both feeds refresh daily on weekdays via GitHub Actions"
         },
         {
-          "ko": "첫 화면 부팅 그림: 지도 코드를 받는 동안 GB300 NVL72 식 GPU 랙(트레이를 당기면 GPU 4개·냉각판, 부하에 따라 열이 보이는 WebGL)을 보여 주고, 준비되면 지도로 넘어감. 랙 1대 = GPU 72개 ≈ 130 kW",
-          "en": "Boot figure: while the map code loads, an interactive GB300 NVL72-style GPU rack (pull a tray to see 4 GPUs and cold plates; WebGL heat with load), handing over to the map when ready. One rack = 72 GPUs ≈ 130 kW"
+          "ko": "첫 화면 부팅 그림: 지도 코드를 받는 동안 GB300 NVL72 식 GPU 랙과 B300 GPU 1개를 색 입혀 나란히 보여 줌 (랙은 트레이를 당기면 GPU 4개·냉각판, GPU 는 구리 냉각판을 들면 다이 2개·HBM3e 8개, 부하에 따라 열이 보이는 WebGL). 둘러보기 한 바퀴(최소 14초)를 보여 준 뒤 지도로 넘어가고, '건너뛰기'로 바로 넘길 수 있음. 랙 1대 = GPU 72개 ≈ 130 kW",
+          "en": "Boot figure: while the map code loads, a coloured GB300 NVL72-style GPU rack and one B300 GPU side by side (pull a tray to see 4 GPUs and cold plates; lift the copper cold plate to see 2 dies and 8 HBM3e stacks; WebGL heat with load). It plays one full tour (at least 14 s) before handing over to the map, with a Skip button. One rack = 72 GPUs ≈ 130 kW"
         }
       ]
     },

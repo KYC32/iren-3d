@@ -26,46 +26,70 @@
     <!-- 부팅 화면: 지도 코드(약 430KB)를 받는 동안 보이는 GPU 랙 그림 (scripts/anatomy/rack/build.mjs 가 만든 src/boot/rack.html 을 빌드 때 끼워 넣음)
          지도가 준비되면 window.__bootReady() 가 불리고, 사용자가 그림을 만지고 있지 않으면 바로 지도로 넘어감 -->
     <style>
-      #boot{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;background:#eceffa;color:#16213a;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;transition:opacity 420ms ease}
+      /* 부팅 화면: 카드가 화면보다 크면 스크롤 (margin:auto 로 가운데 정렬해야 위가 잘리지 않음) */
+      #boot{position:fixed;inset:0;z-index:200;display:flex;overflow:auto;padding:16px;background:#eceffa;color:#16213a;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;transition:opacity 480ms ease}
       #boot.is-done{opacity:0;pointer-events:none}
-      #boot .boot-card{width:min(820px,100%);background:#fbfbfa;border:1px solid rgba(20,30,60,.08);border-radius:16px;box-shadow:0 6px 24px rgba(30,45,90,.08);padding:14px 16px 12px}
+      #boot .boot-card{margin:auto;width:min(1120px,100%);background:#fbfbfa;border:1px solid rgba(20,30,60,.08);border-radius:16px;box-shadow:0 6px 24px rgba(30,45,90,.08);padding:14px 18px 12px}
       #boot h1{margin:0;font-size:15px;font-weight:700}
-      #boot .boot-sub{margin:2px 0 8px;font-size:12px;color:#6b7591}
+      #boot .boot-sub{margin:2px 0 10px;font-size:12.5px;color:#5b6581;line-height:1.5}
       #boot .boot-note{margin:8px 0 0;font-size:11px;color:#6b7591;line-height:1.5}
-      /* 화면이 낮으면 그림을 높이에 맞춰 줄임 (viewBox 640×560 → 가로:세로 1.143) — 카드가 화면 밖으로 넘치지 않게 */
-      #boot .rk-stage{max-width:calc((100dvh - 190px) * 1.143);margin:0 auto}
-      @media (max-width:767px){#boot{padding:10px}#boot .boot-card{padding:10px 10px 8px}#boot .rk-stage{max-width:calc((100dvh - 230px) * 1.143)}}
+      /* 지도까지 남은 시간 막대 (최소 표시 시간 동안 차오름) */
+      #boot .boot-bar{height:3px;border-radius:2px;background:#e3e7f2;overflow:hidden;margin-top:8px}
+      #boot .boot-bar i{display:block;height:100%;width:0;background:#2ea88a;animation:boot-fill var(--boot-min,14s) linear forwards}
+      @keyframes boot-fill{to{width:100%}}
+      @media (prefers-reduced-motion:reduce){#boot .boot-bar i{animation:none;width:100%;opacity:.35}}
+      /* 그림 크기: 화면 높이에 맞춰 제한 (랙 viewBox 640×560 → 가로:세로 1.143, GPU 560×452 → 1.239) */
+      /* margin-top:auto = 그림을 칸 아래쪽(수치 줄 바로 위)에 붙임, 좌우 auto = 가운데 */
+      #boot .rk-fig .rk-stage{margin:auto auto 0;max-width:calc((100dvh - 250px) * 1.143)}
+      #boot .rk-fig .rk-stage[data-fig=gpu]{max-width:calc((100dvh - 250px) * 1.239)}
+      @media (max-width:767px){
+        #boot{padding:10px}#boot .boot-card{padding:10px 10px 8px}
+        /* 위아래로 쌓을 때: 두 그림을 같은 폭 w 로 → 높이 합 = w/1.143 + w/1.239 = 1.68w 가 (화면 높이 − 글자 340px) 안에 */
+        #boot .rk-fig .rk-stage,#boot .rk-fig .rk-stage[data-fig=gpu]{max-width:calc((100dvh - 340px) / 1.68)}
+      }
     </style>
     <div id="boot" aria-live="polite">
       <div class="boot-card">
         <h1>IREN 3D 현황판</h1>
-        <p class="boot-sub">지도를 불러오는 동안 — 랙 1대 = GPU 72개 ≈ 130 kW. 마우스나 화살표 키로 트레이를 당겨 보세요.</p>
+        <p class="boot-sub">AI 데이터센터의 기본 단위부터 — 랙 1대 = GPU 72개 ≈ 130 kW, 그래서 50 MW 홀은 랙 약 350대. 그림을 만져 보세요: 랙은 트레이를, GPU 는 냉각판을 움직입니다.</p>
         <!-- rack -->
-        <p class="boot-note">GB300 NVL72 식 랙의 도식 (실측 모형 아님). 비공식 리서치 · 투자 조언 아님.</p>
+        <div class="boot-bar" aria-hidden="true"><i></i></div>
+        <p class="boot-note">GB300 NVL72 랙·B300 GPU 의 도식 (실측 모형 아님). 색: 파랑 = 냉각수 공급, 빨강 = 회수, 주황 = 열. 비공식 리서치 · 투자 조언 아님.</p>
       </div>
     </div>
     <script>
-      // 부팅 화면 넘김: 지도(또는 3D·주가·뉴스 페이지)가 준비되면 앱이 __bootReady() 를 부름
+      // 부팅 화면 넘김 규칙
+      //   - 최소 MIN 동안은 보여 줌 (그림의 둘러보기 한 바퀴: 트레이 → 냉각판 → 열 → 원위치)
+      //   - 지도(또는 3D·주가·뉴스 페이지)가 준비되면 앱이 __bootReady() 를 부름
+      //   - 그림을 만지는 중이면 손을 뗀 뒤 IDLE 만큼 기다림
+      //   - "건너뛰기 / 지도 보기" 버튼은 언제든 바로 넘김
       (function () {
+        var MIN = 14000, IDLE = 6000;
         var boot = document.getElementById('boot'), go = boot && boot.querySelector('[data-boot-go]');
-        var ready = false, done = false;
+        var t0 = Date.now(), lastTouch = 0, ready = false, done = false, timer = 0;
+        if (boot) boot.style.setProperty('--boot-min', MIN / 1000 + 's');
         function dismiss() {
-          if (done || !boot) return; done = true;
+          if (done || !boot) return; done = true; clearInterval(timer);
           boot.classList.add('is-done');
-          setTimeout(function () { if (window.__rackStop) window.__rackStop(); boot.remove(); }, 450);
+          setTimeout(function () { if (window.__rackStop) window.__rackStop(); boot.remove(); }, 500);
+        }
+        function tryGo() {
+          if (done || !ready) return;
+          if (Date.now() - t0 < MIN || Date.now() - lastTouch < IDLE) return;
+          dismiss();
         }
         window.__bootReady = function () {
           if (ready) return; ready = true;
-          if (go) { go.disabled = false; go.textContent = '지도 보기 →'; }
-          // 그림을 만지는 중이면 기다리고(버튼으로 넘어감), 아니면 2초 뒤 자동으로
-          var touched = window.__rackTouched && window.__rackTouched();
-          if (!touched) setTimeout(dismiss, 2000);
+          if (go) go.textContent = '지도 보기 →';
+          tryGo();
         };
+        timer = setInterval(tryGo, 400);
+        ['pointermove', 'pointerdown', 'keydown', 'wheel'].forEach(function (ev) { if (boot) boot.addEventListener(ev, function () { lastTouch = Date.now(); }, { passive: true }); });
         if (go) go.addEventListener('click', dismiss);
-        // 주가·뉴스 페이지 링크로 들어오면 지도를 기다릴 필요가 없음 → 바로
+        // 주가·뉴스 페이지 링크로 들어오면 그림 없이 바로
         if (/page=/.test(location.hash)) dismiss();
-        // 안전장치: 20초가 지나면 무조건 넘김 (지도 서버 장애 등)
-        setTimeout(function () { window.__bootReady(); setTimeout(dismiss, 2000); }, 20000);
+        // 안전장치: 30초가 지나도 신호가 없으면 준비된 것으로 봄 (지도 서버 장애 등)
+        setTimeout(function () { window.__bootReady(); }, 30000);
       })();
     </script>
     <!-- React가 이 div 안에 전체 앱을 그립니다 -->
