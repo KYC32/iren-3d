@@ -56,7 +56,7 @@ const FRONT_T = 1.6;                  // 앞판 두께
 const WIDTH = 640, HEIGHT = 560;
 const P = k.fitProjection(
   [...k.boxCorners({ x: X0, y: Y0, w: W, d: D, r: 2 }, -FOOT_H, H), [X0 + 4, Y1 + STROKE + 4, PULLED.z], [X1 - 4, Y1 + STROKE + 4, PULLED.z]],
-  WIDTH, HEIGHT, { pad: 26, azimuth: 58, elevation: 26 },
+  WIDTH, HEIGHT, { pad: 12, azimuth: 58, elevation: 26 },
 );
 const at = (p) => k.iso(p, P);
 const S = (paths, style) => k.solidSvg(paths, style);
@@ -334,7 +334,8 @@ const R=D.rack, perTrayKw=R.kw/R.computeTrays;
 let pull=0,target=0,load={x:0,v:0},first={x:0,v:0},clock=0,last=0,frame=0,visible=true,touring=!still.matches,idle=0,touched=false;
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 // 둘러보기: 트레이를 천천히 당겨(0~1.6s) 부하를 올렸다가(2.6~4.5s) 내리고 밀어 넣음, 7.5초 주기
-function tourAt(t){const u=t%7.5;return {pull:u<1.6?D.stroke*(u/1.6):u<5.4?D.stroke:u<6.6?D.stroke*(1-(u-5.4)/1.2):0,load:u>2.4&&u<4.8?1:0};}
+// 둘러보기: 천천히 당김(0~3s) → 부하 올림(3.6~8s) → 밀어 넣음(9~11.4s), 12초 주기
+function tourAt(t){const u=t%12;return {pull:u<3?D.stroke*(u/3):u<9?D.stroke:u<11.4?D.stroke*(1-(u-9)/2.4):0,load:u>3.6&&u<8?1:0};}
 function say(text){if(readout&&readout.textContent!==text)readout.textContent=text;}
 function draw(){
   const tr="translate("+(D.pull[0]*pull).toFixed(2)+" "+(D.pull[1]*pull).toFixed(2)+")";
@@ -350,8 +351,8 @@ function tick(now){
   const dt=last?Math.min((now-last)/1000,1/30):1/60;last=now;clock+=dt;const calm=still.matches;
   let wantLoad=0;
   if(touring){const t=tourAt(clock);target=t.pull;wantLoad=t.load;}else wantLoad=pull>D.stroke*.6?1:0;
-  pull=calm?target:pull+(target-pull)*(1-Math.exp(-dt/.32));if(Math.abs(target-pull)<.05)pull=target;
-  const a=settle(load,wantLoad,dt,.9,calm);
+  pull=calm?target:pull+(target-pull)*(1-Math.exp(-dt/.6));if(Math.abs(target-pull)<.05)pull=target;
+  const a=settle(load,wantLoad,dt,1.8,calm);
   const b=settle(first,layer?1:0,dt,.6,calm);
   draw();
   frame=visible?requestAnimationFrame(tick):0;
