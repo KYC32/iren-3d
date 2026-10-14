@@ -32,7 +32,10 @@
 .chart-cross circle { fill: #fff; stroke: var(--accent); stroke-width: 2; }
 .chart-highlight { stroke: #e2b11c; stroke-width: 2; }
 .chart-tip { position: absolute; pointer-events: none; z-index: 2; background: #fff; border: 1px solid var(--panel-border); border-radius: 8px; padding: 6px 9px; font-size: 11.5px; line-height: 1.45; box-shadow: 0 4px 14px rgba(30,45,90,.12); width: max-content; max-width: 240px; }
-.chart-tip.pinned { pointer-events: auto; }
+.chart-tip.pinned, .chart-tip.highlight { pointer-events: auto; }
+.chart-tip .tip-hint { margin-top: 4px; }
+.chart-marker:focus-visible { outline: none; }
+.chart-marker:focus-visible circle { stroke-width: 3; }
 .chart-tip b { color: #1f3550; }  .chart-tip strong { font-variant-numeric: tabular-nums; }
 .chart-tip small { display: block; color: var(--text-muted); font-size: 10.5px; }
 .chart-tip .up { color: #1f7f66; }  .chart-tip .down { color: #b23a3a; }
