@@ -23,6 +23,49 @@
     <meta name="theme-color" content="#eceffa" />
   </head>
   <body>
+    <!-- 부팅 화면: 지도 코드(약 430KB)를 받는 동안 보이는 GPU 랙 그림 (scripts/anatomy/rack/build.mjs 가 만든 src/boot/rack.html 을 빌드 때 끼워 넣음)
+         지도가 준비되면 window.__bootReady() 가 불리고, 사용자가 그림을 만지고 있지 않으면 바로 지도로 넘어감 -->
+    <style>
+      #boot{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;background:#eceffa;color:#16213a;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;transition:opacity 420ms ease}
+      #boot.is-done{opacity:0;pointer-events:none}
+      #boot .boot-card{width:min(560px,100%);background:#fbfbfa;border:1px solid rgba(20,30,60,.08);border-radius:16px;box-shadow:0 6px 24px rgba(30,45,90,.08);padding:14px 16px 12px}
+      #boot h1{margin:0;font-size:15px;font-weight:700}
+      #boot .boot-sub{margin:2px 0 8px;font-size:12px;color:#6b7591}
+      #boot .boot-note{margin:8px 0 0;font-size:11px;color:#6b7591;line-height:1.5}
+      @media (max-width:767px){#boot{padding:10px}#boot .boot-card{padding:10px 10px 8px}}
+    </style>
+    <div id="boot" aria-live="polite">
+      <div class="boot-card">
+        <h1>IREN 3D 현황판</h1>
+        <p class="boot-sub">지도를 불러오는 동안 — 랙 1대 = GPU 72개 ≈ 130 kW. 마우스나 화살표 키로 트레이를 당겨 보세요.</p>
+        <!-- rack -->
+        <p class="boot-note">GB300 NVL72 식 랙의 도식 (실측 모형 아님). 비공식 리서치 · 투자 조언 아님.</p>
+      </div>
+    </div>
+    <script>
+      // 부팅 화면 넘김: 지도(또는 3D·주가·뉴스 페이지)가 준비되면 앱이 __bootReady() 를 부름
+      (function () {
+        var boot = document.getElementById('boot'), go = boot && boot.querySelector('[data-boot-go]');
+        var ready = false, done = false;
+        function dismiss() {
+          if (done || !boot) return; done = true;
+          boot.classList.add('is-done');
+          setTimeout(function () { if (window.__rackStop) window.__rackStop(); boot.remove(); }, 450);
+        }
+        window.__bootReady = function () {
+          if (ready) return; ready = true;
+          if (go) { go.disabled = false; go.textContent = '지도 보기 →'; }
+          // 그림을 만지는 중이면 기다리고(버튼으로 넘어감), 아니면 1.2초 뒤 자동으로
+          var touched = window.__rackTouched && window.__rackTouched();
+          if (!touched) setTimeout(dismiss, 1200);
+        };
+        if (go) go.addEventListener('click', dismiss);
+        // 주가·뉴스 페이지 링크로 들어오면 지도를 기다릴 필요가 없음 → 바로
+        if (/page=/.test(location.hash)) dismiss();
+        // 안전장치: 20초가 지나면 무조건 넘김 (지도 서버 장애 등)
+        setTimeout(function () { window.__bootReady(); setTimeout(dismiss, 1200); }, 20000);
+      })();
+    </script>
     <!-- React가 이 div 안에 전체 앱을 그립니다 -->
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>

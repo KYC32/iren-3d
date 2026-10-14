@@ -48,6 +48,8 @@ export default function App() {
   const skyDark = useSkyDark() // 3D 배경이 밤하늘이면 캔버스 위 글자를 밝게
   const touring = useAppStore((s) => !!s.tour)
   const page = useAppStore((s) => s.page)
+  // 주가·뉴스 페이지는 지도 없이 열리므로 부팅 화면을 바로 넘김. 데이터 로딩 실패 때도 넘김(오류 메시지가 보여야 함)
+  useEffect(() => { if (page || loadError) window.__bootReady?.() }, [page, loadError])
 
   // 처음 한 번 infra.json 로드
   useEffect(() => {

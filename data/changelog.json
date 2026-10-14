@@ -10,6 +10,10 @@
         {
           "ko": "뉴스 페이지 추가: [회사 발표] SEC EDGAR 제출(8-K 첨부 보도자료 제목·실적·공시·내부자 거래) · [언론] Google 뉴스 검색. 두 데이터는 GitHub Action 이 평일 매일 자동 갱신",
           "en": "News page added: [Company] SEC EDGAR filings (press-release headlines from 8-K exhibits, earnings, filings, insider) · [Press] Google News search. Both feeds refresh daily on weekdays via GitHub Actions"
+        },
+        {
+          "ko": "첫 화면 부팅 그림: 지도 코드를 받는 동안 GB300 NVL72 식 GPU 랙(트레이를 당기면 GPU 4개·냉각판, 부하에 따라 열이 보이는 WebGL)을 보여 주고, 준비되면 지도로 넘어감. 랙 1대 = GPU 72개 ≈ 130 kW",
+          "en": "Boot figure: while the map code loads, an interactive GB300 NVL72-style GPU rack (pull a tray to see 4 GPUs and cold plates; WebGL heat with load), handing over to the map when ready. One rack = 72 GPUs ≈ 130 kW"
         }
       ]
     },

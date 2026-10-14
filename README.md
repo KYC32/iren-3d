@@ -67,6 +67,10 @@ npm run build      # validate → 빌드 (dist/)
 4. 사이트를 추가하거나 좌표를 바꿨다면 `npm run geo` (보드판·지구본 타일 다시 계산).
 5. `git commit` → `git push` 하면 Vercel 이 자동으로 다시 배포합니다.
 
+## 첫 화면 부팅 그림 (GPU 랙)
+
+지도 코드(약 430KB)를 받는 1~3초 동안 `index.html` 안의 GPU 랙 그림이 먼저 보입니다. `anatomy` 스킬 방식(아이소메트릭 SVG + 같은 카메라의 WebGL 열 잉크)으로 `scripts/anatomy/rack/build.mjs` 가 만들고, `src/boot/rack.html` 조각을 Vite 플러그인이 `<!-- rack -->` 자리에 끼웁니다 (JS 번들과 무관). 지도·3D·페이지가 준비되면 `window.__bootReady()` 로 넘어가고, 사용자가 그림을 만지는 중이면 "지도 보기" 버튼으로 넘어갑니다. 다시 만들기: `node scripts/anatomy/rack/build.mjs` (검수용 `scripts/anatomy/rack/rack-light.html`).
+
 ## 주가·뉴스 페이지와 자동 갱신
 
 상단 네비 [지도 | 주가 | 뉴스] 로 전환합니다 (`#page=stock`, `#page=news`, 주가 강조 날짜 `&at=YYYY-MM-DD`).

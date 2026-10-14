@@ -42,6 +42,7 @@ export default function Scene({ record = false }) {
       gl={{ antialias: true }}
       onCreated={(state) => {
         state.gl.setClearColor(background)
+        window.__bootReady?.() // 3D 화면으로 바로 들어온 경우: 부팅 화면을 넘김
         // 개발 모드에서만: 브라우저 콘솔에서 window.__r3f 로 카메라·씬을 들여다볼 수 있게
         if (import.meta.env.DEV) window.__r3f = state
       }}

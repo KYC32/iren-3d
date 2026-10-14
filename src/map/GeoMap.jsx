@@ -57,15 +57,16 @@ export default function GeoMap() {
       // MapLibre 는 타일·글꼴 하나만 실패해도 error 를 보냄 → 처음 불러오기(load) 전 오류만 화면에 알림
       // (불러온 뒤의 일시적인 타일 실패로 정상 지도 위에 오류 문구가 계속 남던 문제)
       let didLoad=false
-      map.on('error',(e)=>{if(!alive)return;if(didLoad){console.warn('지도 타일 오류(무시):',e?.error?.message);return}setError(true)})
+      map.on('error',(e)=>{if(!alive)return;if(didLoad){console.warn('지도 타일 오류(무시):',e?.error?.message);return}setError(true);window.__bootReady?.()})
       map.on('load',()=>{
         if (!alive) return
         map.addSource('campuses',{type:'geojson',data:siteFeatures(useAppStore.getState().data.sites,useAppStore.getState().data.raw.research),cluster:true,clusterRadius:85,clusterMaxZoom:17})
         map.addLayer({id:'campus-anchors',type:'circle',source:'campuses',paint:{'circle-radius':1,'circle-opacity':0}})
         didLoad=true;setLoaded(true);setError(false)
+        window.__bootReady?.() // 부팅 화면(GPU 랙) → 지도로
       })
       map.on('moveend',()=>{if(alive)useAppStore.getState().setMapCamera({center:map.getCenter().toArray(),zoom:map.getZoom(),padding:map.getPadding(),viewport:[window.innerWidth,window.innerHeight]})})
-    } catch {setError(true)}
+    } catch {setError(true);window.__bootReady?.()}
     return ()=>{alive=false;resizeObserver?.disconnect();map?.remove();mapRef.current=null}
   },[])
   useEffect(()=>{if(loaded)mapRef.current?.getSource('campuses')?.setData(siteFeatures(data.sites,data.raw.research))},[loaded,data])
