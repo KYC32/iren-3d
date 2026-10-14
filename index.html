@@ -32,7 +32,9 @@
       #boot h1{margin:0;font-size:15px;font-weight:700}
       #boot .boot-sub{margin:2px 0 8px;font-size:12px;color:#6b7591}
       #boot .boot-note{margin:8px 0 0;font-size:11px;color:#6b7591;line-height:1.5}
-      @media (max-width:767px){#boot{padding:10px}#boot .boot-card{padding:10px 10px 8px}}
+      /* 화면이 낮으면 그림을 높이에 맞춰 줄임 (viewBox 640×560 → 가로:세로 1.143) — 카드가 화면 밖으로 넘치지 않게 */
+      #boot .rk-stage{max-width:calc((100dvh - 190px) * 1.143);margin:0 auto}
+      @media (max-width:767px){#boot{padding:10px}#boot .boot-card{padding:10px 10px 8px}#boot .rk-stage{max-width:calc((100dvh - 230px) * 1.143)}}
     </style>
     <div id="boot" aria-live="polite">
       <div class="boot-card">
