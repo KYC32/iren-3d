@@ -9,7 +9,7 @@ import PageShell from './PageShell.jsx'
 import { useAppStore } from '../store/useAppStore.js'
 import { useT } from '../i18n/useT.js'
 import { loadNews } from '../data/loadFeeds.js'
-import { KIND_LABEL, domainOf } from '../data/news.js'
+import { KIND_LABEL, domainOf, itemLabels } from '../data/news.js'
 
 const PAGE = 60 // 한 번에 보여 줄 항목 수 ("더 보기"로 늘림)
 
@@ -40,12 +40,16 @@ export default function NewsPage() {
     if (!block) return []
     return tab === 'company' ? block.items.filter((i) => kinds.has(i.kind)) : block.items.filter((i) => !source || i.source === source)
   }, [block, tab, kinds, source])
-  // 날짜별 묶음
+  // 날짜별 묶음. 같은 날 같은 제목(예: Form 4 가 7건)은 한 줄로 합치고 ×n 표시
   const groups = useMemo(() => {
     const out = []
     for (const it of items.slice(0, limit)) {
       const g = out.at(-1)
-      if (g && g.date === it.date) g.items.push(it); else out.push({ date: it.date, items: [it] })
+      if (g && g.date === it.date) {
+        const same = g.items.find((x) => x.title === it.title && x.kind === it.kind)
+        if (same) { same.count = (same.count ?? 1) + 1; continue }
+        g.items.push({ ...it })
+      } else out.push({ date: it.date, items: [{ ...it }] })
     }
     return out
   }, [items, limit])
@@ -75,9 +79,11 @@ export default function NewsPage() {
               <div key={it.id} className="news-row">
                 {tab === 'company' ? <span className={`basis kind-${it.kind}`}>{KIND_LABEL[it.kind][ko ? 'ko' : 'en']}</span> : <span className="basis kind-press-media">{it.source}</span>}
                 <div className="news-body">
-                  <a href={tab === 'company' ? it.url : it.link} target="_blank" rel="noreferrer">{it.title} <ExternalLink size={11} aria-hidden="true" /></a>
+                  <a href={tab === 'company' ? it.url : it.link} target="_blank" rel="noreferrer">{it.title}{it.count > 1 && <> ×{it.count}</>} <ExternalLink size={11} aria-hidden="true" /></a>
                   <small>
-                    {tab === 'company' ? <>sec.gov · {it.form}{it.title_from === 'form' ? '' : ' · Exhibit 99.1'}</> : domainOf(it.source_url || it.link)}
+                    {tab === 'company'
+                      ? <>sec.gov · {it.form}{it.title_from === 'form' && itemLabels(it.items, ko ? 'ko' : 'en').length > 0 && <> · {itemLabels(it.items, ko ? 'ko' : 'en').join(' · ')}</>}{it.title_from === 'exhibit' && ' · Exhibit 99.1'}</>
+                      : domainOf(it.source_url || it.link)}
                     {tab === 'company' && <> · <button className="news-chart-btn" onClick={() => setPage('stock', it.date)}><ChartLine size={11} aria-hidden="true" />{t.stock.showOnChart}</button></>}
                   </small>
                 </div>

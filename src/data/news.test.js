@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { parseRss, rssItemId, classifyFiling, recentFilings, pickExhibit, headlineFromHtml, filingTitle, sortNews, domainOf, decodeEntities, filingFolder, INCLUDE_FORMS } from './news.js'
+import { itemLabels, parseRss, rssItemId, classifyFiling, recentFilings, pickExhibit, headlineFromHtml, filingTitle, sortNews, domainOf, decodeEntities, filingFolder, INCLUDE_FORMS } from './news.js'
 
 const rss = readFileSync(new URL('./fixtures/google-news.rss.xml', import.meta.url), 'utf8')
 const submissions = JSON.parse(readFileSync(new URL('./fixtures/edgar-submissions.sample.json', import.meta.url), 'utf8'))
@@ -63,6 +63,11 @@ describe('SEC EDGAR 분류', () => {
     const raw = '<DOCUMENT>\n<TYPE>EX-99.1\n<SEQUENCE>2\n<FILENAME>ef20080141_ex99-1.htm\n<DESCRIPTION>EXHIBIT 99.1\n<TEXT>\n<html><body><p>Exhibit 99.1</p><p>IREN Reports Q4 FY26 Results</p></body></html>'
     expect(headlineFromHtml(raw)).toBe('IREN Reports Q4 FY26 Results')
     expect(headlineFromHtml('<html><head><title>irenreportsfy26results</title></head><body><p>IREN Reports FY26 Results</p></body></html>')).toBe('IREN Reports FY26 Results')
+    // 슬라이드형 첨부: 한 줄에 공백 여러 개로 이어진 제목·부제 → 첫 덩어리만, 쪽 번호·구호("PROCEED WITH PURPOSE.")·불릿·옛 회사명은 건너뜀
+    expect(headlineFromHtml('<p>PROCEED WITH PURPOSE.   1  IREN Reports Q2 FY26 Results    $3.6bn GPU Financing Secured</p>')).toBe('IREN Reports Q2 FY26 Results')
+    expect(headlineFromHtml('<p>• • &deg; • • • o o o</p><p>Iris Energy Limited</p><p>Iris Energy Announces Monthly Update</p>')).toBe('Iris Energy Announces Monthly Update')
+    expect(headlineFromHtml('<p>Key Metrics May 25 Apr 25</p><p>Bitcoin Mining average hashrate</p>')).toBeNull()
+    expect(headlineFromHtml('<p>SYDNEY, Australia, January 7, 2025 (GLOBE NEWSWIRE) -- IREN Limited today announced</p>')).toBeNull() // 날짜줄부터 시작 = 제목 없음
   })
   it('기본 제목·정렬·도메인', () => {
     expect(filingTitle({ form: '10-K', report_date: '2026-06-30' })).toBe('Annual report (10-K) (FY2026)')
@@ -70,5 +75,6 @@ describe('SEC EDGAR 분류', () => {
     const sorted = sortNews([{ date: '2026-01-01', kind: 'filing' }, { date: '2026-02-01', kind: 'insider' }, { date: '2026-01-01', kind: 'press' }])
     expect(sorted.map((x) => `${x.date}:${x.kind}`)).toEqual(['2026-02-01:insider', '2026-01-01:press', '2026-01-01:filing'])
     expect(domainOf('https://www.sec.gov/Archives/x')).toBe('sec.gov')
+    expect(itemLabels(['5.02', '9.01'], 'ko')).toEqual(['임원·이사 변동'])
   })
 })

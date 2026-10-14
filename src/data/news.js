@@ -61,6 +61,16 @@ export const KIND_LABEL = {
   insider: { ko: '내부자 거래', en: 'Insider' },
 }
 const KIND_ORDER = { press: 0, earnings: 1, filing: 2, insider: 3 }
+// 8-K 항목 코드 → 뜻 (첨부 제목이 없을 때 "무슨 공시인지" 보여 주는 데 씀)
+export const ITEM_LABEL = {
+  '1.01': { ko: '중요 계약 체결', en: 'Material agreement' }, '1.02': { ko: '중요 계약 종료', en: 'Agreement terminated' },
+  '2.02': { ko: '실적 발표', en: 'Results of operations' }, '2.03': { ko: '채무·금융 계약', en: 'Financial obligation' },
+  '3.02': { ko: '미등록 증권 발행', en: 'Unregistered securities' }, '3.03': { ko: '주주 권리 변경', en: 'Rights of holders' },
+  '4.01': { ko: '감사인 변경', en: 'Auditor change' }, '5.02': { ko: '임원·이사 변동', en: 'Officer / director change' },
+  '5.03': { ko: '정관 변경', en: 'Bylaws amended' }, '5.07': { ko: '주주총회 결과', en: 'Shareholder vote' },
+  '7.01': { ko: '공정공시(Reg FD)', en: 'Reg FD disclosure' }, '8.01': { ko: '기타 사건', en: 'Other events' }, '9.01': { ko: '첨부 자료', en: 'Exhibits' },
+}
+export const itemLabels = (items, lang = 'ko') => (items ?? []).filter((c) => c !== '9.01').map((c) => ITEM_LABEL[c]?.[lang] ?? c)
 
 // 서식(form)과 8-K 항목 코드(items)로 종류 결정
 //   10-K/10-Q/20-F = 정기 보고서 → earnings,  Form 4 = 임원·대주주 거래 → insider
@@ -113,10 +123,18 @@ export function headlineFromHtml(html) {
     .replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ')
     .replace(/<br\s*\/?>|<\/(p|div|tr|h\d|li)>/gi, '\n')
     .replace(/<[^>]+>/g, ' ')
-  const lines = decodeEntities(text).split('\n').map((l) => l.replace(/\s+/g, ' ').trim()).filter(Boolean)
-  const skip = /^(exhibit\s*\d|ex-?\d|press release|news release|for immediate release)/i
-  const line = lines.find((l) => l.length >= 10 && !skip.test(l) && !/^\(?[A-Z]{3,6}:\s*[A-Z]+\)?$/.test(l) && !/\.(htm|html|pdf)$/i.test(l) && !/^iren (limited|ltd\.?)$/i.test(l))
-  return line ? line.replace(/^\d{1,2}\s+(?=[A-Z])/, '').slice(0, 160) : null // 슬라이드형 첨부의 쪽 번호("1 ") 제거
+  // 줄바꿈뿐 아니라 "두 칸 이상 띄움"으로도 나눔 — 슬라이드형 첨부는 한 줄에 제목·부제·본문을 공백 여러 개로 이어 붙임
+  const lines = decodeEntities(text).split(/\n|\s{2,}/).map((l) => l.replace(/\s+/g, ' ').trim()).filter(Boolean)
+  // 월간 지표표("Key Metrics …")로 시작하는 첨부는 제목이 없는 표 문서 → 서식 이름으로 대신 (호출한 쪽에서 처리)
+  if (lines.slice(0, 6).some((l) => /^key metrics/i.test(l))) return null
+  const skip = /^(exhibit\s*\d|ex-?\d|press release|news release|for immediate release|proceed with purpose|about iren)/i
+  const dateline = /^[A-Z][A-Za-z .]+,\s.*\d{4}\s*\(GLOBE NEWSWIRE\)/ // "SYDNEY, Australia, January 7, 2025 (GLOBE NEWSWIRE) --" 본문 첫 줄
+  const line = lines.find((l) => l.length >= 10 && !skip.test(l)
+    && /[A-Za-z]{4,}/.test(l)                               // 글자가 거의 없는 줄(불릿·기호·&deg;)은 제외
+    && !/^\(?[A-Z]{3,6}:\s*[A-Z]+\)?$/.test(l) && !/\.(htm|html|pdf)$/i.test(l)
+    && !/^(iren|iris energy) (limited|ltd\.?)$/i.test(l))  // 회사명만 있는 줄 (옛 이름 Iris Energy 포함)
+  if (!line || dateline.test(line)) return null             // 제목 없이 본문(날짜줄)부터 시작하면 제목을 모르는 것
+  return line.replace(/^\d{1,2}\s+(?=[A-Z])/, '').slice(0, 160) // 슬라이드 쪽 번호("1 ") 제거
 }
 
 // 헤드라인이 없을 때의 기본 제목
