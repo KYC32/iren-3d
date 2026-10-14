@@ -35,9 +35,11 @@
       #boot .boot-note{margin:8px 0 0;font-size:11px;color:#6b7591;line-height:1.5}
       /* 지도까지 남은 시간 막대 (최소 표시 시간 동안 차오름) */
       #boot .boot-bar{height:3px;border-radius:2px;background:#e3e7f2;overflow:hidden;margin-top:8px}
-      #boot .boot-bar i{display:block;height:100%;width:0;background:#2ea88a;animation:boot-fill var(--boot-min,14s) linear forwards}
+      #boot .boot-bar i{display:block;height:100%;width:0;background:#2ea88a}
+      /* is-timing 은 화면이 실제로 보이기 시작할 때 붙음 (백그라운드 탭으로 열면 나중에) → 그때부터 차오름 */
+      #boot.is-timing .boot-bar i{animation:boot-fill var(--boot-min,14s) linear forwards}
       @keyframes boot-fill{to{width:100%}}
-      @media (prefers-reduced-motion:reduce){#boot .boot-bar i{animation:none;width:100%;opacity:.35}}
+      @media (prefers-reduced-motion:reduce){#boot .boot-bar i,#boot.is-timing .boot-bar i{animation:none;width:100%;opacity:.35}}
       /* 그림 크기: 화면 높이에 맞춰 제한 (랙 viewBox 640×560 → 가로:세로 1.143, GPU 560×452 → 1.239) */
       /* margin-top:auto = 그림을 칸 아래쪽(수치 줄 바로 위)에 붙임, 좌우 auto = 가운데 */
       #boot .rk-fig .rk-stage{margin:auto auto 0;max-width:calc((100dvh - 250px) * 1.143)}
@@ -60,21 +62,32 @@
     <script>
       // 부팅 화면 넘김 규칙
       //   - 최소 MIN 동안은 보여 줌 (그림의 둘러보기 한 바퀴: 트레이 → 냉각판 → 열 → 원위치)
+      //     이 시간은 화면이 "실제로 보이기 시작한 때"부터 셈: 링크를 백그라운드 탭으로 열면
+      //     안 보는 사이에 시간이 다 흘러 탭을 열자마자 그림이 사라지는 일을 막음
       //   - 지도(또는 3D·주가·뉴스 페이지)가 준비되면 앱이 __bootReady() 를 부름
       //   - 그림을 만지는 중이면 손을 뗀 뒤 IDLE 만큼 기다림
       //   - "건너뛰기 / 지도 보기" 버튼은 언제든 바로 넘김
       (function () {
         var MIN = 14000, IDLE = 6000;
         var boot = document.getElementById('boot'), go = boot && boot.querySelector('[data-boot-go]');
-        var t0 = Date.now(), lastTouch = 0, ready = false, done = false, timer = 0;
+        var t0 = 0, lastTouch = 0, ready = false, done = false, timer = 0;
         if (boot) boot.style.setProperty('--boot-min', MIN / 1000 + 's');
+        // 화면이 보이는 첫 순간에 시계 시작 (진행 막대도 이때부터 차오름)
+        function startClock() {
+          if (t0 || document.hidden) return;
+          t0 = Date.now();
+          if (boot) boot.classList.add('is-timing');
+        }
+        startClock();
+        document.addEventListener('visibilitychange', startClock);
         function dismiss() {
           if (done || !boot) return; done = true; clearInterval(timer);
+          document.removeEventListener('visibilitychange', startClock);
           boot.classList.add('is-done');
           setTimeout(function () { if (window.__rackStop) window.__rackStop(); boot.remove(); }, 500);
         }
         function tryGo() {
-          if (done || !ready) return;
+          if (done || !ready || !t0) return; // 아직 한 번도 안 보였으면 기다림
           if (Date.now() - t0 < MIN || Date.now() - lastTouch < IDLE) return;
           dismiss();
         }
