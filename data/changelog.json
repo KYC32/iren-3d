@@ -18,6 +18,10 @@
         {
           "ko": "부팅 그림 둘러보기에 확대까지 자동으로: 랙은 트레이를 꺼내 확대해 GPU 냉각판·매니폴드·CPU·NIC 를, GPU 는 기판을 확대해 다이·HBM3e·전원부·NVLink 커넥터를 청록 원으로 하나씩 짚으며 설명(28초 한 바퀴). 부팅 화면은 이 한 바퀴를 다 보여 준 뒤 지도로 넘어감",
           "en": "The boot tour now zooms by itself: the rack zooms into the pulled tray (GPU cold plates, manifold, CPU, NIC) and the GPU zooms into its board (dies, HBM3e, VRM, NVLink connector), marking each part with a teal ring and a caption (one 28 s loop). The boot screen plays one full loop before the map"
+        },
+        {
+          "ko": "부팅 그림의 설명 줄을 크게(11px 고정폭 → 13.5px 일반 글꼴): 부품 이름은 굵게, 앞에 그림의 짚는 원과 같은 청록 원",
+          "en": "Bigger captions under the boot figures (11px mono to 13.5px sans): part names in bold, led by the same teal ring that marks the part"
         }
       ]
     },

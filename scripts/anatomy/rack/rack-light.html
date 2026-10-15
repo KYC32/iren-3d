@@ -172,8 +172,13 @@ body{margin:0;background:var(--anatomy-page);color:var(--anatomy-text);font:14px
 @keyframes rk-call{0%{box-shadow:0 2px 8px rgba(22,33,58,.22),0 0 0 0 rgba(46,168,138,.6)}75%{box-shadow:0 2px 8px rgba(22,33,58,.22),0 0 0 12px rgba(46,168,138,0)}100%{box-shadow:0 2px 8px rgba(22,33,58,.22),0 0 0 0 rgba(46,168,138,0)}}
 @media (prefers-reduced-motion:reduce){.rk-zoom[data-call]{animation:none}}
 .rk-icon{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.rk-fig .rk-read{font:11px/1.4 var(--anatomy-mono);color:var(--anatomy-text);min-height:1.4em}
-@media (max-width:767px){.rk-pair{grid-template-columns:1fr}}
+/* 그림 아래 설명 줄: 13.5px 일반 글꼴, 두 줄 자리를 미리 잡아 설명이 바뀌어도 카드가 들썩이지 않음 */
+.rk-fig .rk-read{margin-top:4px;font:500 13.5px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--anatomy-text);min-height:2.9em}
+/* 부품 설명일 때: 진한 글자 + 이름 굵게 + 앞에 그림의 짚는 원과 같은 청록 원 */
+.rk-fig .rk-read[data-cap]{color:var(--anatomy-strong)}
+.rk-fig .rk-read b{font-weight:700}
+.rk-fig .rk-read[data-cap]::before{content:"";display:inline-block;width:9px;height:9px;margin-right:7px;border:2px solid #2ea88a;border-radius:50%;vertical-align:-1px}
+@media (max-width:767px){.rk-pair{grid-template-columns:1fr}.rk-ui .rk-hint{display:none}}   /* 좁은 화면: 안내 줄은 위 문구와 같은 내용이라 숨김 (지도 보기 단추가 한 줄에) */
 .rk-ui b{color:var(--anatomy-strong);font-weight:600}
 .rk-ui .rk-go{margin-left:auto;white-space:nowrap;flex:none;border:1px solid var(--anatomy-muted);background:var(--anatomy-face);color:var(--anatomy-strong);border-radius:999px;padding:6px 12px;font:inherit;cursor:pointer}
 .rk-ui .rk-go[disabled]{opacity:.55;cursor:default}
@@ -390,7 +395,9 @@ function tourAt(t){const u=t%TOUR;const ramp=(a,b)=>clamp((u-a)/(b-a),0,1);
   const rz=u>=3&&u<11.6, gz=u>=17.3&&u<25.3;
   return {pull:D.stroke*(ramp(0,2.5)-ramp(12.5,14.5)),lift:ramp(14.5,17)-ramp(25.6,27.6),load:(u>2&&u<12.5)||(u>16&&u<25.6)?1:0,
     rz,rs:rz?Math.min(3,Math.floor((u-3)/2.15)):-1,gz,gs:gz?Math.min(3,Math.floor((u-17.3)/2)):-1};}
-const say=(el,text)=>{if(el&&el.textContent!==text)el.textContent=text;};
+const say=(el,text,cap)=>{if(!el||el._t===text)return;el._t=text;
+  if(cap){const i=text.indexOf(" · "),b=document.createElement("b");b.textContent=i<0?text:text.slice(0,i);el.replaceChildren(b,i<0?"":text.slice(i));el.setAttribute("data-cap","");}
+  else{el.textContent=text;el.removeAttribute("data-cap");}};
 // ---------- 확대 (두 그림 공용) ----------
 // 보이는 범위(viewBox)를 좁혀 크게 보여 줌: SVG 라 확대해도 선명, 열 잉크도 같은 범위(uView·uOrigin)를 받아 따라옴
 // 돋보기 방식: 전체 그림에서 포인터가 가리키는 점이 확대 화면에서도 포인터 바로 아래에 옴 → 겨눈 부품이 달아나지 않음
@@ -469,8 +476,8 @@ function draw(){
   const plateText=KO?(lift<.02?"냉각판 덮임":ld<.03?"냉각판 "+pPl+"% 들림":lift<.98?"뚜껑 들리는 중":"냉각판·뚜껑 들림 · 다이 "+G.dies+" · HBM3e "+G.hbm+" ("+G.hbmGb+" GB)")
     :(lift<.02?"cold plate on":ld<.03?"lifting plate "+pPl+"%":lift<.98?"lifting lid":"plate and lid off · "+G.dies+" dies · "+G.hbm+" HBM3e "+G.hbmGb+" GB");
   const c1=Z1.caption(), c2=Z2.caption();   // 확대 중(직접·둘러보기)이면 부품 설명, 아니면 평소 수치
-  say(read1,c1!==null?c1:trayText+" · "+(perTrayKw*load.x).toFixed(1)+" kW");
-  say(read2,c2!==null?c2:plateText+" · "+(G.kw*load.x).toFixed(2)+" kW");
+  say(read1,c1!==null?c1:trayText+" · "+(perTrayKw*load.x).toFixed(1)+" kW",c1!==null);
+  say(read2,c2!==null?c2:plateText+" · "+(G.kw*load.x).toFixed(2)+" kW",c2!==null);
 }
 function tick(now){
   const dt=last?Math.min((now-last)/1000,1/30):1/60;last=now;time+=dt;const calm=still.matches;
