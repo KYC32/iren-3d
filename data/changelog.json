@@ -6,6 +6,10 @@
         {
           "ko": "부팅 그림을 실물 색·구조로 다듬음: IREN 이 들이는 Dell XE9712 GB300 NVL72 사진 기준으로 검정 랙·은색 트레이·검정 기판·구리 냉각판·검정 호스, 파랑/빨강은 냉각수 연결부 고리에만. 트레이 안은 실제 GB300 배치(GPU 4개 한 줄 → 매니폴드 → CPU 2개·메모리 → NIC 4개 → 저장장치·포트), GPU 는 기판·소켓 틀·패키지·다이·HBM·뚜껑·냉각판이 층층이 들리는 분해도",
           "en": "Boot figure refined to real colours and structure: based on photos of the Dell XE9712 GB300 NVL72 that IREN deploys — black rack, silver trays, black boards, copper cold plates, black hoses, with blue/red only on the coolant quick-disconnect rings. The tray shows the actual GB300 layout (4 GPUs in a row → manifold → 2 CPUs with memory → 4 NICs → storage and ports); the GPU is an exploded view of board, socket frame, package, dies, HBM, lid and cold plate"
+        },
+        {
+          "ko": "부팅 그림에 GPU 기판 확대 추가: '기판 확대' 단추로 약 2.4배 돋보기 확대, 부품에 포인터를 올리거나 탭하면 이름·역할 설명(다이·HBM3e·인터포저·전원부·NVLink 커넥터 등). 확대했을 때 보이도록 세라믹 콘덴서 줄·정렬 핀·전원 커넥터·전원 컨트롤러·기준점·실크 인쇄를 더 그림",
+          "en": "Board zoom on the boot figure: a 'Zoom board' button magnifies the GPU board about 2.4x like a loupe, and pointing at or tapping a part names it and its role (dies, HBM3e, interposer, VRM, NVLink connector and more). Added ceramic capacitor rows, alignment pins, a power connector, VRM controllers, fiducials and silkscreen for the close-up"
         }
       ]
     },

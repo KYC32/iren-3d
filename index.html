@@ -88,6 +88,7 @@
         }
         function tryGo() {
           if (done || !ready || !t0) return; // 아직 한 번도 안 보였으면 기다림
+          if (window.__rackBusy && window.__rackBusy()) return; // GPU 기판을 확대해 보는 중이면 기다림 (버튼으로는 언제든 넘김)
           if (Date.now() - t0 < MIN || Date.now() - lastTouch < IDLE) return;
           dismiss();
         }

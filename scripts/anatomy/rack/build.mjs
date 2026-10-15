@@ -337,6 +337,11 @@ const CSS = `
 .rk-stage>svg,.rk-stage>canvas{display:block;width:100%;height:auto}
 .rk-stage>.rk-layer{position:absolute;inset:0;height:100%!important;pointer-events:none}
 .rk-stage:focus-visible{outline:1px solid var(--anatomy-muted);outline-offset:6px}
+/* GPU 칸: 확대하면 보이는 범위(viewBox) 밖의 그림이 칸 밖으로 넘치지 않게 자름 (kit 기본은 overflow:visible) */
+.rk-stage[data-fig=gpu]{overflow:hidden;border-radius:6px}
+/* 키보드로 둘러볼 때 가리키는 곳을 보여 주는 조준 원 */
+.rk-aim{position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border:1.5px solid var(--anatomy-strong);border-radius:50%;box-shadow:0 0 0 2px var(--anatomy-card);pointer-events:none;opacity:0;transition:opacity .2s}
+.rk-stage[data-aim] .rk-aim{opacity:1}
 /* 색 토큰 세트: 그룹마다 kit 토큰을 바꿔 칠함 (모든 색이 토큰 → 선·면·명암 규칙은 그대로) */
 .rk-metal{--anatomy-paper:#2f343b;--anatomy-face:#373d45;--anatomy-top:#4a515b;--anatomy-shade-0:#22262c;--anatomy-shade-1:#282c33;--anatomy-shade-2:#2e333a;--anatomy-shade-3:#353a42;--anatomy-lit-top:#5b6470;--anatomy-lit-shade:#3d434c;--anatomy-hi:#e3e8ee;--anatomy-mid:#9aa3ae;--anatomy-lo:#6f7884;--anatomy-faint:#525a65;--anatomy-lit:#ffffff;--anatomy-dot:#c9d1da}
 .rk-cavity{--anatomy-paper:#16191d;--anatomy-face:#1b1e23;--anatomy-top:#22262c;--anatomy-shade-0:#101215;--anatomy-shade-1:#14161a;--anatomy-shade-2:#181b1f;--anatomy-shade-3:#1d2025;--anatomy-lo:#3a4049;--anatomy-faint:#2b3037;--anatomy-mid:#59616c;--anatomy-hi:#9aa3ae}
@@ -372,6 +377,12 @@ const CSS = `
 .rk-fig>.rk-stage{width:100%;margin-top:auto}
 .rk-fig h2{margin:0 0 2px;font:600 12px/1.4 var(--anatomy-mono);color:var(--anatomy-strong);letter-spacing:.02em}
 .rk-fig h2 small{font-weight:400;color:var(--anatomy-muted)}
+.rk-head{display:flex;align-items:flex-start;gap:8px}
+.rk-head h2{flex:1;min-width:0}
+.rk-zoom{flex:none;display:inline-flex;align-items:center;gap:5px;margin-top:-2px;border:1px solid var(--anatomy-muted);background:var(--anatomy-face);color:var(--anatomy-strong);border-radius:999px;padding:3px 10px 3px 8px;font:500 11px/1.3 var(--anatomy-mono);cursor:pointer}
+.rk-zoom:hover{border-color:var(--anatomy-strong)}
+.rk-zoom[aria-pressed="true"]{background:var(--anatomy-strong);border-color:var(--anatomy-strong);color:var(--anatomy-card)}
+.rk-icon{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .rk-fig .rk-read{font:11px/1.4 var(--anatomy-mono);color:var(--anatomy-text);min-height:1.4em}
 @media (max-width:767px){.rk-pair{grid-template-columns:1fr}}
 .rk-ui b{color:var(--anatomy-strong);font-weight:600}
@@ -426,10 +437,44 @@ void main(){
 // GPU 모듈 그림 (gpu.mjs)
 const G2 = gpuFigure();
 
+// 기판 확대에서 포인터 아래 부품의 이름·역할 (키 = gpu.mjs 의 info). [한국어, 영어]
+const INFO = {
+  board: ["메인보드 · GB300 컴퓨트 트레이의 검정 기판 (여러 층의 구리 배선)", "Main board · the black GB300 compute-tray PCB (many copper layers)"],
+  stand: ["받침 기둥 · 기판을 바닥에서 띄워 고정", "Standoff · holds the board off the floor"],
+  choke: ["전원부 인덕터 · 칩이 쓰는 1 V 안팎의 전기를 여러 상으로 나눠 만듦", "VRM inductor · one phase of the ~1 V supply for the chip"],
+  stage: ["파워 스테이지 · 인덕터와 짝을 이루는 전원 스위칭 칩", "Power stage · the switching chip paired with each inductor"],
+  ctrl: ["전원 컨트롤러 · 전원부 상들의 박자를 맞춤", "VRM controller · keeps the power phases in step"],
+  cap: ["고분자 콘덴서 · 전원의 출렁임을 흡수", "Polymer capacitor · smooths the supply"],
+  mlcc: ["적층 세라믹 콘덴서 · 칩 바로 옆에서 순간 전류를 공급", "Ceramic capacitor (MLCC) · instant current right next to the chip"],
+  nvlink: ["NVLink 커넥터 · 랙 뒤 NVLink 스파인으로 GPU 72개를 하나로 연결", "NVLink connector · joins all 72 GPUs through the rack's NVLink spine"],
+  power: ["전원 커넥터 · 트레이의 전원판에서 전기를 받음", "Power connector · takes power from the tray"],
+  label: ["제품 라벨 · 일련번호와 바코드", "Product label · serial number and barcode"],
+  frame: ["소켓 고정 틀 · 나사 4개로 냉각판을 눌러 고정", "Socket bolster · four screws clamp the cold plate down"],
+  pin: ["정렬 핀 · 냉각판 자리를 맞춤", "Alignment pin · locates the cold plate"],
+  module: ["GPU 모듈 기판 (SXM) · 소켓에 꽂혀 GPU만 따로 교체 가능", "GPU module (SXM) · socketed, so the GPU can be replaced on its own"],
+  substrate: ["패키지 기판 · 칩의 수많은 단자를 기판 배선으로 넓혀 줌", "Package substrate · fans the chip's many pins out to the board"],
+  interposer: ["인터포저 (CoWoS-L) · 다이와 HBM을 아주 촘촘한 배선으로 연결", "Interposer (CoWoS-L) · dense wiring between the dies and HBM"],
+  die: ["GPU 다이 · 실리콘 2개가 10 TB/s 로 이어져 한 GPU처럼 동작 · 최대 1.4 kW", "GPU dies · two dies linked at 10 TB/s work as one GPU · up to 1.4 kW"],
+  hbm: ["HBM3e 메모리 · 12단 적층 36 GB, 8개 합쳐 288 GB", "HBM3e · a 12-high stack of 36 GB; eight make 288 GB"],
+  manifold: ["매니폴드 블록 · 냉각수를 나눠 보내는 스테인리스 블록", "Manifold block · stainless block that feeds the coolant"],
+  "socket-supply": ["퀵커넥터 소켓 · 파랑 고리 = 냉각수 공급 (차가운 쪽)", "Quick-disconnect socket · blue ring = supply (cold side)"],
+  "socket-return": ["퀵커넥터 소켓 · 빨강 고리 = 회수 (데워진 쪽)", "Quick-disconnect socket · red ring = return (warm side)"],
+};
+// 확대 단추 (lucide zoom-in / zoom-out 아이콘, 인라인 SVG)
+const ICON_IN = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="11" x2="11" y1="8" y2="14"/><line x1="8" x2="14" y1="11" y2="11"/></svg>';
+const ICON_OUT = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></svg>';
+const zoomLabel = (ko, on) => (on ? ICON_OUT : ICON_IN) + `<span>${ko ? (on ? "전체 보기" : "기판 확대") : on ? "Full view" : "Zoom board"}</span>`;
+const zoomText = (ko) => ({
+  in: zoomLabel(ko, false), out: zoomLabel(ko, true),
+  hint: ko ? "확대 중 · 부품에 포인터를 올리거나 탭하면 설명이 나옵니다" : "zoomed · point at or tap a part to see what it is",
+  aria: ko ? ["GPU 모듈: 포인터를 위아래로 움직이거나 화살표 키로 냉각판과 뚜껑을 들어 올립니다", "기판 확대: 포인터나 화살표 키로 둘러보고, Esc 로 전체 보기"]
+    : ["GPU module: move the pointer up or press the arrow keys to lift the cold plate and the lid", "Board zoom: look around with the pointer or arrow keys; Escape for the full view"],
+});
+
 // 살아 움직이는 부분 (kit 없이 동작: 이동 벡터·좌표는 빌드 때 계산해 둠). 두 그림을 한 루프로
 //   랙: 트레이 당김(pull) · 부하(load)   GPU 모듈: 냉각판 들림(lift) · 같은 부하
 const LIVE = `
-const D=__DATA__, D2=__DATA2__, KO=__KO__;
+const D=__DATA__, D2=__DATA2__, KO=__KO__, INFO=__INFO__, ZT=__ZOOM__;
 const stage=document.querySelector(".rk-stage[data-fig=rack]"), stage2=document.querySelector(".rk-stage[data-fig=gpu]");
 const svg=stage.querySelector("svg.rk-back"), svg2=stage2.querySelector("svg.rk-back");
 const trays=[...stage.querySelectorAll('[data-part^="tray-"]')], plate=stage2.querySelector('[data-part="plate"]'), lidG=stage2.querySelector('[data-part="lid"]');
@@ -448,6 +493,33 @@ const plateOf=(u)=>D2.plateMax*sm(0,.65,u), lidOf=(u)=>sm(.35,1,u);
 function tourAt(t){const u=t%14;const ramp=(a,b)=>clamp((u-a)/(b-a),0,1);
   return {pull:D.stroke*(ramp(0,3)-ramp(11,13.5)),lift:ramp(3,6)-ramp(9.5,11.5),load:u>5&&u<9.5?1:0};}
 const say=(el,text)=>{if(el&&el.textContent!==text)el.textContent=text;};
+// ---------- 기판 확대 (GPU 그림) ----------
+// 보이는 범위(viewBox)를 좁혀 크게 보여 줌: SVG 라 확대해도 선명, 열 잉크도 같은 범위를 받아 따라옴
+// 돋보기 방식: 전체 그림에서 포인터가 가리키는 점이 확대 화면에서도 포인터 바로 아래에 옴 → 겨눈 부품이 달아나지 않음
+//   (포인터 비율 fx 일 때 보이는 범위의 왼쪽 = fx × (전체 폭 − 보이는 폭))
+// 확대 중엔 냉각판·뚜껑을 감추고, 포인터 아래 부품의 이름·역할을 수치 줄에 보여 줌
+const front2=stage2.querySelector("svg.rk-front"), zoomBtn=document.querySelector("[data-gpu-zoom]"), aim=stage2.querySelector(".rk-aim");
+const Z={on:false,k:0,fx:.5,fy:.5,tfx:.5,tfy:.5,info:"",box:"",px:null,py:null,keys:false,moved:true};
+function viewRect(){
+  const s=1+(D2.zoom-1)*sm(0,1,Z.k), w=D2.W/s, h=D2.H/s;
+  return [Z.fx*(D2.W-w),Z.fy*(D2.H-h),w,h];
+}
+function applyView(){
+  const r=viewRect(), box=r.map((n)=>n.toFixed(2)).join(" ");
+  if(box!==Z.box){Z.box=box;Z.moved=true;svg2.setAttribute("viewBox",box);front2.setAttribute("viewBox",box);front2.style.opacity=String(1-sm(0,.6,Z.k));}
+  return r;
+}
+// 화면 한 점 아래의 부품 설명 찾기 (뒤 SVG 의 data-info 묶음)
+function pick(x,y){const el=document.elementFromPoint(x,y);const g=el&&el.closest?el.closest("[data-info]"):null;const key=g&&stage2.contains(g)?g.getAttribute("data-info"):"";Z.info=key&&INFO[key]?INFO[key][KO?0:1]:"";}
+function setZoom(on){
+  if(Z.on===on)return;Z.on=on;
+  if(on){Z.fx=Z.tfx=D2.focus[0]/D2.W;Z.fy=Z.tfy=D2.focus[1]/D2.H;Z.info="";Z.px=null;Z.keys=false;}   // 처음엔 패키지 가운데
+  if(!on)stage2.removeAttribute("data-aim");
+  stage2.style.touchAction=on?"none":"";
+  if(zoomBtn){zoomBtn.setAttribute("aria-pressed",String(on));zoomBtn.innerHTML=on?ZT.out:ZT.in;}
+  stage2.setAttribute("aria-label",ZT.aria[on?1:0]);
+  hold();
+}
 function draw(){
   const tr="translate("+(D.pull[0]*pull).toFixed(2)+" "+(D.pull[1]*pull).toFixed(2)+")";
   for(const t of trays){if(pull>.01)t.setAttribute("transform",tr);else t.removeAttribute("transform");}
@@ -457,7 +529,10 @@ function draw(){
   const lv=load.x.toFixed(2);if(lv!==lastLv){lastLv=lv;if(!layer)stage.style.setProperty("--rk-load",lv);if(!layer2)stage2.style.setProperty("--rk-load",lv);} // WebGL 없을 때만 CSS 색으로
   const t=still.matches?0.8:clock;
   if(layer){(load.x>1e-3&&pull>.5)?layer.draw({uLoad:load.x,uPull:pull,uFirst:first.x},t):layer.clear();}
-  if(layer2){(load.x>1e-3&&ld>.05)?layer2.draw({uLoad:load.x,uFirst:first.x},t):layer2.clear();}  // 다이는 뚜껑이 비켜난 뒤에만 보임
+  const vr=applyView();   // 기판 확대: 지금 보이는 범위 [x, y, 폭, 높이]
+  if(Z.on&&Z.moved){if(Z.px!==null)pick(Z.px,Z.py);else if(Z.keys){const b=stage2.getBoundingClientRect();pick(b.left+Z.tfx*b.width,b.top+Z.tfy*b.height);}Z.moved=false;}
+  // 다이는 뚜껑이 비켜난 뒤(또는 확대 중)에만 보임. 확대 범위는 uView(크기)·uOrigin(원점 이동)으로 셰이더에 알림
+  if(layer2){(load.x>1e-3&&(ld>.05||Z.k>.5))?layer2.draw({uLoad:load.x,uFirst:first.x,uView:[vr[2],vr[3]],uOrigin:[D2.camera.origin[0]-vr[0],D2.camera.origin[1]-vr[1]]},t):layer2.clear();}
   const out=pull/D.stroke, pOut=Math.round(out*100), pPl=Math.round(pl/D2.plateMax*100);
   // 수치 줄: 트레이가 얼마나 나왔는지 / 냉각판이 얼마나 들렸는지 + 지금 부하의 전력 (KO 면 한국어)
   const trayText=KO?(out<.05?"트레이 "+D.tray+" · 장착됨":out<.98?"트레이 "+D.tray+" · "+pOut+"% 빠짐":"트레이 "+D.tray+" · 열림 · GPU "+R.gpuPerTray+" · CPU "+R.cpuPerTray)
@@ -465,32 +540,55 @@ function draw(){
   const plateText=KO?(lift<.02?"냉각판 덮임":ld<.03?"냉각판 "+pPl+"% 들림":lift<.98?"뚜껑 들리는 중":"냉각판·뚜껑 들림 · 다이 "+G.dies+" · HBM3e "+G.hbm+" ("+G.hbmGb+" GB)")
     :(lift<.02?"cold plate on":ld<.03?"lifting plate "+pPl+"%":lift<.98?"lifting lid":"plate and lid off · "+G.dies+" dies · "+G.hbm+" HBM3e "+G.hbmGb+" GB");
   say(read1,trayText+" · "+(perTrayKw*load.x).toFixed(1)+" kW");
-  say(read2,plateText+" · "+(G.kw*load.x).toFixed(2)+" kW");
+  say(read2,Z.on?(Z.info||ZT.hint):plateText+" · "+(G.kw*load.x).toFixed(2)+" kW");
   stage.setAttribute("aria-valuenow",String(Math.round(out*100)));stage2.setAttribute("aria-valuenow",String(Math.round(lift*100)));
 }
 function tick(now){
   const dt=last?Math.min((now-last)/1000,1/30):1/60;last=now;clock+=dt;const calm=still.matches;
   let wantLoad=0;
-  if(touring){const t=tourAt(clock);target=t.pull;liftTarget=t.lift;wantLoad=t.load;}else wantLoad=(pull>D.stroke*.6||lift>.6)?1:0;
+  if(touring){const t=tourAt(clock);target=t.pull;liftTarget=t.lift;wantLoad=t.load;}else wantLoad=(pull>D.stroke*.6||lift>.6||Z.on)?1:0;   // 기판 확대 중엔 다이가 데워진 모습
   pull=calm?target:pull+(target-pull)*(1-Math.exp(-dt/.6));if(Math.abs(target-pull)<.05)pull=target;
   lift=calm?liftTarget:lift+(liftTarget-lift)*(1-Math.exp(-dt/.6));if(Math.abs(liftTarget-lift)<.002)lift=liftTarget;
+  const zk=Z.on?1:0;Z.k=calm?zk:Z.k+(zk-Z.k)*(1-Math.exp(-dt/.22));if(Math.abs(zk-Z.k)<.002)Z.k=zk;   // 확대 진행 0..1
+  const zf=calm?1:1-Math.exp(-dt/.12);Z.fx+=(Z.tfx-Z.fx)*zf;Z.fy+=(Z.tfy-Z.fy)*zf;                // 돋보기 위치 (포인터 비율)
   settle(load,wantLoad,dt,1.8,calm);settle(first,(layer||layer2)?1:0,dt,.6,calm);
   draw();
   frame=visible?requestAnimationFrame(tick):0;
 }
 const run=()=>{if(!frame&&visible){last=0;frame=requestAnimationFrame(tick);}};
-const hold=()=>{touched=true;touring=false;clearTimeout(idle);idle=setTimeout(()=>{touring=!still.matches;clock=0;},5000);run();};
+const hold=()=>{touched=true;touring=false;clearTimeout(idle);idle=setTimeout(()=>{if(Z.on)return;touring=!still.matches;clock=0;},5000);run();};   // 손을 떼고 5초 뒤 둘러보기 재개 (기판 확대 중엔 멈춘 채로)
 const shareOf=(e,el)=>{const b=el.getBoundingClientRect();return clamp(((e.clientX-b.left)/b.width-.2)/.6,0,1);};
 for(const ev of ["pointermove","pointerdown"]){
   stage.addEventListener(ev,(e)=>{target=shareOf(e,svg)*D.stroke;hold();});
-  stage2.addEventListener(ev,(e)=>{const b=svg2.getBoundingClientRect();liftTarget=clamp(1-((e.clientY-b.top)/b.height-.25)/.5,0,1);hold();});
+  stage2.addEventListener(ev,(e)=>{const b=svg2.getBoundingClientRect();
+    if(Z.on){ // 확대 중: 포인터가 그림의 어디에 있느냐에 따라 기판의 그쪽을 보여 주고, 그 아래 부품을 설명
+      Z.tfx=clamp((e.clientX-b.left)/b.width,0,1);Z.tfy=clamp((e.clientY-b.top)/b.height,0,1);
+      Z.px=e.clientX;Z.py=e.clientY;Z.keys=false;Z.moved=true;stage2.removeAttribute("data-aim");hold();return;}
+    liftTarget=clamp(1-((e.clientY-b.top)/b.height-.25)/.5,0,1);hold();});
 }
 const keys=(el,get,set,max)=>el.addEventListener("keydown",(e)=>{let to=null;if(e.key==="ArrowRight"||e.key==="ArrowUp")to=get()+max/4;if(e.key==="ArrowLeft"||e.key==="ArrowDown")to=get()-max/4;if(e.key==="Home")to=0;if(e.key==="End")to=max;if(to===null)return;e.preventDefault();set(clamp(to,0,max));hold();});
-keys(stage,()=>target,(v)=>target=v,D.stroke);keys(stage2,()=>liftTarget,(v)=>liftTarget=v,1);
+keys(stage,()=>target,(v)=>target=v,D.stroke);
+stage2.addEventListener("keydown",(e)=>{
+  if(e.key==="Escape"&&Z.on){e.preventDefault();setZoom(false);return;}
+  if(e.key==="+"||e.key==="="){e.preventDefault();setZoom(true);return;}
+  if(e.key==="-"){e.preventDefault();setZoom(false);return;}
+  if(Z.on){ // 확대 중: 화살표로 조준 원을 옮기며 둘러보기, 조준 원 아래 부품을 설명
+    let dx=0,dy=0;
+    if(e.key==="ArrowLeft")dx=-.06;if(e.key==="ArrowRight")dx=.06;if(e.key==="ArrowUp")dy=-.06;if(e.key==="ArrowDown")dy=.06;
+    if(!dx&&!dy)return;e.preventDefault();Z.tfx=clamp(Z.tfx+dx,0,1);Z.tfy=clamp(Z.tfy+dy,0,1);Z.px=null;Z.keys=true;Z.moved=true;
+    if(aim){aim.style.left=(Z.tfx*100).toFixed(1)+"%";aim.style.top=(Z.tfy*100).toFixed(1)+"%";stage2.setAttribute("data-aim","");}
+    hold();return;}
+  let to=null;if(e.key==="ArrowRight"||e.key==="ArrowUp")to=liftTarget+.25;if(e.key==="ArrowLeft"||e.key==="ArrowDown")to=liftTarget-.25;if(e.key==="Home")to=0;if(e.key==="End")to=1;
+  if(to===null)return;e.preventDefault();liftTarget=clamp(to,0,1);hold();
+});
+if(zoomBtn)zoomBtn.addEventListener("click",()=>setZoom(!Z.on));
+stage2.addEventListener("dblclick",(e)=>{e.preventDefault();setZoom(!Z.on);});
 document.addEventListener("visibilitychange",()=>{visible=!document.hidden;if(visible)run();});
 if(still.matches){touring=false;target=pull=D.stroke;liftTarget=lift=1;load.x=1;first.x=(layer||layer2)?1:0;}
 draw();run();
 window.__rackTouched=()=>touched;
+window.__rackBusy=()=>Z.on;   // 기판 확대 중이면 부팅 화면이 저절로 넘어가지 않음
+window.__rackState=()=>({load:+load.x.toFixed(3),zoom:+Z.k.toFixed(3),on:Z.on,touring,lid:+lidOf(lift).toFixed(3),view:Z.box,gl:!!layer2});   // 검수용 상태 읽기
 window.__rackStop=()=>{visible=false;if(frame)cancelAnimationFrame(frame);frame=0;};
 // 검수용: 둘러보기의 t 초 장면으로 바로 이동 (따라가는 값들을 목표에 붙여서 그 순간을 그림)
 window.__rackSeek=(t)=>{clock=t;const s=tourAt(t);pull=target=s.pull;lift=liftTarget=s.lift;load.x=s.load;first.x=1;draw();};
@@ -498,15 +596,16 @@ window.__rackSeek=(t)=>{clock=t;const s=tourAt(t);pull=target=s.pull;lift=liftTa
 
 // 그림 칸 (ko = 한국어 부팅 화면용 / 아니면 영어 검수 페이지용). role="slider" 안의 SVG 는 낭독기가 읽지 않으므로 설명은 여기 한 곳에만
 const stageHtml = (ko) => `<div class="rk-stage" data-fig="rack" tabindex="0" role="slider" aria-label="${ko ? "GPU 랙: 포인터를 좌우로 움직이거나 화살표 키로 컴퓨트 트레이를 꺼냅니다" : "GPU rack: move the pointer across or press the arrow keys to slide the compute tray out"}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">${backSvg}${traySvg}<canvas class="rk-layer rk-gl" aria-hidden="true"></canvas>${frontSvg}</div>`;
-const stage2Html = (ko) => `<div class="rk-stage" data-fig="gpu" tabindex="0" role="slider" aria-label="${ko ? "GPU 모듈: 포인터를 위아래로 움직이거나 화살표 키로 냉각판과 뚜껑을 들어 올립니다" : "GPU module: move the pointer up or press the arrow keys to lift the cold plate and the lid"}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">${G2.backSvg}<canvas class="rk-layer rk-gl" aria-hidden="true"></canvas>${G2.frontSvg}</div>`;
+const stage2Html = (ko) => `<div class="rk-stage" data-fig="gpu" tabindex="0" role="slider" aria-label="${ko ? "GPU 모듈: 포인터를 위아래로 움직이거나 화살표 키로 냉각판과 뚜껑을 들어 올립니다" : "GPU module: move the pointer up or press the arrow keys to lift the cold plate and the lid"}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">${G2.backSvg}<canvas class="rk-layer rk-gl" aria-hidden="true"></canvas>${G2.frontSvg}<span class="rk-aim" aria-hidden="true"></span></div>`;
 const pairHtml = (ko) => `<div class="rk-pair">
   <div class="rk-fig"><h2>${ko ? "랙" : "Rack"} · ${RACK.name} <small>${ko ? `GPU ${RACK.gpus}개 ≈ ${RACK.kw} kW` : `${RACK.gpus} GPUs ≈ ${RACK.kw} kW`}</small></h2>${stageHtml(ko)}<div class="rk-read" data-readout="rack">${ko ? `트레이 ${PULLED.index} · 장착됨` : `tray ${PULLED.index} seated`} · 0.0 kW</div></div>
-  <div class="rk-fig"><h2>GPU · ${GPU.name} <small>${ko ? `트레이 속 GPU 1개 확대 · 다이 ${GPU.dies} · HBM3e ${GPU.hbm} (${GPU.hbmGb} GB) · ≈${GPU.kw} kW` : `one GPU from the tray · ${GPU.dies} dies · ${GPU.hbm} HBM3e (${GPU.hbmGb} GB) · ≈${GPU.kw} kW`}</small></h2>${stage2Html(ko)}<div class="rk-read" data-readout="gpu">${ko ? "냉각판 덮임" : "cold plate on"} · 0.00 kW</div></div>
+  <div class="rk-fig"><div class="rk-head"><h2>GPU · ${GPU.name} <small>${ko ? `트레이 속 GPU 1개 확대 · 다이 ${GPU.dies} · HBM3e ${GPU.hbm} (${GPU.hbmGb} GB) · ≈${GPU.kw} kW` : `one GPU from the tray · ${GPU.dies} dies · ${GPU.hbm} HBM3e (${GPU.hbmGb} GB) · ≈${GPU.kw} kW`}</small></h2><button class="rk-zoom" type="button" data-gpu-zoom aria-pressed="false">${zoomLabel(ko, false)}</button></div>${stage2Html(ko)}<div class="rk-read" data-readout="gpu">${ko ? "냉각판 덮임" : "cold plate on"} · 0.00 kW</div></div>
 </div>`;
 
 const gl = readFileSync(join(HERE, "..", "kit", "gl.mjs"), "utf8").replace(/^export\s+(const|function)/gm, "$1").replace(/^export\s*\{[^}]*\};?\s*$/gm, "");
 // 실행 스크립트: WebGL 도구 + 움직임 루프 (언어만 다르게 두 벌)
-const liveScriptFor = (ko) => gl + "\n" + LIVE.replace("__DATA__", JSON.stringify(DATA)).replace("__DATA2__", JSON.stringify(G2.DATA)).replace("__KO__", ko ? "true" : "false");
+const liveScriptFor = (ko) => gl + "\n" + LIVE.replace("__DATA__", JSON.stringify(DATA)).replace("__DATA2__", JSON.stringify(G2.DATA)).replace("__KO__", ko ? "true" : "false")
+  .replace("__INFO__", JSON.stringify(INFO)).replace("__ZOOM__", JSON.stringify(zoomText(ko)));
 
 // 검수용 독립 페이지 (영어)
 writeFileSync(join(HERE, "rack-light.html"), k.pageHtml({ title: `${RACK.name} rack + ${GPU.name}`, theme: "light", body: `<style>${CSS}</style><div class="iso-plate" style="padding:18px">${pairHtml(false)}</div>`, script: liveScriptFor(false), width: 1100 }));

@@ -124,40 +124,62 @@ function fixed() {
   const { box, cyl, disc, ghost } = W1;
   ghost(A.slab(BENCH, BENCH_Z, -BENCH_Z, { name: "stand.bench" }, 6));   // 받침대 = 바닥 (그림은 bench() 가 따로)
   // 받침 기둥(황동) → 메인보드(검정 PCB)
-  for (const [x, y] of k.corners(BOARD, 7)) cyl("stand", x, y, 3, 0, PZ, { cls: "rk-brass", steps: 18, stamp: "stand" });
-  const silk = L(k.planOutline({ x: FRAME_OUT.x - 1.5, y: FRAME_OUT.y - 1.5, w: FRAME_OUT.w + 3, d: FRAME_OUT.d + 3, r: 1 }, PT, P, 2), { tone: "hi" }); // 흰 실크 인쇄: 소켓 자리
+  for (const [x, y] of k.corners(BOARD, 7)) cyl("stand", x, y, 3, 0, PZ, { cls: "rk-brass", steps: 18, stamp: "stand", info: "stand" });
+  // 흰 실크 인쇄: 소켓 자리 테두리 + 좌우 전원부 묶음 테두리 (닫힌 사각형이라 선 끝이 없음)
+  const silkRects = [
+    { x: FRAME_OUT.x - 1.5, y: FRAME_OUT.y - 1.5, w: FRAME_OUT.w + 3, d: FRAME_OUT.d + 3, r: 1 },
+    { x: -85.5, y: -41.5, w: 28.5, d: 77, r: 1 },
+    { x: 57, y: -41.5, w: 28.5, d: 77, r: 1 },
+  ];
+  const silk = L(silkRects.map((r) => k.planOutline(r, PT, P, 2)).join(""), { tone: "hi" });
   const holes = k.corners(BOARD, 7);
+  // 기준점(피두셜): 조립 기계가 위치를 맞추는 동그란 구리 점 3개
+  const FIDS = [[-56, 58], [56, -58], [84, 59]];
   box("board", BOARD, PZ, PT - PZ, {
-    cls: "rk-pcb", steps: 3, bevel: 0.5, tone: "mid",
-    extra: silk + L(holes.map(([x, y]) => k.ring(x, y, 3.6, PT, P, 18)).join(""), { tone: "lo" }) + Dt(holes.map(([x, y]) => at([x, y, PT])), { size: 0.7, tone: "hi" }),
+    cls: "rk-pcb", steps: 3, bevel: 0.5, tone: "mid", info: "board",
+    extra: silk + L(holes.map(([x, y]) => k.ring(x, y, 3.6, PT, P, 18)).join("") + FIDS.map(([x, y]) => k.ring(x, y, 1.6, PT, P, 14)).join(""), { tone: "lo" })
+      + Dt([...holes, ...FIDS].map(([x, y]) => at([x, y, PT])), { size: 0.7, tone: "hi" }),
   });
-  // 전원부(VRM): 좌우 2열 × 6행 인덕터(회색 금속) + 안쪽에 전력 칩(검정)
+  // 전원부(VRM): 좌우 2열 × 6행 인덕터(회색 금속, 윗면 각인) + 안쪽에 전력 칩(검정)
   const rows = [-40, -27, -14, -1, 12, 25];
   for (const side of [-1, 1]) {
     for (const y of rows) {
       for (const x0 of side < 0 ? [-84, -73] : [64, 75]) {
         const plan = { x: x0, y, w: 9, d: 9, r: 1 };
-        box("choke", plan, PT, 5.5, { cls: "rk-choke", steps: 2, bevel: 0.3, stamp: "choke", extra: L(k.planOutline(k.insetPlan(plan, 2.2), PT + 5.5, P, 2), { tone: "lo" }) });
+        box("choke", plan, PT, 5.5, {
+          cls: "rk-choke", steps: 2, bevel: 0.3, stamp: "choke", info: "choke",
+          extra: L(k.planOutline(k.insetPlan(plan, 2.2), PT + 5.5, P, 2), { tone: "lo" }) + L(k.lineOnTop([x0 + 3.4, y + 4.5], [x0 + 5.6, y + 4.5], PT + 5.5, P), { tone: "mid", free: true }),
+        });
       }
-      box("stage", { x: side < 0 ? -63.5 : 58.5, y: y + 1.5, w: 5, d: 6, r: 0.4 }, PT, 1.2, { cls: "rk-chip", steps: 2, stamp: "stage" });
+      box("stage", { x: side < 0 ? -63.5 : 58.5, y: y + 1.5, w: 5, d: 6, r: 0.4 }, PT, 1.2, { cls: "rk-chip", steps: 2, stamp: "stage", info: "stage" });
     }
   }
+  // 전원 컨트롤러 칩 2개 (작은 사각 칩, 1번 핀 점)
+  for (const [x, y] of [[-82, 36], [70, -56]]) box("ctrl", { x, y, w: 6, d: 6, r: 0.4 }, PT, 0.9, { cls: "rk-chip", steps: 2, stamp: "ctrl", info: "ctrl", extra: Dt([at([x + 1.2, y + 1.2, PT + 0.9])], { size: 0.45, tone: "hi" }) });
   // NVLink 커넥터 (주황, 실물 색) — 메인보드 뒤 왼쪽 가장자리, 윗면에 검정 슬롯 2개
   const NV = { x: -84, y: -61, w: 24, d: 9, r: 0.8 };
   box("nvlink", NV, PT, 9, {
-    cls: "rk-orange", steps: 2, bevel: 0.4,
+    cls: "rk-orange", steps: 2, bevel: 0.4, info: "nvlink",
     extra: g("rk-chip", S(k.slabOf({ x: NV.x + 2, y: NV.y + 2.5, w: 9, d: 4, r: 0.4 }, PT + 9, 0.3, P, 2), { tone: "mid", flat: true }) + S(k.slabOf({ x: NV.x + 13, y: NV.y + 2.5, w: 9, d: 4, r: 0.4 }, PT + 9, 0.3, P, 2), { tone: "mid", flat: true })),
   });
+  // 전원 커넥터 (검정, 앞 오른쪽) — 윗면 핀 구멍 2 × 6
+  const PWR = { x: 62, y: 44, w: 20, d: 9, r: 0.6 };
+  box("power", PWR, PT, 7, {
+    cls: "rk-chip", steps: 2, bevel: 0.3, info: "power",
+    extra: Dt(Array.from({ length: 12 }, (_, i) => at([PWR.x + 2.6 + (i % 6) * 2.96, PWR.y + 3 + Math.floor(i / 6) * 3, PT + 7])), { size: 0.55, tone: "mid" }),
+  });
   // 고분자 콘덴서 (은색 캔): 앞쪽 한 줄, 뒤쪽 짧은 한 줄
-  for (let x = -40; x <= 40; x += 8) cyl("cap", x, 56.5, 2.4, PT, 5, { cls: "rk-steel", steps: 16, stamp: "cap", extra: L(k.ring(x, 56.5, 1.3, PT + 5, P, 12), { tone: "lo" }) });
-  for (let x = -36; x <= 4; x += 8) cyl("cap", x, -56.5, 2.4, PT, 5, { cls: "rk-steel", steps: 16, stamp: "cap", extra: L(k.ring(x, -56.5, 1.3, PT + 5, P, 12), { tone: "lo" }) });
+  for (let x = -40; x <= 40; x += 8) cyl("cap", x, 58.5, 2.4, PT, 5, { cls: "rk-steel", steps: 16, stamp: "cap", info: "cap", extra: L(k.ring(x, 58.5, 1.3, PT + 5, P, 12), { tone: "lo" }) });
+  for (let x = -36; x <= 4; x += 8) cyl("cap", x, -58.5, 2.4, PT, 5, { cls: "rk-steel", steps: 16, stamp: "cap", info: "cap", extra: L(k.ring(x, -58.5, 1.3, PT + 5, P, 12), { tone: "lo" }) });
+  // 적층 세라믹 콘덴서(MLCC) 줄: 소켓 틀 앞뒤로 촘촘히 (작은 갈색 칩)
+  for (const y of [53.4, -54.2]) for (let x = -50; x <= 50; x += 4) box("mlcc.board", { x: x - 0.8, y, w: 1.6, d: 0.8, r: 0.15 }, PT, 0.5, { cls: "rk-mlcc", steps: 2, stamp: "mlcc-board", info: "mlcc" });
   // 흰 라벨 스티커 (글줄 3개)
   const label = { x: -84, y: 45, w: 22, d: 12, r: 0.8 };
   box("label", label, PT, 0.4, {
-    cls: "rk-paper", steps: 2, tone: "hi", crease: "none",
+    cls: "rk-paper", steps: 2, tone: "hi", crease: "none", info: "label",
     extra: L([3.5, 6, 8.5].map((dy, i) => k.lineOnTop([label.x + 2.5, label.y + dy], [label.x + 2.5 + [15, 11, 13][i], label.y + dy], PT + 0.4, P)).join(""), { tone: "lo", free: true }),
   });
-  // 소켓 고정 틀 (검정 양극산화 알루미늄): 막대 4개 + 모서리 나사 구멍
+  // 소켓 고정 틀 (검정 양극산화 알루미늄): 막대 4개 + 모서리 나사 구멍 + 정렬 핀 2개
   const bars = [
     { x: FRAME_OUT.x, y: FRAME_OUT.y, w: FRAME_OUT.w, d: FRAME_IN.y - FRAME_OUT.y },
     { x: FRAME_OUT.x, y: FRAME_IN.y + FRAME_IN.d, w: FRAME_OUT.w, d: FRAME_OUT.y + FRAME_OUT.d - FRAME_IN.y - FRAME_IN.d },
@@ -167,27 +189,32 @@ function fixed() {
   bars.forEach((b, i) => {
     const holesOn = SCREWS.filter(([x, y]) => i < 2 && y > b.y && y < b.y + b.d);
     box("frame", b, PT, FT - PT, {
-      cls: "rk-frame", steps: 2, bevel: 0.4,
+      cls: "rk-frame", steps: 2, bevel: 0.4, info: "frame",
       extra: holesOn.length ? L(holesOn.map(([x, y]) => k.ring(x, y, 2.2, FT, P, 16)).join(""), { tone: "lo" }) + Dt(holesOn.map(([x, y]) => at([x, y, FT])), { size: 0.55, tone: "mid" }) : "",
     });
   });
-  // GPU 모듈 기판 → 패키지 기판(+ 작은 콘덴서 줄) → 인터포저 → 다이 2개(주제) + HBM 8개
-  box("module", MOD, PT, MT - PT, { cls: "rk-modpcb", steps: 2, bevel: 0.3, extra: Dt(k.corners(MOD, 3).map(([x, y]) => at([x, y, MT])), { size: 0.5, tone: "hi" }) });
-  box("substrate", SUB, MT, ST - MT, { cls: "rk-substrate", steps: 2, bevel: 0.3 });
-  for (const x of [-37.6, 35.6]) for (let y = -30; y <= 30; y += 7.5) box("mlcc", { x, y, w: 2, d: 1.2, r: 0.2 }, ST, 0.6, { cls: "rk-mlcc", steps: 2, stamp: "mlcc" });
-  box("interposer", INTP, ST, IT - ST, { cls: "rk-interposer", steps: 2 });
-  for (const h of HBM) box("hbm", h, IT, DT - IT, { cls: "rk-hbm", steps: 2, bevel: 0.3, stamp: "hbm", extra: L(k.planOutline(k.insetPlan(h, 1.8), DT, P, 2), { tone: "lo" }) });
-  DIES.forEach((die) => box("die", die, IT, DT - IT, { cls: "rk-die", steps: 2, bevel: 0.4, tone: "hi", lit: true, className: "rk-die-solid" }));
+  for (const [x, y] of [[-36, -47], [36, 47]]) cyl("pin", x, y, 1.3, FT, 2.2, { cls: "rk-steel", steps: 14, stamp: "pin", info: "pin" });
+  // GPU 모듈 기판(+ 양옆 콘덴서 줄) → 패키지 기판(+ 작은 콘덴서 줄) → 인터포저 → 다이 2개(주제) + HBM 8개
+  box("module", MOD, PT, MT - PT, { cls: "rk-modpcb", steps: 2, bevel: 0.3, info: "module", extra: Dt(k.corners(MOD, 3).map(([x, y]) => at([x, y, MT])), { size: 0.5, tone: "hi" }) });
+  for (const x of [-43.6, 41.6]) for (let y = -34; y <= 34; y += 5) box("mlcc.module", { x, y: y - 0.4, w: 2, d: 0.8, r: 0.15 }, MT, 0.5, { cls: "rk-mlcc", steps: 2, stamp: "mlcc-module", info: "mlcc" });
+  box("substrate", SUB, MT, ST - MT, { cls: "rk-substrate", steps: 2, bevel: 0.3, info: "substrate" });
+  for (const x of [-37.6, 35.6]) for (let y = -30; y <= 30; y += 7.5) box("mlcc", { x, y, w: 2, d: 1.2, r: 0.2 }, ST, 0.6, { cls: "rk-mlcc", steps: 2, stamp: "mlcc", info: "mlcc" });
+  box("interposer", INTP, ST, IT - ST, { cls: "rk-interposer", steps: 2, info: "interposer" });
+  for (const h of HBM) box("hbm", h, IT, DT - IT, {
+    cls: "rk-hbm", steps: 2, bevel: 0.3, stamp: "hbm", info: "hbm",
+    extra: L(k.planOutline(k.insetPlan(h, 1.8), DT, P, 2), { tone: "lo" }) + L([4.4, 6.6].map((dy) => k.lineOnTop([h.x + 3.2, h.y + dy], [h.x + 7.8, h.y + dy], DT, P)).join(""), { tone: "mid", free: true }),
+  });
+  DIES.forEach((die) => box("die", die, IT, DT - IT, { cls: "rk-die", steps: 2, bevel: 0.4, tone: "hi", lit: true, className: "rk-die-solid", info: "die" }));
   // 매니폴드 블록 (스테인리스) + 옆면 육각 마개 + 소켓(색 슬리브) — 받침대 위
   for (const { line, plan } of BLOCKS) {
     box(`manifold.${line.name}`, plan, 0, MB, {
-      cls: "rk-steel", steps: 3, bevel: 0.6,
+      cls: "rk-steel", steps: 3, bevel: 0.6, info: "manifold",
       extra: Dt([[plan.x + 3, plan.y + 3], [plan.x + plan.w - 3, plan.y + plan.d - 3]].map(([x, y]) => at([x, y, MB])), { size: 0.6, tone: "mid" }),
     });
     const [cx, cy] = line.socket, d = line.cap;
     const face = [cx + d[0] * plan.w / 2, cy + d[1] * plan.d / 2, MB / 2];
-    disc(`manifold.cap.${line.name}`, G.frameAlong(face, d), 0, 3, 2.3, { cls: "rk-steel", tone: "mid" });
-    for (const [z0, z1, r, kind] of SOCK) cyl(`socket.${line.name}`, cx, cy, r, z0, z1 - z0, { cls: kind === "sleeve" ? line.cls : "rk-steel", steps: 28, tone: kind === "sleeve" ? "hi" : "mid" });
+    disc(`manifold.cap.${line.name}`, G.frameAlong(face, d), 0, 3, 2.3, { cls: "rk-steel", tone: "mid", info: "manifold" });
+    for (const [z0, z1, r, kind] of SOCK) cyl(`socket.${line.name}`, cx, cy, r, z0, z1 - z0, { cls: kind === "sleeve" ? line.cls : "rk-steel", steps: 28, tone: kind === "sleeve" ? "hi" : "mid", info: `socket-${line.name}` });
   }
   return W1;
 }
@@ -249,7 +276,12 @@ export function gpuFigure() {
   const frontSvg = `<svg xmlns="http://www.w3.org/2000/svg" class="iso-svg rk-layer rk-front" viewBox="0 0 ${W} ${H}" aria-hidden="true"><g data-part="lid">${lid.render()}</g><g data-part="plate">${plate.render()}</g></svg>`;
   const up = k.axisVector(P, [0, 0, 1]);        // 세계 +z 1 mm 의 화면 벡터 (냉각판 들림)
   const lidVec = k.axisVector(P, LID_MOVE);      // 뚜껑이 끝까지 비켜났을 때의 화면 이동
-  const DATA = { W, H, camera: glCamera(P), up: [up[0], up[1]], plateMax: PLATE_LIFT, lidVec: [lidVec[0], lidVec[1]], zDie: DT, dies: DIES.map((d) => [d.x, d.y, d.w, d.d]), gpu: GPU };
+  // 기판 확대: 확대 배율, 처음 보는 곳(패키지 가운데의 화면 위치)
+  const round1 = (n) => Math.round(n * 10) / 10;
+  const DATA = {
+    W, H, camera: glCamera(P), up: [up[0], up[1]], plateMax: PLATE_LIFT, lidVec: [lidVec[0], lidVec[1]], zDie: DT, dies: DIES.map((d) => [d.x, d.y, d.w, d.d]), gpu: GPU,
+    zoom: 2.4, focus: at([0, 0, ST]).map(round1),
+  };
   const FRAGMENT = `
 uniform float uLoad;
 uniform float uFirst;
