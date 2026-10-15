@@ -172,9 +172,9 @@ function fronts() {
   const up = k.axisVector(P, [0, 0, 1]), firstOf = {};
   return stack.filter((s) => s !== PULLED).map((s) => {
     const first = firstOf[s.kind];
-    if (!first) { firstOf[s.kind] = s; return `<g id="rk-front-${s.kind}">${frontPlate(s)}</g>`; }
+    if (!first) { firstOf[s.kind] = s; return `<g data-info="front-${s.kind}"><g id="rk-front-${s.kind}">${frontPlate(s)}</g></g>`; }
     const dz = s.z - first.z;
-    return `<use href="#rk-front-${s.kind}" transform="translate(${(up[0] * dz).toFixed(2)} ${(up[1] * dz).toFixed(2)})"/>`;
+    return `<g data-info="front-${s.kind}"><use href="#rk-front-${s.kind}" transform="translate(${(up[0] * dz).toFixed(2)} ${(up[1] * dz).toFixed(2)})"/></g>`;
   }).join("");
 }
 
@@ -237,53 +237,53 @@ function trayBody() {
   const T = workshop(P, { piece: "tray" });
   const { box, disc, hose, ghost } = T;
   // 판금 트레이 (은색): 바닥판 + 옆 레일 2개
-  box("stand.floor", { x: TX0, y: TY0, w: TW, d: TRAY_D - FRONT_T, r: 0.6 }, TZ, FLOOR_T, { cls: "rk-silver", steps: 3, tone: "hi", crease: "lo" });
-  for (const x of [TX0, TX0 + TW - 1.2]) box("stand.rail", { x, y: TY0, w: 1.2, d: TRAY_D - FRONT_T, r: 0.3 }, TOPZ, PULLED.h - 3.4, { cls: "rk-silver", steps: 2, tone: "mid", crease: "none" });
+  box("stand.floor", { x: TX0, y: TY0, w: TW, d: TRAY_D - FRONT_T, r: 0.6 }, TZ, FLOOR_T, { cls: "rk-silver", steps: 3, tone: "hi", crease: "lo", info: "tray" });
+  for (const x of [TX0, TX0 + TW - 1.2]) box("stand.rail", { x, y: TY0, w: 1.2, d: TRAY_D - FRONT_T, r: 0.3 }, TOPZ, PULLED.h - 3.4, { cls: "rk-silver", steps: 2, tone: "mid", crease: "none", info: "tray" });
   // 메인보드 (검정 PCB, 짧은 받침 위) — 받침은 보이지 않아 모양만 기록
   const BOARD = { x: TX0 + 2, y: TY0 + 3, w: TW - 4, d: Y1 - FRONT_T - 2 - (TY0 + 3), r: 0.6 };
   for (const [x, y] of k.corners(BOARD, 3)) ghost(A.cylinder(x, y, 0.8, TOPZ, BZ - TOPZ, { name: "tray.standoff" }));
-  box("board", BOARD, BZ, BT - BZ, { cls: "rk-pcb", steps: 3, tone: "mid", flat: true });
+  box("board", BOARD, BZ, BT - BZ, { cls: "rk-pcb", steps: 3, tone: "mid", flat: true, info: "tray-board" });
   // GPU 4개: 구리 냉각판 (윗면 나사·홈은 열 잉크 위 SVG 에서) + 앞면 바브 2개
   for (const gp of GPUS) {
-    box("gpu", gp, BT, gp.h, { cls: "rk-copper", steps: 3, bevel: 0.4, tone: "hi", crease: "lo", className: "rk-gpu", stamp: "gpu", inner: L(k.sideSeam(gp, BT + 1.0, P, 3), { tone: "faint" }) });
-    for (const p of PAIR) disc("gpu.barb", G.frameAlong([gp.cx + p.dx, gp.y + gp.d, HZ_GPU], [0, 1, 0]), 0, 1.0, 0.95, { cls: "rk-steel", stamp: "barb-gpu" });
+    box("gpu", gp, BT, gp.h, { cls: "rk-copper", steps: 3, bevel: 0.4, tone: "hi", crease: "lo", className: "rk-gpu", stamp: "gpu", info: "gpu-plate", inner: L(k.sideSeam(gp, BT + 1.0, P, 3), { tone: "faint" }) });
+    for (const p of PAIR) disc("gpu.barb", G.frameAlong([gp.cx + p.dx, gp.y + gp.d, HZ_GPU], [0, 1, 0]), 0, 1.0, 0.95, { cls: "rk-steel", stamp: "barb-gpu", info: "fitting" });
   }
   // 매니폴드 막대 (스테인리스) + 양 끝 공급·회수 본선 (뒤쪽 퀵커넥터로 → 랙 매니폴드)
   box("bar", BAR, BT, BAR_H, {
-    cls: "rk-steel", steps: 2, bevel: 0.3, owner: "bar",
+    cls: "rk-steel", steps: 2, bevel: 0.3, owner: "bar", info: "manifold-bar",
     extra: Dt([-30, 0, 30].map((x) => at([x, BAR.y + BAR.d / 2, BT + BAR_H])), { size: 0.45, tone: "mid" }),
   });
   for (const gp of GPUS) for (const p of PAIR) {
     const x = gp.cx + p.dx;
-    disc(`bar.fit.${p.name}`, G.frameAlong([x, BAR.y, HZ_GPU], [0, -1, 0]), 0, 1.0, 1.05, { cls: p.cls, tone: "hi", owner: "bar", stamp: `fitb-${p.name}` }); // 이음쇠 = 막대의 일부
-    hose(`hose.gpu.${p.name}`, [[x, gp.y + gp.d + 1.0, HZ_GPU], [x, BAR.y - 1.0, HZ_GPU]], HR, { cls: "rk-hose", tone: "mid", maxLength: 12, stamp: "hose-gpu" });
+    disc(`bar.fit.${p.name}`, G.frameAlong([x, BAR.y, HZ_GPU], [0, -1, 0]), 0, 1.0, 1.05, { cls: p.cls, tone: "hi", owner: "bar", stamp: `fitb-${p.name}`, info: `fitting-${p.name}` }); // 이음쇠 = 막대의 일부
+    hose(`hose.gpu.${p.name}`, [[x, gp.y + gp.d + 1.0, HZ_GPU], [x, BAR.y - 1.0, HZ_GPU]], HR, { cls: "rk-hose", tone: "mid", maxLength: 12, stamp: "hose-gpu", info: "hose" });
   }
   for (const [x, p] of [[-51, PAIR[0]], [51, PAIR[1]]]) {
-    disc(`bar.feed.${p.name}`, G.frameAlong([x, BAR.y, HZ_GPU], [0, -1, 0]), 0, 1.0, 1.05, { cls: p.cls, tone: "hi", owner: "bar", stamp: `fitb-${p.name}` });
+    disc(`bar.feed.${p.name}`, G.frameAlong([x, BAR.y, HZ_GPU], [0, -1, 0]), 0, 1.0, 1.05, { cls: p.cls, tone: "hi", owner: "bar", stamp: `fitb-${p.name}`, info: `fitting-${p.name}` });
     ghost(A.slab({ x: x - 2, y: TY0 + 2, w: 4, d: 4, r: 0.4 }, BT, 3, { name: `rear.uqd.${p.name}` }));  // 뒤쪽 퀵커넥터 (랙 안이라 안 보임)
-    hose(`hose.feed.${p.name}`, [[x, BAR.y - 1.0, HZ_GPU], [x, TY0 + 6, HZ_GPU]], HR, { cls: "rk-hose", tone: "mid", maxLength: 20, stamp: "hose-feed" });
+    hose(`hose.feed.${p.name}`, [[x, BAR.y - 1.0, HZ_GPU], [x, TY0 + 6, HZ_GPU]], HR, { cls: "rk-hose", tone: "mid", maxLength: 20, stamp: "hose-feed", info: "hose-feed" });
   }
   // CPU 2개: 구리 냉각판 + 양옆 메모리(SOCAMM) 4개씩 + 매니폴드에서 오는 호스 2개
   for (const c of CPUS) {
-    box("cpu", c, BT, c.h, { cls: "rk-copper", steps: 3, bevel: 0.4, tone: "mid", crease: "lo", stamp: "cpu", inner: L(k.sideSeam(c, BT + 0.9, P, 3), { tone: "faint" }), extra: L(k.planOutline(k.insetPlan(c, 2.4), BT + c.h, P, 3), { tone: "lo" }) });
-    for (const dx of [-15.6, -12.4, 9.8, 13.0]) box("socamm", { x: c.cx + dx, y: c.y, w: 2.6, d: 16, r: 0.3 }, BT, 0.6, { cls: "rk-chip", steps: 2, stamp: "socamm", extra: L(k.planOutline({ x: c.cx + dx + 0.5, y: c.y + 1.2, w: 1.6, d: 13.6, r: 0.2 }, BT + 0.6, P, 2), { tone: "lo" }) });
+    box("cpu", c, BT, c.h, { cls: "rk-copper", steps: 3, bevel: 0.4, tone: "mid", crease: "lo", stamp: "cpu", info: "cpu-plate", inner: L(k.sideSeam(c, BT + 0.9, P, 3), { tone: "faint" }), extra: L(k.planOutline(k.insetPlan(c, 2.4), BT + c.h, P, 3), { tone: "lo" }) });
+    for (const dx of [-15.6, -12.4, 9.8, 13.0]) box("socamm", { x: c.cx + dx, y: c.y, w: 2.6, d: 16, r: 0.3 }, BT, 0.6, { cls: "rk-chip", steps: 2, stamp: "socamm", info: "socamm", extra: L(k.planOutline({ x: c.cx + dx + 0.5, y: c.y + 1.2, w: 1.6, d: 13.6, r: 0.2 }, BT + 0.6, P, 2), { tone: "lo" }) });
     for (const p of PAIR) {
       const x = c.cx + p.dx;
-      disc(`bar.fit.${p.name}`, G.frameAlong([x, BAR.y + BAR.d, HZ_CPU], [0, 1, 0]), 0, 3.0, 1.05, { cls: p.cls, tone: "hi", owner: "bar", stamp: `fitf-${p.name}` }); // 앞쪽 이음쇠는 길게: 호스 끝이 막대 윤곽에 붙어 보이지 않게
-      disc("cpu.barb", G.frameAlong([x, c.y, HZ_CPU], [0, -1, 0]), 0, 1.0, 0.95, { cls: "rk-steel", stamp: "barb-cpu" });
-      hose(`hose.cpu.${p.name}`, [[x, BAR.y + BAR.d + 3.0, HZ_CPU], [x, c.y - 1.0, HZ_CPU]], HR, { cls: "rk-hose", tone: "mid", maxLength: 12, stamp: "hose-cpu" });
+      disc(`bar.fit.${p.name}`, G.frameAlong([x, BAR.y + BAR.d, HZ_CPU], [0, 1, 0]), 0, 3.0, 1.05, { cls: p.cls, tone: "hi", owner: "bar", stamp: `fitf-${p.name}`, info: `fitting-${p.name}` }); // 앞쪽 이음쇠는 길게: 호스 끝이 막대 윤곽에 붙어 보이지 않게
+      disc("cpu.barb", G.frameAlong([x, c.y, HZ_CPU], [0, -1, 0]), 0, 1.0, 0.95, { cls: "rk-steel", stamp: "barb-cpu", info: "fitting" });
+      hose(`hose.cpu.${p.name}`, [[x, BAR.y + BAR.d + 3.0, HZ_CPU], [x, c.y - 1.0, HZ_CPU]], HR, { cls: "rk-hose", tone: "mid", maxLength: 12, stamp: "hose-cpu", info: "hose" });
     }
   }
   // NIC 4개 (ConnectX-8): 구리 틀 + 검정 칩
   for (const n of NICS) {
-    box("nic", n, BT, 0.8, { cls: "rk-copper", steps: 2, tone: "mid", crease: "lo", stamp: "nic" });
-    box("nic.chip", { x: n.cx - 3, y: n.y + 2.5, w: 6, d: 5, r: 0.3 }, BT + 0.8, 0.5, { cls: "rk-chip", steps: 2, tone: "mid", stamp: "nicchip" });
+    box("nic", n, BT, 0.8, { cls: "rk-copper", steps: 2, tone: "mid", crease: "lo", stamp: "nic", info: "nic" });
+    box("nic.chip", { x: n.cx - 3, y: n.y + 2.5, w: 6, d: 5, r: 0.3 }, BT + 0.8, 0.5, { cls: "rk-chip", steps: 2, tone: "mid", stamp: "nicchip", info: "nic" });
   }
   // 앞쪽: 저장장치(E1.S) 케이지 + OSFP 포트 케이지 4개 + 관리 칩(BMC) — 앞판 바로 뒤
   const E1S = { x: -48, y: 74, w: 18, d: 42, r: 0.5 };
-  box("e1s.cage", E1S, BT, 5.4, { cls: "rk-chip", steps: 2, bevel: 0.3, extra: L([1, 2, 3].map((i) => k.lineOnTop([E1S.x + i * E1S.w / 4, E1S.y], [E1S.x + i * E1S.w / 4, E1S.y + E1S.d], BT + 5.4, P)).join(""), { tone: "lo" }) }); // 칸 나눔 줄: 윤곽에서 윤곽까지
-  for (let i = 0; i < 4; i++) box("osfp", { x: FRONT_X0 + 44 + i * 6.6, y: 100, w: 5.4, d: 16.8, r: 0.3 }, BT, 3.4, { cls: "rk-chip", steps: 2, bevel: 0.2, stamp: "osfp" }); // 앞판 포트 구멍과 같은 x
-  box("bmc", { x: 30, y: 80, w: 7, d: 7, r: 0.4 }, BT, 0.7, { cls: "rk-chip", steps: 2, extra: Dt([at([31.2, 86, BT + 0.7])], { size: 0.4, tone: "hi" }) });
+  box("e1s.cage", E1S, BT, 5.4, { cls: "rk-chip", steps: 2, bevel: 0.3, info: "e1s", extra: L([1, 2, 3].map((i) => k.lineOnTop([E1S.x + i * E1S.w / 4, E1S.y], [E1S.x + i * E1S.w / 4, E1S.y + E1S.d], BT + 5.4, P)).join(""), { tone: "lo" }) }); // 칸 나눔 줄: 윤곽에서 윤곽까지
+  for (let i = 0; i < 4; i++) box("osfp", { x: FRONT_X0 + 44 + i * 6.6, y: 100, w: 5.4, d: 16.8, r: 0.3 }, BT, 3.4, { cls: "rk-chip", steps: 2, bevel: 0.2, stamp: "osfp", info: "osfp" }); // 앞판 포트 구멍과 같은 x
+  box("bmc", { x: 30, y: 80, w: 7, d: 7, r: 0.4 }, BT, 0.7, { cls: "rk-chip", steps: 2, info: "bmc", extra: Dt([at([31.2, 86, BT + 0.7])], { size: 0.4, tone: "hi" }) });
   return T;
 }
 // 열 잉크(캔버스) 위에 그려야 하는 것: GPU 냉각판 윗면의 홈·나사 (잉크가 덮으면 안 됨)
@@ -291,12 +291,12 @@ function trayTops() {
   const out = [];
   for (const gp of GPUS) {
     const top = BT + gp.h;
-    out.push(`<g class="rk-copper">${L(k.planOutline(k.insetPlan(gp, 2.2), top, P, 3), { tone: "lo" })}${Dt(k.corners(gp, 1.3).map(([x, y]) => at([x, y, top])), { size: 0.5, tone: "hi" })}${L(k.lineOnTop([gp.x + 5, gp.y + gp.d - 4.6], [gp.x + 14, gp.y + gp.d - 4.6], top, P), { tone: "lo", free: true })}</g>`);
+    out.push(`<g class="rk-copper" data-info="gpu-plate">${L(k.planOutline(k.insetPlan(gp, 2.2), top, P, 3), { tone: "lo" })}${Dt(k.corners(gp, 1.3).map(([x, y]) => at([x, y, top])), { size: 0.5, tone: "hi" })}${L(k.lineOnTop([gp.x + 5, gp.y + gp.d - 4.6], [gp.x + 14, gp.y + gp.d - 4.6], top, P), { tone: "lo", free: true })}</g>`);
   }
   return out.join("");
 }
 function trayFront() {
-  return frontPlate(PULLED, true);
+  return `<g data-info="faceplate">${frontPlate(PULLED, true)}</g>`;
 }
 // 트레이 몸통은 랙 앞면 밖(y > Y1)에 있는 부분만 보임 → 그 공간의 화면 껍질로 클립
 const CLIP = hull(k.boxCorners({ x: TX0 - 1, y: Y1 - 0.2, w: TW + 2, d: STROKE + 6, r: 0 }, TZ - 1, TZ + PULLED.h + 1).map(at));
@@ -309,8 +309,9 @@ const LABEL = `${RACK.name} GPU rack: ${RACK.computeTrays} compute trays, ${RACK
 //   움직이는 부분을 작은 SVG 로 떼어 두면, 트레이가 움직일 때 1,000개 넘는 랙 경로를 매 프레임 다시 그리지 않음
 //   트레이는 랙 앞면 밖으로만 나오고 윗판과 화면에서 겹치지 않아, 랙 전체 위에 얹어도 그리는 순서가 맞음
 const back = [
-  `<g class="rk-metal">${base()}${rearFrame()}</g>`, cavity(), `<g class="rk-metal">${sidePanel()}${fronts()}${frontFrame()}</g>`,
-  `<g class="rk-metal">${cap()}</g>`,
+  `<g class="rk-metal"><g data-info="rack-base">${base()}</g><g data-info="rack">${rearFrame()}</g></g>`, `<g data-info="slot">${cavity()}</g>`,
+  `<g class="rk-metal"><g data-info="rack">${sidePanel()}</g>${fronts()}<g data-info="rack">${frontFrame()}</g></g>`,
+  `<g class="rk-metal" data-info="rack">${cap()}</g>`,
 ];
 // 클립은 움직이는 그룹 "바깥"에: 안에 두면 트레이와 함께 움직여 몸통을 통째로 잘라 버림
 const TRAY_SHOP = trayBody();
@@ -330,6 +331,7 @@ const DATA = {
   zTop: tenth(BT + GPU_H), zFloor: tenth(TOPZ), front: Y1,
   gpu: GPUS.map((g) => [g.x, g.y, g.w, g.d].map(tenth)), cpu: CPUS.map((c) => [c.x, c.y, c.w, c.d].map(tenth)),
   rack: RACK, tray: PULLED.index,
+  zoom: 2.6, focus: at([0, Y1 + STROKE * 0.55, TOPZ + 2]).map(tenth),   // 트레이 확대: 배율, 처음 볼 곳(다 꺼낸 트레이 가운데)
 };
 
 const CSS = `
@@ -337,8 +339,10 @@ const CSS = `
 .rk-stage>svg,.rk-stage>canvas{display:block;width:100%;height:auto}
 .rk-stage>.rk-layer{position:absolute;inset:0;height:100%!important;pointer-events:none}
 .rk-stage:focus-visible{outline:1px solid var(--anatomy-muted);outline-offset:6px}
-/* GPU 칸: 확대하면 보이는 범위(viewBox) 밖의 그림이 칸 밖으로 넘치지 않게 자름 (kit 기본은 overflow:visible) */
-.rk-stage[data-fig=gpu]{overflow:hidden;border-radius:6px}
+/* 확대돼 있는 동안: 보이는 범위(viewBox) 밖의 그림이 칸 밖으로 넘치지 않게 자름 (kit 기본은 overflow:visible) */
+.rk-stage[data-zoom]{overflow:hidden;border-radius:6px}
+/* 트레이 확대: 트레이·앞판 층(평소엔 포인터를 통과시킴)의 칠해진 곳도 부품 찾기에 걸리게 */
+.rk-stage[data-fig=rack][data-zoom]>svg.rk-layer>g{pointer-events:visiblePainted}
 /* 키보드로 둘러볼 때 가리키는 곳을 보여 주는 조준 원 */
 .rk-aim{position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border:1.5px solid var(--anatomy-strong);border-radius:50%;box-shadow:0 0 0 2px var(--anatomy-card);pointer-events:none;opacity:0;transition:opacity .2s}
 .rk-stage[data-aim] .rk-aim{opacity:1}
@@ -379,10 +383,15 @@ const CSS = `
 .rk-fig h2 small{font-weight:400;color:var(--anatomy-muted)}
 .rk-head{display:flex;align-items:flex-start;gap:8px}
 .rk-head h2{flex:1;min-width:0}
-.rk-zoom{flex:none;display:inline-flex;align-items:center;gap:5px;margin-top:-2px;border:1px solid var(--anatomy-muted);background:var(--anatomy-face);color:var(--anatomy-strong);border-radius:999px;padding:3px 10px 3px 8px;font:500 11px/1.3 var(--anatomy-mono);cursor:pointer}
-.rk-zoom:hover{border-color:var(--anatomy-strong)}
-.rk-zoom[aria-pressed="true"]{background:var(--anatomy-strong);border-color:var(--anatomy-strong);color:var(--anatomy-card)}
-.rk-icon{width:14px;height:14px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.rk-zoom{flex:none;display:inline-flex;align-items:center;gap:6px;margin-top:-3px;border:0;border-radius:999px;padding:6px 13px 6px 10px;background:#16213a;color:#fff;font:600 12.5px/1.2 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.01em;cursor:pointer;box-shadow:0 2px 8px rgba(22,33,58,.22)}
+.rk-zoom:hover{background:#24365c}
+.rk-zoom:focus-visible{outline:2px solid #2ea88a;outline-offset:2px}
+.rk-zoom[aria-pressed="true"]{background:#fff;color:#16213a;box-shadow:inset 0 0 0 1.5px #16213a}
+/* 처음 보일 때 세 번 퍼지는 고리로 "눌러 보세요" 안내 (움직임 줄이기 설정이면 없음) */
+.rk-zoom[data-call]{animation:rk-call 1.8s ease-out 1.5s 3}
+@keyframes rk-call{0%{box-shadow:0 2px 8px rgba(22,33,58,.22),0 0 0 0 rgba(46,168,138,.6)}75%{box-shadow:0 2px 8px rgba(22,33,58,.22),0 0 0 12px rgba(46,168,138,0)}100%{box-shadow:0 2px 8px rgba(22,33,58,.22),0 0 0 0 rgba(46,168,138,0)}}
+@media (prefers-reduced-motion:reduce){.rk-zoom[data-call]{animation:none}}
+.rk-icon{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .rk-fig .rk-read{font:11px/1.4 var(--anatomy-mono);color:var(--anatomy-text);min-height:1.4em}
 @media (max-width:767px){.rk-pair{grid-template-columns:1fr}}
 .rk-ui b{color:var(--anatomy-strong);font-weight:600}
@@ -459,16 +468,46 @@ const INFO = {
   manifold: ["매니폴드 블록 · 냉각수를 나눠 보내는 스테인리스 블록", "Manifold block · stainless block that feeds the coolant"],
   "socket-supply": ["퀵커넥터 소켓 · 파랑 고리 = 냉각수 공급 (차가운 쪽)", "Quick-disconnect socket · blue ring = supply (cold side)"],
   "socket-return": ["퀵커넥터 소켓 · 빨강 고리 = 회수 (데워진 쪽)", "Quick-disconnect socket · red ring = return (warm side)"],
+  // ---- 랙 그림 ----
+  rack: ["GB300 NVL72 랙 · 액체냉각, 약 130 kW · GPU 72개가 한 덩어리로 동작", "GB300 NVL72 rack · liquid-cooled, about 130 kW · 72 GPUs work as one"],
+  "rack-base": ["랙 받침과 바퀴", "Rack base and casters"],
+  slot: ["빈 칸 · 꺼낸 트레이가 들어가는 자리", "Empty slot · where the pulled tray lives"],
+  "front-compute": ["컴퓨트 트레이 · 랙에 18개, 1개에 GPU 4 + CPU 2", "Compute tray · 18 per rack, 4 GPUs + 2 CPUs each"],
+  "front-switch": ["NVLink 스위치 트레이 · 9개가 GPU 72개를 모두 연결", "NVLink switch tray · nine of them connect all 72 GPUs"],
+  "front-power": ["전원 선반 · 랙 전체에 전기를 공급", "Power shelf · supplies power to the rack"],
+  tray: ["컴퓨트 트레이 (1U 서랍) · 은색 판금, 레일로 밀고 당김", "Compute tray (1U drawer) · sheet metal on rails"],
+  "tray-board": ["메인보드 · GPU 4개와 CPU 2개가 한 기판에 (GB300)", "Main board · 4 GPUs and 2 CPUs on one board (GB300)"],
+  "gpu-plate": ["B300 GPU (구리 냉각판 아래) · 1개 최대 1.4 kW", "B300 GPU under a copper cold plate · up to 1.4 kW each"],
+  "cpu-plate": ["Grace CPU (구리 냉각판 아래) · Arm 코어 72개", "Grace CPU under a copper cold plate · 72 Arm cores"],
+  socamm: ["CPU 메모리 (LPDDR5X 모듈) · Grace CPU 옆 저전력 메모리", "CPU memory (LPDDR5X modules) beside the Grace CPU"],
+  "manifold-bar": ["냉각수 매니폴드 · 공급·회수 두 칸, 냉각판마다 호스 2개", "Coolant manifold · supply and return channels, two hoses per plate"],
+  fitting: ["호스 이음쇠 · 냉각판에 호스를 연결", "Hose fitting · joins the hose to the cold plate"],
+  "fitting-supply": ["매니폴드 연결부 · 파랑 고리 = 냉각수 공급", "Manifold fitting · blue ring = supply"],
+  "fitting-return": ["매니폴드 연결부 · 빨강 고리 = 회수", "Manifold fitting · red ring = return"],
+  hose: ["냉각수 호스 · 매니폴드와 냉각판을 잇는 검정 고무관", "Coolant hose · black rubber between the manifold and a cold plate"],
+  "hose-feed": ["본선 호스 · 트레이 뒤 퀵커넥터로 랙 매니폴드에 연결", "Feed hose · to the rack manifold through quick disconnects at the back"],
+  nic: ["ConnectX-8 네트워크 칩 · GPU마다 하나, 800 Gb/s", "ConnectX-8 SuperNIC · one per GPU, 800 Gb/s"],
+  e1s: ["저장장치 칸 (E1.S SSD)", "Storage bays (E1.S SSDs)"],
+  osfp: ["네트워크 포트 (OSFP) · 다른 랙과 연결", "Network ports (OSFP) · links to other racks"],
+  bmc: ["관리 칩 (BMC) · 원격으로 서버 상태를 확인·관리", "Management chip (BMC) · remote monitoring"],
+  faceplate: ["트레이 앞판 · 고정 나사·저장장치 칸·포트·상태 LED", "Tray front · thumbscrews, storage bays, ports, status LEDs"],
 };
 // 확대 단추 (lucide zoom-in / zoom-out 아이콘, 인라인 SVG)
 const ICON_IN = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="11" x2="11" y1="8" y2="14"/><line x1="8" x2="14" y1="11" y2="11"/></svg>';
 const ICON_OUT = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></svg>';
-const zoomLabel = (ko, on) => (on ? ICON_OUT : ICON_IN) + `<span>${ko ? (on ? "전체 보기" : "기판 확대") : on ? "Full view" : "Zoom board"}</span>`;
+const zoomLabel = (ko, on, what) => (on ? ICON_OUT : ICON_IN) + `<span>${on ? (ko ? "전체 보기" : "Full view") : what}</span>`;
 const zoomText = (ko) => ({
-  in: zoomLabel(ko, false), out: zoomLabel(ko, true),
+  rack: {
+    in: zoomLabel(ko, false, ko ? "트레이 확대" : "Zoom tray"), out: zoomLabel(ko, true),
+    aria: ko ? ["GPU 랙: 포인터를 좌우로 움직이거나 화살표 키로 컴퓨트 트레이를 꺼냅니다", "트레이 확대: 포인터나 화살표 키로 둘러보고, Esc 로 전체 보기"]
+      : ["GPU rack: move the pointer across or press the arrow keys to slide the compute tray out", "Tray zoom: look around with the pointer or arrow keys; Escape for the full view"],
+  },
+  gpu: {
+    in: zoomLabel(ko, false, ko ? "기판 확대" : "Zoom board"), out: zoomLabel(ko, true),
+    aria: ko ? ["GPU 모듈: 포인터를 위아래로 움직이거나 화살표 키로 냉각판과 뚜껑을 들어 올립니다", "기판 확대: 포인터나 화살표 키로 둘러보고, Esc 로 전체 보기"]
+      : ["GPU module: move the pointer up or press the arrow keys to lift the cold plate and the lid", "Board zoom: look around with the pointer or arrow keys; Escape for the full view"],
+  },
   hint: ko ? "확대 중 · 부품에 포인터를 올리거나 탭하면 설명이 나옵니다" : "zoomed · point at or tap a part to see what it is",
-  aria: ko ? ["GPU 모듈: 포인터를 위아래로 움직이거나 화살표 키로 냉각판과 뚜껑을 들어 올립니다", "기판 확대: 포인터나 화살표 키로 둘러보고, Esc 로 전체 보기"]
-    : ["GPU module: move the pointer up or press the arrow keys to lift the cold plate and the lid", "Board zoom: look around with the pointer or arrow keys; Escape for the full view"],
 });
 
 // 살아 움직이는 부분 (kit 없이 동작: 이동 벡터·좌표는 빌드 때 계산해 둠). 두 그림을 한 루프로
@@ -484,42 +523,62 @@ const layer=glLayer({canvas:stage.querySelector("canvas.rk-gl"),fragment:${JSON.
 const layer2=glLayer({canvas:stage2.querySelector("canvas.rk-gl"),fragment:${JSON.stringify(G2.FRAGMENT)},view:[D2.W,D2.H],camera:D2.camera,uniforms:["uLoad","uFirst"]});
 if(layer)stage.setAttribute("data-gl","");if(layer2)stage2.setAttribute("data-gl","");
 const R=D.rack, G=D2.gpu, perTrayKw=R.kw/R.computeTrays;
-let lastLv="",pull=0,target=0,lift=0,liftTarget=0,load={x:0,v:0},first={x:0,v:0},clock=0,last=0,frame=0,visible=true,touring=!still.matches,idle=0,touched=false,hand=null;
+let lastLv="",pull=0,target=0,lift=0,liftTarget=0,load={x:0,v:0},first={x:0,v:0},clock=0,last=0,frame=0,visible=true,touring=!still.matches,idle=0,touched=false;
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const sm=(a,b,x)=>{const q=clamp((x-a)/(b-a),0,1);return q*q*(3-2*q);};
-// GPU 그림의 들림 0..1 → 냉각판 높이 mm (먼저 0~0.65) · 뚜껑 진행 0..1 (나중 0.35~1, 위로 뜨며 왼쪽으로 비켜남)
+// GPU 그림의 들림 0..1 → 냉각판 높이 mm (먼저 0~0.65) · 뚜껑 진행 0..1 (나중 0.35~1)
 const plateOf=(u)=>D2.plateMax*sm(0,.65,u), lidOf=(u)=>sm(.35,1,u);
 // 둘러보기 14초: 트레이 당김(0~3s) → 냉각판·뚜껑 들림(3~6s) → 부하 올림(5~9.5s) → 내림(9.5~11.5s) → 트레이 밀어 넣음(11~13.5s)
 function tourAt(t){const u=t%14;const ramp=(a,b)=>clamp((u-a)/(b-a),0,1);
   return {pull:D.stroke*(ramp(0,3)-ramp(11,13.5)),lift:ramp(3,6)-ramp(9.5,11.5),load:u>5&&u<9.5?1:0};}
 const say=(el,text)=>{if(el&&el.textContent!==text)el.textContent=text;};
-// ---------- 기판 확대 (GPU 그림) ----------
-// 보이는 범위(viewBox)를 좁혀 크게 보여 줌: SVG 라 확대해도 선명, 열 잉크도 같은 범위를 받아 따라옴
+// ---------- 확대 (두 그림 공용) ----------
+// 보이는 범위(viewBox)를 좁혀 크게 보여 줌: SVG 라 확대해도 선명, 열 잉크도 같은 범위(uView·uOrigin)를 받아 따라옴
 // 돋보기 방식: 전체 그림에서 포인터가 가리키는 점이 확대 화면에서도 포인터 바로 아래에 옴 → 겨눈 부품이 달아나지 않음
 //   (포인터 비율 fx 일 때 보이는 범위의 왼쪽 = fx × (전체 폭 − 보이는 폭))
-// 확대 중엔 냉각판·뚜껑을 감추고, 포인터 아래 부품의 이름·역할을 수치 줄에 보여 줌
-const front2=stage2.querySelector("svg.rk-front"), zoomBtn=document.querySelector("[data-gpu-zoom]"), aim=stage2.querySelector(".rk-aim");
-const Z={on:false,k:0,fx:.5,fy:.5,tfx:.5,tfy:.5,info:"",box:"",px:null,py:null,keys:false,moved:true};
-function viewRect(){
-  const s=1+(D2.zoom-1)*sm(0,1,Z.k), w=D2.W/s, h=D2.H/s;
-  return [Z.fx*(D2.W-w),Z.fy*(D2.H-h),w,h];
+// 확대 중엔 포인터·탭·화살표 조준 원 아래 부품의 이름·역할(data-info → INFO)을 수치 줄에 보여 줌
+function zoomer(st,{W,H,zoom,focus,btn,labels,hide}){
+  const svgs=[...st.querySelectorAll(":scope>svg")], aimEl=st.querySelector(".rk-aim");
+  const Z={on:false,k:0,fx:.5,fy:.5,tfx:.5,tfy:.5,info:"",box:"",px:null,py:null,keys:false,moved:true,shown:false};
+  Z.rect=()=>{const s=1+(zoom-1)*sm(0,1,Z.k),w=W/s,h=H/s;return [Z.fx*(W-w),Z.fy*(H-h),w,h];};
+  // 한 점 아래의 부품 설명 찾기
+  Z.pick=(x,y)=>{const el=document.elementFromPoint(x,y);const g=el&&el.closest?el.closest("[data-info]"):null;const key=g&&st.contains(g)?g.getAttribute("data-info"):"";Z.info=key&&INFO[key]?INFO[key][KO?0:1]:"";};
+  // 그리기 전에: 보이는 범위를 SVG 들에 적용하고, 움직였으면 부품을 다시 찾음
+  Z.apply=()=>{
+    const r=Z.rect(),box=r.map((n)=>n.toFixed(2)).join(" ");
+    const shown=Z.on||Z.k>0;if(shown!==Z.shown){Z.shown=shown;st.toggleAttribute("data-zoom",shown);}   // 확대돼 있는 동안 칸 밖을 자름
+    if(box!==Z.box){Z.box=box;Z.moved=true;for(const s of svgs)s.setAttribute("viewBox",box);if(hide)hide.style.opacity=String(1-sm(0,.6,Z.k));}
+    if(Z.on&&Z.moved){if(Z.px!==null)Z.pick(Z.px,Z.py);else if(Z.keys){const b=st.getBoundingClientRect();Z.pick(b.left+Z.tfx*b.width,b.top+Z.tfy*b.height);}Z.moved=false;}
+    return r;};
+  Z.set=(on)=>{
+    if(Z.on===on)return;Z.on=on;
+    if(on){Z.fx=Z.tfx=focus[0]/W;Z.fy=Z.tfy=focus[1]/H;Z.info="";Z.px=null;Z.keys=false;}else st.removeAttribute("data-aim");
+    st.style.touchAction=on?"none":"";
+    if(btn){btn.setAttribute("aria-pressed",String(on));btn.innerHTML=on?labels.out:labels.in;}
+    for(const b of document.querySelectorAll(".rk-zoom[data-call]"))b.removeAttribute("data-call");   // 한 번 써 보면 깜빡임 안내를 멈춤
+    st.setAttribute("aria-label",labels.aria[on?1:0]);hold();};
+  Z.step=(dt,calm)=>{const zk=Z.on?1:0;Z.k=calm?zk:Z.k+(zk-Z.k)*(1-Math.exp(-dt/.22));if(Math.abs(zk-Z.k)<.002)Z.k=zk;   // 확대 진행 0..1
+    const zf=calm?1:1-Math.exp(-dt/.12);Z.fx+=(Z.tfx-Z.fx)*zf;Z.fy+=(Z.tfy-Z.fy)*zf;};                                  // 돋보기 위치
+  // 확대 중 포인터: 돋보기 위치 + 그 아래 부품 (처리했으면 true)
+  Z.pointer=(e)=>{if(!Z.on)return false;const b=st.getBoundingClientRect();
+    Z.tfx=clamp((e.clientX-b.left)/b.width,0,1);Z.tfy=clamp((e.clientY-b.top)/b.height,0,1);
+    Z.px=e.clientX;Z.py=e.clientY;Z.keys=false;Z.moved=true;st.removeAttribute("data-aim");hold();return true;};
+  // 키: + / = 확대, - / Esc 전체 보기, 확대 중 화살표 = 조준 원 이동 (처리했으면 true)
+  Z.key=(e)=>{
+    if(e.key==="+"||e.key==="="){e.preventDefault();Z.set(true);return true;}
+    if((e.key==="-"||e.key==="Escape")&&Z.on){e.preventDefault();Z.set(false);return true;}
+    if(!Z.on)return false;
+    let dx=0,dy=0;if(e.key==="ArrowLeft")dx=-.06;if(e.key==="ArrowRight")dx=.06;if(e.key==="ArrowUp")dy=-.06;if(e.key==="ArrowDown")dy=.06;
+    if(!dx&&!dy)return false;e.preventDefault();Z.tfx=clamp(Z.tfx+dx,0,1);Z.tfy=clamp(Z.tfy+dy,0,1);Z.px=null;Z.keys=true;Z.moved=true;
+    if(aimEl){aimEl.style.left=(Z.tfx*100).toFixed(1)+"%";aimEl.style.top=(Z.tfy*100).toFixed(1)+"%";st.setAttribute("data-aim","");}
+    hold();return true;};
+  if(btn)btn.addEventListener("click",()=>Z.set(!Z.on));
+  st.addEventListener("dblclick",(e)=>{e.preventDefault();Z.set(!Z.on);});
+  return Z;
 }
-function applyView(){
-  const r=viewRect(), box=r.map((n)=>n.toFixed(2)).join(" ");
-  if(box!==Z.box){Z.box=box;Z.moved=true;svg2.setAttribute("viewBox",box);front2.setAttribute("viewBox",box);front2.style.opacity=String(1-sm(0,.6,Z.k));}
-  return r;
-}
-// 화면 한 점 아래의 부품 설명 찾기 (뒤 SVG 의 data-info 묶음)
-function pick(x,y){const el=document.elementFromPoint(x,y);const g=el&&el.closest?el.closest("[data-info]"):null;const key=g&&stage2.contains(g)?g.getAttribute("data-info"):"";Z.info=key&&INFO[key]?INFO[key][KO?0:1]:"";}
-function setZoom(on){
-  if(Z.on===on)return;Z.on=on;
-  if(on){Z.fx=Z.tfx=D2.focus[0]/D2.W;Z.fy=Z.tfy=D2.focus[1]/D2.H;Z.info="";Z.px=null;Z.keys=false;}   // 처음엔 패키지 가운데
-  if(!on)stage2.removeAttribute("data-aim");
-  stage2.style.touchAction=on?"none":"";
-  if(zoomBtn){zoomBtn.setAttribute("aria-pressed",String(on));zoomBtn.innerHTML=on?ZT.out:ZT.in;}
-  stage2.setAttribute("aria-label",ZT.aria[on?1:0]);
-  hold();
-}
+const zoomGl=(r,cam)=>({uView:[r[2],r[3]],uOrigin:[cam.origin[0]-r[0],cam.origin[1]-r[1]]});   // 확대 범위를 셰이더에 알림
+const Z1=zoomer(stage,{W:D.W,H:D.H,zoom:D.zoom,focus:D.focus,btn:document.querySelector("[data-zoom=rack]"),labels:ZT.rack});
+const Z2=zoomer(stage2,{W:D2.W,H:D2.H,zoom:D2.zoom,focus:D2.focus,btn:document.querySelector("[data-zoom=gpu]"),labels:ZT.gpu,hide:stage2.querySelector("svg.rk-front")});
 function draw(){
   const tr="translate("+(D.pull[0]*pull).toFixed(2)+" "+(D.pull[1]*pull).toFixed(2)+")";
   for(const t of trays){if(pull>.01)t.setAttribute("transform",tr);else t.removeAttribute("transform");}
@@ -528,78 +587,61 @@ function draw(){
   mv(plate,D2.up[0]*pl,D2.up[1]*pl);mv(lidG,D2.lidVec[0]*ld,D2.lidVec[1]*ld);
   const lv=load.x.toFixed(2);if(lv!==lastLv){lastLv=lv;if(!layer)stage.style.setProperty("--rk-load",lv);if(!layer2)stage2.style.setProperty("--rk-load",lv);} // WebGL 없을 때만 CSS 색으로
   const t=still.matches?0.8:clock;
-  if(layer){(load.x>1e-3&&pull>.5)?layer.draw({uLoad:load.x,uPull:pull,uFirst:first.x},t):layer.clear();}
-  const vr=applyView();   // 기판 확대: 지금 보이는 범위 [x, y, 폭, 높이]
-  if(Z.on&&Z.moved){if(Z.px!==null)pick(Z.px,Z.py);else if(Z.keys){const b=stage2.getBoundingClientRect();pick(b.left+Z.tfx*b.width,b.top+Z.tfy*b.height);}Z.moved=false;}
-  // 다이는 뚜껑이 비켜난 뒤(또는 확대 중)에만 보임. 확대 범위는 uView(크기)·uOrigin(원점 이동)으로 셰이더에 알림
-  if(layer2){(load.x>1e-3&&(ld>.05||Z.k>.5))?layer2.draw({uLoad:load.x,uFirst:first.x,uView:[vr[2],vr[3]],uOrigin:[D2.camera.origin[0]-vr[0],D2.camera.origin[1]-vr[1]]},t):layer2.clear();}
+  const r1=Z1.apply(), r2=Z2.apply();   // 확대: 지금 보이는 범위 [x, y, 폭, 높이]
+  if(layer){(load.x>1e-3&&pull>.5)?layer.draw({uLoad:load.x,uPull:pull,uFirst:first.x,...zoomGl(r1,D.camera)},t):layer.clear();}
+  // 다이는 뚜껑이 비켜난 뒤(또는 기판 확대 중)에만 보임
+  if(layer2){(load.x>1e-3&&(ld>.05||Z2.k>.5))?layer2.draw({uLoad:load.x,uFirst:first.x,...zoomGl(r2,D2.camera)},t):layer2.clear();}
   const out=pull/D.stroke, pOut=Math.round(out*100), pPl=Math.round(pl/D2.plateMax*100);
-  // 수치 줄: 트레이가 얼마나 나왔는지 / 냉각판이 얼마나 들렸는지 + 지금 부하의 전력 (KO 면 한국어)
+  // 수치 줄: 트레이가 얼마나 나왔는지 / 냉각판이 얼마나 들렸는지 + 지금 부하의 전력 (KO 면 한국어). 확대 중엔 부품 설명
   const trayText=KO?(out<.05?"트레이 "+D.tray+" · 장착됨":out<.98?"트레이 "+D.tray+" · "+pOut+"% 빠짐":"트레이 "+D.tray+" · 열림 · GPU "+R.gpuPerTray+" · CPU "+R.cpuPerTray)
     :(out<.05?"tray "+D.tray+" seated":out<.98?"tray "+D.tray+" · "+pOut+"% out":"tray "+D.tray+" open · "+R.gpuPerTray+" GPU · "+R.cpuPerTray+" CPU");
   const plateText=KO?(lift<.02?"냉각판 덮임":ld<.03?"냉각판 "+pPl+"% 들림":lift<.98?"뚜껑 들리는 중":"냉각판·뚜껑 들림 · 다이 "+G.dies+" · HBM3e "+G.hbm+" ("+G.hbmGb+" GB)")
     :(lift<.02?"cold plate on":ld<.03?"lifting plate "+pPl+"%":lift<.98?"lifting lid":"plate and lid off · "+G.dies+" dies · "+G.hbm+" HBM3e "+G.hbmGb+" GB");
-  say(read1,trayText+" · "+(perTrayKw*load.x).toFixed(1)+" kW");
-  say(read2,Z.on?(Z.info||ZT.hint):plateText+" · "+(G.kw*load.x).toFixed(2)+" kW");
+  say(read1,Z1.on?(Z1.info||ZT.hint):trayText+" · "+(perTrayKw*load.x).toFixed(1)+" kW");
+  say(read2,Z2.on?(Z2.info||ZT.hint):plateText+" · "+(G.kw*load.x).toFixed(2)+" kW");
   stage.setAttribute("aria-valuenow",String(Math.round(out*100)));stage2.setAttribute("aria-valuenow",String(Math.round(lift*100)));
 }
 function tick(now){
   const dt=last?Math.min((now-last)/1000,1/30):1/60;last=now;clock+=dt;const calm=still.matches;
   let wantLoad=0;
-  if(touring){const t=tourAt(clock);target=t.pull;liftTarget=t.lift;wantLoad=t.load;}else wantLoad=(pull>D.stroke*.6||lift>.6||Z.on)?1:0;   // 기판 확대 중엔 다이가 데워진 모습
+  if(touring){const t=tourAt(clock);target=t.pull;liftTarget=t.lift;wantLoad=t.load;}else wantLoad=(pull>D.stroke*.6||lift>.6||Z1.on||Z2.on)?1:0;   // 확대 중엔 칩이 데워진 모습
+  if(Z1.on)target=D.stroke;   // 트레이 확대 중엔 트레이를 끝까지 꺼내 둠
   pull=calm?target:pull+(target-pull)*(1-Math.exp(-dt/.6));if(Math.abs(target-pull)<.05)pull=target;
   lift=calm?liftTarget:lift+(liftTarget-lift)*(1-Math.exp(-dt/.6));if(Math.abs(liftTarget-lift)<.002)lift=liftTarget;
-  const zk=Z.on?1:0;Z.k=calm?zk:Z.k+(zk-Z.k)*(1-Math.exp(-dt/.22));if(Math.abs(zk-Z.k)<.002)Z.k=zk;   // 확대 진행 0..1
-  const zf=calm?1:1-Math.exp(-dt/.12);Z.fx+=(Z.tfx-Z.fx)*zf;Z.fy+=(Z.tfy-Z.fy)*zf;                // 돋보기 위치 (포인터 비율)
+  Z1.step(dt,calm);Z2.step(dt,calm);
   settle(load,wantLoad,dt,1.8,calm);settle(first,(layer||layer2)?1:0,dt,.6,calm);
   draw();
   frame=visible?requestAnimationFrame(tick):0;
 }
 const run=()=>{if(!frame&&visible){last=0;frame=requestAnimationFrame(tick);}};
-const hold=()=>{touched=true;touring=false;clearTimeout(idle);idle=setTimeout(()=>{if(Z.on)return;touring=!still.matches;clock=0;},5000);run();};   // 손을 떼고 5초 뒤 둘러보기 재개 (기판 확대 중엔 멈춘 채로)
+const hold=()=>{touched=true;touring=false;clearTimeout(idle);idle=setTimeout(()=>{if(Z1.on||Z2.on)return;touring=!still.matches;clock=0;},5000);run();};   // 손을 떼고 5초 뒤 둘러보기 재개 (확대 중엔 멈춘 채로)
 const shareOf=(e,el)=>{const b=el.getBoundingClientRect();return clamp(((e.clientX-b.left)/b.width-.2)/.6,0,1);};
 for(const ev of ["pointermove","pointerdown"]){
-  stage.addEventListener(ev,(e)=>{target=shareOf(e,svg)*D.stroke;hold();});
-  stage2.addEventListener(ev,(e)=>{const b=svg2.getBoundingClientRect();
-    if(Z.on){ // 확대 중: 포인터가 그림의 어디에 있느냐에 따라 기판의 그쪽을 보여 주고, 그 아래 부품을 설명
-      Z.tfx=clamp((e.clientX-b.left)/b.width,0,1);Z.tfy=clamp((e.clientY-b.top)/b.height,0,1);
-      Z.px=e.clientX;Z.py=e.clientY;Z.keys=false;Z.moved=true;stage2.removeAttribute("data-aim");hold();return;}
-    liftTarget=clamp(1-((e.clientY-b.top)/b.height-.25)/.5,0,1);hold();});
+  stage.addEventListener(ev,(e)=>{if(Z1.pointer(e))return;target=shareOf(e,svg)*D.stroke;hold();});
+  stage2.addEventListener(ev,(e)=>{if(Z2.pointer(e))return;const b=svg2.getBoundingClientRect();liftTarget=clamp(1-((e.clientY-b.top)/b.height-.25)/.5,0,1);hold();});
 }
-const keys=(el,get,set,max)=>el.addEventListener("keydown",(e)=>{let to=null;if(e.key==="ArrowRight"||e.key==="ArrowUp")to=get()+max/4;if(e.key==="ArrowLeft"||e.key==="ArrowDown")to=get()-max/4;if(e.key==="Home")to=0;if(e.key==="End")to=max;if(to===null)return;e.preventDefault();set(clamp(to,0,max));hold();});
-keys(stage,()=>target,(v)=>target=v,D.stroke);
-stage2.addEventListener("keydown",(e)=>{
-  if(e.key==="Escape"&&Z.on){e.preventDefault();setZoom(false);return;}
-  if(e.key==="+"||e.key==="="){e.preventDefault();setZoom(true);return;}
-  if(e.key==="-"){e.preventDefault();setZoom(false);return;}
-  if(Z.on){ // 확대 중: 화살표로 조준 원을 옮기며 둘러보기, 조준 원 아래 부품을 설명
-    let dx=0,dy=0;
-    if(e.key==="ArrowLeft")dx=-.06;if(e.key==="ArrowRight")dx=.06;if(e.key==="ArrowUp")dy=-.06;if(e.key==="ArrowDown")dy=.06;
-    if(!dx&&!dy)return;e.preventDefault();Z.tfx=clamp(Z.tfx+dx,0,1);Z.tfy=clamp(Z.tfy+dy,0,1);Z.px=null;Z.keys=true;Z.moved=true;
-    if(aim){aim.style.left=(Z.tfx*100).toFixed(1)+"%";aim.style.top=(Z.tfy*100).toFixed(1)+"%";stage2.setAttribute("data-aim","");}
-    hold();return;}
-  let to=null;if(e.key==="ArrowRight"||e.key==="ArrowUp")to=liftTarget+.25;if(e.key==="ArrowLeft"||e.key==="ArrowDown")to=liftTarget-.25;if(e.key==="Home")to=0;if(e.key==="End")to=1;
-  if(to===null)return;e.preventDefault();liftTarget=clamp(to,0,1);hold();
-});
-if(zoomBtn)zoomBtn.addEventListener("click",()=>setZoom(!Z.on));
-stage2.addEventListener("dblclick",(e)=>{e.preventDefault();setZoom(!Z.on);});
+// 키: 확대 관련이 아니면 화살표·Home·End 로 트레이 당김 / 냉각판 들기
+const keys=(el,Z,get,set,max)=>el.addEventListener("keydown",(e)=>{if(Z.key(e))return;let to=null;if(e.key==="ArrowRight"||e.key==="ArrowUp")to=get()+max/4;if(e.key==="ArrowLeft"||e.key==="ArrowDown")to=get()-max/4;if(e.key==="Home")to=0;if(e.key==="End")to=max;if(to===null)return;e.preventDefault();set(clamp(to,0,max));hold();});
+keys(stage,Z1,()=>target,(v)=>target=v,D.stroke);keys(stage2,Z2,()=>liftTarget,(v)=>liftTarget=v,1);
 document.addEventListener("visibilitychange",()=>{visible=!document.hidden;if(visible)run();});
 if(still.matches){touring=false;target=pull=D.stroke;liftTarget=lift=1;load.x=1;first.x=(layer||layer2)?1:0;}
 draw();run();
 window.__rackTouched=()=>touched;
-window.__rackBusy=()=>Z.on;   // 기판 확대 중이면 부팅 화면이 저절로 넘어가지 않음
-window.__rackState=()=>({load:+load.x.toFixed(3),zoom:+Z.k.toFixed(3),on:Z.on,touring,lid:+lidOf(lift).toFixed(3),view:Z.box,gl:!!layer2});   // 검수용 상태 읽기
+window.__rackBusy=()=>Z1.on||Z2.on;   // 확대해 보는 중이면 부팅 화면이 저절로 넘어가지 않음
+window.__rackState=()=>({load:+load.x.toFixed(3),pull:+pull.toFixed(1),zoom:[+Z1.k.toFixed(3),+Z2.k.toFixed(3)],on:[Z1.on,Z2.on],touring,info:[Z1.info,Z2.info]});   // 검수용 상태 읽기
 window.__rackStop=()=>{visible=false;if(frame)cancelAnimationFrame(frame);frame=0;};
 // 검수용: 둘러보기의 t 초 장면으로 바로 이동 (따라가는 값들을 목표에 붙여서 그 순간을 그림)
 window.__rackSeek=(t)=>{clock=t;const s=tourAt(t);pull=target=s.pull;lift=liftTarget=s.lift;load.x=s.load;first.x=1;draw();};
 `;
 
 // 그림 칸 (ko = 한국어 부팅 화면용 / 아니면 영어 검수 페이지용). role="slider" 안의 SVG 는 낭독기가 읽지 않으므로 설명은 여기 한 곳에만
-const stageHtml = (ko) => `<div class="rk-stage" data-fig="rack" tabindex="0" role="slider" aria-label="${ko ? "GPU 랙: 포인터를 좌우로 움직이거나 화살표 키로 컴퓨트 트레이를 꺼냅니다" : "GPU rack: move the pointer across or press the arrow keys to slide the compute tray out"}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">${backSvg}${traySvg}<canvas class="rk-layer rk-gl" aria-hidden="true"></canvas>${frontSvg}</div>`;
+const stageHtml = (ko) => `<div class="rk-stage" data-fig="rack" tabindex="0" role="slider" aria-label="${ko ? "GPU 랙: 포인터를 좌우로 움직이거나 화살표 키로 컴퓨트 트레이를 꺼냅니다" : "GPU rack: move the pointer across or press the arrow keys to slide the compute tray out"}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">${backSvg}${traySvg}<canvas class="rk-layer rk-gl" aria-hidden="true"></canvas>${frontSvg}<span class="rk-aim" aria-hidden="true"></span></div>`;
 const stage2Html = (ko) => `<div class="rk-stage" data-fig="gpu" tabindex="0" role="slider" aria-label="${ko ? "GPU 모듈: 포인터를 위아래로 움직이거나 화살표 키로 냉각판과 뚜껑을 들어 올립니다" : "GPU module: move the pointer up or press the arrow keys to lift the cold plate and the lid"}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">${G2.backSvg}<canvas class="rk-layer rk-gl" aria-hidden="true"></canvas>${G2.frontSvg}<span class="rk-aim" aria-hidden="true"></span></div>`;
+// 확대 단추: 눈에 띄게 채운 단추 + 처음 몇 번 깜빡이는 안내(data-call, 한 번 쓰면 멈춤)
+const zoomButton = (fig, ko) => `<button class="rk-zoom" type="button" data-zoom="${fig}" data-call aria-pressed="false">${zoomText(ko)[fig].in}</button>`;
 const pairHtml = (ko) => `<div class="rk-pair">
-  <div class="rk-fig"><h2>${ko ? "랙" : "Rack"} · ${RACK.name} <small>${ko ? `GPU ${RACK.gpus}개 ≈ ${RACK.kw} kW` : `${RACK.gpus} GPUs ≈ ${RACK.kw} kW`}</small></h2>${stageHtml(ko)}<div class="rk-read" data-readout="rack">${ko ? `트레이 ${PULLED.index} · 장착됨` : `tray ${PULLED.index} seated`} · 0.0 kW</div></div>
-  <div class="rk-fig"><div class="rk-head"><h2>GPU · ${GPU.name} <small>${ko ? `트레이 속 GPU 1개 확대 · 다이 ${GPU.dies} · HBM3e ${GPU.hbm} (${GPU.hbmGb} GB) · ≈${GPU.kw} kW` : `one GPU from the tray · ${GPU.dies} dies · ${GPU.hbm} HBM3e (${GPU.hbmGb} GB) · ≈${GPU.kw} kW`}</small></h2><button class="rk-zoom" type="button" data-gpu-zoom aria-pressed="false">${zoomLabel(ko, false)}</button></div>${stage2Html(ko)}<div class="rk-read" data-readout="gpu">${ko ? "냉각판 덮임" : "cold plate on"} · 0.00 kW</div></div>
+  <div class="rk-fig"><div class="rk-head"><h2>${ko ? "랙" : "Rack"} · ${RACK.name} <small>${ko ? `GPU ${RACK.gpus}개 ≈ ${RACK.kw} kW` : `${RACK.gpus} GPUs ≈ ${RACK.kw} kW`}</small></h2>${zoomButton("rack", ko)}</div>${stageHtml(ko)}<div class="rk-read" data-readout="rack">${ko ? `트레이 ${PULLED.index} · 장착됨` : `tray ${PULLED.index} seated`} · 0.0 kW</div></div>
+  <div class="rk-fig"><div class="rk-head"><h2>GPU · ${GPU.name} <small>${ko ? `트레이 속 GPU 1개 확대 · 다이 ${GPU.dies} · HBM3e ${GPU.hbm} (${GPU.hbmGb} GB) · ≈${GPU.kw} kW` : `one GPU from the tray · ${GPU.dies} dies · ${GPU.hbm} HBM3e (${GPU.hbmGb} GB) · ≈${GPU.kw} kW`}</small></h2>${zoomButton("gpu", ko)}</div>${stage2Html(ko)}<div class="rk-read" data-readout="gpu">${ko ? "냉각판 덮임" : "cold plate on"} · 0.00 kW</div></div>
 </div>`;
 
 const gl = readFileSync(join(HERE, "..", "kit", "gl.mjs"), "utf8").replace(/^export\s+(const|function)/gm, "$1").replace(/^export\s*\{[^}]*\};?\s*$/gm, "");

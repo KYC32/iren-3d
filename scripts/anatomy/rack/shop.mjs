@@ -79,11 +79,11 @@ export function workshop(P, { piece = "fig" } = {}) {
   // 호스·관: 꺾은선 → 모서리를 둥글게(fillet) → 짧은 조각으로 잘라 조각마다 등록
   //   gaps = 그 구간은 그리지 않음 (끝의 쇠고리·연결부가 덮는 자리)
   //   stamp: 길이·방향이 같은 호스끼리는 조각마다 복사 (시작점 차이만큼 평행이동)
-  function hose(name, points, r, { cls, tone = "mid", bend = r * 2.6, maxLength = 10, gaps = [], caps = true, bias = 0.02, owner, stamp } = {}) {
+  function hose(name, points, r, { cls, tone = "mid", bend = r * 2.6, maxLength = 10, gaps = [], caps = true, bias = 0.02, owner, stamp, info } = {}) {
     const route = G.fillet(points, Math.max(bend, r * 2.6), 10, { P, tube: r });
     R.route(name, route, r, { gaps, owner: owner ?? name, piece });
     tubePieces(route, r, P, { maxLength, spacing: Math.max(0.5, Math.min(1.6, r)), gaps, caps }).forEach((chunk, index) =>
-      put(`${name}:${index}`, chunk.mid, stamped(stamp && `${stamp}-${index}`, route[0], () => wrap(cls, tubeSvg(chunk, { tone }))), [A.tube(chunk.points, chunk.radii, { name, owner: owner ?? name })], { bias, route: name, chunk: index }),
+      put(`${name}:${index}`, chunk.mid, stamped(stamp && `${stamp}-${index}`, route[0], () => wrap(cls, tubeSvg(chunk, { tone }))), [A.tube(chunk.points, chunk.radii, { name, owner: owner ?? name })], { bias, info, route: name, chunk: index }),
     );
     return route;
   }
