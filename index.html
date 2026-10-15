@@ -54,7 +54,7 @@
     <div id="boot" aria-live="polite">
       <div class="boot-card">
         <h1>IREN 3D 현황판</h1>
-        <p class="boot-sub">AI 데이터센터의 기본 단위부터 — 랙 1대 = GPU 72개 ≈ 130 kW, 그래서 50 MW 홀은 랙 약 350대. 그림은 저절로 움직이고, <b>확대</b> 단추로 부품까지 자세히 볼 수 있습니다.</p>
+        <p class="boot-sub">AI 데이터센터의 기본 단위부터 — 랙 1대 = GPU 72개 ≈ 130 kW, 그래서 50 MW 홀은 랙 약 350대. 그림이 저절로 부품을 확대해 보여 주고, <b>확대</b> 단추로 직접 살펴볼 수도 있습니다.</p>
         <!-- rack -->
         <div class="boot-bar" aria-hidden="true"><i></i></div>
         <p class="boot-note">GB300 NVL72 랙·B300 GPU 의 도식 (실측 모형 아님). 색은 실물 기준: 구리 냉각판, 검정 기판·호스, 은색 판금. 파랑·빨강 고리 = 냉각수 공급·회수 연결부, 주황 = 열. 비공식 리서치 · 투자 조언 아님.</p>
@@ -62,14 +62,14 @@
     </div>
     <script>
       // 부팅 화면 넘김 규칙
-      //   - 최소 MIN 동안은 보여 줌 (그림의 둘러보기 한 바퀴: 트레이 → 냉각판 → 열 → 원위치)
+      //   - 최소 MIN 동안은 보여 줌 (그림의 둘러보기 한 바퀴: 트레이 꺼냄·확대 → 냉각판 들림·기판 확대 → 원위치)
       //     이 시간은 화면이 "실제로 보이기 시작한 때"부터 셈: 링크를 백그라운드 탭으로 열면
       //     안 보는 사이에 시간이 다 흘러 탭을 열자마자 그림이 사라지는 일을 막음
       //   - 지도(또는 3D·주가·뉴스 페이지)가 준비되면 앱이 __bootReady() 를 부름
       //   - 그림을 만지는 중이면 손을 뗀 뒤 IDLE 만큼 기다림
       //   - "건너뛰기 / 지도 보기" 버튼은 언제든 바로 넘김
       (function () {
-        var MIN = 14000, IDLE = 6000;
+        var MIN = window.__rackCycle || 14000, IDLE = 6000;   // 최소 = 그림 둘러보기 한 바퀴 (랙 → GPU 확대까지, 그림이 알려 줌)
         var boot = document.getElementById('boot'), go = boot && boot.querySelector('[data-boot-go]');
         var t0 = 0, lastTouch = 0, ready = false, done = false, timer = 0;
         if (boot) boot.style.setProperty('--boot-min', MIN / 1000 + 's');
@@ -90,6 +90,8 @@
         function tryGo() {
           if (done || !ready || !t0) return; // 아직 한 번도 안 보였으면 기다림
           if (window.__rackBusy && window.__rackBusy()) return; // GPU 기판을 확대해 보는 중이면 기다림 (버튼으로는 언제든 넘김)
+          // 그림 둘러보기가 한 바퀴를 다 돌 때까지 (느린 기기에선 시계가 늦게 감). 늦어도 MIN 의 두 배가 지나면 넘김
+          if (window.__rackLoops && window.__rackLoops() < 1 && Date.now() - t0 < MIN * 2) return;
           if (Date.now() - t0 < MIN || Date.now() - lastTouch < IDLE) return;
           dismiss();
         }

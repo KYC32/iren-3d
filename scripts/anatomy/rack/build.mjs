@@ -332,6 +332,13 @@ const DATA = {
   gpu: GPUS.map((g) => [g.x, g.y, g.w, g.d].map(tenth)), cpu: CPUS.map((c) => [c.x, c.y, c.w, c.d].map(tenth)),
   rack: RACK, tray: PULLED.index,
   zoom: 2.6, focus: at([0, Y1 + STROKE * 0.55, TOPZ + 2]).map(tenth),   // 트레이 확대: 배율, 처음 볼 곳(다 꺼낸 트레이 가운데)
+  // 자동 확대 둘러보기에서 차례로 짚을 부품 (전체 그림 기준 화면 위치 비율). 트레이 부품은 다 꺼낸 자리(+STROKE)
+  stops: [
+    ["gpu-plate", [GPUS[1].cx, GPUS[1].y + GPUS[1].d / 2 + STROKE, BT + GPU_H]],
+    ["manifold-bar", [GPUS[2].cx, BAR.y + BAR.d / 2 + STROKE, BT + BAR_H]],
+    ["cpu-plate", [CPUS[1].cx, CPUS[1].y + CPUS[1].d / 2 + STROKE, BT + CPUS[1].h]],
+    ["nic", [NICS[2].cx, NICS[2].y + NICS[2].d / 2 + STROKE, BT + 1.3]],
+  ].map(([key, p]) => { const v = at(p); return { key, fx: +(v[0] / WIDTH).toFixed(3), fy: +(v[1] / HEIGHT).toFixed(3) }; }),
 };
 
 const CSS = `
@@ -344,8 +351,11 @@ const CSS = `
 /* 트레이 확대: 트레이·앞판 층(평소엔 포인터를 통과시킴)의 칠해진 곳도 부품 찾기에 걸리게 */
 .rk-stage[data-fig=rack][data-zoom]>svg.rk-layer>g{pointer-events:visiblePainted}
 /* 키보드로 둘러볼 때 가리키는 곳을 보여 주는 조준 원 */
-.rk-aim{position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border:1.5px solid var(--anatomy-strong);border-radius:50%;box-shadow:0 0 0 2px var(--anatomy-card);pointer-events:none;opacity:0;transition:opacity .2s}
+.rk-aim{position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border:1.5px solid var(--anatomy-strong);border-radius:50%;box-shadow:0 0 0 2px var(--anatomy-card);pointer-events:none;opacity:0;transition:opacity .25s,left .6s ease,top .6s ease}
 .rk-stage[data-aim] .rk-aim{opacity:1}
+/* 둘러보기가 짚는 부품: 더 큰 청록 원이 숨쉬듯 (설명 줄이 어느 부품 얘기인지 보이게) */
+.rk-stage[data-aim=auto] .rk-aim{width:30px;height:30px;margin:-15px 0 0 -15px;border:2px solid #2ea88a;box-shadow:0 0 0 2px rgba(255,255,255,.75),inset 0 0 0 1px rgba(255,255,255,.6);animation:rk-aim 1.6s ease-in-out infinite}
+@keyframes rk-aim{50%{transform:scale(1.18)}}
 /* 색 토큰 세트: 그룹마다 kit 토큰을 바꿔 칠함 (모든 색이 토큰 → 선·면·명암 규칙은 그대로) */
 .rk-metal{--anatomy-paper:#2f343b;--anatomy-face:#373d45;--anatomy-top:#4a515b;--anatomy-shade-0:#22262c;--anatomy-shade-1:#282c33;--anatomy-shade-2:#2e333a;--anatomy-shade-3:#353a42;--anatomy-lit-top:#5b6470;--anatomy-lit-shade:#3d434c;--anatomy-hi:#e3e8ee;--anatomy-mid:#9aa3ae;--anatomy-lo:#6f7884;--anatomy-faint:#525a65;--anatomy-lit:#ffffff;--anatomy-dot:#c9d1da}
 .rk-cavity{--anatomy-paper:#16191d;--anatomy-face:#1b1e23;--anatomy-top:#22262c;--anatomy-shade-0:#101215;--anatomy-shade-1:#14161a;--anatomy-shade-2:#181b1f;--anatomy-shade-3:#1d2025;--anatomy-lo:#3a4049;--anatomy-faint:#2b3037;--anatomy-mid:#59616c;--anatomy-hi:#9aa3ae}
@@ -499,13 +509,13 @@ const zoomLabel = (ko, on, what) => (on ? ICON_OUT : ICON_IN) + `<span>${on ? (k
 const zoomText = (ko) => ({
   rack: {
     in: zoomLabel(ko, false, ko ? "트레이 확대" : "Zoom tray"), out: zoomLabel(ko, true),
-    aria: ko ? ["GPU 랙 그림: 트레이가 저절로 나왔다 들어갑니다. + 키나 확대 단추로 트레이를 확대해 부품을 살펴볼 수 있습니다", "트레이 확대: 포인터나 화살표 키로 둘러보고, Esc 로 전체 보기"]
-      : ["GPU rack: a compute tray slides out and back on its own. Press + or the zoom button to look at its parts", "Tray zoom: look around with the pointer or arrow keys; Escape for the full view"],
+    aria: ko ? ["GPU 랙 그림: 트레이가 저절로 나와 확대되며 부품을 하나씩 보여 줍니다. + 키나 확대 단추로 직접 확대할 수 있습니다", "트레이 확대: 포인터나 화살표 키로 둘러보고, Esc 로 전체 보기"]
+      : ["GPU rack: a compute tray slides out and zooms in to show its parts one by one. Press + or the zoom button to zoom yourself", "Tray zoom: look around with the pointer or arrow keys; Escape for the full view"],
   },
   gpu: {
     in: zoomLabel(ko, false, ko ? "기판 확대" : "Zoom board"), out: zoomLabel(ko, true),
-    aria: ko ? ["GPU 모듈 그림: 냉각판과 뚜껑이 저절로 들립니다. + 키나 확대 단추로 기판을 확대해 부품을 살펴볼 수 있습니다", "기판 확대: 포인터나 화살표 키로 둘러보고, Esc 로 전체 보기"]
-      : ["GPU module: the cold plate and the lid lift on their own. Press + or the zoom button to look at the board", "Board zoom: look around with the pointer or arrow keys; Escape for the full view"],
+    aria: ko ? ["GPU 모듈 그림: 냉각판과 뚜껑이 저절로 들리고 기판을 확대해 부품을 하나씩 보여 줍니다. + 키나 확대 단추로 직접 확대할 수 있습니다", "기판 확대: 포인터나 화살표 키로 둘러보고, Esc 로 전체 보기"]
+      : ["GPU module: the cold plate and the lid lift on their own, then the board zooms in part by part. Press + or the zoom button to zoom yourself", "Board zoom: look around with the pointer or arrow keys; Escape for the full view"],
   },
   hint: ko ? "확대 중 · 부품에 포인터를 올리거나 탭하면 설명이 나옵니다" : "zoomed · point at or tap a part to see what it is",
 });
@@ -528,18 +538,35 @@ const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const sm=(a,b,x)=>{const q=clamp((x-a)/(b-a),0,1);return q*q*(3-2*q);};
 // GPU 그림의 들림 0..1 → 냉각판 높이 mm (먼저 0~0.65) · 뚜껑 진행 0..1 (나중 0.35~1)
 const plateOf=(u)=>D2.plateMax*sm(0,.65,u), lidOf=(u)=>sm(.35,1,u);
-// 둘러보기 14초: 트레이 당김(0~3s) → 냉각판·뚜껑 들림(3~6s) → 부하 올림(5~9.5s) → 내림(9.5~11.5s) → 트레이 밀어 넣음(11~13.5s)
-function tourAt(t){const u=t%14;const ramp=(a,b)=>clamp((u-a)/(b-a),0,1);
-  return {pull:D.stroke*(ramp(0,3)-ramp(11,13.5)),lift:ramp(3,6)-ramp(9.5,11.5),load:u>5&&u<9.5?1:0};}
+// 둘러보기 28초 (랙 → GPU 차례로, 확대까지 저절로):
+//   랙  0~2.5s 트레이 꺼냄 · 2s~ 열 · 3~11.6s 트레이 확대(부품 4곳을 2.15초씩 짚으며 설명) · 12.5~14.5s 트레이 넣음
+//   GPU 14.5~17s 냉각판·뚜껑 들림 · 16s~ 열 · 17.3~25.3s 기판 확대(4곳을 2초씩) · 25.6~27.6s 내려앉음
+const TOUR=28;
+window.__rackCycle=TOUR*1000;   // 부팅 화면이 최소 한 바퀴는 보여 주도록 알려 줌
+function tourAt(t){const u=t%TOUR;const ramp=(a,b)=>clamp((u-a)/(b-a),0,1);
+  const rz=u>=3&&u<11.6, gz=u>=17.3&&u<25.3;
+  return {pull:D.stroke*(ramp(0,2.5)-ramp(12.5,14.5)),lift:ramp(14.5,17)-ramp(25.6,27.6),load:(u>2&&u<12.5)||(u>16&&u<25.6)?1:0,
+    rz,rs:rz?Math.min(3,Math.floor((u-3)/2.15)):-1,gz,gs:gz?Math.min(3,Math.floor((u-17.3)/2)):-1};}
 const say=(el,text)=>{if(el&&el.textContent!==text)el.textContent=text;};
 // ---------- 확대 (두 그림 공용) ----------
 // 보이는 범위(viewBox)를 좁혀 크게 보여 줌: SVG 라 확대해도 선명, 열 잉크도 같은 범위(uView·uOrigin)를 받아 따라옴
 // 돋보기 방식: 전체 그림에서 포인터가 가리키는 점이 확대 화면에서도 포인터 바로 아래에 옴 → 겨눈 부품이 달아나지 않음
 //   (포인터 비율 fx 일 때 보이는 범위의 왼쪽 = fx × (전체 폭 − 보이는 폭))
 // 확대 중엔 포인터·탭·화살표 조준 원 아래 부품의 이름·역할(data-info → INFO)을 수치 줄에 보여 줌
-function zoomer(st,{W,H,zoom,focus,btn,labels,hide}){
+function zoomer(st,{W,H,zoom,focus,btn,labels,hide,stops}){
   const svgs=[...st.querySelectorAll(":scope>svg")], aimEl=st.querySelector(".rk-aim");
-  const Z={on:false,k:0,fx:.5,fy:.5,tfx:.5,tfy:.5,info:"",box:"",px:null,py:null,keys:false,moved:true,shown:false};
+  // on = 단추로 직접 확대, auto = 둘러보기가 하는 확대 (stop = 지금 짚는 부품)
+  const Z={on:false,auto:false,stop:null,autoInfo:"",k:0,fx:.5,fy:.5,tfx:.5,tfy:.5,info:"",box:"",px:null,py:null,keys:false,moved:true,shown:false};
+  // 조준 원 자리 (kind: "" = 키보드 조준, "auto" = 둘러보기가 짚는 부품 표시)
+  const aimAt=(fx,fy,kind)=>{if(!aimEl)return;aimEl.style.left=(fx*100).toFixed(1)+"%";aimEl.style.top=(fy*100).toFixed(1)+"%";st.setAttribute("data-aim",kind);};
+  // 둘러보기가 매 프레임 부름: 확대할지 + 짚을 부품 번호. 직접 확대 중이면 쉼
+  Z.tour=(on,i)=>{
+    if(Z.on)return;Z.auto=on;const s=on&&i>=0?stops[i]:null;
+    if(s!==Z.stop){Z.stop=s;
+      if(s){Z.tfx=s.fx;Z.tfy=s.fy;Z.autoInfo=INFO[s.key]?INFO[s.key][KO?0:1]:"";aimAt(s.fx,s.fy,"auto");}
+      else{Z.autoInfo="";st.removeAttribute("data-aim");}}};
+  // 수치 줄에 쓸 설명 (없으면 null → 평소 수치)
+  Z.caption=()=>Z.on?(Z.info||ZT.hint):(Z.auto&&Z.autoInfo?Z.autoInfo:null);
   Z.rect=()=>{const s=1+(zoom-1)*sm(0,1,Z.k),w=W/s,h=H/s;return [Z.fx*(W-w),Z.fy*(H-h),w,h];};
   // 한 점 아래의 부품 설명 찾기
   Z.pick=(x,y)=>{const el=document.elementFromPoint(x,y);const g=el&&el.closest?el.closest("[data-info]"):null;const key=g&&st.contains(g)?g.getAttribute("data-info"):"";Z.info=key&&INFO[key]?INFO[key][KO?0:1]:"";};
@@ -552,13 +579,14 @@ function zoomer(st,{W,H,zoom,focus,btn,labels,hide}){
     return r;};
   Z.set=(on)=>{
     if(Z.on===on)return;Z.on=on;
-    if(on){Z.fx=Z.tfx=focus[0]/W;Z.fy=Z.tfy=focus[1]/H;Z.info="";Z.px=null;Z.keys=false;}else st.removeAttribute("data-aim");
+    if(on){Z.fx=Z.tfx=focus[0]/W;Z.fy=Z.tfy=focus[1]/H;Z.info="";Z.px=null;Z.keys=false;}
+    Z.stop=null;Z.autoInfo="";st.removeAttribute("data-aim");   // 직접 확대가 시작·끝나면 둘러보기 표시는 지움 (다시 이어질 때 새로 짚음)
     st.style.touchAction=on?"none":"";
     if(btn){btn.setAttribute("aria-pressed",String(on));btn.innerHTML=on?labels.out:labels.in;}
     for(const b of document.querySelectorAll(".rk-zoom[data-call]"))b.removeAttribute("data-call");   // 한 번 써 보면 깜빡임 안내를 멈춤
     st.setAttribute("aria-label",labels.aria[on?1:0]);hold();};
-  Z.step=(dt,calm)=>{const zk=Z.on?1:0;Z.k=calm?zk:Z.k+(zk-Z.k)*(1-Math.exp(-dt/.22));if(Math.abs(zk-Z.k)<.002)Z.k=zk;   // 확대 진행 0..1
-    const zf=calm?1:1-Math.exp(-dt/.12);Z.fx+=(Z.tfx-Z.fx)*zf;Z.fy+=(Z.tfy-Z.fy)*zf;};                                  // 돋보기 위치
+  Z.step=(dt,calm)=>{const zk=Z.on||Z.auto?1:0;Z.k=calm?zk:Z.k+(zk-Z.k)*(1-Math.exp(-dt/.3));if(Math.abs(zk-Z.k)<.002)Z.k=zk;   // 확대 진행 0..1
+    const zf=calm?1:1-Math.exp(-dt/(Z.on?.12:.35));Z.fx+=(Z.tfx-Z.fx)*zf;Z.fy+=(Z.tfy-Z.fy)*zf;};                          // 돋보기 위치 (둘러보기는 천천히)
   // 확대 중 포인터: 돋보기 위치 + 그 아래 부품 (처리했으면 true)
   Z.pointer=(e)=>{if(!Z.on)return false;const b=st.getBoundingClientRect();
     Z.tfx=clamp((e.clientX-b.left)/b.width,0,1);Z.tfy=clamp((e.clientY-b.top)/b.height,0,1);
@@ -570,15 +598,15 @@ function zoomer(st,{W,H,zoom,focus,btn,labels,hide}){
     if(!Z.on)return false;
     let dx=0,dy=0;if(e.key==="ArrowLeft")dx=-.06;if(e.key==="ArrowRight")dx=.06;if(e.key==="ArrowUp")dy=-.06;if(e.key==="ArrowDown")dy=.06;
     if(!dx&&!dy)return false;e.preventDefault();Z.tfx=clamp(Z.tfx+dx,0,1);Z.tfy=clamp(Z.tfy+dy,0,1);Z.px=null;Z.keys=true;Z.moved=true;
-    if(aimEl){aimEl.style.left=(Z.tfx*100).toFixed(1)+"%";aimEl.style.top=(Z.tfy*100).toFixed(1)+"%";st.setAttribute("data-aim","");}
+    aimAt(Z.tfx,Z.tfy,"");
     hold();return true;};
   if(btn)btn.addEventListener("click",()=>Z.set(!Z.on));
   st.addEventListener("dblclick",(e)=>{e.preventDefault();Z.set(!Z.on);});
   return Z;
 }
 const zoomGl=(r,cam)=>({uView:[r[2],r[3]],uOrigin:[cam.origin[0]-r[0],cam.origin[1]-r[1]]});   // 확대 범위를 셰이더에 알림
-const Z1=zoomer(stage,{W:D.W,H:D.H,zoom:D.zoom,focus:D.focus,btn:document.querySelector("[data-zoom=rack]"),labels:ZT.rack});
-const Z2=zoomer(stage2,{W:D2.W,H:D2.H,zoom:D2.zoom,focus:D2.focus,btn:document.querySelector("[data-zoom=gpu]"),labels:ZT.gpu,hide:stage2.querySelector("svg.rk-front")});
+const Z1=zoomer(stage,{W:D.W,H:D.H,zoom:D.zoom,focus:D.focus,stops:D.stops,btn:document.querySelector("[data-zoom=rack]"),labels:ZT.rack});
+const Z2=zoomer(stage2,{W:D2.W,H:D2.H,zoom:D2.zoom,focus:D2.focus,stops:D2.stops,btn:document.querySelector("[data-zoom=gpu]"),labels:ZT.gpu,hide:stage2.querySelector("svg.rk-front")});
 function draw(){
   const tr="translate("+(D.pull[0]*pull).toFixed(2)+" "+(D.pull[1]*pull).toFixed(2)+")";
   for(const t of trays){if(pull>.01)t.setAttribute("transform",tr);else t.removeAttribute("transform");}
@@ -597,15 +625,17 @@ function draw(){
     :(out<.05?"tray "+D.tray+" seated":out<.98?"tray "+D.tray+" · "+pOut+"% out":"tray "+D.tray+" open · "+R.gpuPerTray+" GPU · "+R.cpuPerTray+" CPU");
   const plateText=KO?(lift<.02?"냉각판 덮임":ld<.03?"냉각판 "+pPl+"% 들림":lift<.98?"뚜껑 들리는 중":"냉각판·뚜껑 들림 · 다이 "+G.dies+" · HBM3e "+G.hbm+" ("+G.hbmGb+" GB)")
     :(lift<.02?"cold plate on":ld<.03?"lifting plate "+pPl+"%":lift<.98?"lifting lid":"plate and lid off · "+G.dies+" dies · "+G.hbm+" HBM3e "+G.hbmGb+" GB");
-  say(read1,Z1.on?(Z1.info||ZT.hint):trayText+" · "+(perTrayKw*load.x).toFixed(1)+" kW");
-  say(read2,Z2.on?(Z2.info||ZT.hint):plateText+" · "+(G.kw*load.x).toFixed(2)+" kW");
+  const c1=Z1.caption(), c2=Z2.caption();   // 확대 중(직접·둘러보기)이면 부품 설명, 아니면 평소 수치
+  say(read1,c1!==null?c1:trayText+" · "+(perTrayKw*load.x).toFixed(1)+" kW");
+  say(read2,c2!==null?c2:plateText+" · "+(G.kw*load.x).toFixed(2)+" kW");
 }
 function tick(now){
   const dt=last?Math.min((now-last)/1000,1/30):1/60;last=now;time+=dt;const calm=still.matches;
   // 그림은 저절로 움직임(14초 둘러보기, 마우스로 조작하지 않음). 확대해 보는 동안만 그 자리에서 멈췄다가, 끝나면 멈춘 곳부터 이어짐
   const zoomed=Z1.on||Z2.on;touring=!calm&&!zoomed;
   let wantLoad=1;   // 확대 중·움직임 줄이기 설정에선 칩이 데워진 모습
-  if(touring){clock+=dt;const t=tourAt(clock);target=t.pull;liftTarget=t.lift;wantLoad=t.load;}
+  if(touring){clock+=dt;const t=tourAt(clock);target=t.pull;liftTarget=t.lift;wantLoad=t.load;Z1.tour(t.rz,t.rs);Z2.tour(t.gz,t.gs);}
+  else{Z1.tour(false,-1);Z2.tour(false,-1);}   // 직접 확대 중이거나 움직임 줄이기: 둘러보기 확대는 쉼
   if(Z1.on)target=D.stroke;   // 트레이 확대 중엔 트레이를 끝까지 꺼내 둠
   pull=calm?target:pull+(target-pull)*(1-Math.exp(-dt/.6));if(Math.abs(target-pull)<.05)pull=target;
   lift=calm?liftTarget:lift+(liftTarget-lift)*(1-Math.exp(-dt/.6));if(Math.abs(liftTarget-lift)<.002)lift=liftTarget;
@@ -623,10 +653,12 @@ document.addEventListener("visibilitychange",()=>{visible=!document.hidden;if(vi
 if(still.matches){touring=false;target=pull=D.stroke;liftTarget=lift=1;load.x=1;first.x=(layer||layer2)?1:0;}   // 움직임 줄이기: 다 열린 정지 그림
 draw();run();
 window.__rackBusy=()=>Z1.on||Z2.on;   // 확대해 보는 중이면 부팅 화면이 저절로 넘어가지 않음
+window.__rackLoops=()=>still.matches?1:clock/TOUR;   // 둘러보기를 몇 바퀴 돌았나 (느린 기기에서도 한 바퀴는 다 보여 주려고)
 window.__rackState=()=>({clock:+clock.toFixed(2),load:+load.x.toFixed(3),pull:+pull.toFixed(1),zoom:[+Z1.k.toFixed(3),+Z2.k.toFixed(3)],on:[Z1.on,Z2.on],touring,info:[Z1.info,Z2.info]});   // 검수용 상태 읽기
 window.__rackStop=()=>{visible=false;if(frame)cancelAnimationFrame(frame);frame=0;};
 // 검수용: 둘러보기의 t 초 장면으로 바로 이동 (따라가는 값들을 목표에 붙여서 그 순간을 그림)
-window.__rackSeek=(t)=>{clock=t;const s=tourAt(t);pull=target=s.pull;lift=liftTarget=s.lift;load.x=s.load;first.x=1;draw();};
+window.__rackSeek=(t)=>{clock=t;const s=tourAt(t);pull=target=s.pull;lift=liftTarget=s.lift;load.x=s.load;first.x=1;
+  Z1.tour(s.rz,s.rs);Z2.tour(s.gz,s.gs);for(const Z of [Z1,Z2]){Z.k=Z.on||Z.auto?1:0;Z.fx=Z.tfx;Z.fy=Z.tfy;}draw();};
 `;
 
 // 그림 칸 (ko = 한국어 부팅 화면용 / 아니면 영어 검수 페이지용). 설명은 칸(role=group)의 aria-label 한 곳에만 두고,
@@ -655,7 +687,7 @@ const ASPECT = `.rk-wrap{--rk-a1:${(WIDTH / HEIGHT).toFixed(3)};--rk-a2:${(G2.DA
 const fragment = `<style>${k.ISO_CSS}${CSS}${ASPECT}</style>
 <div class="iso rk-wrap" data-theme="light">
   ${pairHtml(true)}
-  <div class="rk-ui"><span class="rk-hint">저절로 움직입니다 · 확대 단추로 부품 살펴보기</span><button class="rk-go" type="button" data-boot-go>건너뛰기 →</button></div>
+  <div class="rk-ui"><span class="rk-hint">저절로 둘러보며 부품을 확대합니다 · 확대 단추로 직접 살펴보기</span><button class="rk-go" type="button" data-boot-go>건너뛰기 →</button></div>
 </div>
 <script>(function(){${liveScriptFor(true)}})();</script>`;
 writeFileSync(join(ROOT, "src", "boot", "rack.html"), fragment);

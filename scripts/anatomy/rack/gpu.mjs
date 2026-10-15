@@ -281,6 +281,9 @@ export function gpuFigure() {
   const DATA = {
     W, H, camera: glCamera(P), up: [up[0], up[1]], plateMax: PLATE_LIFT, lidVec: [lidVec[0], lidVec[1]], zDie: DT, dies: DIES.map((d) => [d.x, d.y, d.w, d.d]), gpu: GPU,
     zoom: 2.4, focus: at([0, 0, ST]).map(round1),
+    // 자동 확대 둘러보기에서 차례로 짚을 부품 (전체 그림에서의 화면 위치 비율, 돋보기는 그 비율 자리에 그 부품을 보여 줌)
+    stops: [["die", [14, 0, DT]], ["hbm", [20.5, 25.5, DT]], ["choke", [68.5, 29.5, PT + 5.5]], ["nvlink", [-72, -56.5, PT + 9]]]
+      .map(([key, p]) => { const s = at(p); return { key, fx: +(s[0] / W).toFixed(3), fy: +(s[1] / H).toFixed(3) }; }),
   };
   const FRAGMENT = `
 uniform float uLoad;
