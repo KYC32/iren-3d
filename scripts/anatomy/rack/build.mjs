@@ -499,13 +499,13 @@ const zoomLabel = (ko, on, what) => (on ? ICON_OUT : ICON_IN) + `<span>${on ? (k
 const zoomText = (ko) => ({
   rack: {
     in: zoomLabel(ko, false, ko ? "트레이 확대" : "Zoom tray"), out: zoomLabel(ko, true),
-    aria: ko ? ["GPU 랙: 포인터를 좌우로 움직이거나 화살표 키로 컴퓨트 트레이를 꺼냅니다", "트레이 확대: 포인터나 화살표 키로 둘러보고, Esc 로 전체 보기"]
-      : ["GPU rack: move the pointer across or press the arrow keys to slide the compute tray out", "Tray zoom: look around with the pointer or arrow keys; Escape for the full view"],
+    aria: ko ? ["GPU 랙 그림: 트레이가 저절로 나왔다 들어갑니다. + 키나 확대 단추로 트레이를 확대해 부품을 살펴볼 수 있습니다", "트레이 확대: 포인터나 화살표 키로 둘러보고, Esc 로 전체 보기"]
+      : ["GPU rack: a compute tray slides out and back on its own. Press + or the zoom button to look at its parts", "Tray zoom: look around with the pointer or arrow keys; Escape for the full view"],
   },
   gpu: {
     in: zoomLabel(ko, false, ko ? "기판 확대" : "Zoom board"), out: zoomLabel(ko, true),
-    aria: ko ? ["GPU 모듈: 포인터를 위아래로 움직이거나 화살표 키로 냉각판과 뚜껑을 들어 올립니다", "기판 확대: 포인터나 화살표 키로 둘러보고, Esc 로 전체 보기"]
-      : ["GPU module: move the pointer up or press the arrow keys to lift the cold plate and the lid", "Board zoom: look around with the pointer or arrow keys; Escape for the full view"],
+    aria: ko ? ["GPU 모듈 그림: 냉각판과 뚜껑이 저절로 들립니다. + 키나 확대 단추로 기판을 확대해 부품을 살펴볼 수 있습니다", "기판 확대: 포인터나 화살표 키로 둘러보고, Esc 로 전체 보기"]
+      : ["GPU module: the cold plate and the lid lift on their own. Press + or the zoom button to look at the board", "Board zoom: look around with the pointer or arrow keys; Escape for the full view"],
   },
   hint: ko ? "확대 중 · 부품에 포인터를 올리거나 탭하면 설명이 나옵니다" : "zoomed · point at or tap a part to see what it is",
 });
@@ -523,7 +523,7 @@ const layer=glLayer({canvas:stage.querySelector("canvas.rk-gl"),fragment:${JSON.
 const layer2=glLayer({canvas:stage2.querySelector("canvas.rk-gl"),fragment:${JSON.stringify(G2.FRAGMENT)},view:[D2.W,D2.H],camera:D2.camera,uniforms:["uLoad","uFirst"]});
 if(layer)stage.setAttribute("data-gl","");if(layer2)stage2.setAttribute("data-gl","");
 const R=D.rack, G=D2.gpu, perTrayKw=R.kw/R.computeTrays;
-let lastLv="",pull=0,target=0,lift=0,liftTarget=0,load={x:0,v:0},first={x:0,v:0},clock=0,last=0,frame=0,visible=true,touring=!still.matches,idle=0,touched=false;
+let lastLv="",pull=0,target=0,lift=0,liftTarget=0,load={x:0,v:0},first={x:0,v:0},clock=0,time=0,last=0,frame=0,visible=true,touring=!still.matches;
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const sm=(a,b,x)=>{const q=clamp((x-a)/(b-a),0,1);return q*q*(3-2*q);};
 // GPU 그림의 들림 0..1 → 냉각판 높이 mm (먼저 0~0.65) · 뚜껑 진행 0..1 (나중 0.35~1)
@@ -586,7 +586,7 @@ function draw(){
   const mv=(el,dx,dy)=>{if(Math.abs(dx)+Math.abs(dy)>.01)el.setAttribute("transform","translate("+dx.toFixed(2)+" "+dy.toFixed(2)+")");else el.removeAttribute("transform");};
   mv(plate,D2.up[0]*pl,D2.up[1]*pl);mv(lidG,D2.lidVec[0]*ld,D2.lidVec[1]*ld);
   const lv=load.x.toFixed(2);if(lv!==lastLv){lastLv=lv;if(!layer)stage.style.setProperty("--rk-load",lv);if(!layer2)stage2.style.setProperty("--rk-load",lv);} // WebGL 없을 때만 CSS 색으로
-  const t=still.matches?0.8:clock;
+  const t=still.matches?0.8:time;
   const r1=Z1.apply(), r2=Z2.apply();   // 확대: 지금 보이는 범위 [x, y, 폭, 높이]
   if(layer){(load.x>1e-3&&pull>.5)?layer.draw({uLoad:load.x,uPull:pull,uFirst:first.x,...zoomGl(r1,D.camera)},t):layer.clear();}
   // 다이는 뚜껑이 비켜난 뒤(또는 기판 확대 중)에만 보임
@@ -599,12 +599,13 @@ function draw(){
     :(lift<.02?"cold plate on":ld<.03?"lifting plate "+pPl+"%":lift<.98?"lifting lid":"plate and lid off · "+G.dies+" dies · "+G.hbm+" HBM3e "+G.hbmGb+" GB");
   say(read1,Z1.on?(Z1.info||ZT.hint):trayText+" · "+(perTrayKw*load.x).toFixed(1)+" kW");
   say(read2,Z2.on?(Z2.info||ZT.hint):plateText+" · "+(G.kw*load.x).toFixed(2)+" kW");
-  stage.setAttribute("aria-valuenow",String(Math.round(out*100)));stage2.setAttribute("aria-valuenow",String(Math.round(lift*100)));
 }
 function tick(now){
-  const dt=last?Math.min((now-last)/1000,1/30):1/60;last=now;clock+=dt;const calm=still.matches;
-  let wantLoad=0;
-  if(touring){const t=tourAt(clock);target=t.pull;liftTarget=t.lift;wantLoad=t.load;}else wantLoad=(pull>D.stroke*.6||lift>.6||Z1.on||Z2.on)?1:0;   // 확대 중엔 칩이 데워진 모습
+  const dt=last?Math.min((now-last)/1000,1/30):1/60;last=now;time+=dt;const calm=still.matches;
+  // 그림은 저절로 움직임(14초 둘러보기, 마우스로 조작하지 않음). 확대해 보는 동안만 그 자리에서 멈췄다가, 끝나면 멈춘 곳부터 이어짐
+  const zoomed=Z1.on||Z2.on;touring=!calm&&!zoomed;
+  let wantLoad=1;   // 확대 중·움직임 줄이기 설정에선 칩이 데워진 모습
+  if(touring){clock+=dt;const t=tourAt(clock);target=t.pull;liftTarget=t.lift;wantLoad=t.load;}
   if(Z1.on)target=D.stroke;   // 트레이 확대 중엔 트레이를 끝까지 꺼내 둠
   pull=calm?target:pull+(target-pull)*(1-Math.exp(-dt/.6));if(Math.abs(target-pull)<.05)pull=target;
   lift=calm?liftTarget:lift+(liftTarget-lift)*(1-Math.exp(-dt/.6));if(Math.abs(liftTarget-lift)<.002)lift=liftTarget;
@@ -614,29 +615,25 @@ function tick(now){
   frame=visible?requestAnimationFrame(tick):0;
 }
 const run=()=>{if(!frame&&visible){last=0;frame=requestAnimationFrame(tick);}};
-const hold=()=>{touched=true;touring=false;clearTimeout(idle);idle=setTimeout(()=>{if(Z1.on||Z2.on)return;touring=!still.matches;clock=0;},5000);run();};   // 손을 떼고 5초 뒤 둘러보기 재개 (확대 중엔 멈춘 채로)
-const shareOf=(e,el)=>{const b=el.getBoundingClientRect();return clamp(((e.clientX-b.left)/b.width-.2)/.6,0,1);};
-for(const ev of ["pointermove","pointerdown"]){
-  stage.addEventListener(ev,(e)=>{if(Z1.pointer(e))return;target=shareOf(e,svg)*D.stroke;hold();});
-  stage2.addEventListener(ev,(e)=>{if(Z2.pointer(e))return;const b=svg2.getBoundingClientRect();liftTarget=clamp(1-((e.clientY-b.top)/b.height-.25)/.5,0,1);hold();});
-}
-// 키: 확대 관련이 아니면 화살표·Home·End 로 트레이 당김 / 냉각판 들기
-const keys=(el,Z,get,set,max)=>el.addEventListener("keydown",(e)=>{if(Z.key(e))return;let to=null;if(e.key==="ArrowRight"||e.key==="ArrowUp")to=get()+max/4;if(e.key==="ArrowLeft"||e.key==="ArrowDown")to=get()-max/4;if(e.key==="Home")to=0;if(e.key==="End")to=max;if(to===null)return;e.preventDefault();set(clamp(to,0,max));hold();});
-keys(stage,Z1,()=>target,(v)=>target=v,D.stroke);keys(stage2,Z2,()=>liftTarget,(v)=>liftTarget=v,1);
+const hold=()=>run();   // 확대·포인터 조작 뒤 루프를 깨움
+// 포인터·키는 확대에만 씀 (평소엔 그림이 저절로 움직임): 확대 중 돋보기 위치·부품 찾기, + / - / Esc / 화살표
+for(const ev of ["pointermove","pointerdown"]){stage.addEventListener(ev,Z1.pointer);stage2.addEventListener(ev,Z2.pointer);}
+stage.addEventListener("keydown",Z1.key);stage2.addEventListener("keydown",Z2.key);
 document.addEventListener("visibilitychange",()=>{visible=!document.hidden;if(visible)run();});
-if(still.matches){touring=false;target=pull=D.stroke;liftTarget=lift=1;load.x=1;first.x=(layer||layer2)?1:0;}
+if(still.matches){touring=false;target=pull=D.stroke;liftTarget=lift=1;load.x=1;first.x=(layer||layer2)?1:0;}   // 움직임 줄이기: 다 열린 정지 그림
 draw();run();
-window.__rackTouched=()=>touched;
 window.__rackBusy=()=>Z1.on||Z2.on;   // 확대해 보는 중이면 부팅 화면이 저절로 넘어가지 않음
-window.__rackState=()=>({load:+load.x.toFixed(3),pull:+pull.toFixed(1),zoom:[+Z1.k.toFixed(3),+Z2.k.toFixed(3)],on:[Z1.on,Z2.on],touring,info:[Z1.info,Z2.info]});   // 검수용 상태 읽기
+window.__rackState=()=>({clock:+clock.toFixed(2),load:+load.x.toFixed(3),pull:+pull.toFixed(1),zoom:[+Z1.k.toFixed(3),+Z2.k.toFixed(3)],on:[Z1.on,Z2.on],touring,info:[Z1.info,Z2.info]});   // 검수용 상태 읽기
 window.__rackStop=()=>{visible=false;if(frame)cancelAnimationFrame(frame);frame=0;};
 // 검수용: 둘러보기의 t 초 장면으로 바로 이동 (따라가는 값들을 목표에 붙여서 그 순간을 그림)
 window.__rackSeek=(t)=>{clock=t;const s=tourAt(t);pull=target=s.pull;lift=liftTarget=s.lift;load.x=s.load;first.x=1;draw();};
 `;
 
-// 그림 칸 (ko = 한국어 부팅 화면용 / 아니면 영어 검수 페이지용). role="slider" 안의 SVG 는 낭독기가 읽지 않으므로 설명은 여기 한 곳에만
-const stageHtml = (ko) => `<div class="rk-stage" data-fig="rack" tabindex="0" role="slider" aria-label="${ko ? "GPU 랙: 포인터를 좌우로 움직이거나 화살표 키로 컴퓨트 트레이를 꺼냅니다" : "GPU rack: move the pointer across or press the arrow keys to slide the compute tray out"}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">${backSvg}${traySvg}<canvas class="rk-layer rk-gl" aria-hidden="true"></canvas>${frontSvg}<span class="rk-aim" aria-hidden="true"></span></div>`;
-const stage2Html = (ko) => `<div class="rk-stage" data-fig="gpu" tabindex="0" role="slider" aria-label="${ko ? "GPU 모듈: 포인터를 위아래로 움직이거나 화살표 키로 냉각판과 뚜껑을 들어 올립니다" : "GPU module: move the pointer up or press the arrow keys to lift the cold plate and the lid"}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">${G2.backSvg}<canvas class="rk-layer rk-gl" aria-hidden="true"></canvas>${G2.frontSvg}<span class="rk-aim" aria-hidden="true"></span></div>`;
+// 그림 칸 (ko = 한국어 부팅 화면용 / 아니면 영어 검수 페이지용). 설명은 칸(role=group)의 aria-label 한 곳에만 두고,
+// 안쪽 SVG 의 영어 설명(role=img)은 낭독기에서 숨김 (같은 내용을 두 번 읽지 않게)
+const quiet = (svg) => svg.replace(/ role="img" aria-label="[^"]*"/, ' aria-hidden="true"');
+const stageHtml = (ko) => `<div class="rk-stage" data-fig="rack" tabindex="0" role="group" aria-label="${zoomText(ko).rack.aria[0]}">${quiet(backSvg)}${traySvg}<canvas class="rk-layer rk-gl" aria-hidden="true"></canvas>${frontSvg}<span class="rk-aim" aria-hidden="true"></span></div>`;
+const stage2Html = (ko) => `<div class="rk-stage" data-fig="gpu" tabindex="0" role="group" aria-label="${zoomText(ko).gpu.aria[0]}">${quiet(G2.backSvg)}<canvas class="rk-layer rk-gl" aria-hidden="true"></canvas>${G2.frontSvg}<span class="rk-aim" aria-hidden="true"></span></div>`;
 // 확대 단추: 눈에 띄게 채운 단추 + 처음 몇 번 깜빡이는 안내(data-call, 한 번 쓰면 멈춤)
 const zoomButton = (fig, ko) => `<button class="rk-zoom" type="button" data-zoom="${fig}" data-call aria-pressed="false">${zoomText(ko)[fig].in}</button>`;
 const pairHtml = (ko) => `<div class="rk-pair">
@@ -658,7 +655,7 @@ const ASPECT = `.rk-wrap{--rk-a1:${(WIDTH / HEIGHT).toFixed(3)};--rk-a2:${(G2.DA
 const fragment = `<style>${k.ISO_CSS}${CSS}${ASPECT}</style>
 <div class="iso rk-wrap" data-theme="light">
   ${pairHtml(true)}
-  <div class="rk-ui"><span class="rk-hint">마우스 · 터치 · 화살표 키로 조작</span><button class="rk-go" type="button" data-boot-go>건너뛰기 →</button></div>
+  <div class="rk-ui"><span class="rk-hint">저절로 움직입니다 · 확대 단추로 부품 살펴보기</span><button class="rk-go" type="button" data-boot-go>건너뛰기 →</button></div>
 </div>
 <script>(function(){${liveScriptFor(true)}})();</script>`;
 writeFileSync(join(ROOT, "src", "boot", "rack.html"), fragment);

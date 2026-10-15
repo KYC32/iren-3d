@@ -10,6 +10,10 @@
         {
           "ko": "부팅 그림 확대: '트레이 확대'·'기판 확대' 단추로 랙에서 꺼낸 트레이 속과 GPU 기판을 약 2.5배 돋보기로 보고, 부품에 포인터를 올리거나 탭하면 이름·역할 설명(GPU·CPU 냉각판·메모리·매니폴드·NIC·저장장치·다이·HBM3e·전원부·NVLink 커넥터 등). 확대했을 때 보이도록 기판의 세라믹 콘덴서 줄·정렬 핀·전원 커넥터·전원 컨트롤러·기준점·실크 인쇄를 더 그림",
           "en": "Zoom on the boot figure: 'Zoom tray' and 'Zoom board' buttons magnify the pulled tray and the GPU board about 2.5x like a loupe, and pointing at or tapping a part names it and its role (GPU and CPU cold plates, memory, manifold, NICs, storage, dies, HBM3e, VRM, NVLink connector and more). Added ceramic capacitor rows, alignment pins, a power connector, VRM controllers, fiducials and silkscreen to the board for the close-up"
+        },
+        {
+          "ko": "부팅 그림은 마우스를 따라 움직이지 않고 둘러보기(트레이 꺼냄 → 냉각판·뚜껑 들림 → 열)를 저절로 되풀이함. 확대해 보는 동안만 그 자리에서 멈췄다가 끝나면 이어짐",
+          "en": "The boot figure no longer follows the mouse: its tour (tray out, plate and lid up, heat) plays on its own and only pauses while you are zoomed in"
         }
       ]
     },
