@@ -98,7 +98,11 @@ describe('milestone comparisons',()=>{
 describe('location and media integrity',()=>{
  it('unreviewed address metadata is not treated as a verified parcel',()=>{
    const s=raw.sites.find(s=>s.id==='prince-george')
-   expect(locationFor(s,raw.research)).toMatchObject({precise:false,maxZoom:9})
+   // 좌표 메타데이터가 '공식 주소·높음'이어도 위치 근거가 검토 대기면 지역 위치로만 (실데이터가 검토를 마쳐도 이 규칙은 그대로 시험)
+   const pending={...raw.research,locations:raw.research.locations.map(l=>l.site===s.id?{...l,review:'pending'}:l)}
+   expect(locationFor({...s,coord:{...s.coord,method:'official_address',confidence:'high'}},pending)).toMatchObject({precise:false,maxZoom:9})
+   // 검토를 마친 주소 위치는 그 좌표로 (지도는 15까지 확대)
+   expect(locationFor(s,raw.research)).toMatchObject({precise:true,maxZoom:15})
  })
  it('retains co-located coordinates without jitter and covers all countries',()=>{
    const sites=raw.sites.slice(0,2).map(s=>({...s,coord:{lat:1,lng:2}}))

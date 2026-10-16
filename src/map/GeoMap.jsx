@@ -104,6 +104,6 @@ export default function GeoMap() {
     {error && <div className="map-error" role="status">{lang==='ko'?'지도를 불러오지 못했습니다. 캠퍼스 목록과 상세 정보는 계속 사용할 수 있습니다.':'Map unavailable. Campus list and details remain available.'}</div>}
     {!loaded&&!error&&<div className="map-loading">{lang==='ko'?'실제 지도 불러오는 중…':'Loading map…'}</div>}
     {group&&<div className="map-group panel"><button className="close-small" onClick={()=>setGroup(null)} aria-label={lang==='ko'?'닫기':'Close'}><X size={14} aria-hidden="true"/></button><b>{lang==='ko'?'이 지역의 캠퍼스':'Campuses in this area'}</b>{group.map(s=><button key={s.id} onClick={()=>{useAppStore.getState().enterSite3D(s.id);setGroup(null)}}>{lang==='ko'?s.name_ko:s.name}</button>)}</div>}
-    <div className="map-caption">{lang==='ko'?'현재 제공 지도 · 지역 위치 표시는 부지 경계가 아닙니다':'Current basemap · Regional markers do not indicate parcel boundaries'}</div>
+    <div className="map-caption">{lang==='ko'?'현재 제공 지도 · 위치 표시는 확인한 주소·필지의 중심(또는 지역 중심)이며 부지 경계가 아닙니다':'Current basemap · markers show verified address or parcel centres (or a regional centre), not site boundaries'}</div>
   </div>
 }

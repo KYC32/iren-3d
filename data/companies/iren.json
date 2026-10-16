@@ -11,10 +11,10 @@
       "region": "Texas",
       "tz": "America/Chicago",
       "coord": {
-        "lat": 34.43,
-        "lng": -100.2,
-        "confidence": "medium",
-        "method": "city_centroid"
+        "lat": 34.38532,
+        "lng": -100.04734,
+        "confidence": "high",
+        "method": "permit_parcel"
       },
       "primary": "iren",
       "parties": [
@@ -438,10 +438,10 @@
       "region": "Texas (Fisher County)",
       "tz": "America/Chicago",
       "coord": {
-        "lat": 32.8,
-        "lng": -100.42,
-        "confidence": "low",
-        "method": "county_centroid"
+        "lat": 32.63963,
+        "lng": -100.56003,
+        "confidence": "high",
+        "method": "permit_parcel"
       },
       "primary": "iren",
       "parties": [
@@ -573,10 +573,10 @@
       "region": "Texas (Fisher County)",
       "tz": "America/Chicago",
       "coord": {
-        "lat": 32.55,
-        "lng": -100.4,
-        "confidence": "low",
-        "method": "county_centroid"
+        "lat": 32.93202,
+        "lng": -100.2213,
+        "confidence": "high",
+        "method": "permit_parcel"
       },
       "primary": "iren",
       "parties": [
@@ -645,10 +645,10 @@
       "region": "British Columbia",
       "tz": "America/Vancouver",
       "coord": {
-        "lat": 53.86,
-        "lng": -122.76,
+        "lat": 53.9101,
+        "lng": -122.70531,
         "confidence": "high",
-        "method": "official_address"
+        "method": "permit_parcel"
       },
       "primary": "iren",
       "parties": [
@@ -897,10 +897,10 @@
       "region": "British Columbia",
       "tz": "America/Vancouver",
       "coord": {
-        "lat": 55.33,
-        "lng": -123.1,
+        "lat": 55.30266,
+        "lng": -123.13942,
         "confidence": "high",
-        "method": "official_address"
+        "method": "permit_parcel"
       },
       "primary": "iren",
       "parties": [
@@ -1116,10 +1116,10 @@
       "region": "British Columbia",
       "tz": "America/Edmonton",
       "coord": {
-        "lat": 50.15,
-        "lng": -115.81,
+        "lat": 50.15357,
+        "lng": -115.80219,
         "confidence": "high",
-        "method": "official_address"
+        "method": "permit_parcel"
       },
       "primary": "iren",
       "parties": [
@@ -1310,10 +1310,10 @@
       "region": "Oklahoma (Pittsburg County)",
       "tz": "America/Chicago",
       "coord": {
-        "lat": 34.7,
-        "lng": -95.9,
-        "confidence": "low",
-        "method": "county_centroid"
+        "lat": 34.69271,
+        "lng": -95.91141,
+        "confidence": "high",
+        "method": "permit_parcel"
       },
       "primary": "iren",
       "parties": [
@@ -1380,10 +1380,10 @@
       "region": "South Australia",
       "tz": "Australia/Adelaide",
       "coord": {
-        "lat": -33.89,
-        "lng": 139.3,
-        "confidence": "medium",
-        "method": "city_centroid"
+        "lat": -33.90256,
+        "lng": 139.23352,
+        "confidence": "high",
+        "method": "official_address"
       },
       "primary": "iren",
       "parties": [
@@ -1452,10 +1452,10 @@
       "region": "Extremadura",
       "tz": "Europe/Madrid",
       "coord": {
-        "lat": 38.88,
-        "lng": -6.97,
-        "confidence": "medium",
-        "method": "city_centroid"
+        "lat": 38.90618,
+        "lng": -7.00101,
+        "confidence": "high",
+        "method": "permit_parcel"
       },
       "primary": "iren",
       "parties": [

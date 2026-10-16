@@ -39,7 +39,8 @@ export default function CampusMarkers({ map, data, lang, selectedId, onGroup }) 
           const element = document.createElement('div')
           element.className = 'campus-map-marker'
           const marker = new Marker({ element, anchor: 'bottom', offset: [0, 0] }).setLngLat(coord)
-          entry = { key, marker, element, coord, isCluster, count: p.point_count, members: isCluster ? [] : [sites.get(p.id)].filter(Boolean), visible: false }
+          // precise = 위치 근거를 검토해 주소·필지 좌표로 찍은 캠퍼스 (아니면 지역 중심 좌표) — 카드 글에 씀
+          entry = { key, marker, element, coord, isCluster, count: p.point_count, members: isCluster ? [] : [sites.get(p.id)].filter(Boolean), precise: p.precise === true || p.precise === 'true', visible: false }
           cache.set(key, entry)
           if (isCluster) map.getSource('campuses').getClusterLeaves(p.cluster_id, data.sites.length, 0).then(leaves => {
             if (!alive) return
@@ -79,12 +80,13 @@ export default function CampusMarkers({ map, data, lang, selectedId, onGroup }) 
     const color = entry.isCluster ? '#426b60' : styleOf(site?.status).color
     const selected = entry.members.some(s => s.id === selectedId)
     const label = entry.isCluster ? `${name} · ${count}${ko ? '개 캠퍼스 보기' : ' campuses'}` : `${name} · ${ko ? '3D 보기' : 'Explore in 3D'}`
+    const where = entry.precise ? (ko ? '주소 위치' : 'Address') : (ko ? '지역 위치' : 'Regional')   // 위치 정밀도 (확인한 주소·필지 / 지역 중심)
     return createPortal(<button className={`map-campus-card${entry.isCluster ? ' is-cluster' : ''}${selected ? ' is-selected' : ''}`}
       style={{ '--marker-color': color }} aria-label={label} aria-pressed={selected} disabled={!site}
-      title={entry.isCluster ? label : `${name} · ${t.status[site?.status] ?? ''} · ${ko ? '지역 위치' : 'Regional location'}`}
+      title={entry.isCluster ? label : `${name} · ${t.status[site?.status] ?? ''} · ${where}${ko ? '' : ' location'}`}
       onClick={e => { e.stopPropagation(); if (entry.isCluster) onGroup(entry.members); else useAppStore.getState().enterSite3D(site.id) }}>
       <span className="map-marker-icon">{entry.isCluster ? <Layers3 size={16}/> : <Building2 size={16}/>}</span>
-      <span className="map-marker-copy"><b>{name}</b><span>{entry.isCluster ? `${count}${ko ? '개 캠퍼스' : ' campuses'}` : ko ? '지역 위치' : 'Regional'}<i/>{mw ? capacity(mw) : '—'}</span></span>
+      <span className="map-marker-copy"><b>{name}</b><span>{entry.isCluster ? `${count}${ko ? '개 캠퍼스' : ' campuses'}` : where}<i/>{mw ? capacity(mw) : '—'}</span></span>
       <span className="map-marker-action">{entry.isCluster ? <ChevronRight size={13}/> : <><Box size={11}/><small>3D</small></>}</span>
       <span className="map-marker-stem"/>
     </button>, entry.element, entry.key)

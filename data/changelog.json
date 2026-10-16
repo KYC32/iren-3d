@@ -4,6 +4,11 @@
       "date": "2026-10-17",
       "items": [
         {
+          "ko": "9개 캠퍼스 위치를 원문으로 확인해 지도 핀을 실제 부지로: 칠드레스(SEC 첨부 주소 620 FM 1033 + 주정부 필지, 시내 동남동 약 9마일)·스위트워터 1·2(피셔 카운티 IREN 자회사 소유 필지 — 스위트워터 2는 그동안 놀런 카운티에 잘못 찍혀 있었음)·프린스조지·매켄지·커낼플랫츠(BC 지적·송전선·지자체 공고, 면적이 10-K 와 일치)·키오와(카운티 공고 법적 경계)·번디(IREN 자회사 연방 환경 신고 주소)·바다호스(주정부 법령 지정 필지). 표시는 '주소 위치 · 경계 미확인'",
+          "en": "All nine campus locations verified against primary records and the map pins moved to the actual sites: Childress (SEC exhibit address 620 FM 1033 + state parcel data, ~9 mi ESE of town), Sweetwater 1 & 2 (Fisher County parcels owned by IREN subsidiaries — Sweetwater 2 had been placed in Nolan County), Prince George, Mackenzie and Canal Flats (BC cadastre, transmission records and municipal notices; areas match the 10-K), Kiowa (county legal notice), Bundey (address in an IREN subsidiary's federal EPBC referral) and Badajoz (parcels named in a regional decree). Shown as 'Address · boundary unverified'",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/a1037commontermsagreemen.htm"
+        },
+        {
           "ko": "현장 관찰 2건 추가 (제3자 · 공식 상태는 그대로): 프린스조지 10/9 드론 — 1번 홀 MER·ATS·변압기·배전반 4/4 설치, 발전기 0/4 / 매켄지 9/23 영상 — 홀 벽으로 들어가는 강관이 2027년 액체냉각 전환을 위한 준비로 보임. 전력 경로 그림의 관찰 보기는 앞으로 가장 최근 칸 집계를 씀",
           "en": "Two more third-party site observations (official statuses unchanged): Prince George Oct 9 drone — Hall 1 MERs, ATS, transformers and switchgear 4/4, generators 0/4; Mackenzie Sep 23 footage — rigid pipes into the hall walls look like prep for the planned 2027 liquid-cooled conversion. The power-path figure's observed view now always uses the latest segment count",
           "source": "https://x.com/AceKicker13/status/2110344158363673054"
