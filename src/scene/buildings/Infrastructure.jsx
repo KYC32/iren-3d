@@ -8,6 +8,7 @@ import { CampusLabel } from '../CampusLabel.jsx'
 import { CatmullRomCurve3, Vector3 } from 'three'
 import { styleOf, PENDING_COLOR } from '../../data/statusStyle.js'
 import { fmtMw } from '../geo.js'
+import { energizeLabel } from '../../data/format.js'
 import { POWER_FLOW_COLOR } from '../powerFlow.js'
 import { useReducedMotion } from '../useReducedMotion.js'
 import { nightMaterials } from '../nightLights.js'
@@ -57,7 +58,7 @@ export function Substation({ sub, t, showLabel = true, children }) {
         <div className={`tag ${energized ? '' : 'tag-pending'}`}>
           {energized
             ? `${sub.voltage ? sub.voltage + ' · ' : ''}${fmtMw(sub.mw)}`
-            : `${t.panel.energized} ${sub.dates?.target ?? ''}`}
+            : energizeLabel(sub, t)}
         </div>
       </CampusLabel>}
     </group>

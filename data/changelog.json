@@ -26,6 +26,14 @@
         {
           "ko": "칠드레스 3D 캠퍼스에서 공랭 Blackwell(NVIDIA) 건물 라벨이 \"~60 MW*0 MW gross\" 로 붙어 나오던 문제 수정 → \"~60 MW*\" (계약에 밝힌 용량 약 60MW, IT 기준인지는 미공개). 모르는 전체 전력은 0 으로 적지 않고 뺌",
           "en": "Fixed the Childress 3D label for the air-cooled Blackwell (NVIDIA) building, which ran together as \"~60 MW*0 MW gross\"; it now reads \"~60 MW*\" (the ~60 MW disclosed in the contract, IT basis not stated). Unknown gross power is left out instead of shown as 0"
+        },
+        {
+          "ko": "3D 부지 화면을 회사 발표에 맞게: Q3 FY26 실적 콜(2026-05-07) 근거로 스위트워터 1단계(200MW IT)를 \"2026-05 건설 중\", 매켄지 공랭 홀(80MW)을 \"건설 중\", 커낼플랫츠 공랭 30MW 를 \"기존 채굴 설비의 AI 전환 계획\"으로 바로잡음 (전엔 추정 등급이라 확인 기록 화면에서 회색 \"계획\"으로만 보였음). 사이트 패널 근거 탭에 회사 발언 3건 추가",
+          "en": "3D campus views now match company disclosures: per the Q3 FY26 call (2026-05-07), Sweetwater 1 Phase 1 (200MW IT) is under construction from 2026-05, Mackenzie air-cooled halls (80MW) are under construction, and Canal Flats 30MW is a planned AI conversion of existing mining capacity (previously estimates, so the confirmed-record view showed them as grey \"planned\"). Added the three company statements to the evidence tab"
+        },
+        {
+          "ko": "통전 전 부지(카이오와·번디·바다호스·스위트워터 2)의 KPI·3D 변전소 표시를 \"통전 목표 2028\"처럼 바꿈 (전엔 날짜 없이 \"통전\"만 나와 이미 통전된 것처럼 읽혔음). 작은 부지(BC 30~80MW·바다호스)는 \"1칸 = 20MW\" 로 그려 매켄지 공랭 80MW 가 4칸으로 보임",
+          "en": "Not-yet-energized sites (Kiowa, Bundey, Badajoz, Sweetwater 2) now read \"Energization target 2028\" in the KPI and on the 3D substation instead of a bare \"Energized\". Small sites (BC 30–80MW, Badajoz) use 20MW blocks, so Mackenzie's 80MW air-cooled capacity shows as four blocks"
         }
       ]
     },

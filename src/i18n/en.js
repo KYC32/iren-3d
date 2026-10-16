@@ -36,6 +36,8 @@ export default {
     gpu: 'GPU',
     target: 'Target',
     energized: 'Energized',
+    energizeTarget: 'Energization target', // not yet energized: "Energization target 2028"
+    notEnergized: 'Not yet energized',     // when even the target date is unknown
     delivered: 'Delivered',
     progress: 'Progress',
     confidence: 'Confidence',

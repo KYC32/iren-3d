@@ -6,7 +6,7 @@
 // 타임라인 슬라이더가 날짜를 바꾸면 viewInfra(raw, 새 날짜) 만 다시 부르면 됩니다.
 // =============================================================
 import { observedSiteAt, EMPTY_RESEARCH, milestonesAt } from './research.js'
-import { toMonth, progressAt, powerAt, siteStatusAt, phaseMonth, effectiveBuildingsAt } from './timeline.js'
+import { toMonth, progressAt, powerAt, siteStatusAt, phaseMonth, effectiveBuildingsAt, firstEnergizedOf } from './timeline.js'
 
 export const asOfMonth = (dateStr) => toMonth(String(dateStr).slice(0, 7))
 
@@ -48,8 +48,8 @@ export function viewSite(site, m, groupOf = {}) {
       dates: site._observed ? { ...datesOf(b,m), target: milestonesAt(site._research,site.id,m,b.id).find((x)=>!x.completion)?.latest?.target } : datesOf(b, m),
     })
   }
-  // 변전소: 통전 여부와 날짜는 전력 이력(power)에서 계산
-  const firstEnergized = site.power.find((p) => p.energized_mw > 0)
+  // 변전소: 통전 여부와 날짜는 전력 이력(power)에서 계산 (통전 전이면 회사 통전 목표 — firstEnergizedOf)
+  const firstEnergized = firstEnergizedOf(site, m)
   const energized = power.energized > 0
   const substation = {
     mw: power.secured,

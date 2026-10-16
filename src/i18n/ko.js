@@ -36,6 +36,8 @@ export default {
     gpu: 'GPU',
     target: '목표',
     energized: '통전',
+    energizeTarget: '통전 목표', // 통전 전 변전소: "통전 목표 2028"
+    notEnergized: '통전 전',     // 목표 날짜도 모를 때
     delivered: '인도',
     progress: '진행률',
     confidence: '신뢰도',

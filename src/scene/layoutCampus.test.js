@@ -15,6 +15,31 @@ function overlaps(a, b) {
   return Math.abs(a.x - b.x) < (a.w + b.w) / 2 - 1e-6 && Math.abs(a.z - b.z) < (a.d + b.d) / 2 - 1e-6
 }
 
+// 작은 부지(BC 30~80MW)는 75MW 칸이면 1칸도 안 돼 규모가 안 읽혔음 → 20MW 칸 (BC 홀 1동 ≈ 2.5MW × 8 = 20MW)
+describe('작은 부지의 블록 1칸 크기', () => {
+  it('매켄지(80MW)는 1칸 = 20MW, 공랭 홀 80MW 는 4칸', () => {
+    const L = layoutCampus(site('mackenzie'))
+    expect(L.blockMw).toBe(20)
+    expect(L.blocks.filter((b) => b.buildingId === 'mk-air')).toHaveLength(4)
+  })
+  it('빈 부지만 있는 기가와트급(카이오와 1.6GW)은 그대로 75MW 칸 — 빈 칸 상한(16) 때문에 작은 칸으로 내려가지 않음', () => {
+    expect(layoutCampus(site('kiowa')).blockMw).toBe(75)
+  })
+  it('칠드레스·스위트워터 1 은 그대로 75MW 칸', () => {
+    expect(layoutCampus(site('childress')).blockMw).toBe(75)
+    expect(layoutCampus(site('sweetwater-1')).blockMw).toBe(75)
+  })
+})
+
+describe('변전소 통전 목표 (3D 라벨)', () => {
+  it('확인 기록 화면에서도 통전 전 변전소는 회사 목표 날짜를 가짐', () => {
+    const v = viewInfra(infra, asOf).sites.find((s) => s.id === 'bundey')
+    const S = campusStateAt(layoutCampus(v._raw), v._raw, asOf)
+    expect(S.substation.status).toBe('planned')
+    expect(S.substation.dates.target).toBe('2028')
+  })
+})
+
 describe('blocksFor / ghostLotCount / blockMwFor', () => {
   it('Horizon 1동(75MW gross)은 1블록', () => expect(blocksFor({ gross_mw: 75 })).toBe(1))
   it('아주 작은 건물도 최소 1블록', () => expect(blocksFor({ gross_mw: 30 })).toBe(1))

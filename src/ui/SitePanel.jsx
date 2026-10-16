@@ -5,7 +5,7 @@ import { ExternalLink, Truck, Clock, Building2, Info, Link2, Handshake } from 'l
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { useT, pickName } from '../i18n/useT.js'
 import { styleOf } from '../data/statusStyle.js'
-import { fmtMw } from '../data/format.js'
+import { fmtMw, energizeLabel } from '../data/format.js'
 import { toMonth } from '../data/timeline.js'
 import { fmtWhen } from '../data/events.js'
 import { CustomerLogo } from './logos/index.jsx'
@@ -68,7 +68,7 @@ export default function SitePanel() {
         <div><dt>{t.panel.grid}</dt><dd>{fmtMw(site.grid_mw)}</dd></div>
         <div><dt>{t.panel.acres}</dt><dd>{site.acres ? `${site.acres.toLocaleString()} ${t.units.acres}` : '–'}</dd></div>
         <div><dt>{t.panel.cooling}</dt><dd>{site.cooling}</dd></div>
-        <div><dt>{t.panel.substation}</dt><dd>{site.substation.voltage ? `${site.substation.voltage} · ` : ''}{site.substation.status === 'energized' ? `${t.panel.energized} ${site.substation.dates?.energized ?? ''}` : `${t.panel.target} ${site.substation.dates?.target ?? ''}`}</dd></div>
+        <div><dt>{t.panel.substation}</dt><dd>{site.substation.voltage ? `${site.substation.voltage} · ` : ''}{site.substation.status === 'energized' ? `${t.panel.energized} ${site.substation.dates?.energized ?? ''}` : energizeLabel(site.substation, t)}</dd></div>
       </dl>
       {site.coord_confidence !== 'high' && <div className="sp-note"><Info size={12} /> {t.panel.coordNote}</div>}
 

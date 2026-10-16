@@ -1,6 +1,17 @@
 // 회사 발표 지표를 화면 글자로 바꾸는 규칙 (KPI 줄·계약 탭이 함께 씀)
 import { describe, it, expect } from 'vitest'
-import { fmtMetric } from './format.js'
+import { fmtMetric, energizeLabel } from './format.js'
+
+// 변전소 통전 표시: "통전 2028" 처럼 날짜만 붙으면 이미 통전된 것처럼 읽혀서, 상태를 문구로 밝힘
+describe('통전 표시 (energizeLabel)', () => {
+  const t = { panel: { energizeTarget: '통전 목표', notEnergized: '통전 전' } }
+  it('통전 전 + 목표가 있으면 "통전 목표 날짜"', () => {
+    expect(energizeLabel({ status: 'planned', dates: { target: '2028' } }, t)).toBe('통전 목표 2028')
+  })
+  it('목표도 모르면 "통전 전" (날짜 없는 "통전" 금지)', () => {
+    expect(energizeLabel({ status: 'planned', dates: {} }, t)).toBe('통전 전')
+  })
+})
 
 describe('회사 발표 지표 표시 (fmtMetric)', () => {
   it('금액은 $bn · $m', () => {

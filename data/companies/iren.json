@@ -487,23 +487,17 @@
           "gross_mw": 300,
           "progress": 0.15,
           "sources": [
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm",
             "https://www.globenewswire.com/news-release/2026/09/08/3357498/0/en/iren-s-2gw-sweetwater-hub-included-as-base-load-in-ercot-batch-zero.html"
           ],
           "mw_basis": "gross",
           "phases": [
             {
-              "status": "planned",
+              "status": "under_construction",
               "from": "2026-05",
               "basis": "reported",
-              "source": "https://www.globenewswire.com/news-release/2026/09/08/3357498/0/en/iren-s-2gw-sweetwater-hub-included-as-base-load-in-ercot-batch-zero.html",
-              "published": "2026-05-07",
-              "published_source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000028/irentranscript.htm"
-            },
-            {
-              "status": "under_construction",
-              "from": "2026-08",
-              "basis": "estimate",
-              "source": "https://www.globenewswire.com/news-release/2026/09/08/3357498/0/en/iren-s-2gw-sweetwater-hub-included-as-base-load-in-ercot-batch-zero.html"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm",
+              "published": "2026-05-07"
             },
             {
               "status": "operating",
@@ -953,8 +947,9 @@
             {
               "status": "under_construction",
               "from": "2026-05",
-              "basis": "estimate",
-              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
+              "basis": "reported",
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm",
+              "published": "2026-05-07"
             },
             {
               "status": "commissioning",
@@ -1163,12 +1158,14 @@
             "https://iren.com/data-centers/canal-flats"
           ],
           "mw_basis": "gross",
+          "replaces": "cf-miners",
           "phases": [
             {
               "status": "planned",
-              "from": "2026-10",
-              "basis": "estimate",
-              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
+              "from": "2026-05",
+              "basis": "reported",
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm",
+              "published": "2026-05-07"
             },
             {
               "status": "operating",

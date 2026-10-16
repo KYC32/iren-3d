@@ -5,6 +5,13 @@ export function fmtMw(mw, digits = 1) {
   return `${Math.round(mw).toLocaleString()} MW`
 }
 
+// 통전 전 변전소 표시: "통전 목표 2028" / 목표도 모르면 "통전 전"
+//   (예전엔 "통전 2028" 이나 날짜 없이 "통전"만 나와 이미 통전된 것처럼 읽혔음)
+export function energizeLabel(sub, t) {
+  const target = sub?.dates?.target
+  return target ? `${t.panel.energizeTarget} ${target}` : t.panel.notEnergized
+}
+
 // 회사 발표 지표 표시 (KPI 줄·계약 탭 공용): 단위에 맞게 $bn / $m / % / 년 / GW·MW / 개수
 //   qualifier: 'over' = 회사가 "이상"이라고 쓴 값 → 앞에 ">" (예: >$20m), 'about' = "약" → "~" (예: ~$25m)
 //   value_max: 범위의 큰 쪽 (예: 선급금 45~55% → value 45, value_max 55)

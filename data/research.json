@@ -252,6 +252,48 @@
       "summary_en": "\"At Prince George, all air-cooled GPUs have now been delivered and are either operating or undergoing commissioning across the 50 megawatt site\" — split undisclosed, kept at commissioning.",
       "basis": "reported",
       "review": "verified"
+    },
+    {
+      "id": "sw1-phase1-status-2026-05",
+      "site": "sweetwater-1",
+      "building": "sw1-phase1",
+      "field": "status",
+      "value": "under_construction",
+      "sourceId": "q3fy26-call",
+      "locator": "Prepared remarks — 2027 plan, Sweetwater 1",
+      "effective": "2026-05",
+      "summary_ko": "\"스위트워터 1은 고압 변전소가 예정대로 통전됐고, 첫 200MW(IT) 액체냉각 데이터센터 공사가 진행 중\" — 2026-09-08 보도자료도 \"300MW 1단계 건설 중\".",
+      "summary_en": "\"At Sweetwater 1, the high-voltage substation has been energized on schedule and construction is now underway for the initial 200 megawatts IT load phase\" — the 2026-09-08 release also says Phase 1 (300MW) is under construction.",
+      "basis": "reported",
+      "review": "verified"
+    },
+    {
+      "id": "mk-air-status-2026-05",
+      "site": "mackenzie",
+      "building": "mk-air",
+      "field": "status",
+      "value": "under_construction",
+      "sourceId": "q3fy26-call",
+      "locator": "Prepared remarks — 2026 expansion, British Columbia air-cooled capacity",
+      "effective": "2026-05",
+      "summary_ko": "\"매켄지는 80MW 데이터센터 용량을 2026년 하반기에 시작할 GPU 설치를 위해 준비\" — GPU 설치 전이라 건설 중으로 표시 (시운전·가동 시점은 추정·목표).",
+      "summary_en": "\"At Mackenzie, 80 megawatts of data center capacity has been prepared for GPU installations commencing in the second half of 2026\" — shown as under construction until GPUs are installed (commissioning and go-live are estimates/targets).",
+      "basis": "reported",
+      "review": "verified"
+    },
+    {
+      "id": "cf-air-status-2026-05",
+      "site": "canal-flats",
+      "building": "cf-air",
+      "field": "status",
+      "value": "planned",
+      "sourceId": "q3fy26-call",
+      "locator": "Prepared remarks — 2027 plan, British Columbia",
+      "effective": "2026-05",
+      "summary_ko": "\"커낼플랫츠는 기존 공랭 30MW 전부를 AI 용도로 개조할 계획\" — 새로 짓는 확장이 아니라 기존 채굴 설비의 전환.",
+      "summary_en": "\"We plan to retrofit all 30 megawatts of existing air-cooled capacity to support AI workloads\" — a conversion of existing mining capacity, not new expansion land.",
+      "basis": "reported",
+      "review": "verified"
     }
   ],
   "milestones": [

@@ -128,6 +128,17 @@ export function effectiveBuildingsAt(site, m) {
 }
 
 // ---------- 사이트 ----------
+// 변전소의 "처음 통전" 기록 (화면의 통전 날짜·통전 목표 날짜에 씀)
+//   확인 기록 화면은 회사 목표를 뺀 전력 이력을 쓰므로, 아직 통전 전이면 원본(_layoutSource) 이력에서
+//   회사 통전 목표를 찾음. 단 지나간 달을 볼 때는 그 뒤에 알려진 목표가 미리 보이지 않게 기준일 이후 화면에서만.
+export function firstEnergizedOf(site, m) {
+  const own = site.power.find((p) => p.energized_mw > 0)
+  if (own) return own
+  const src = site._layoutSource
+  if (!src || m < toMonth(String(site.as_of).slice(0, 7))) return undefined
+  return src.power.find((p) => p.energized_mw > 0 && p.basis !== 'reported')
+}
+
 // 날짜 m 의 계통 전력 { secured: 확보, energized: 통전 } — 발표 전이면 null
 export function powerAt(site, m) {
   if (toMonth(site.announced) > m) return null

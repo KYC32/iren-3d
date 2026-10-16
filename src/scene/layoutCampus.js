@@ -9,7 +9,7 @@
 //
 // 좌표계: 캠퍼스 중심이 (0,0). x = 오른쪽, z = 화면 앞쪽(카메라 쪽).
 // =============================================================
-import { grossOf, phaseMonth, effectiveBuildingsAt, powerAt, progressAt, toMonth } from '../data/timeline.js'
+import { grossOf, phaseMonth, effectiveBuildingsAt, powerAt, progressAt, toMonth, firstEnergizedOf } from '../data/timeline.js'
 
 // ---- 배치 상수 ----
 export const BLOCK_MW = 75        // 기본 블록 1칸 = 75MW gross (= Horizon 1동, 50MW IT)
@@ -17,7 +17,8 @@ export const BLOCK_W = 4          // 블록 가로 (x)
 export const BLOCK_D = 6          // 블록 세로 (z)
 export const GAP = 1.4            // 블록 사이 간격
 export const MAX_BLOCKS = 28      // 캠퍼스 블록 수 상한 (기가와트급은 블록 1칸 MW 를 키움)
-const BLOCK_STEPS = [75, 150, 300, 600]
+// 블록 1칸 MW 후보: 20 = BC 같은 작은 부지(홀 1동 ≈ 2.5MW × 8 = 20MW), 75 = Horizon 1동, 그 위는 기가와트급
+const BLOCK_STEPS = [20, 75, 150, 300, 600]
 const MARGIN = 2
 const SUBSTATION_COL = 7
 const ROAD_DEPTH = 3
@@ -47,9 +48,11 @@ function remainingOf(site) {
 }
 
 // 블록 1칸의 MW: 총 블록이 MAX_BLOCKS 안에 들어오는 가장 작은 값
+//   빈 부지는 상한(16칸) 없이 비례로 센 칸 수로 비교 — 상한 때문에 기가와트급 빈 부지(카이오와 등)가
+//   작은 칸(20MW)으로 내려가 1.6GW 를 16칸 × 20MW = 320MW 처럼 보이게 하지 않으려고
 export function blockMwFor(site) {
   for (const mw of BLOCK_STEPS) {
-    const n = site.buildings.reduce((k, b) => k + blocksFor(b, mw), 0) + ghostLotCount(remainingOf(site), mw)
+    const n = site.buildings.reduce((k, b) => k + blocksFor(b, mw), 0) + Math.round(remainingOf(site) / mw)
     if (n <= MAX_BLOCKS) return mw
   }
   return BLOCK_STEPS.at(-1)
@@ -148,7 +151,7 @@ export function campusStateAt(layout, site, m) {
   const currentPower = site.power.findLast(p => toMonth(p.from, p.basis === 'target' ? 'end' : 'start') <= m)
   // Even the forecast/record view must not animate a target as confirmed electricity.
   const flowActive = energized && currentPower?.basis === 'reported'
-  const firstEnergized = site.power.find((p) => p.energized_mw > 0)
+  const firstEnergized = firstEnergizedOf(site, m) // 통전 전이면 회사 통전 목표 (확인 기록 화면에서도)
   const substation = {
     ...layout.substation,
     status: energized ? 'energized' : 'planned',

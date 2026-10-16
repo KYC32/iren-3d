@@ -5,7 +5,7 @@ import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { useT } from '../i18n/useT.js'
 import { siteMetrics } from '../data/loadSites.js'
 import { totalsAt } from '../data/timeline.js'
-import { fmtMw, fmtMetric } from '../data/format.js'
+import { fmtMw, fmtMetric, energizeLabel } from '../data/format.js'
 import { reportedMetricsAt } from '../data/reportedMetrics.js'
 import { SINGLE_COMPANY } from '../config.js'
 import { growthPath } from '../data/outlook.js'
@@ -32,7 +32,7 @@ export default function KpiBar() {
   if (view === 'site' && site) {
     const m = siteMetrics(site)
     cards = [
-      { icon: Plug, label: t.panel.grid, value: fmtMw(site.grid_mw), tone: site.substation.status === 'energized' ? 'operating' : 'pending', sub: site.substation.status === 'energized' ? (lang === 'ko' ? '통전 완료' : 'Energized') : `${t.panel.energized} ${site.substation.dates?.target ?? ''}` },
+      { icon: Plug, label: t.panel.grid, value: fmtMw(site.grid_mw), tone: site.substation.status === 'energized' ? 'operating' : 'pending', sub: site.substation.status === 'energized' ? (lang === 'ko' ? '통전 완료' : 'Energized') : energizeLabel(site.substation, t) },
       { icon: Zap, label: t.kpi.operating, value: fmtMw(m.operating), tone: 'operating', sub: includedSub(t, lang, m) },
       { icon: HardHat, label: t.kpi.building, value: fmtMw(m.building), tone: 'construction' },
       { icon: MapPinned, label: t.kpi.planned, value: fmtMw(m.planned), tone: 'planned' },

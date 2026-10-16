@@ -22,6 +22,7 @@ import { RECORD } from './recordMode.js'
 import { DURATION, CARDS, shotAt, fadeAt, clamp01, easeInOut, lerp } from './storyboard.js'
 import { drawPill, drawCards, drawFade, drawRanking } from './overlay.js'
 import { toMonth, monthLabel, companyRanking } from '../data/timeline.js'
+import { energizeLabel } from '../data/format.js'
 
 // 숨겨진 브라우저 탭에서는 setTimeout 이 크게 늦춰지므로(탭 절전),
 // MessageChannel 로 "한 차례 양보"하며 조건을 기다립니다. (탭 상태와 무관하게 동작)
@@ -184,7 +185,7 @@ export default function RecordDirector() {
           drawPill(o, sxy[0], sxy[1], u * 1.05, {
             color: energized ? styleOf('operating').color : PENDING_COLOR,
             text: lang === 'ko' ? '변전소' : 'Substation',
-            sub: energized ? fmtMw(L.substation.mw) : `${t.panel.energized} ${L.substation.dates?.target ?? ''}`,
+            sub: energized ? fmtMw(L.substation.mw) : energizeLabel(L.substation, t),
           })
         }
       }
