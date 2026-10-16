@@ -48,6 +48,11 @@ export function PhotoMiningHall({ w, d, h, appearance, status, nightMaterial }) 
       <cylinderGeometry args={[shedW*.15,shedW*.15,.025,12]}/><meshStandardMaterial color="#546967" roughness={.85}/>
       {vents.map(([x,y,z],i)=><Instance key={i} position={[x,y+.12,z]}/>)}
     </Instances>
+    {/* 밤: 환기팬 뚜껑 위가 불빛으로 — 위에서 내려다보는 시점에서 가장 잘 보이는 곳 (옆면 창문 띠는 비스듬히만 보임) */}
+    {nightMaterial && <Instances limit={vents.length} material={nightMaterial} raycast={()=>null}>
+      <cylinderGeometry args={[shedW*.17,shedW*.17,.02,12]}/>
+      {vents.map(([x,y,z],i)=><Instance key={i} position={[x,y+.14,z]}/>)}
+    </Instances>}
     {/* 창고 긴 옆면에 붙은 짙은 띠 (좌우 각 1장) */}
     <Instances limit={6}>
       <boxGeometry args={[.045,height*.6,shedD*.9]}/><meshStandardMaterial color="#4c625f" roughness={.95}/>
@@ -55,7 +60,7 @@ export function PhotoMiningHall({ w, d, h, appearance, status, nightMaterial }) 
     </Instances>
     {/* 밤 창문 띠: 창고마다 몸체를 두르는 얇은 상자 1개 (낮에는 재질이 꺼져 그려지지 않음) */}
     {nightMaterial && rows.map(x=><mesh key={`night-${x}`} position={[x,height*.5,0]} material={nightMaterial} raycast={()=>null}>
-      <boxGeometry args={[shedW+.05,height*.2,shedD*.9]}/>
+      <boxGeometry args={[shedW+.14,height*.28,shedD*.94]}/>{/* 창고 벽 밖으로 충분히 나와야 띠로 보임 (예전엔 가는 선) */}
     </mesh>)}
     {/* 블록 앞 바닥의 상태색 띠 — 진행 상태를 색으로 표시 */}
     <mesh position={[0,.04,d/2+.17]}><boxGeometry args={[w,.04,.14]}/><meshBasicMaterial color={styleOf(status).color}/></mesh>

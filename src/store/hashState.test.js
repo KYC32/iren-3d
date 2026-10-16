@@ -29,12 +29,18 @@ describe('hashState', () => {
  })
 
 describe('하늘 모드 (sky)', () => {
-  it('3D 캠퍼스에서만 주소에 남기고, 낮(day)은 생략', () => {
+  // 기본 보기 = 지금(부지 현지 시각, live) — 2026-10-16 사용자 요청. 기본값은 주소에서 생략
+  it('3D 캠퍼스에서만 주소에 남기고, 기본인 지금(live)은 생략', () => {
     expect(buildHash({ site: 'childress', surface: '3d', sky: 'night' })).toContain('sky=night')
-    expect(buildHash({ site: 'childress', surface: '3d', sky: 'day' })).not.toContain('sky')
+    expect(buildHash({ site: 'childress', surface: '3d', sky: 'live' })).not.toContain('sky')
+    expect(buildHash({ site: 'childress', surface: '3d' })).not.toContain('sky')
     expect(buildHash({ site: 'childress', surface: 'map', sky: 'night' })).not.toContain('sky')
     expect(parseHash('#site=childress&surface=3d&sky=live')).toMatchObject({ sky: 'live' })
     expect(parseHash('#sky=noon')).toEqual({})
+  })
+  it('낮(day)을 고르면 주소에 남아 공유 링크로도 낮으로 열림', () => {
+    expect(buildHash({ site: 'childress', surface: '3d', sky: 'day' })).toContain('sky=day')
+    expect(parseHash('#site=childress&surface=3d&sky=day')).toMatchObject({ sky: 'day' })
   })
 })
 

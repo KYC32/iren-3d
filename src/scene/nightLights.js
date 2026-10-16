@@ -63,7 +63,8 @@ export function updateNightMaterials(t, steady) {
   const m = nightMaterials()
   const L = SKY.lights
   const on = L > 0.01
-  for (const [mat, k] of [[m.aiWindow, 1], [m.minerWindow, 1], [m.pendingWindow, 0.4], [m.fadingWindow, 0.55], [m.aiPool, 0.9], [m.minerPool, 0.75]]) {
+  // 세기: 가동 = 1, 시운전 = 0.6 (0.4 에선 밤 화면에서 꺼진 것처럼 보였음), 축소 중 채굴 = 0.55, 바닥 번짐 AI 1 · 채굴 0.9
+  for (const [mat, k] of [[m.aiWindow, 1], [m.minerWindow, 1], [m.pendingWindow, 0.6], [m.fadingWindow, 0.55], [m.aiPool, 1], [m.minerPool, 0.9]]) {
     mat.opacity = L * k
     mat.visible = on
   }

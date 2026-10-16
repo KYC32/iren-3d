@@ -47,7 +47,7 @@ export const useAppStore = create((set, get) => ({
   mapRegion: { country: 'NA', seq: 0 },
   cameraHomeSeq: 0,
   campusDragMode: 'rotate',
-  skyMode: initial.sky ?? 'day',
+  skyMode: initial.sky ?? 'live',
   page: initial.page ?? null,              // 지도 대신 보여 줄 페이지: null(지도) | 'stock'(주가) | 'news'(뉴스)
   stockAt: initial.at ?? null,             // 주가 차트에서 강조할 날짜 (뉴스에서 "차트에서 보기")
   tour: null,                              // 자동 투어 진행 상태: null | { step: 몇 번째 단계(0부터), seq } (TourPlayer 가 읽음)           // 3D 캠퍼스 하늘: 'day' 낮 | 'dusk' 노을 | 'night' 밤 | 'live' 지금(현지 시각)
@@ -89,9 +89,11 @@ export const useAppStore = create((set, get) => ({
       selectedSiteId: id, view: id ? 'site' : 'globe', loadError: null, campusPanelCollapsed: false,
       surface: id ? h.surface ?? 'map' : 'map', detailTab: h.tab ?? 'overview',
       selectedBuildingId: data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? h.building : null,
+      // 공유 링크(#building=)로 열면 카메라도 그 건물로 (전엔 선택만 되고 캠퍼스 전체 시점에 남았음)
+      buildingFly: data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? { id: h.building, seq: 1 } : null,
       selectedZoneKey: customerZones(data.sites.find((s)=>s.id===id) ?? {buildings:[]},data.companies).some((z)=>z.key===h.zone) ? h.zone : null,
       activeCompanies: new Set((h.companies ?? []).filter((id) => raw.companies.some((c) => c.id === id))),
-      colorMode: h.color ?? 'status', skyMode: h.sky ?? 'day', page: h.page ?? null, stockAt: h.at ?? null,
+      colorMode: h.color ?? 'status', skyMode: h.sky ?? 'live', page: h.page ?? null, stockAt: h.at ?? null,
     })
     get().syncHash()
   },
@@ -143,12 +145,13 @@ export const useAppStore = create((set, get) => ({
     const id = next.data.sites.some((s) => s.id === h.site) ? h.site : null
     set({
       activeCompanies: new Set((h.companies ?? []).filter((id) => next.data.companies.some((c) => c.id === id))),
-      colorMode: h.color ?? 'status', skyMode: h.sky ?? 'day',
+      colorMode: h.color ?? 'status', skyMode: h.sky ?? 'live',
     })
     // 주소(해시)로 이동할 땐 카메라 전환 애니메이션 없이 바로 그 화면으로 (pending: null)
     set({ surface: id ? h.surface ?? 'map' : 'map', detailTab: h.tab ?? 'overview', selectedSiteId: id, view: id ? 'site' : 'globe', pending: null,
       campusPanelCollapsed: false,
       selectedBuildingId: next.data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? h.building : null,
+      buildingFly: next.data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? { id: h.building, seq: (get().buildingFly?.seq ?? 0) + 1 } : null,
       selectedZoneKey: customerZones(next.data.sites.find((s)=>s.id===id) ?? {buildings:[]},next.data.companies).some((z)=>z.key===h.zone) ? h.zone : null })
     get().syncHash()
   },
@@ -194,8 +197,8 @@ export const useAppStore = create((set, get) => ({
     }, HOVER_CLEAR_MS)
   },
   setTransitioning: (v) => set({ transitioning: v }),
-  // 건물 고르기. fly=true 면 카메라도 그 건물로 이동 (패널에서 고를 때 — 3D 에서 클릭할 땐 이미 보고 있으니 안 움직임)
-  // 같은 건물을 다시 고르면 선택 해제 (토글)
+  // 건물 고르기. fly=true 면 카메라도 그 건물로 이동 (패널·3D 클릭·공유 링크 — 개요 화면에선 건물이 작아
+  // 고른 뒤에도 잘 안 보였고, 완성된 홀의 랙은 가까이 가야 보임). 3D 에서 같은 건물을 다시 누르면 선택 해제 (토글)
   selectBuilding: (id, fly = false) => {
     const st = get()
     const next = id && st.selectedBuildingId === id && !fly ? null : id
@@ -227,7 +230,7 @@ export const useAppStore = create((set, get) => ({
     const st = get()
     if (!st.tour) return
     set({ tour: null })
-    if (st.skyMode !== 'day') st.setSkyMode('day')
+    if (st.skyMode !== 'live') st.setSkyMode('live') // 투어가 바꾼 하늘을 기본(지금)으로
     if (st.month !== st.asOfMonth) st.setMonth(st.asOfMonth)
   },
   setSkyMode: (mode) => { if (['day', 'dusk', 'night', 'live'].includes(mode)) { set({ skyMode: mode }); get().syncHash() } },

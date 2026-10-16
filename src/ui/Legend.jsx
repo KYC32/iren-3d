@@ -7,6 +7,7 @@ import { SINGLE_COMPANY } from '../config.js'
 import { Check, Activity } from 'lucide-react'
 import { POWER_FLOW_COLOR } from '../scene/powerFlow.js'
 import { AI_LIGHT, MINER_LIGHT } from '../scene/nightColors.js'
+import { useSkyDark } from './useSkyDark.js'
 
 // 지역 바로가기: 카메라가 바라볼 위도·경도
 const REGIONS = [
@@ -34,6 +35,7 @@ export default function Legend() {
   const view = useAppStore((s) => s.view)
   const requestRegion = useAppStore((s) => s.requestRegion)
   const skyMode = useAppStore((s) => s.skyMode)
+  const skyDark = useSkyDark() // 밤 모드거나, 지금(현지) 모드에서 해가 진 때
   return (
     <div className="legend panel">
       {view === 'globe' && !SINGLE_COMPANY && (
@@ -81,7 +83,7 @@ export default function Legend() {
         <span className="swatch" style={{background:POWER_FLOW_COLOR}}/>{lang==='ko'?'전력 흐름 · 통전 확인':'Power flow · energized'}
       </div>}
       {/* 노을·밤·지금 모드: 창문 불빛의 뜻 (불 켜짐 = 가동, 색 = AI/채굴) */}
-      {view==='site'&&skyMode!=='day'&&<div className="legend-item static" title={`${t.sky.hint} · ${t.sky.pending}`}>
+      {view==='site'&&(skyMode==='dusk'||skyDark)&&<div className="legend-item static" title={`${t.sky.hint} · ${t.sky.pending}`}>
         <span className="swatch night-swatch" style={{background:AI_LIGHT}}/><span className="swatch night-swatch" style={{background:MINER_LIGHT}}/>
         {lang==='ko'?'불빛 = 가동 (AI · 채굴)':'Lights = live (AI · mining)'}
       </div>}

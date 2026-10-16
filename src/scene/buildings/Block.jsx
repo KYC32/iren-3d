@@ -241,7 +241,7 @@ function CutawayShell({ w, d, h, color }) {
 export function NightWindows({ w, d, h, material, rows = [0.34, 0.66] }) {
   return rows.map((y) => (
     <mesh key={y} position={[0, h * y, 0]} material={material} raycast={noHit}>
-      <boxGeometry args={[w + 0.06, h * 0.13, d + 0.06]} />
+      <boxGeometry args={[w + 0.1, h * 0.16, d + 0.1]} />
     </mesh>
   ))
 }

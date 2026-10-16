@@ -105,7 +105,7 @@ export default function SiteView({ site }) {
           dimmed={!isStatusActive(activeStatuses, b.status) || !!zoneKey && customerKey(byId[b.buildingId]?.customer) !== zoneKey}
           onHover={(id) => setHover(id, '3d')}
           onLeave={(id) => useAppStore.getState().clearHover(id, '3d')}
-          onSelect={(id) => selectBuilding(id)}
+          onSelect={(id) => selectBuilding(id, id !== selectedId)} // 새 건물이면 카메라가 다가감, 같은 건물이면 선택 해제
         />
       ))}
 
@@ -116,7 +116,7 @@ export default function SiteView({ site }) {
       {/* 개요 화면의 건물 상태 칩: "Horizon 2 · 시운전" 처럼 이름과 상태를 함께 (전엔 상태만 있어 어느 건물인지 몰랐음)
           건설 중 건물도 칩으로 — "지금 어디까지 지어졌나"가 확대하지 않아도 보이게 (겹치면 낮은 우선순위가 비켜남) */}
       {!detail && L.blocks.filter(b=>b.isAnchor&&!b.asLot&&b.kind!=='miner_hall'&&['delivered','operating','commissioning','under_construction'].includes(b.status)&&(!zoneKey||customerKey(byId[b.buildingId]?.customer)===zoneKey)&&selectedId!==b.buildingId&&hoverId!==b.buildingId).map(b=><CampusLabel key={`signal-${b.key}`} position={[b.x,b.h+1,b.z]} priority={b.status==='under_construction'?50:55}>
-        <button className={`building-signal signal-${b.status}`} onClick={(e)=>{e.stopPropagation();selectBuilding(b.buildingId)}/* 클릭이 3D 로 퍼져 뒤 블록이 선택을 다시 풀지 않게 */} title={`${pickName(byId[b.buildingId],lang)} · ${t.status[b.status]}`}>
+        <button className={`building-signal signal-${b.status}`} onClick={(e)=>{e.stopPropagation();selectBuilding(b.buildingId, true)}/* 클릭이 3D 로 퍼져 뒤 블록이 선택을 다시 풀지 않게 · 칩을 누르면 그 건물로 */} title={`${pickName(byId[b.buildingId],lang)} · ${t.status[b.status]}`}>
           {b.status==='delivered'?<Check size={12}/>:b.status==='operating'?<Activity size={12}/>:b.status==='under_construction'?<HardHat size={12}/>:<span className="signal-pending"/>}
           <span className="signal-name">{pickName(byId[b.buildingId],lang)}</span>
           {b.status==='delivered'?(lang==='ko'?'인수 완료':'Accepted'):t.status[b.status]}
@@ -144,7 +144,7 @@ export default function SiteView({ site }) {
                 onPointerEnter={() => bld && setHover(bld.id)}
                 onPointerLeave={() => bld && useAppStore.getState().clearHover(bld.id)}
                 // stopPropagation: 라벨 클릭이 3D 쪽으로 퍼져 뒤에 있는 건물 블록도 "클릭"되면 선택이 바로 다시 풀림
-                onClick={(e) => { e.stopPropagation(); if (bld) selectBuilding(bld.id) }}
+                onClick={(e) => { e.stopPropagation(); if (bld) selectBuilding(bld.id, bld.id !== selectedId) }}
               >
                 <div className="row">
                   {b.status==='delivered'?<Check size={13} color={st.color}/>:<span className={`dot${b.status==='operating'?' operating-dot':''}`} style={{ background: st.color }} />}

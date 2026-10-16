@@ -38,6 +38,10 @@
         {
           "ko": "3D 부지 화면을 보기 쉽게: 처음 화면을 부지 판 전체 대신 건물·변전소가 있는 곳에 맞춰 건물이 약 2배 크게 보임. 개요 화면의 상태 칩에 건물 이름을 붙이고(\"Horizon 2 · 시운전\") 건설 중 건물도 표시. 기존 채굴동을 바꾸는 공랭 계획은 \"AI 전환 예정\", 새로 짓는 곳은 \"확장 예정 부지\"로 구분하고 라벨을 그 건물 위에 둠(전엔 평균 위치라 다른 건물 위에 얹혔음). 고객 배지 점선은 구역 테두리에서 끝나 가운데 칩을 가리지 않음",
           "en": "Easier-to-read 3D campus views: the opening view now frames the buildings and substation instead of the whole plate, so buildings appear about twice as large. Overview status chips carry the building name (\"Horizon 2 · Commissioning\") and include buildings under construction. Planned air-cooled retrofits of existing mining halls read \"AI conversion planned\", new builds \"Expansion area\", each label sitting on its own buildings (it used to land on other buildings at the group average). Customer badge connectors end at the zone border instead of covering chips in the middle"
+        },
+        {
+          "ko": "3D 부지의 기본 하늘을 \"지금\"(그 부지의 현지 시각)으로 — 링크에 하늘 값이 없으면 현지 시각대로 낮·노을·밤이 보임(낮을 고르면 링크에 남음). 밤 화면을 읽기 쉽게: 달빛·주변광을 올리고 창문 띠를 두껍게, 가동 중 채굴동은 지붕 환기팬에 주황 불빛, 시운전 홀 불빛 0.4→0.6. 범례의 불빛 안내는 실제로 어두울 때만. 건물을 3D 에서 고르거나 공유 링크로 열면 카메라가 그 건물로 다가감(완성된 홀은 랙이 보이게)",
+          "en": "3D campuses now default to \"Now\" (the site's local time): links without a sky value show day, dusk or night by local time (choosing Day is kept in the link). Night is easier to read: brighter moonlight and ambient light, thicker window bands, glowing roof vents on live mining halls, and commissioning halls at 0.6 instead of 0.4. The legend's lights note shows only when it is actually dark. Selecting a building in 3D or opening a shared #building link now moves the camera to it (finished halls open to show racks)"
         }
       ]
     },

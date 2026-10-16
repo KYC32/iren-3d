@@ -18,11 +18,11 @@ import { useReducedMotion } from './useReducedMotion.js'
 
 // 팔레트: [낮, 노을, 밤]
 const PAL = {
-  key: ['#fff5e8', '#ffb07a', '#a9bdf2'], keyI: [2.5, 1.9, 0.55],   // 해(밤엔 달)빛
-  amb: ['#ffffff', '#ffe0c4', '#7d8fcc'], ambI: [0.45, 0.4, 0.16],  // 전체를 고르게 밝히는 빛
+  key: ['#fff5e8', '#ffb07a', '#a9bdf2'], keyI: [2.5, 1.9, 0.75],   // 해(밤엔 달)빛 — 밤 0.55→0.75: 건물 윤곽이 보이게
+  amb: ['#ffffff', '#ffe0c4', '#7d8fcc'], ambI: [0.45, 0.4, 0.3],   // 전체를 고르게 밝히는 빛 — 밤 0.16→0.3
   sky: ['#edf4ff', '#ffd6b8', '#36467a'],                            // 반구광: 위(하늘) 쪽 색
-  ground: ['#9ca9b4', '#a8948a', '#1b2335'], hemiI: [0.7, 0.6, 0.42], // 반구광: 아래(땅) 쪽 색
-  fill: ['#d9e8ff', '#c9c6ee', '#7f95d6'], fillI: [0.45, 0.3, 0.12],  // 반대편 보조광
+  ground: ['#9ca9b4', '#a8948a', '#1b2335'], hemiI: [0.7, 0.6, 0.55], // 반구광: 아래(땅) 쪽 색 — 밤 0.42→0.55
+  fill: ['#d9e8ff', '#c9c6ee', '#7f95d6'], fillI: [0.45, 0.3, 0.2],   // 반대편 보조광 — 밤 0.12→0.2
   bg: [null, '#f4cdb4', '#121b31'],                                  // 배경: 낮은 부지별 색(prop)
 }
 const C = (hex) => new Color(hex)

@@ -128,6 +128,8 @@ describe('실제 지도와 3D 공유 상태', () => {
     state().setSkyMode('noon') // 모르는 값은 무시
     expect(state().skyMode).toBe('night')
     state().applyHash('#site=childress&surface=3d')
+    expect(state().skyMode).toBe('live') // 하늘 값이 없는 링크 = 기본 보기 "지금"(부지 현지 시각)
+    state().applyHash('#site=childress&surface=3d&sky=day')
     expect(state().skyMode).toBe('day')
     state().applyHash('#site=childress&surface=3d&sky=dusk')
     expect(state().skyMode).toBe('dusk')
@@ -141,6 +143,22 @@ describe('실제 지도와 3D 공유 상태', () => {
     expect(state().selectedZoneKey).toBe('microsoft')
     expect(state().detailTab).toBe('history')
     expect(state().pending).toBeNull()
+  })
+  it('공유 링크로 건물을 열면 카메라도 그 건물로 (buildingFly)', () => {
+    state().setRaw(raw)
+    state().applyHash('#site=childress&surface=3d&building=horizon-2')
+    expect(state().buildingFly?.id).toBe('horizon-2')
+    state().applyHash('#site=childress&surface=3d')
+    expect(state().buildingFly).toBeNull()
+  })
+  it('3D 에서 새 건물은 카메라 이동과 함께 고르고, 같은 건물을 다시 누르면 해제', () => {
+    state().setRaw(raw)
+    state().applyHash('#site=childress&surface=3d')
+    state().selectBuilding('horizon-3', true)
+    expect(state().selectedBuildingId).toBe('horizon-3')
+    expect(state().buildingFly?.id).toBe('horizon-3')
+    state().selectBuilding('horizon-3', false)
+    expect(state().selectedBuildingId).toBeNull()
   })
 })
 
