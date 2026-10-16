@@ -61,6 +61,7 @@ export default function TopBar() {
       {inMap && surface === 'map' && (
         <button className="icon-btn sheet-btn" onClick={toggleSheet} aria-label={lang==='ko'?'캠퍼스 목록':'Campus list'} title={lang==='ko'?'캠퍼스 목록':'Campus list'}>
           <ListOrdered size={17} />
+          <span className="sheet-label">{lang==='ko'?'캠퍼스':'Campuses'}{data && <b>{data.sites.length}</b>}</span>{/* 휴대폰에서만 보이는 글자 (지도 위 단추 대신) */}
         </button>
       )}
       {/* 자동 투어: 처음 온 사람이 90초 안에 전체 그림을 보게 */}
