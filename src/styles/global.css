@@ -59,8 +59,8 @@ button { font: inherit; cursor: pointer; }
 /* ---------- 상단 바 ---------- */
 .topbar { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; position: relative; z-index: 6; } /* z-index: 하늘 안내 말풍선이 아래 KPI 판 위로 */
 .brand { display: flex; align-items: center; gap: 10px; }
-/* 제목 왼쪽 표시: 무채색 남색 칸 + 흰 선 아이콘 (사이트의 '확대' 단추와 같은 남색) — 파스텔 칸은 흔한 자동 생성 화면처럼 보여 바꿈 */
-.brand-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; background: #16213a; color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06); }
+/* 제목 왼쪽 표시: IREN 로고 색(초록 #71DA80 바탕 + 남색 #0B344F)에 번개 — 파스텔 칸은 흔한 자동 생성 화면처럼 보여 바꿈 */
+.brand-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; background: #71da80; color: #0b344f; }
 .icon-btn { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--panel-border); background: #fff; color: var(--text); }
 .icon-btn:hover { background: #eef2fb; }
 .title { font-weight: 700; font-size: 16px; letter-spacing: -0.2px; }
@@ -562,15 +562,16 @@ button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit;
 
 .geo-map .geo-map-canvas.maplibregl-map{position:absolute;inset:0;width:100%;height:100%}
 .campus-map-marker{z-index:2;pointer-events:auto}.campus-map-marker:has(:hover),.campus-map-marker:has(:focus-visible){z-index:4}
-.map-campus-card{position:relative;display:flex;align-items:center;gap:8px;padding:10px 11px;margin-bottom:12px;background:#fffffff5;border:1px solid #d7e1dd;border-radius:12px;box-shadow:0 4px 14px #243d3e19,0 1px 2px #243d3e0c;color:#274b43;cursor:pointer;text-align:left;font-family:inherit;white-space:nowrap;transition:box-shadow .18s,border-color .18s,background .18s}
-.map-campus-card:hover,.map-campus-card:focus-visible{outline:none;border-color:#709b89;background:white;box-shadow:0 7px 22px #2448382e}
-.map-campus-card.is-selected{background:#244e47;color:white;border-color:#244e47;box-shadow:0 5px 20px #234d4535}
-.map-marker-icon{height:29px;width:29px;border-radius:9px;display:grid;place-items:center;background:color-mix(in srgb,var(--marker-color) 12%,white);color:var(--marker-color);flex-shrink:0}
-.map-marker-copy{display:grid;gap:4px;min-width:0}.map-marker-copy>b{overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:700;letter-spacing:-.02em}.map-marker-copy>span{font-size:9px;color:#768982;display:flex;align-items:center;gap:5px;font-variant-numeric:tabular-nums}
-.map-marker-copy i{width:2px;height:2px;background:#aebfb6;border-radius:50%}.is-selected .map-marker-copy>span{color:#d2e1da}
+/* 지도 캠퍼스 카드: 연한 지도에 묻히지 않게 남색(#0B344F) 카드 + 진한 그림자, 선택하면 초록(#71DA80) — IREN 로고 색 */
+.map-campus-card{position:relative;display:flex;align-items:center;gap:8px;padding:10px 11px;margin-bottom:12px;background:#0b344f;border:1px solid #0b344f;border-radius:12px;box-shadow:0 8px 22px #0b344f4d,0 1px 3px #0b344f40;color:#fff;cursor:pointer;text-align:left;font-family:inherit;white-space:nowrap;transition:box-shadow .18s,border-color .18s,background .18s}
+.map-campus-card:hover,.map-campus-card:focus-visible{outline:none;border-color:#71da80;background:#124563;box-shadow:0 9px 26px #0b344f59}
+.map-campus-card.is-selected{background:#71da80;color:#0b344f;border-color:#71da80;box-shadow:0 6px 22px #2f8f4a59}
+.map-marker-icon{height:29px;width:29px;border-radius:9px;display:grid;place-items:center;background:color-mix(in srgb,var(--marker-color) 24%,#0b344f);color:color-mix(in srgb,var(--marker-color) 55%,white);flex-shrink:0}.is-selected .map-marker-icon{background:#0b344f1f;color:#0b344f}
+.map-marker-copy{display:grid;gap:4px;min-width:0}.map-marker-copy>b{overflow:hidden;text-overflow:ellipsis;font-size:12px;font-weight:700;letter-spacing:-.02em}.map-marker-copy>span{font-size:9px;color:#c4d3dc;display:flex;align-items:center;gap:5px;font-variant-numeric:tabular-nums}
+.map-marker-copy i{width:2px;height:2px;background:#8fa6b3;border-radius:50%}.is-selected .map-marker-copy>span{color:#1d5a3c}.is-selected .map-marker-copy i{background:#2f6b47}
 .map-marker-action{display:flex;flex-direction:column;align-items:center;gap:2px;margin-left:3px;color:#96ada2}.map-marker-action small{font-size:7px;letter-spacing:.03em}.is-selected .map-marker-action{color:#d8e8df}
-.map-marker-stem{position:absolute;top:100%;left:50%;height:12px;width:1px;background:#829d8e}.map-marker-stem:after{content:'';position:absolute;bottom:-3px;left:-3px;width:7px;height:7px;border-radius:50%;background:var(--marker-color);border:2px solid white;box-shadow:0 1px 4px #34513e30}
-.map-campus-card.is-cluster{border-radius:12px;background:#f5faf6fa}.map-campus-card.is-cluster.is-selected{background:#244e47;border-color:#244e47}.map-campus-card.is-cluster .map-marker-icon{background:#e1eee4;color:#456e56}
+.map-marker-stem{position:absolute;top:100%;left:50%;height:12px;width:1.5px;background:#0b344f}.map-marker-stem:after{content:'';position:absolute;bottom:-3px;left:-3px;width:7px;height:7px;border-radius:50%;background:var(--marker-color);border:2px solid white;box-shadow:0 1px 4px #34513e30}
+.map-campus-card.is-cluster{border-radius:12px;background:#0b344f}.map-campus-card.is-cluster.is-selected{background:#71da80;border-color:#71da80}.map-campus-card.is-cluster .map-marker-icon{background:#ffffff1f;color:#fff}.map-campus-card.is-cluster.is-selected .map-marker-icon{background:#0b344f1f;color:#0b344f}
 .map-group{border:1px solid #d6e3da;box-shadow:0 15px 50px #17332925;border-radius:15px;background:#fffffff8;min-width:240px;max-height:55vh;overflow:auto}.map-group>b{font-size:13px;color:#36594a}.map-group>button:not(.close-small){border-radius:9px;border-color:#e2ebe5;background:#f7faf7;color:#345748;font-size:12px;padding:12px}.map-group>button:not(.close-small):hover{background:#eaf3ec;border-color:#98b8a5}
 @media(max-width:767px){.map-campus-card{padding:8px;gap:6px;max-width:190px}.map-marker-copy>b{font-size:11px}.map-marker-icon{width:24px;height:26px}.map-marker-copy>span{font-size:8px}}
 
@@ -642,9 +643,9 @@ button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit;
 .kpi-context>small { font-size: 10px; color: #4f6760; }
 .kpi-sub { font-size: 10px; color: #56675f; }
 .photo-card small { font-size: 10.5px; color: #4f5d61; }
-.map-marker-action { color: #5d7a6d; }
+.map-marker-action { color: #c4d3dc; }
 .map-marker-action small { font-size: 10px; }
-.is-selected .map-marker-action { color: #e3efe8; }
+.is-selected .map-marker-action { color: #0b344f; }
 @media (max-width: 767px) {
   .kpi-context>small { font-size: 9.5px; }
   .kpis .kpi-sub { font-size: 9.5px; }
