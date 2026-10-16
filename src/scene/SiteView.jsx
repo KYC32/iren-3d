@@ -24,6 +24,7 @@ import ZoneCallouts from './ZoneCallouts.jsx'
 import { Check, Activity } from 'lucide-react'
 import { DryCampusGround } from './buildings/PhotoReferencedCampus.jsx'
 import { estimateHall, roundNice } from '../data/hallEstimate.js'
+import { buildingMwText } from './buildingLabel.js'
 
 export default function SiteView({ site }) {
   const appearance = campusAppearance(site.id)
@@ -161,7 +162,8 @@ export default function SiteView({ site }) {
                 {bld && selected && !opened && (
                   <div className="selected-detail">
                     <div>{t.status[b.status]}{b.status === 'under_construction' && bld.progress != null ? ` · ${Math.round(bld.progress * 100)}%` : ''}</div>
-                    <div>{bld.it_mw ? `${bld.it_mw} MW IT` : bld.disclosedMw ? `~${bld.disclosedMw} MW*` : ''}{bld.gross_mw != null ? `${bld.it_mw ? ' / ' : ''}${bld.gross_mw} MW gross` : ''}</div>
+                    {/* 용량 한 줄: IT / 전체 전력 (0 은 "모름"이라 뺌 — buildingLabel.js) */}
+                    <div>{buildingMwText(bld)}</div>
                     {bld.gpu && <div>GPU · {bld.gpu.model}{bld.gpu.count ? ` × ${bld.gpu.count.toLocaleString()}` : ''}{bld.gpu.basis === 'installed_or_ordered' ? (lang === 'ko' ? ' (설치·주문 포함)' : ' (installed or on order)') : ''}</div>}
                     {/* MW → GPU·랙 환산 (회사가 GPU 수를 발표하지 않았으면 추정) — 자세한 가정은 오른쪽 패널 */}
                     {selectedEst && !selectedEst.gpusReported && <div className="est">≈ GPU {roundNice(selectedEst.gpus).toLocaleString()} · {lang === 'ko' ? '랙' : 'racks'} {roundNice(selectedEst.racks).toLocaleString()} <i>{lang === 'ko' ? '추정' : 'est.'}</i></div>}

@@ -22,6 +22,10 @@
         {
           "ko": "휴대폰 화면(375·390px)에서 상단 바를 두 줄로: 첫 줄에 제목과 [지도|주가|뉴스], 둘째 줄에 버튼들. 제목이 한 글자씩 세로로 끊기던 문제와 3D 캠퍼스 화면에서 버튼이 화면 밖으로 밀려 가로로 넘치던 문제를 고침 (데스크톱은 그대로)",
           "en": "On phones (375–390px) the top bar now uses two rows: the title and [Map|Stock|News] on top, the buttons below. Fixes the title breaking one character per line and the 3D campus view pushing buttons off-screen into a sideways overflow (desktop unchanged)"
+        },
+        {
+          "ko": "칠드레스 3D 캠퍼스에서 공랭 Blackwell(NVIDIA) 건물 라벨이 \"~60 MW*0 MW gross\" 로 붙어 나오던 문제 수정 → \"~60 MW*\" (계약에 밝힌 용량 약 60MW, IT 기준인지는 미공개). 모르는 전체 전력은 0 으로 적지 않고 뺌",
+          "en": "Fixed the Childress 3D label for the air-cooled Blackwell (NVIDIA) building, which ran together as \"~60 MW*0 MW gross\"; it now reads \"~60 MW*\" (the ~60 MW disclosed in the contract, IT basis not stated). Unknown gross power is left out instead of shown as 0"
         }
       ]
     },
