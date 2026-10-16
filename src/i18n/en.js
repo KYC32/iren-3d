@@ -70,7 +70,7 @@ export default {
   basis: { reported: 'reported', target: 'company target', estimate: 'estimate' },
   contracts: { title: 'Customer contracts', toggle: 'Contract links', undisclosed: 'sites not disclosed', years: 'yrs' },
   timeline: { play: 'Play', pause: 'Pause', asOf: 'As of', future: 'Company targets', today: 'Back to as-of', label: 'Date' },
-  campus: { home: 'Fit campus', controls: '3D camera controls', rotate: 'Rotate', pan: 'Pan', rotateLabel: 'Rotate view', panLabel: 'Pan view', liquid: 'Liquid cooling', air: 'Air cooling', mining: 'Mining', planned: 'Expansion area' },
+  campus: { home: 'Fit campus', controls: '3D camera controls', rotate: 'Rotate', pan: 'Pan', rotateLabel: 'Rotate view', panLabel: 'Pan view', liquid: 'Liquid cooling', air: 'Air cooling', mining: 'Mining', planned: 'Expansion area', convert: 'AI conversion planned' },
   sky: { label: 'Sky & lighting', day: 'Day', dusk: 'Dusk', night: 'Night', live: 'Now', liveTitle: 'Real sun position at local time',
     hint: 'Lit buildings = live on this date (incl. customer-accepted)', ai: 'AI', mining: 'Mining', pending: 'Dim = commissioning / mining wind-down' },
   nav: { label: 'View', map: 'Map', stock: 'Stock', news: 'News', stockTitle: 'IREN stock', stockSub: 'NASDAQ: IREN · since IPO (2021-11-17) · Nasdaq daily data', newsTitle: 'IREN news', newsSub: 'Company filings (SEC) · press coverage' },

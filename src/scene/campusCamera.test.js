@@ -1,8 +1,50 @@
 import { it, expect, vi, afterEach } from 'vitest'
 import { PerspectiveCamera, Vector3 } from 'three'
-import { campusFrame, campusOffset, campusViewport } from './campusCamera.js'
+import { campusFrame, campusFrameBox, contentBox, campusOffset, campusViewport } from './campusCamera.js'
+import { buildInfra } from '../../scripts/build-data.mjs'
+import { layoutCampus } from './layoutCampus.js'
 
 afterEach(() => vi.unstubAllGlobals())
+
+// 캠퍼스 처음 화면: 부지 판 전체가 아니라 "건물·변전소가 있는 곳"에 맞춤
+// (예전엔 판 전체 + 넉넉한 여백이라 1440×900 에서도 건물 영역이 가운데 약 350px 뿐이었음)
+it.each([
+  [1440, 900, { left: 24, right: 1049, top: 188, bottom: 800 }],
+  [960, 968, { left: 24, right: 586, top: 174, bottom: 740 }],
+  [390, 844, { left: 18, right: 372, top: 163, bottom: 468 }],
+])('화면 %sx%s: 건물 영역 상자는 패널을 뺀 영역 안에 들어오고, 그 영역을 70% 이상 채움', (w, h, rect) => {
+  for (const box of [{ x0: -12, x1: 12, z0: -17, z1: 13, y0: 0, y1: 3.5 }, { x0: -6, x1: 9, z0: -10, z1: 6, y0: 0, y1: 3.5 }, { x0: -20, x1: 21, z0: -22, z1: 10, y0: 0, y1: 3.5 }]) {
+    const frame = campusFrameBox(box, w, h, rect)
+    const camera = new PerspectiveCamera(30, w / h, 0.5, 3000)
+    camera.position.fromArray(frame.position)
+    camera.lookAt(new Vector3(...frame.target))
+    const [ox, oy] = campusOffset(frame.distance, w, h, rect)
+    camera.position.add(new Vector3(ox, -oy, 0).applyQuaternion(camera.quaternion))
+    camera.updateMatrixWorld()
+    const xs = [], ys = []
+    for (const x of [box.x0, box.x1]) for (const y of [box.y0, box.y1]) for (const z of [box.z0, box.z1]) {
+      const p = new Vector3(x, y, z).project(camera)
+      xs.push((p.x + 1) * w / 2); ys.push((1 - p.y) * h / 2)
+    }
+    expect(Math.min(...xs)).toBeGreaterThanOrEqual(rect.left)
+    expect(Math.max(...xs)).toBeLessThanOrEqual(rect.right)
+    expect(Math.min(...ys)).toBeGreaterThanOrEqual(rect.top)
+    expect(Math.max(...ys)).toBeLessThanOrEqual(rect.bottom)
+    const fill = Math.max((Math.max(...xs) - Math.min(...xs)) / (rect.right - rect.left), (Math.max(...ys) - Math.min(...ys)) / (rect.bottom - rect.top))
+    expect(fill).toBeGreaterThanOrEqual(0.7)
+  }
+})
+
+it('건물 영역 상자는 모든 블록과 변전소를 담음', () => {
+  const L = layoutCampus(buildInfra().sites.find((s) => s.id === 'childress'))
+  const box = contentBox(L)
+  for (const b of [...L.blocks, L.substation]) {
+    expect(b.x - b.w / 2).toBeGreaterThanOrEqual(box.x0)
+    expect(b.x + b.w / 2).toBeLessThanOrEqual(box.x1)
+    expect(b.z - b.d / 2).toBeGreaterThanOrEqual(box.z0)
+    expect(b.z + b.d / 2).toBeLessThanOrEqual(box.z1)
+  }
+})
 
 it.each([
   [960, 968, { left: 24, right: 586, top: 174, bottom: 740 }],

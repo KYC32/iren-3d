@@ -21,7 +21,8 @@ import { campusAppearance } from './campusAppearance.js'
 import { campusLandscape } from './campusLandscape.js'
 import CampusLandscape from './buildings/CampusLandscape.jsx'
 import ZoneCallouts from './ZoneCallouts.jsx'
-import { Check, Activity } from 'lucide-react'
+import { contentBox } from './campusCamera.js'
+import { Check, Activity, HardHat } from 'lucide-react'
 import { DryCampusGround } from './buildings/PhotoReferencedCampus.jsx'
 import { estimateHall, roundNice } from '../data/hallEstimate.js'
 import { buildingMwText } from './buildingLabel.js'
@@ -109,12 +110,15 @@ export default function SiteView({ site }) {
       ))}
 
       {/* 고객 계약 구역: 건물마다 고객 칩을 반복하는 대신, 바닥 테두리 + 고객 배지 한 번 */}
-      <CustomerZones blocks={L.blocks} byId={byId} contracts={contracts} side={L.side} selectedKey={zoneKey} onSelect={selectZone} lang={lang} />
+      <CustomerZones blocks={L.blocks} byId={byId} contracts={contracts} box={contentBox(L)} selectedKey={zoneKey} onSelect={selectZone} lang={lang} />
       {!detail && !zoneKey && <AreaLabels blocks={L.blocks} byId={byId} t={t} />}
 
-      {!detail && L.blocks.filter(b=>b.isAnchor&&!b.asLot&&b.kind!=='miner_hall'&&['delivered','operating','commissioning'].includes(b.status)&&(!zoneKey||customerKey(byId[b.buildingId]?.customer)===zoneKey)&&selectedId!==b.buildingId&&hoverId!==b.buildingId).map(b=><CampusLabel key={`signal-${b.key}`} position={[b.x,b.h+1,b.z]} priority={55}>
+      {/* 개요 화면의 건물 상태 칩: "Horizon 2 · 시운전" 처럼 이름과 상태를 함께 (전엔 상태만 있어 어느 건물인지 몰랐음)
+          건설 중 건물도 칩으로 — "지금 어디까지 지어졌나"가 확대하지 않아도 보이게 (겹치면 낮은 우선순위가 비켜남) */}
+      {!detail && L.blocks.filter(b=>b.isAnchor&&!b.asLot&&b.kind!=='miner_hall'&&['delivered','operating','commissioning','under_construction'].includes(b.status)&&(!zoneKey||customerKey(byId[b.buildingId]?.customer)===zoneKey)&&selectedId!==b.buildingId&&hoverId!==b.buildingId).map(b=><CampusLabel key={`signal-${b.key}`} position={[b.x,b.h+1,b.z]} priority={b.status==='under_construction'?50:55}>
         <button className={`building-signal signal-${b.status}`} onClick={(e)=>{e.stopPropagation();selectBuilding(b.buildingId)}/* 클릭이 3D 로 퍼져 뒤 블록이 선택을 다시 풀지 않게 */} title={`${pickName(byId[b.buildingId],lang)} · ${t.status[b.status]}`}>
-          {b.status==='delivered'?<Check size={12}/>:b.status==='operating'?<Activity size={12}/>:<span className="signal-pending"/>}
+          {b.status==='delivered'?<Check size={12}/>:b.status==='operating'?<Activity size={12}/>:b.status==='under_construction'?<HardHat size={12}/>:<span className="signal-pending"/>}
+          <span className="signal-name">{pickName(byId[b.buildingId],lang)}</span>
           {b.status==='delivered'?(lang==='ko'?'인수 완료':'Accepted'):t.status[b.status]}
         </button>
       </CampusLabel>)}
@@ -207,7 +211,7 @@ function SkyGround({ radius, color }) {
 // 같은 고객(예: Microsoft)의 건물 블록마다 바닥에 고객 색 테두리를 두르고, 고객 배지는 한 번만
 // 배지는 투영된 부지 밖에 배치하고, 고객 구역 중심까지 점선으로 연결합니다.
 const ZONE_PAD = 0.55 // 블록 둘레에서 테두리까지 여백
-function CustomerZones({ blocks, byId, contracts, side, selectedKey, onSelect, lang }) {
+function CustomerZones({ blocks, byId, contracts, box, selectedKey, onSelect, lang }) {
   const zones = useMemo(() => {
     const map = new Map()
     for (const b of blocks) {
@@ -232,21 +236,29 @@ function CustomerZones({ blocks, byId, contracts, side, selectedKey, onSelect, l
         return <Line key={b.key} points={[[x0,.1,z0],[x1,.1,z0],[x1,.1,z1],[x0,.1,z1],[x0,.1,z0]]} color={zn.color} lineWidth={selectedKey===zn.key?4:2.4} transparent opacity={selectedKey&&selectedKey!==zn.key? .2:1}/>
       })}
     </group>)}
-    <ZoneCallouts zones={zones} side={side} selectedKey={selectedKey} onSelect={onSelect} lang={lang}/>
+    <ZoneCallouts zones={zones} box={box} selectedKey={selectedKey} onSelect={onSelect} lang={lang}/>
   </>
 }
 
 // 계약이 없는 건물도 전체 보기에서는 종류별 구역으로 묶습니다.
+//   계획 중인 공랭 건물이 기존 설비 전력을 넘겨받으면(replaces) "AI 전환 예정" (기존 채굴동 개조 — 커낼플랫츠 등),
+//   새로 짓는 건물은 "확장 예정 부지"
+//   라벨 자리는 무리의 평균점이 아니라 평균에 가장 가까운 "그 무리의 블록" 위
+//   (흩어진 블록의 평균점은 다른 건물 위로 떨어져, 칠드레스에선 Horizon 건물 위에 "확장 예정 부지"가 얹혔음)
 function AreaLabels({ blocks, byId, t }) {
   const groups = new Map()
   for (const b of blocks) {
     if (!b.isAnchor || b.asLot || !b.buildingId || byId[b.buildingId]?.customer) continue
-    const key = b.status === 'planned' ? 'planned' : b.kind === 'miner_hall' ? 'mining' : b.kind === 'datahall_liquid' ? 'liquid' : 'air'
+    const key = b.status === 'planned' ? (b.kind === 'datahall_air' && byId[b.buildingId]?.replaces ? 'convert' : 'planned')
+      : b.kind === 'miner_hall' ? 'mining' : b.kind === 'datahall_liquid' ? 'liquid' : 'air'
     if (!groups.has(key)) groups.set(key, [])
     groups.get(key).push(b)
   }
-  return [...groups].map(([key, list]) => <CampusLabel key={key} priority={30}
-    position={[list.reduce((sum, b) => sum + b.x, 0) / list.length, Math.max(...list.map((b) => b.h)) + 1.5, list.reduce((sum, b) => sum + b.z, 0) / list.length]}>
-    <div className="tag area-label">{list.every(b=>b.status==='operating')&&<span className="dot operating-dot"/>}{t.campus[key]}{list.every(b=>b.status==='operating')&&<small>{t.status.operating}</small>}</div>
-  </CampusLabel>)
+  return [...groups].map(([key, list]) => {
+    const cx = list.reduce((sum, b) => sum + b.x, 0) / list.length, cz = list.reduce((sum, b) => sum + b.z, 0) / list.length
+    const at = list.reduce((best, b) => (Math.hypot(b.x - cx, b.z - cz) < Math.hypot(best.x - cx, best.z - cz) ? b : best))
+    return <CampusLabel key={key} priority={30} position={[at.x, Math.max(...list.map((b) => b.h)) + 1.5, at.z]}>
+      <div className="tag area-label">{list.every(b=>b.status==='operating')&&<span className="dot operating-dot"/>}{t.campus[key]}{list.every(b=>b.status==='operating')&&<small>{t.status.operating}</small>}</div>
+    </CampusLabel>
+  })
 }

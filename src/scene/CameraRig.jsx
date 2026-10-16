@@ -12,7 +12,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { CameraControls, CameraControlsImpl } from '@react-three/drei'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { latLngToVec3 } from './geo.js'
-import { campusFrame, campusOffset, campusViewport } from './campusCamera.js'
+import { campusFrame, campusFrameBox, contentBox, campusOffset, campusViewport } from './campusCamera.js'
 import { customerKey, zoneBounds } from '../data/customerZones.js'
 import { layoutCampus } from './layoutCampus.js'
 import { Box3, Vector3 } from 'three'
@@ -38,10 +38,11 @@ function globeAlt() {
   return aspect < 0.6 ? 7.2 : aspect < 0.8 ? 5.6 : aspect < 1.2 ? 4.2 : 3.7
 }
 
-// 캠퍼스 기본 시점: 부지 크기에 맞춰 대각선 위에서 내려다봄 (준아이소메트릭)
-function campusHome(side) {
+// 캠퍼스 기본 시점: 건물·변전소가 있는 곳(contentBox)에 맞춰 대각선 위에서 내려다봄 (준아이소메트릭)
+//   예전엔 부지 판 전체에 맞춰 건물이 작게 보였음 → 건물 영역이 쓸 수 있는 화면을 70% 이상 채움
+function campusHome(L) {
   const w = window.innerWidth, h = window.innerHeight
-  const frame = campusFrame(side, w, h, campusViewport(w, h))
+  const frame = campusFrameBox(contentBox(L), w, h, campusViewport(w, h))
   return [...frame.position, ...frame.target]
 }
 
@@ -115,7 +116,7 @@ export default function CameraRig() {
         const frame = campusFrame(bounds.side, size.width, size.height, safeRect.current)
         c.setLookAt(frame.position[0] + bounds.x, frame.position[1], frame.position[2] + bounds.z,
           bounds.x, frame.target[1], bounds.z, true)
-      } else c.setLookAt(...campusHome(L.side), true)
+      } else c.setLookAt(...campusHome(L), true)
     }
     fit()
     const observer = new ResizeObserver(fit)
@@ -135,7 +136,7 @@ export default function CameraRig() {
     if (st.view === 'site' && site) {
       const L = layoutCampus(site._raw)
       applyLimits(c, 'site', L.side)
-      c.setLookAt(...campusHome(L.side), false)
+      c.setLookAt(...campusHome(L), false)
       applyFocalOffset(c, 'site', L.side, false)
     } else {
       applyLimits(c, 'globe')
@@ -184,9 +185,10 @@ export default function CameraRig() {
       const L = layoutCampus(site._raw)
       applyLimits(c, 'site', L.side)
       c.smoothTime = 0.25
-      const [px, py, pz, tx, ty, tz] = campusHome(L.side)
-      // 살짝 멀리서 시작해 안으로 들어오는 느낌
-      c.setLookAt(px * 1.15, py * 1.15, pz * 1.15, tx, ty, tz, false)
+      const [px, py, pz, tx, ty, tz] = campusHome(L)
+      // 살짝 멀리서 시작해 안으로 들어오는 느낌 (바라보는 점 기준으로 15% 뒤에서 — 점이 원점이 아니어도 옆으로 밀리지 않게)
+      const back = (p, t) => t + (p - t) * 1.15
+      c.setLookAt(back(px, tx), back(py, ty), back(pz, tz), tx, ty, tz, false)
       applyFocalOffset(c, 'site', L.side, false)
       await sleep(30)
       if (cancelled) return

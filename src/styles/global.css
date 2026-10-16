@@ -569,6 +569,8 @@ button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit;
 .building-signal{display:flex;align-items:center;gap:5px;padding:4px 7px;border:1px solid #cfdfe7;background:#f4faff;color:#477b99;border-radius:7px;font-size:10px;font-weight:600;white-space:nowrap;box-shadow:0 2px 8px #26495712}
 .building-signal.signal-operating{color:#25836e;background:#f0fbf5;border-color:#cbe4d7}
 .building-signal.signal-commissioning{color:#9b7d2a;background:#fffbea;border-color:#e9dcaa}
+.building-signal.signal-under_construction{color:#b0603a;background:#fff6f0;border-color:#f0d3c1} /* 건설 중 칩 (상태 범례의 건설중 색 계열) */
+.building-signal .signal-name{color:#26344f;font-weight:700} /* 칩 앞의 건물 이름 */
 .signal-pending{width:7px;height:7px;background:#d1ae3f;border-radius:50%;animation:status-glow 2s ease-in-out infinite}
 .operating-dot{box-shadow:0 0 0 3px #2ea88a20;animation:status-glow 2.5s ease-in-out infinite}
 @keyframes status-glow{50%{opacity:.5}}

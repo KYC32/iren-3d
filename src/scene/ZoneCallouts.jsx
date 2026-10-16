@@ -15,7 +15,7 @@ import { CustomerLogo } from '../ui/logos/index.jsx'
 // =============================================================
 const origin = () => [0,0] // Html 을 화면 왼쪽 위(0,0)에 고정 → 안쪽에서 직접 픽셀 좌표로 배치
 const IDLE_REFRESH = 0.5   // 카메라가 멈춰 있을 때 다시 계산하는 간격 (초)
-export default function ZoneCallouts({zones,side,selectedKey,onSelect,lang}){
+export default function ZoneCallouts({zones,box,selectedKey,onSelect,lang}){
   const size=useThree(s=>s.size), buttons=useRef({}), paths=useRef({}), dots=useRef({})
   const point=useMemo(()=>new Vector3(),[])
   // 마지막으로 계산했을 때의 카메라 행렬·화면 크기·구역 목록·시각 → 같으면 계산을 건너뜀
@@ -26,8 +26,8 @@ export default function ZoneCallouts({zones,side,selectedKey,onSelect,lang}){
     if(same&&clock.elapsedTime-L.t<IDLE_REFRESH)return
     L.matrix.copy(camera.matrixWorld);L.w=size.width;L.h=size.height;L.zones=zones;L.sel=selectedKey;L.t=clock.elapsedTime
     const project=(x,y,z)=>{point.set(x,y,z).project(camera);return {x:(point.x+1)*size.width/2,y:(1-point.y)*size.height/2,z:point.z}}
-    const half=side/2
-    const footprint=[[-half,-half],[half,-half],[half,half],[-half,half]].map(([x,z])=>project(x,0,z))
+    // 배지가 가리지 말아야 할 바닥: 건물 영역 상자 (부지 판 전체로 하면 화면을 당겼을 때 배지 놓을 자리가 없어짐)
+    const footprint=[[box.x0,box.z0],[box.x1,box.z0],[box.x1,box.z1],[box.x0,box.z1]].map(([x,z])=>project(x,0,z))
     const safe=campusViewport(size.width,size.height)
     const items=zones.flatMap(zone=>{
       const button=buttons.current[zone.key]
@@ -45,9 +45,14 @@ export default function ZoneCallouts({zones,side,selectedKey,onSelect,lang}){
       if(!p)continue
       button.style.transform=`translate(${p.rect.left}px,${p.rect.top}px)`
       const sx=p.side==='left'?p.rect.right:p.rect.left,sy=(p.rect.top+p.rect.bottom)/2
-      const bend=(sx+p.anchor.x)/2
-      path.setAttribute('d',`M ${sx} ${sy} C ${bend} ${sy}, ${bend} ${p.anchor.y}, ${p.anchor.x} ${p.anchor.y}`)
-      dot.setAttribute('cx',p.anchor.x);dot.setAttribute('cy',p.anchor.y)
+      // 점선 끝: 구역 블록 테두리(바닥 색 선) 모서리 중 배지에 가장 가까운 곳
+      //   (예전엔 구역 한가운데라 그 자리의 건물 상태 칩 "Horizon 2 · 시운전" 글자를 점이 가렸음)
+      const pad=.55 // SiteView 의 ZONE_PAD (블록 둘레에서 테두리까지 여백)
+      const end=zone.blocks.flatMap(b=>[[b.x-b.w/2-pad,b.z-b.d/2-pad],[b.x+b.w/2+pad,b.z-b.d/2-pad],[b.x+b.w/2+pad,b.z+b.d/2+pad],[b.x-b.w/2-pad,b.z+b.d/2+pad]])
+        .map(([x,z])=>project(x,.1,z)).reduce((best,c)=>Math.hypot(c.x-sx,c.y-sy)<Math.hypot(best.x-sx,best.y-sy)?c:best)
+      const bend=(sx+end.x)/2
+      path.setAttribute('d',`M ${sx} ${sy} C ${bend} ${sy}, ${bend} ${end.y}, ${end.x} ${end.y}`)
+      dot.setAttribute('cx',end.x);dot.setAttribute('cy',end.y)
     }
   })
   return <Html calculatePosition={origin} zIndexRange={[15,15]} style={{pointerEvents:'none'}}>

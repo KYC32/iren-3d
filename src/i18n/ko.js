@@ -70,7 +70,7 @@ export default {
   basis: { reported: '발표', target: '회사 목표', estimate: '추정' },
   contracts: { title: '고객 계약', toggle: '계약 연결선', undisclosed: '배치 사이트 미공개', years: '년' },
   timeline: { play: '재생', pause: '정지', asOf: '기준일', future: '회사 발표 목표 기준', today: '기준일로', label: '날짜' },
-  campus: { home: '전체 보기', controls: '3D 시점 조작', rotate: '회전', pan: '이동', rotateLabel: '시점 회전', panLabel: '시점 이동', liquid: '액체냉각 구역', air: '공랭 구역', mining: '채굴 구역', planned: '확장 예정 부지' },
+  campus: { home: '전체 보기', controls: '3D 시점 조작', rotate: '회전', pan: '이동', rotateLabel: '시점 회전', panLabel: '시점 이동', liquid: '액체냉각 구역', air: '공랭 구역', mining: '채굴 구역', planned: '확장 예정 부지', convert: 'AI 전환 예정' },
   // 3D 캠퍼스 하늘 모드 (낮·노을·밤·지금)
   sky: { label: '하늘·조명', day: '낮', dusk: '노을', night: '밤', live: '지금', liveTitle: '현지 시각의 실제 해 위치',
     hint: '불 켜진 건물 = 이 날짜에 가동 중 (고객 인수 포함)', ai: 'AI', mining: '채굴', pending: '희미한 불 = 시운전·채굴 축소 중' },
