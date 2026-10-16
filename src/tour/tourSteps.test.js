@@ -27,6 +27,9 @@ describe('자동 투어 대본 (buildTourSteps)', () => {
     const outlook = steps.find((s) => s.id === 'outlook')
     expect(outlook.text).toContain('2027 1.1 GW')
     expect(outlook.month).toBe(2028 * 12 + 11) // 성장 경로의 마지막 연말(2028-12)로 타임라인을 옮김
+    // 지도 화면엔 KPI 판·타임라인이 없으므로 전망 단계는 사업 현황 페이지에서 보여 줌
+    expect(outlook.page).toBe('portfolio')
+    expect(outlook.text).not.toContain('타임라인을')
   })
   it('전체 길이는 약 90초, 밤 단계는 하늘을 밤으로', () => {
     const steps = buildTourSteps(data, 'ko')

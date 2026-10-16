@@ -75,7 +75,7 @@ export default {
   sky: { label: '하늘·조명', day: '낮', dusk: '노을', night: '밤', live: '지금', liveTitle: '현지 시각의 실제 해 위치',
     hint: '불 켜진 건물 = 이 날짜에 가동 중 (고객 인수 포함)', ai: 'AI', mining: '채굴', pending: '희미한 불 = 시운전·채굴 축소 중' },
   // 페이지 네비 (지도 | 주가 | 뉴스)
-  nav: { label: '화면', map: '지도', stock: '주가', news: '뉴스', stockTitle: 'IREN 주가', stockSub: 'NASDAQ: IREN · 상장(2021-11-17)부터 · Nasdaq 공개 일봉', newsTitle: 'IREN 뉴스', newsSub: '회사 발표(SEC 제출) · 언론 보도' },
+  nav: { label: '화면', map: '지도', portfolio: '현황', portfolioTitle: 'IREN 사업 현황', portfolioSub: '포트폴리오 · 공개 자료 기준', stock: '주가', news: '뉴스', stockTitle: 'IREN 주가', stockSub: 'NASDAQ: IREN · 상장(2021-11-17)부터 · Nasdaq 공개 일봉', newsTitle: 'IREN 뉴스', newsSub: '회사 발표(SEC 제출) · 언론 보도' },
   stock: { price: '현재가', prev: '전일 대비', vsIpo: '상장가 $28 대비', high52: '52주 최고', low52: '52주 최저', ath: '사상 최고', drawdown: '최고가 대비 최대 낙폭', range: '기간', all: '상장 이후', linear: '선형', log: '로그', events: '사건 표시', volume: '거래량', close: '종가', open: '시가', high: '고가', low: '저가', monthOnly: '월 단위', ipoLine: '공모가 $28', legend: { contract: '고객 계약', earnings: '실적 발표', phase: '건물·전력 단계', news: '회사 소식' },
     note: 'Nasdaq 공개 데이터 · 일봉 종가 · 마지막 거래일', eventsNote: '사건 마커는 이 사이트의 타임라인 데이터(회사 발표 기준)이며 주가와의 인과를 뜻하지 않습니다.', loadError: '주가 데이터를 불러오지 못했습니다', retry: '다시 시도', showOnChart: '차트에서 보기' },
   news: { company: '회사 발표', press: '언론 보도', source: '출처', updated: '갱신', stale: '이후 갱신 실패 — 마지막 성공 데이터', engNote: '제목은 원문(영문) 그대로입니다. 번역하지 않습니다.', pressNote: 'Google 뉴스 검색("IREN" NASDAQ) 결과 · 매체 기사는 회사 자료가 아닙니다', companyNote: 'SEC EDGAR 제출 기준 · 보도자료 제목은 8-K 첨부(Exhibit 99.1)에서 가져옴', loadError: '뉴스를 불러오지 못했습니다', empty: '해당 항목 없음', all: '전체', more: '더 보기' },

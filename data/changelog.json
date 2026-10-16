@@ -62,6 +62,10 @@
         {
           "ko": "전력 경로 그림의 홀 안을 IREN 홈페이지의 매켄지·프린스조지 공랭 홀 사진 기준으로 다시 그림: 흡기 루버 → 찬 통로(파란 바닥) → 랙 앞면(Dell 은색 서버·녹색 광케이블, 찬 통로 위 통신 사다리) → 뜨거운 통로(주황 바닥) → 배기 팬 벽. 전원은 랙 뒤 트레이에서 랙마다 내려가고, 마지막 랙은 옆판을 떼어 뒤 PDU(277V)와 코드를 보여 줌. 랙 1대 약 64kW(가정)가 회사가 밝힌 최대 랙 밀도 70kW·평균 PUE 1.1 안이라는 것도 함께. 3D 부지 화면에서 매켄지 공랭 홀을 누르면 이 그림이 바로 열리고, 캠퍼스 패널의 고른 건물 아래 \"이 건물 안 자세히 보기\" 단추로도 엶",
           "en": "The power-path figure's hall interior is redrawn from IREN's own Mackenzie and Prince George air-cooled hall photos: intake louvers → cold aisle (blue floor) → rack fronts (Dell silver servers, green fibre, network ladder above) → hot aisle (orange floor) → exhaust fan wall. Power drops to each rack from a tray behind the racks, and the last rack has its side panel off to show the rear PDU (277 V) and cords. Also notes that ~64 kW per rack (assumption) sits within the company's stated 70 kW maximum rack density and 1.1 average PUE. Clicking Mackenzie's air-cooled halls in the 3D campus now opens the figure, as does a \"Look inside\" button under the selected building in the campus panel"
+        },
+        {
+          "ko": "상단 네비에 \"현황\" 페이지 추가: 지도 위에 있던 포트폴리오 사업 현황(확보 전력·AI 가동·전망·건설·ARR)을 따로 떼어 타임라인과 캠퍼스별 표(확보 전력·AI 가동·채굴·건설·계획)와 함께 보여 줌. 실제 지도 화면은 KPI 판과 아래 타임라인 없이 늘 기준일 모습으로 넓게 — 날짜를 옮겨 보는 일은 현황 페이지와 3D 화면에서. 지도 캠퍼스 카드는 연한 초록 양각(선택하면 진한 초록으로 눌림), 휴대폰의 캠퍼스 목록 단추는 지도 위 대신 상단 바로, 제목 아이콘은 IREN 색(초록·남색)의 번개",
+          "en": "New \"Overview\" page in the top nav: the portfolio summary that sat on the map (secured power, AI live, outlook, construction, ARR) now has its own page with the timeline and a per-campus table (secured, AI live, mining, building, planned). The geographic map drops the KPI board and the bottom timeline and always shows the as-of date — moving through time happens on the Overview page and in 3D. Map campus cards are light-green and raised (pressed, deeper green when selected); on phones the campus-list button moves from the map into the top bar; the title icon is a lightning bolt in IREN colors (green and navy)"
         }
       ]
     },

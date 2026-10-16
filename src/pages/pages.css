@@ -92,3 +92,31 @@
 .dilution-table td small { display: block; font-size: 10px; color: #7a889c; margin-top: 1px; }
 .dilution-table td i { font-style: normal; color: #7a889c; margin-left: 1px; }
 .shares-line.is-tail { stroke-dasharray: 4 4; opacity: .7; }            /* 마지막 공시 뒤 — 새 공시 전 */
+
+/* ---------- 사업 현황 페이지 (PortfolioPage) ---------- */
+/* KPI 판: 지도 위 띠와 같은 카드를 페이지 폭에 맞춰 여러 줄로 (가로 스크롤 대신 줄바꿈) */
+.portfolio-page .kpis { box-shadow: none; flex-wrap: wrap; }
+.portfolio-page .kpis .kpi-items { flex-wrap: wrap; overflow: visible; row-gap: 12px; }
+.portfolio-page .kpis .kpi { flex: 1 1 170px; }
+/* 타임라인: 페이지 안에서는 가운데에 두고 폭을 넉넉히 */
+.portfolio-timeline { display: flex; justify-content: center; margin: 12px 0 4px; }
+.portfolio-timeline .timeline { max-width: 760px; align-self: auto; box-shadow: none; }
+/* 캠퍼스별 표 (희석 칸 표와 같은 결) */
+.pf-table-wrap { overflow-x: auto; margin-top: 10px; }
+.pf-table { width: 100%; min-width: 560px; border-collapse: collapse; font-size: 12px; color: #34405e; font-variant-numeric: tabular-nums; }
+.pf-table caption { text-align: left; font-size: 11.5px; font-weight: 700; color: #1f3550; padding-bottom: 6px; word-break: keep-all; }
+.pf-table th { text-align: left; font-size: 10.5px; font-weight: 600; color: #7a889c; border-bottom: 1px solid #e3eaf3; padding: 4px 8px 4px 0; white-space: nowrap; }
+.pf-table td { border-bottom: 1px solid #f0f3f8; padding: 7px 8px 7px 0; vertical-align: top; white-space: nowrap; }
+.pf-table td button { display: inline-flex; align-items: center; gap: 3px; border: 0; background: none; padding: 0; font: inherit; color: #1f3550; cursor: pointer; }
+.pf-table td button:hover b { text-decoration: underline; }
+.pf-table td small { display: block; font-size: 10px; color: #7a889c; margin-top: 1px; }
+.pf-status { display: inline-flex; align-items: center; gap: 5px; }
+.pf-status i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+/* 휴대폰: 지표를 한 줄에 하나씩 길게 늘이지 않고 2칸 격자, 왼쪽 '포트폴리오 사업 현황' 칸은 위쪽 한 줄로 */
+@media (max-width: 767px) {
+  .portfolio-page .kpis { flex-direction: column; }
+  .portfolio-page .kpis .kpi-context { flex: none; flex-direction: row; align-items: baseline; gap: 6px; padding: 9px 12px; border-right: 0; border-bottom: 1px solid #dce5e4; }
+  .portfolio-page .kpis .kpi-items { display: grid; grid-template-columns: 1fr 1fr; row-gap: 14px; padding: 12px 0; }
+  .portfolio-page .kpis .kpi { min-width: 0; padding: 0 12px; border-left: 0; }
+  .portfolio-page .kpis .kpi:nth-child(even) { border-left: 1px solid #e2eae7; }
+}

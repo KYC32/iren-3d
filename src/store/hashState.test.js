@@ -51,6 +51,11 @@ describe('페이지 (page · at)', () => {
     expect(parseHash(buildHash(s))).toEqual(s)
     expect(buildHash(s).startsWith('#page=stock&at=2025-11-03')).toBe(true)
   })
+  it('사업 현황 페이지(portfolio): 날짜와 함께 왕복 (현황 페이지엔 타임라인이 있음)', () => {
+    expect(parseHash(buildHash({ page: 'portfolio' }))).toEqual({ page: 'portfolio' })
+    expect(parseHash(buildHash({ page: 'portfolio', date: '2025-06' }))).toEqual({ page: 'portfolio', date: '2025-06' })
+    expect(buildHash({ page: 'portfolio', at: '2025-11-03' })).toBe('#page=portfolio') // at 은 주가 페이지 전용
+  })
   it('모르는 페이지·page 없는 at·잘못된 날짜는 무시', () => {
     expect(parseHash('#page=foo')).toEqual({})
     expect(parseHash('#at=2025-11-03')).toEqual({})

@@ -1,6 +1,6 @@
 // 상단 바: 제목·기준일 / 뒤로가기 / 하늘(낮·노을·밤·지금) / 공유 / 한영 토글
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, Languages, Zap, ListOrdered, Maximize2, Move, Rotate3D, Share2, Check, Sun, Sunset, Moon, Clock, Compass, Map as MapIcon, ChartLine, Newspaper } from 'lucide-react'
+import { ArrowLeft, Languages, Zap, ListOrdered, Maximize2, Move, Rotate3D, Share2, Check, Sun, Sunset, Moon, Clock, Compass, Map as MapIcon, ChartLine, Newspaper, LayoutDashboard } from 'lucide-react'
 import { localClock } from '../scene/sun.js'
 import { AI_LIGHT, MINER_LIGHT } from '../scene/nightColors.js'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
@@ -26,7 +26,7 @@ export default function TopBar() {
     <header className="topbar panel">
       <div className="brand">
         {page ? (
-          <span className="brand-icon">{page === 'stock' ? <ChartLine size={18} /> : <Newspaper size={18} />}</span>
+          <span className="brand-icon">{page === 'portfolio' ? <LayoutDashboard size={18} /> : page === 'stock' ? <ChartLine size={18} /> : <Newspaper size={18} />}</span>
         ) : view === 'site' ? (
           <button className="icon-btn" onClick={requestGlobe} aria-label={lang==='ko'?'캠퍼스 목록으로':'Back to campuses'} title={lang==='ko'?'캠퍼스 목록으로':'Back to campuses'}>
             <ArrowLeft size={18} />
@@ -36,16 +36,16 @@ export default function TopBar() {
         )}
         <div>
           <div className="title">
-            {page ? t.nav[page === 'stock' ? 'stockTitle' : 'newsTitle'] : view === 'site' && site ? pickName(site, lang) : (lang==='ko'?'IREN 현장 리서치':'IREN Field Research')}
+            {page ? t.nav[`${page}Title`] : view === 'site' && site ? pickName(site, lang) : (lang==='ko'?'IREN 현장 리서치':'IREN Field Research')}
           </div>
           <div className="subtitle">
-            {page ? t.nav[page === 'stock' ? 'stockSub' : 'newsSub'] : <>{view === 'site' && site ? `${site.region} · ${site.grid_operator}` : t.subtitle}{data && <> · {t.asOf} {data.as_of}</>}</>}
+            {page ? <>{t.nav[`${page}Sub`]}{page === 'portfolio' && data && <> · {t.asOf} {data.as_of}</>}</> : <>{view === 'site' && site ? `${site.region} · ${site.grid_operator}` : t.subtitle}{data && <> · {t.asOf} {data.as_of}</>}</>}
           </div>
         </div>
       </div>
-      {/* 페이지 네비: 지도 | 주가 | 뉴스 */}
+      {/* 페이지 네비: 지도 | 현황 | 주가 | 뉴스 */}
       <nav className="camera-mode page-nav" aria-label={t.nav.label}>
-        {[[null, MapIcon, t.nav.map], ['stock', ChartLine, t.nav.stock], ['news', Newspaper, t.nav.news]].map(([key, Icon, label]) => (
+        {[[null, MapIcon, t.nav.map], ['portfolio', LayoutDashboard, t.nav.portfolio], ['stock', ChartLine, t.nav.stock], ['news', Newspaper, t.nav.news]].map(([key, Icon, label]) => (
           <button key={key ?? 'map'} aria-pressed={page === key} onClick={() => setPage(key)} aria-label={label} title={label}><Icon size={15} aria-hidden="true" /><span>{label}</span></button>
         ))}
       </nav>

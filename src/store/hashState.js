@@ -6,7 +6,7 @@
 //   c     : 회사 필터 (쉼표로 여러 개)
 //   color : 핀 색 기준 (status | company)
 //   sky   : 3D 캠퍼스 하늘 (day 낮 | dusk 노을 | night 밤) — 기본인 지금(live, 부지 현지 시각)은 생략
-//   page  : 지도 대신 보여 줄 페이지 (stock 주가 | news 뉴스) — 지도는 생략
+//   page  : 지도 대신 보여 줄 페이지 (portfolio 사업 현황 | stock 주가 | news 뉴스) — 지도는 생략
 //   at    : 주가 차트에서 강조할 날짜 (YYYY-MM-DD, page=stock 일 때만)
 // 옛 링크(#site=childress)도 그대로 동작합니다.
 // =============================================================
@@ -30,7 +30,7 @@ export function parseHash(hash) {
   const tab = q.get('tab')
   if (['history', 'evidence'].includes(tab)) out.tab = tab
   const page = q.get('page')
-  if (page === 'stock' || page === 'news') out.page = page
+  if (['portfolio', 'stock', 'news'].includes(page)) out.page = page
   const at = q.get('at')
   if (out.page === 'stock' && at && /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(at)) out.at = at
   const sky = q.get('sky')

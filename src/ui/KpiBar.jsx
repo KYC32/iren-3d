@@ -1,4 +1,4 @@
-// 핵심 지표 카드 줄: 지구본에서는 회사 전체, 캠퍼스에서는 선택한 사이트 기준
+// 핵심 지표 카드 줄: 지구본에서는 회사 전체, 캠퍼스에서는 선택한 사이트 기준 (mode='portfolio' = 사업 현황 페이지: 늘 회사 전체)
 import { useMemo } from 'react'
 import { Zap, HardHat, MapPinned, CircleDollarSign, Cpu, Plug, TrendingUp } from 'lucide-react'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
@@ -15,7 +15,7 @@ function MetricValue({ value }) {
   return <div className="kpi-value"><span>{parts ? parts[1] : value}</span>{parts && <small>{parts[2]}</small>}</div>
 }
 
-export default function KpiBar() {
+export default function KpiBar({ mode } = {}) {
   const t = useT()
   const lang = useAppStore((s) => s.lang)
   const data = useAppStore((s) => s.data)
@@ -27,9 +27,10 @@ export default function KpiBar() {
   const path = useMemo(() => (data?.raw ? growthPath(data.raw) : []), [data?.raw])
   const activeGroups = useAppStore((s) => s.activeGroups)
   if (!data) return null
+  const isSite = mode !== 'portfolio' && view === 'site' && !!site
 
   let cards
-  if (view === 'site' && site) {
+  if (isSite) {
     const m = siteMetrics(site)
     cards = [
       { icon: Plug, label: t.panel.grid, value: fmtMw(site.grid_mw), tone: site.substation.status === 'energized' ? 'operating' : 'pending', sub: site.substation.status === 'energized' ? (lang === 'ko' ? '통전 완료' : 'Energized') : energizeLabel(site.substation, t) },
@@ -74,7 +75,7 @@ export default function KpiBar() {
 
   return (
     <section className="kpis panel" aria-label={lang==='ko'?'핵심 현황':'Key metrics'}>
-      <div className="kpi-context"><small>{lang==='ko'?(view==='site'?'캠퍼스':'포트폴리오'):(view==='site'?'CAMPUS':'PORTFOLIO')}</small><b>{lang==='ko'?(view==='site'?'전력 현황':'사업 현황'):(view==='site'?'Power overview':'At a glance')}</b><span>{lang==='ko'?(view==='site'?'시설 전력 기준':'공개 자료 기준'):(view==='site'?'Facility capacity':'Reported data')}</span></div>
+      <div className="kpi-context"><small>{lang==='ko'?(isSite?'캠퍼스':'포트폴리오'):(isSite?'CAMPUS':'PORTFOLIO')}</small><b>{lang==='ko'?(isSite?'전력 현황':'사업 현황'):(isSite?'Power overview':'At a glance')}</b><span>{lang==='ko'?(isSite?'시설 전력 기준':'공개 자료 기준'):(isSite?'Facility capacity':'Reported data')}</span></div>
       <div className="kpi-items" tabIndex={0} aria-label={lang==='ko'?'지표 목록, 좌우로 스크롤':'Metrics, scroll horizontally'}>
       {cards.map((k) => (
         <div key={k.label} className={`kpi tone-${k.tone ?? 'none'}`}>

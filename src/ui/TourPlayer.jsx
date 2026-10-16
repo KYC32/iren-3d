@@ -18,6 +18,9 @@ function applyStep(step) {
   st.setPlaying(false)
   st.setMonth(step.month ?? st.asOfMonth)
   st.setSkyMode(step.sky ?? 'day')
+  // 페이지 단계(사업 현황): 지도 위에 페이지를 띄움 (투어는 계속). 다음 단계로 가면 페이지를 닫음
+  if (step.page) { st.setPage(step.page, null, { fromTour: true }); return }
+  if (st.page) st.setPage(null, null, { fromTour: true })
   if (step.surface === 'map') {
     if (step.site) st.focusSiteOnMap(step.site)
     else { st.setMapRegion(step.region ?? 'NA'); st.setCampusListOpen(window.innerWidth >= 768) }

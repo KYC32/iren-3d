@@ -217,9 +217,10 @@ export const useAppStore = create((set, get) => ({
     set({ selectedZoneKey: key, selectedBuildingId: null, buildingFly: null, hoverId: null, campusPanelCollapsed: false }); get().syncHash()
   },
   requestCampusHome: () => { if (!get().pending) { set({ cameraHomeSeq: get().cameraHomeSeq + 1, selectedBuildingId: null, buildingFly: null, hoverId: null, selectedZoneKey: null }); get().syncHash() } },
-  // 페이지 전환: null(지도) | 'stock' | 'news'. at = 주가 차트 강조 날짜. 지도 상태(캠퍼스·날짜)는 그대로 둬서 돌아오면 복원
-  setPage: (page, at = null) => {
-    if (get().tour) get().stopTour()
+  // 페이지 전환: null(지도) | 'portfolio' | 'stock' | 'news'. at = 주가 차트 강조 날짜. 지도 상태(캠퍼스)는 그대로 둬서 돌아오면 복원
+  //   fromTour = 투어가 연 페이지(사업 현황 전망 단계) → 투어를 끝내지 않음
+  setPage: (page, at = null, { fromTour = false } = {}) => {
+    if (get().tour && !fromTour) get().stopTour()
     set({ page: page ?? null, stockAt: page === 'stock' ? at : null, sheetOpen: false, playing: false })
     get().syncHash()
   },

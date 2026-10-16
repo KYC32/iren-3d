@@ -6,7 +6,7 @@
 // 자막 숫자는 화면 데이터에서 그때그때 계산하므로 데이터가 갱신되면 투어도 같이 바뀝니다.
 // TourPlayer 가 한 단계씩 store 액션으로 옮기고(지도 이동·3D 진입·구역·건물 선택·날짜·하늘) 자막을 띄웁니다.
 //
-// 단계 모양: { id, surface:'map'|'3d', site?, region?, zone?, building?, sky?, month?, dur(ms), title, text }
+// 단계 모양: { id, surface:'map'|'3d' 또는 page:'portfolio', site?, region?, zone?, building?, sky?, month?, dur(ms), title, text }
 // =============================================================
 import { totalsAt, siteMetricsAt } from '../data/timeline.js'
 import { contractProgress } from '../data/contracts.js'
@@ -151,11 +151,11 @@ export function buildTourSteps(data, lang = 'ko') {
   if (last) {
     const arr = metric(company, 'contracted_arr_usd_bn')
     steps.push({
-      id: 'outlook', surface: 'map', region: 'NA', month: last.month, dur: 8 * SEC,
+      id: 'outlook', page: 'portfolio', month: last.month, dur: 8 * SEC,   // 지도엔 KPI 판·타임라인이 없어 사업 현황 페이지에서
       title: ko ? '회사 목표 기준 전망' : 'Outlook on company targets',
       text: ko
-        ? `타임라인을 ${last.year}년 말로 옮기면 목표대로 진행했을 때의 모습입니다: AI 가동 ${path.map((p) => `${p.year} ${fmtMw(p.ai)}`).join(' → ')}.${arr ? ` 계약 ARR 목표 $${arr}bn.` : ''} 실제 진행은 다를 수 있습니다.`
-        : `With the timeline at end-${last.year}, this is the picture if targets are met: AI live ${path.map((p) => `${p.year} ${fmtMw(p.ai)}`).join(' → ')}.${arr ? ` ARR target $${arr}bn.` : ''} Actual progress may differ.`,
+        ? `사업 현황 · ${last.year}년 말, 회사 목표대로 진행했을 때의 모습입니다: AI 가동 ${path.map((p) => `${p.year} ${fmtMw(p.ai)}`).join(' → ')}.${arr ? ` 계약 ARR 목표 $${arr}bn.` : ''} 실제 진행은 다를 수 있습니다.`
+        : `Business overview · end-${last.year}, the picture if targets are met: AI live ${path.map((p) => `${p.year} ${fmtMw(p.ai)}`).join(' → ')}.${arr ? ` ARR target $${arr}bn.` : ''} Actual progress may differ.`,
     })
   }
 
@@ -164,8 +164,8 @@ export function buildTourSteps(data, lang = 'ko') {
     id: 'outro', surface: 'map', region: 'NA', dur: 7 * SEC,
     title: ko ? '직접 살펴보기' : 'Explore on your own',
     text: ko
-      ? '왼쪽 목록에서 캠퍼스를 고르고, 마커를 눌러 3D 로 들어가세요. 타임라인은 과거엔 "그때 공개된 자료", 기준일 뒤엔 "회사 목표" 기준입니다. 비공식 자료 · 투자 조언 아님.'
-      : 'Pick a campus from the list, click a marker to enter 3D. The timeline shows what was public at the time, and company targets after the as-of date. Unofficial · not investment advice.',
+      ? '왼쪽 목록에서 캠퍼스를 고르고, 마커를 눌러 3D 로 들어가세요. 날짜를 옮겨 보려면 "현황" 페이지나 3D 화면의 타임라인을 쓰세요 — 과거엔 "그때 공개된 자료", 기준일 뒤엔 "회사 목표" 기준입니다. 비공식 자료 · 투자 조언 아님.'
+      : 'Pick a campus from the list, click a marker to enter 3D. To move through time, use the timeline on the Overview page or in 3D — past dates show what was public then, dates after the as-of date follow company targets. Unofficial · not investment advice.',
   })
   return steps
 }
