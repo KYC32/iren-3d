@@ -8,8 +8,10 @@ import { loadSites } from './data/loadSites.js'
 import { useT } from './i18n/useT.js'
 const Scene = lazy(() => import('./scene/Scene.jsx'))
 import TopBar from './ui/TopBar.jsx'
-import KpiBar from './ui/KpiBar.jsx'
-import Legend from './ui/Legend.jsx'
+// 3D 화면 전용 HUD(KPI 판·범례·타임라인): 지도 첫 화면엔 안 나오므로 3D 로 바꿀 때 3D 장면과 함께 받음 (첫 화면 번들 밖)
+const KpiBar = lazy(() => import('./ui/KpiBar.jsx'))
+const Legend = lazy(() => import('./ui/Legend.jsx'))
+const TimelineSlider = lazy(() => import('./ui/TimelineSlider.jsx'))
 import CampusPanel from './ui/CampusPanel.jsx'
 import MapSidebar, { RegionControls } from './ui/MapSidebar.jsx'
 const loadGeoMap = () => import('./map/GeoMap.jsx')
@@ -18,7 +20,6 @@ const GeoMap = lazy(loadGeoMap)
 // 예전엔 데이터(infra.json)를 받고 화면을 그린 "다음"에야 받기 시작해, 느린 휴대폰에선 그만큼 지도가 늦게 떴음
 if (typeof window !== 'undefined' && !/surface=3d/.test(window.location.hash)) loadGeoMap()
 import Footer from './ui/Footer.jsx'
-import TimelineSlider from './ui/TimelineSlider.jsx'
 import { RECORD } from './record/recordMode.js'
 import { useSkyDark } from './ui/useSkyDark.js'
 // 자동 투어는 버튼을 누를 때만 불러옴 (첫 화면 코드 크기를 한도 안에 유지)
@@ -102,7 +103,7 @@ export default function App() {
         {/* 주가·뉴스 페이지: 지도 위를 덮는 스크롤 영역 (지도는 그대로 두어 돌아올 때 다시 그리지 않음) */}
         {page && <Suspense fallback={<div className="page-scroll panel"><div className="page-loading">{t.loading}</div></div>}>{page === 'portfolio' ? <PortfolioPage /> : page === 'stock' ? <StockPage /> : <NewsPage />}</Suspense>}
         {/* KPI 판은 3D 화면에만 (지도 화면의 포트폴리오 사업 현황은 "현황" 페이지로 옮김) */}
-        {!page && data && surface === '3d' && <KpiBar />}
+        {!page && data && surface === '3d' && <Suspense fallback={null}><KpiBar /></Suspense>}
         {!page && data && surface==='map' && <RegionControls/>}
         {!page && <div className="middle">
           {data && surface === 'map' && <MapSidebar />}
@@ -110,8 +111,8 @@ export default function App() {
           {data && view === 'site' && <CampusPanel />}
         </div>}
         {!page && <div className="bottom">
-          {data && surface==='3d' && <Legend />}
-          {data && surface === '3d' && <TimelineSlider />}{/* 지도 화면엔 타임라인 없음 (현황 페이지·3D 에 있음) */}
+          {/* 범례·타임라인은 한 번에 나타나도록 같은 Suspense 로 묶음. 지도 화면엔 타임라인 없음 (현황 페이지·3D 에 있음) */}
+          {data && surface === '3d' && <Suspense fallback={null}><Legend /><TimelineSlider /></Suspense>}
           {surface==='3d'?<Footer />:<div className="geographic-note">{lang==='ko'?'비공식 리서치 · 현황은 확인 기록, 목표는 전망':'Independent research · Reported status and targets are separate'}</div>}
         </div>}
       </div>

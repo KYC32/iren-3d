@@ -16,9 +16,9 @@ import { SINGLE_COMPANY } from '../src/config.js'
 // 빌드 결과 폴더(dist)와, Vite 가 남긴 "파일 ↔ import 관계" 목록(manifest)
 const DIST = join(dirname(fileURLToPath(import.meta.url)), '..', 'dist')
 const manifest = JSON.parse(readFileSync(join(DIST, '.vite/manifest.json'), 'utf8'))
-// 3D 지도 진입점: 기본 UI + 지연 로딩되는 3D 장면(Scene)
+// 3D 지도 진입점: 기본 UI + 지연 로딩되는 3D 장면(Scene) + 3D 화면에서만 쓰는 HUD(KPI 판·범례·타임라인, App 이 지연 로딩)
 // 단일 회사 모드가 아니면 지구본(GlobeView)도 첫 3D 화면에 들어가므로 함께 셈
-const mapRoots = ['index.html', 'src/scene/Scene.jsx']
+const mapRoots = ['index.html', 'src/scene/Scene.jsx', 'src/ui/KpiBar.jsx', 'src/ui/Legend.jsx', 'src/ui/TimelineSlider.jsx']
 if (!SINGLE_COMPANY) mapRoots.push('src/scene/GlobeView.jsx')
 // 예산 목록 (limit 단위: KiB, gzip 기준)
 //   1) HTML UI: 패널·KPI 등 기본 화면 코드만 (index.html 에서 정적으로 import 되는 것)

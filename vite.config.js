@@ -4,6 +4,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { readFileSync } from 'node:fs'
+import { trimMaplibreCss } from './scripts/lib/maplibre-css.mjs'
 
 // 부팅 화면(GPU 랙 그림)을 index.html 의 <!-- rack --> 자리에 끼워 넣음
 //   그림은 scripts/anatomy/rack/build.mjs 가 만든 src/boot/rack.html (SVG + 작은 스크립트, 지도 코드와 별개)
@@ -13,8 +14,16 @@ const bootFigure = () => ({
   transformIndexHtml: (html) => html.replace('<!-- rack -->', () => readFileSync(new URL('./src/boot/rack.html', import.meta.url), 'utf8')),
 })
 
+// maplibre-gl.css 에서 이 앱이 만들지 않는 컨트롤(로고·내 위치·전체화면 등)의 규칙을 뺌 → 실제 지도 첫 화면 CSS 가 가벼워짐
+//   무엇을 빼는지, 새 컨트롤을 쓸 때 할 일은 scripts/lib/maplibre-css.mjs 맨 위 설명 참고
+const maplibreCssLite = () => ({
+  name: 'maplibre-css-lite',
+  enforce: 'pre', // Vite 가 CSS 를 처리하기 전에 원본 글자 그대로를 받아서 고침 (개발 서버에서도 똑같이)
+  transform: (code, id) => (id.split('?')[0].endsWith('/maplibre-gl/dist/maplibre-gl.css') ? trimMaplibreCss(code) : null),
+})
+
 export default defineConfig({
-  plugins: [react(), bootFigure()],
+  plugins: [react(), bootFigure(), maplibreCssLite()],
   build: {
     manifest: true, // 번들 검사에서 동적 3D 진입점까지 합산
     rolldownOptions: {
