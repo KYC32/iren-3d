@@ -6,8 +6,9 @@
 // 따로 불러옴(React.lazy): 코드·스타일·데이터(public/data/observations.json)가 첫 화면 번들에 안 들어감
 // 제3자 관찰은 공식 상태(건설·가동)를 바꾸지 않고 근거로만 — 화면에도 그렇게 적음
 // =============================================================
-import { useEffect, useRef, useState } from 'react'
-import { ArrowUpRight, Zap, Cable, Factory, Fuel, BatteryCharging, Camera, Thermometer, PlugZap, X } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ArrowUpRight, Zap, Cable, Factory, Fuel, BatteryCharging, Camera, Thermometer } from 'lucide-react'
+import FigureButton from './FigureButton.jsx'
 import { factsFor, segmentStages } from './siteFacts.js'
 import { fmtWhen } from '../data/events.js'
 import './siteFacts.css'
@@ -70,35 +71,11 @@ export default function SiteFacts({ site, month, lang }) {
             <div className="seg-legend">{STAGES.map(([k, l]) => <span key={k}><i className={`seg-${k}`} />{ko ? l.ko : l.en}</span>)}</div>
             <p className="facts-note">{ko ? `1칸 = 세그먼트 ${p.segment_mw}MW · 칸 순서는 설치 개수만 나타냄(실제 위치 아님)` : `1 cell = ${p.segment_mw}MW segment · cell order shows counts only, not positions`}</p>
           </>}
-          {p.figure && <FigureButton name={p.figure} lang={lang} />}
+          {p.figure && <FigureButton name={p.figure} lang={lang} label={ko ? '1칸 안을 그림으로 보기 · 변전소 → GPU' : 'See inside one segment · substation → GPU'} />}
           <p className="facts-note">{ko ? p.note_ko : p.note_en}</p>
         </div>
       })}
       <p className="facts-disclaimer">{ko ? '제3자 관찰은 회사가 확인한 사실이 아니며, 공식 상태(건설·가동)를 바꾸지 않습니다.' : 'Third-party observations are not company-confirmed and never change official statuses.'}</p>
     </section>
   )
-}
-
-// 그림 단추 + 대화상자: 그림 페이지(public/figures/<이름>.<ko|en>.html)를 iframe 으로 (연 뒤에만 불러옴)
-//   그림 쪽 코드·스타일이 앱 번들과 섞이지 않고, 닫으면 iframe 을 지워 움직임도 멈춤
-function FigureButton({ name, lang }) {
-  const ko = lang === 'ko'
-  const [open, setOpen] = useState(false)
-  const dialog = useRef(null)
-  useEffect(() => { if (open) dialog.current?.showModal(); else dialog.current?.close() }, [open])
-  const src = `/figures/${name}.${ko ? 'ko' : 'en'}.html`
-  const title = ko ? '세그먼트 1칸(2.5MW)의 전력 경로' : 'Power path inside one 2.5MW segment'
-  return <>
-    <button className="facts-figure-btn" type="button" onClick={() => setOpen(true)} aria-haspopup="dialog">
-      <PlugZap size={14} aria-hidden="true" />{ko ? '1칸 안을 그림으로 보기 · 변전소 → GPU' : 'See inside one segment · substation → GPU'}
-    </button>
-    <dialog ref={dialog} className="facts-figure" aria-label={title} onCancel={() => setOpen(false)} onClose={() => setOpen(false)}>
-      <div className="facts-figure-head">
-        <b>{title}</b>
-        <a href={src} target="_blank" rel="noreferrer">{ko ? '새 창' : 'New tab'}<ArrowUpRight size={12} aria-hidden="true" /></a>
-        <button type="button" autoFocus onClick={() => setOpen(false)} aria-label={ko ? '닫기' : 'Close'}><X size={16} aria-hidden="true" /></button>
-      </div>
-      {open && <iframe src={src} title={title} />}
-    </dialog>
-  </>
 }

@@ -19,7 +19,7 @@ import * as G from "../kit/lathe.mjs";
 import * as A from "../kit/audit.mjs";
 import { tubePieces, tubeSvg } from "../kit/tube.mjs";
 import { workshop, auditAll } from "../rack/shop.mjs";
-import { BLOCK, AMPS, PHASE_V, EST, SOURCE, tourPlan, stateAt } from "./model.mjs";
+import { BLOCK, AMPS, PHASE_V, EST, SOURCE, SITE, tourPlan, stateAt } from "./model.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..", "..");
@@ -27,8 +27,9 @@ const r1 = (n) => Math.round(n * 10) / 10;
 
 // ---------- 세계 배치 ----------
 // 홀 바깥벽: 바깥면 y = 0, 두께 3. x ≤ 122 는 온전한 높이(46), 그 오른쪽은 허물어(단면) 홀 안의 랙 줄이 보이게
-const WALL = { t: 3, h: 46, x0: -17, x1: 240, cut: 122, step: 132, mid: 30, low: 6 };
-const HALL = { back: -44, floor: 1.5 };                        // 홀 바닥 뒤 끝 y = −44 (뒷벽은 없음: 건물을 잘라 낸 단면 모형), 바닥 높이
+const WALL_T = 3;
+const WALL = { t: WALL_T, h: 46, x0: -17, x1: 240, cut: 122, step: 132, mid: 30, low: 12 };   // low = 허문 벽 아랫부분(흡기 루버가 남음)
+const HALL = { back: -46, floor: 1.5 };                        // 홀 바닥 뒤 끝 y = −46 (건물을 잘라 낸 단면 모형), 바닥 높이
 const BASE = { x: -30, y: -56, w: 280, d: 178, r: 3 };         // 받침판 (모형 판): x −30..250, y −56..122
 const SLAB = 3;                                                 // 마당 콘크리트 패드 두께 (30 cm)
 
@@ -44,10 +45,13 @@ const MER = { x: 176, y: 76, w: 60, d: 30, r: 0.5 };             // 전기실 (�
 const MER_H = 30;
 const TRENCH = { x: 100, y: 17, w: 26, d: 65, pit: -3.6 };       // 발전기 → ATS 콘듀잇 도랑 (위에서 들여다보는 창, 발전기 오른쪽 끝 너머로 보이는 자리)
 const HV_TRENCH = { x: -27, y: 12, w: 26, d: 9, pit: -3.6 };     // 변전소 → 변압기 34.5 kV 인입 도랑 (왼쪽 끝벽에서 관이 나옴 = 변전소 쪽 땅속)
-const RACK0 = 146, RACK_W = 6, RACKS = 14;                       // 홀 안 랙 줄 (x 146..230), 뒷면(+y)이 보는 쪽
-const RACK_Y = -31, RACK_D = 12, RACK_H = 22;                    // 랙 깊이 1.2 m, 키 2.2 m
-const RPP = { x: 127, y: -20, w: 11, d: 9, r: 0.3 };             // 홀 배전반 (랙 줄 왼쪽 끝)
-const TRAY = { y: -19.2, w: 5, z: 28 };                          // 랙 위 케이블 트레이 (뜨거운 통로 쪽, 뒤 레일이 랙 뒷면 위)
+const RACK0 = 146, RACK_W = 6, RACKS = 14;                       // 홀 안 랙 줄 (x 146..230), 앞면(+y)이 찬 통로·보는 쪽 (회사 사진처럼)
+const RACK_Y = -32, RACK_D = 11.7, RACK_H = 22;                  // 랙 뒤 y = −32 → 앞 y = −20.3, 깊이 약 1.2 m, 키 2.2 m
+const RPP = { x: 133, y: -32, w: 11, d: 11, r: 0.3 };            // 홀 배전반 (랙 줄 왼쪽 끝, 랙과 한 줄)
+const TRAY = { y: -37.6, w: 5, z: 28 };                          // 전원 트레이 (뜨거운 통로 위, 랙 뒤)
+const NET = { y: -13, w: 4, z: 31 };                             // 통신 케이블 사다리 (찬 통로 위 — 회사 사진의 천장 사다리)
+const FAN = { x: 140, y: -45, w: 100, d: 1, top: 33 };           // 배기 팬 벽 (뜨거운 통로 끝 — 프린스조지 사진)
+const AISLE = { cold: [-20.3, -WALL_T], hot: [-44, -32] };       // 찬 통로·뜨거운 통로 (바닥 색으로 구분)
 
 const WIDTH = 1000;
 const EXTREMES = [...k.boxCorners(BASE, -13, 0), [WALL.x0, -WALL.t, WALL.h], [WALL.cut, -WALL.t, WALL.h], [WALL.x0, 0, WALL.h], [GEN.x + 104, GEN.y + 14, 60]];
@@ -232,7 +236,10 @@ function hall() {
   const tiles = [];
   for (let x = 130; x < WALL.x1; x += 12) tiles.push(seg([x, HALL.back, HALL.floor], [x, -WALL.t, HALL.floor]));
   for (const y of [-12, -38]) tiles.push(seg([WALL.x0, y, HALL.floor], [WALL.x1, y, HALL.floor]));   // 바닥 안쪽에서만 (바닥 뒤 끝 y = −44)
-  W.box("hall.floor", floorPlan, 0, HALL.floor, { cls: "pw-floor", tone: "lo", steps: 1, inner: L(tiles.join(""), { tone: "faint" }), info: "hall", bias: -50,
+  // 설명을 위해 바닥을 칠함: 찬 통로(서버 앞) = 옅은 파랑, 뜨거운 통로(서버 뒤) = 옅은 주황
+  const inlay = (cls, x0, x1, [y0, y1]) => `<path class="${cls}" d="${poly([[x0, y0, HALL.floor], [x1, y0, HALL.floor], [x1, y1, HALL.floor], [x0, y1, HALL.floor]])}"/>`;
+  W.box("hall.floor", floorPlan, 0, HALL.floor, { cls: "pw-floor", tone: "lo", steps: 1, info: "hall-floor", bias: -50,
+    inner: inlay("pw-coldfloor", WALL.cut, WALL.x1, AISLE.cold) + inlay("pw-hotfloor", FAN.x, WALL.x1, AISLE.hot) + L(tiles.join(""), { tone: "faint" }),
     extra: cutFace([[WALL.x1, HALL.back, 0], [WALL.x1, -WALL.t, 0], [WALL.x1, -WALL.t, HALL.floor], [WALL.x1, HALL.back, HALL.floor]], hatch(-WALL.t - HALL.back, HALL.floor, 2.2, (u, v) => [WALL.x1, HALL.back + u, v])) });
 }
 hall();
@@ -250,8 +257,14 @@ function outerWall() {
     inner: L(frontSeams(Y, ribsIn(WALL.cut, WALL.step), 0, WALL.mid), { tone: "faint" }),
     extra: cutFace([[WALL.cut, -t, WALL.mid], [WALL.step, -t, WALL.mid], [WALL.step, 0, WALL.mid], [WALL.cut, 0, WALL.mid]], hatch(WALL.step - WALL.cut, t, 2.2, (u, v) => [WALL.cut + u, -t + v, WALL.mid]))
       + cutFace([[WALL.step, -t, WALL.low], [WALL.step, 0, WALL.low], [WALL.step, 0, WALL.mid], [WALL.step, -t, WALL.mid]], hatch(t, WALL.mid - WALL.low, 2.2, (u, v) => [WALL.step, -t + u, WALL.low + v])) });
-  W.box("wall.low", { x: WALL.step, y: -t, w: WALL.x1 - WALL.step, d: t, r: 0.01 }, 0, WALL.low, { cls: "pw-panel", tone: "lo", steps: 1, info: "wall",
-    inner: L(frontSeams(Y, ribsIn(WALL.step, WALL.x1), 0, WALL.low), { tone: "faint" }),
+  // 허문 벽 아랫부분 = 흡기 루버 줄 (10 단위마다 루버 판 하나: 틀 + 가로 슬롯 5줄)
+  const louvers = [];
+  for (let x = WALL.step + 4; x + 8 <= WALL.x1 - 2; x += 10) {
+    louvers.push(pathOf3(onFront(Y, [[x, 1.6], [x + 8, 1.6], [x + 8, 10.6], [x, 10.6], [x, 1.6]])));
+    louvers.push(frontSlots(Y, x + 0.7, x + 7.3, 2.5, 5, 1.6, 0.7));
+  }
+  W.box("wall.low", { x: WALL.step, y: -t, w: WALL.x1 - WALL.step, d: t, r: 0.01 }, 0, WALL.low, { cls: "pw-panel", tone: "lo", steps: 1, info: "intake",
+    inner: L(louvers.join(""), { tone: "lo" }),
     extra: cutFace([[WALL.step, -t, WALL.low], [WALL.x1, -t, WALL.low], [WALL.x1, 0, WALL.low], [WALL.step, 0, WALL.low]], hatch(WALL.x1 - WALL.step, t, 2.2, (u, v) => [WALL.step + u, -t + v, WALL.low]))
       + cutFace([[WALL.x1, -t, 0], [WALL.x1, 0, 0], [WALL.x1, 0, WALL.low], [WALL.x1, -t, WALL.low]], hatch(t, WALL.low, 2.2, (u, v) => [WALL.x1, -t + u, v])) });
   // 사람 문 (변압기와 ATS 사이): 문틀 + 문짝 + 손잡이 + 작은 차양
@@ -420,64 +433,128 @@ function feeders() {
     cable(`feeder.out${i}`, [[x, 7.2, top], [x, 7.2, top + 2.2], [x, 1.6, top + 2.2], [x, 1.6, HOOD.z]], 0.42, { flow: "load", bundle: "feeder", info: "feeder", bend: 1.15, maxLength: 6 });
     // 안: 벽 안쪽 판 → 벽을 따라 오른쪽 → 배전반 위로 내려감
     const zi = HOOD.z + 3.4 - i * 0.9;
-    cable(`feeder.in${i}`, [[x, -WALL.t - 0.4, zi], [x, -6 - i * 0.9, zi], [RPP.x + 4.8 - i * 1.1, -6 - i * 0.9, zi], [RPP.x + 4.8 - i * 1.1, RPP.y + 4.5, zi], [RPP.x + 4.8 - i * 1.1, RPP.y + 4.5, HALL.floor + 22]], 0.42, { flow: "load", bundle: "feeder-in", info: "feeder", bend: 1.8, maxLength: 8 });
+    cable(`feeder.in${i}`, [[x, -WALL.t - 0.4, zi], [x, -6 - i * 0.9, zi], [RPP.x + 4.8 - i * 1.1, -6 - i * 0.9, zi], [RPP.x + 4.8 - i * 1.1, RPP.y + 6, zi], [RPP.x + 4.8 - i * 1.1, RPP.y + 6, HALL.floor + 22]], 0.42, { flow: "load", bundle: "feeder-in", info: "feeder", bend: 1.8, maxLength: 8 });
   }
   W.box("feeder.inplate", { x: 105, y: -WALL.t - 0.4, w: 12, d: 0.4, r: 0.05 }, HOOD.z - 0.6, 5.2, { cls: "pw-grey", tone: "mid", steps: 1, info: "feeder" });
 }
 feeders();
 
-// ---------- 9) 홀 배전반 · 트레이 · 랙 ----------
+// ---------- 9) 홀 안 (IREN 홈페이지의 매켄지·프린스조지 공랭 홀 사진 기준) ----------
+// 흡기 루버(허문 벽 아래) → 찬 통로 → 랙 앞면(Dell 은색 서버, 녹색 광케이블) → 랙 → 뜨거운 통로 → 배기 팬 벽
+// 전원: 홀 배전반 → 뜨거운 통로 위 전원 트레이 → 랙마다 코드 → 랙 뒤 PDU(277 V). 통신: 찬 통로 위 사다리
+// 마지막 랙은 오른쪽 옆판을 떼어 서버 옆모습·뒤 PDU·전원 코드를 보여 줌
 function hallPower() {
   const z0 = HALL.floor;
   W.box("rpp", RPP, z0, 22, { cls: "pw-grey", tone: "mid", steps: 1, info: "rpp",
     inner: L(frontSeams(RPP.y + RPP.d, [RPP.x + RPP.w / 2], z0, z0 + 22), { tone: "lo" }) });
   for (const x of [RPP.x + RPP.w / 2 - 1.6, RPP.x + RPP.w / 2 + 0.8]) W.box(`rpp.handle${x}`, { x, y: RPP.y + RPP.d, w: 0.8, d: 0.45, r: 0.1 }, z0 + 11, 2, { cls: "pw-steel", tone: "mid", steps: 1, info: "rpp" });
-  // 트레이: 배전반 오른쪽 → 랙 줄 위 (레일 2 + 가로대), 랙 꼭대기의 받침 기둥에 얹힘
+  // 전원 트레이 (랙 뒤, 뜨거운 통로 위): 레일 2 + 가로대 + 끝판
   const tx0 = RPP.x + RPP.w + 1, tx1 = RACK0 + RACK_W * RACKS - 1, ty = TRAY.y, tz = TRAY.z;
   W.box("tray.end", { x: tx1, y: ty, w: 0.3, d: TRAY.w, r: 0.05 }, tz, 1.4, { cls: "pw-steel", tone: "mid", steps: 1, info: "tray" });
   for (const [y, nm] of [[ty, "a"], [ty + TRAY.w - 0.3, "b"]]) W.box(`tray.rail${nm}`, { x: tx0, y, w: tx1 - tx0, d: 0.3, r: 0.05 }, tz, 1.4, { cls: "pw-steel", tone: "mid", steps: 1, info: "tray" });
   for (let x = tx0 + 1.5; x < tx1 - 0.5; x += 3) W.box(`tray.rung${x}`, { x, y: ty + 0.3, w: 0.45, d: TRAY.w - 0.6, r: 0.05 }, tz, 0.35, { cls: "pw-steel", tone: "lo", steps: 1, info: "tray", stamp: "trung" });
-  // 트레이 속 분기 케이블 3가닥 (배전반 위 → 트레이 → 끝까지)
+  // 분기 케이블 3가닥: 배전반 윗면 뒤쪽 → 위로 → 뒤로 → 트레이 왼쪽 끝으로 들어가 끝까지
+  //   (먼 줄일수록 왼쪽에서 꺾어 서로 엇갈리지 않게)
   for (let i = 0; i < 3; i++) {
-    const y = ty + 1.5 + i * 1.0, xu = RPP.x + RPP.w - 1.2 - i * 1.0;
-    cable(`branch.up${i}`, [[xu, y, z0 + 22], [xu, y, tz + 0.35 + 0.35], [tx1, y, tz + 0.35 + 0.35]], 0.35, { flow: "load", bundle: "branch", info: "tray", bend: 1.3, maxLength: 10, touch: ["tray.rung*"] });
+    const ly = ty + 1.5 + i * 1.0, xu = RPP.x + RPP.w - 3.2 + i * 1.0, yu = RPP.y + 1.5;
+    cable(`branch.up${i}`, [[xu, yu, z0 + 22], [xu, yu, tz + 0.7], [xu, ly, tz + 0.7], [tx1, ly, tz + 0.7]], 0.35, { flow: "load", bundle: "branch", info: "tray", bend: 1.3, maxLength: 10, touch: ["tray.rung*"] });
   }
-  // 랙 14대 (같은 모양 → 첫 랙만 그리고 나머지는 복사)
+  // 통신 케이블 사다리 (찬 통로 위, 회사 사진의 천장 사다리): 레일 2 + 가로대 + 끝판 2 + 주황·파랑 케이블 묶음
+  const nx0 = RACK0 - 4.5, nx1 = tx1;
+  for (const x of [nx0, nx1]) W.box(`net.end${x}`, { x, y: NET.y, w: 0.3, d: NET.w, r: 0.05 }, NET.z, 1.4, { cls: "pw-steel", tone: "mid", steps: 1, info: "netlad" });
+  for (const [y, nm] of [[NET.y, "a"], [NET.y + NET.w - 0.3, "b"]]) W.box(`net.rail${nm}`, { x: nx0 + 0.3, y, w: nx1 - nx0 - 0.3, d: 0.3, r: 0.05 }, NET.z, 1.4, { cls: "pw-steel", tone: "mid", steps: 1, info: "netlad" });
+  for (let x = nx0 + 1.8; x < nx1 - 0.5; x += 3) W.box(`net.rung${x}`, { x, y: NET.y + 0.3, w: 0.45, d: NET.w - 0.6, r: 0.05 }, NET.z, 0.35, { cls: "pw-steel", tone: "lo", steps: 1, info: "netlad", stamp: "nrung" });
+  for (const [y, r, cls] of [[NET.y + 1.25, 0.55, "pw-fiber-or"], [NET.y + 2.75, 0.5, "pw-fiber-bl"]]) cable(`net.cable${cls}`, [[nx0 + 0.3, y, NET.z + 0.35 + r], [nx1, y, NET.z + 0.35 + r]], r, { cls, tone: "mid", info: "netlad", fillet: false, maxLength: 30, touch: ["net.rung*"] });
+  // 랙 14대 (같은 모양은 첫 랙만 그리고 나머지는 복사) + 배기 팬 벽
   for (let i = 0; i < RACKS; i++) rack(i, RACK0 + i * RACK_W);
+  fanWall();
 }
+const SRV_H = 4.45, SRV_Z0 = HALL.floor + 1.6;   // 서버 1대 높이(약 10U)와 첫 서버 높이
 function rack(i, x0) {
+  const z0 = HALL.floor, Y = RACK_Y + RACK_D, top = z0 + RACK_H, open = i === RACKS - 1;
+  // 위·아래 띠 (랙 문틀 자리): 앞면에서 오른쪽 옆면으로 돌아 윤곽선에서 끝나는 이음선
+  const plan = { x: x0 + 0.05, y: RACK_Y, w: RACK_W - 0.1, d: RACK_D, r: 0.1 };
+  const bands = L(k.sideSeam(plan, top - 1.1, P, 1) + k.sideSeam(plan, z0 + 1.1, P, 1), { tone: "lo" });
+  if (!open) W.box(`rack${i}`, plan, z0, RACK_H, { cls: "pw-rack", tone: "mid", steps: 1, info: "rack", stamp: "rack-body", inner: bands });
+  else openRack(x0);
+  for (let s = 0; s < 4; s++) server(i, s, x0, SRV_Z0 + s * SRV_H);
+  // 전원: 트레이 아래 드롭아웃 상자 → 코드 → 랙 윗면 뒤쪽 인입구 (PDU 는 랙 뒤 안쪽에 세로로)
+  const yd = TRAY.y + 3.05;
+  for (const [xc, nm] of [[x0 + 1.2, "a"], [x0 + RACK_W - 1.2, "b"]]) {
+    W.box(`rack${i}.dropout${nm}`, { x: xc - 0.45, y: yd - 0.45, w: 0.9, d: 0.9, r: 0.15 }, TRAY.z - 0.6, 0.6, { cls: "pw-steel", tone: "mid", steps: 2, info: "pdu", stamp: "dropout" });
+    W.box(`rack${i}.gland${nm}`, { x: xc - 0.55, y: RACK_Y + 0.25, w: 1.1, d: 1.1, r: 0.3 }, top, 0.5, { cls: "pw-dark", tone: "mid", steps: 2, info: "pdu", stamp: "gland" });
+    cable(`drop${i}${nm}`, [[xc, yd, TRAY.z - 0.6], [xc, yd, top + 1.3], [xc, RACK_Y + 0.8, top + 1.3], [xc, RACK_Y + 0.8, top + 0.5]], 0.24, { flow: "load", bundle: `drop${i}`, info: "pdu", bend: 0.65, maxLength: 6 });
+  }
+  // 받침: 랙 위 뒤쪽 기둥·팔 = 전원 트레이, 앞쪽 기둥·팔 = 통신 사다리
+  W.box(`rack${i}.post`, { x: x0 + RACK_W / 2 - 0.25, y: RACK_Y + 0.3, w: 0.5, d: 0.5, r: 0.05 }, top, TRAY.z - 0.5 - top, { cls: "pw-steel", tone: "mid", steps: 1, info: "tray", stamp: "tpost" });
+  W.box(`rack${i}.arm`, { x: x0 + RACK_W / 2 - 0.25, y: TRAY.y, w: 0.5, d: RACK_Y + 0.8 - TRAY.y, r: 0.05 }, TRAY.z - 0.5, 0.5, { cls: "pw-steel", tone: "mid", steps: 1, info: "tray", stamp: "tarm" });
+  W.box(`rack${i}.npost`, { x: x0 + RACK_W / 2 - 0.25, y: Y - 1.0, w: 0.5, d: 0.5, r: 0.05 }, top, NET.z - 0.5 - top, { cls: "pw-steel", tone: "mid", steps: 1, info: "netlad", stamp: "npost" });
+  W.box(`rack${i}.narm`, { x: x0 + RACK_W / 2 - 0.25, y: Y - 1.0, w: 0.5, d: NET.y + NET.w - (Y - 1.0), r: 0.05 }, NET.z - 0.5, 0.5, { cls: "pw-steel", tone: "mid", steps: 1, info: "netlad", stamp: "narm" });
+}
+// 서버 1대 앞면 (Dell 은색): 위 = 타공 망, 아래 = 육각 무늬, 오른쪽 초록 LED, 맨 아래 녹색 광케이블 고리 3개
+function server(i, s, x0, a) {
+  const Y = RACK_Y + RACK_D, F = Y + 0.25, x = x0 + 0.55, w = 4.9, h = 4.2;
+  const band = pathOf3(onFront(F, [[x + 0.3, a + 2.3], [x + w - 0.3, a + 2.3], [x + w - 0.3, a + 3.9], [x + 0.3, a + 3.9], [x + 0.3, a + 2.3]]));
+  const hexes = [];
+  for (let j = 0; j < 6; j++) {
+    const cx = x + 0.62 + j * 0.74, cz = a + 1.4, r = 0.36, pts = [];
+    for (let q = 0; q <= 6; q++) { const t = ((q % 6) * Math.PI) / 3; pts.push([cx + r * Math.cos(t), cz + r * Math.sin(t)]); }
+    hexes.push(pathOf3(onFront(F, pts)));
+  }
+  const mesh = [];
+  for (let c = 0; c < 11; c++) for (let rr = 0; rr < 2; rr++) mesh.push(at([x + 0.55 + c * 0.38, F, a + 2.75 + rr * 0.7]));
+  const loops = [], ports = [];
+  for (let f = 0; f < 3; f++) {
+    const xa = x + 0.9 + f * 1.35, za = a + 0.72;
+    loops.push(pathOf3(onFront(F + 0.05, [[xa, za], [xa, za - 0.3], [xa + 0.3, za - 0.46], [xa + 0.6, za - 0.3], [xa + 0.6, za]])));
+    ports.push(at([xa, F + 0.05, za]), at([xa + 0.6, F + 0.05, za]));
+  }
+  W.box(`srv${i}.${s}`, { x, y: Y, w, d: 0.25, r: 0.05 }, a, h, { cls: "pw-silver", tone: "mid", steps: 1, info: "server", stamp: "srv",
+    inner: L(band + hexes.join(""), { tone: "mid" }),
+    extra: Dt(mesh, { size: 0.12, tone: "mid" }) + L(loops.join(""), { tone: "green" }) + Dt(ports, { size: 0.14, tone: "hi" })
+      + `<g class="pw-leds">${Dt([at([x + w - 0.4, F, a + 3.1])], { size: 0.2, tone: "hi" })}</g>` });
+}
+// 마지막 랙: 오른쪽 옆판을 떼어 안을 보여 줌 (왼쪽 옆판·위·아래 판·오른쪽 기둥 2, 서버 몸통, 뒤 PDU 와 전원 코드)
+function openRack(x0) {
   const z0 = HALL.floor, Y = RACK_Y + RACK_D, top = z0 + RACK_H;
-  // 몸체 (검정): 뒷면에 서버 4대 윤곽·전원 공급기·팬, 위·아래 덮개선
-  const face = [];
-  const srvH = 4.45, sz0 = z0 + 1.6;
+  W.box("rackopen.side", { x: x0 + 0.05, y: RACK_Y, w: 0.3, d: RACK_D, r: 0.05 }, z0, RACK_H, { cls: "pw-rack", tone: "mid", steps: 1, info: "rack" });
+  W.box("rackopen.top", { x: x0 + 0.35, y: RACK_Y, w: RACK_W - 0.4, d: RACK_D, r: 0.05 }, top - 0.8, 0.8, { cls: "pw-rack", tone: "mid", steps: 1, info: "rack" });
+  W.box("rackopen.bottom", { x: x0 + 0.35, y: RACK_Y, w: RACK_W - 0.4, d: RACK_D, r: 0.05 }, z0, 0.8, { cls: "pw-rack", tone: "mid", steps: 1, info: "rack" });
+  for (const [y, nm] of [[Y - 0.5, "f"], [RACK_Y, "r"]]) W.box(`rackopen.post${nm}`, { x: x0 + RACK_W - 0.55, y, w: 0.5, d: 0.5, r: 0.05 }, z0 + 0.8, RACK_H - 1.6, { cls: "pw-rack", tone: "mid", steps: 1, info: "rack" });
+  // 서버 몸통 (옆면 환기 슬롯) — 앞면 판은 server() 가 그림
   for (let s = 0; s < 4; s++) {
-    const a = sz0 + s * srvH, b = a + srvH - 0.25;
-    face.push(pathOf3(onFront(Y, [[x0 + 1.0, a], [x0 + 5.0, a], [x0 + 5.0, b], [x0 + 1.0, b], [x0 + 1.0, a]])));
+    const a = SRV_Z0 + s * SRV_H;
+    W.box(`rackopen.srv${s}`, { x: x0 + 0.55, y: RACK_Y + 2.2, w: 4.6, d: Y - (RACK_Y + 2.2), r: 0.05 }, a, 4.2, { cls: "pw-silver", tone: "mid", steps: 1, info: "server",
+      inner: L(rightSlots(x0 + 5.15, RACK_Y + 3.8, Y - 1.6, a + 1.0, 3, 1.0, 0.4), { tone: "lo" }) });
   }
-  const fans = [];
-  for (let s = 0; s < 4; s++) for (let f = 0; f < 3; f++) fans.push(k.sideRing([x0 + 1.75 + f * 1.25, Y, sz0 + s * srvH + 2.8], 0.5, "y", P, 14));
-  const psus = [];
-  for (let s = 0; s < 4; s++) for (let p = 0; p < 4; p++) { const xa = x0 + 1.2 + p * 0.95, a = sz0 + s * srvH + 0.45; psus.push(pathOf3(onFront(Y, [[xa, a], [xa + 0.75, a], [xa + 0.75, a + 1.2], [xa, a + 1.2], [xa, a]]))); }
-  W.box(`rack${i}`, { x: x0 + 0.05, y: RACK_Y, w: RACK_W - 0.1, d: RACK_D, r: 0.1 }, z0, RACK_H, { cls: "pw-rack", tone: "mid", steps: 1, info: "rack", stamp: "rack-body",
-    inner: L(face.join(""), { tone: "lo" }) + L(fans.join(""), { tone: "faint" }) + L(psus.join(""), { tone: "lo" }) });
-  // 상태 LED (전원 공급기마다 초록 점)
-  const leds = [];
-  for (let s = 0; s < 4; s++) for (let p = 0; p < 4; p++) leds.push(at([x0 + 1.55 + p * 0.95, Y, sz0 + s * srvH + 1.35]));
-  W.put(`rack${i}.leds`, [x0 + 3, Y + 0.05, z0 + 10], `<g class="pw-leds">${Dt(leds, { size: 0.32, tone: "hi" })}</g>`, [R.solid(A.box([x0 + 1, Y, z0 + 2], [x0 + 5, Y + 0.1, z0 + 19], { name: `rack${i}.leds` }))], { info: "server", bias: 0.05 });
-  // 랙 PDU 2개 (A·B): 뒷면 양옆 세로 띠, 콘센트 점
-  for (const [xp, nm] of [[x0 + 0.25, "a"], [x0 + RACK_W - 0.85, "b"]]) {
-    const outlets = []; for (let j = 0; j < 12; j++) outlets.push(at([xp + 0.3, Y + 1.0, z0 + 3 + j * 1.45]));
-    W.box(`pdu${i}${nm}`, { x: xp, y: Y, w: 0.6, d: 1.0, r: 0.05 }, z0 + 2, 18, { cls: "pw-pdu", tone: "mid", steps: 1, info: "pdu", stamp: `pdu-${nm}`,
-      extra: Dt(outlets, { size: 0.22, tone: "hi" }) });
+  // 뒤 PDU: 세로 띠, 오른쪽 면에 콘센트, 서버 뒤쪽 전원 공급기로 짧은 코드 4가닥
+  const px0 = x0 + 4.0, px1 = x0 + 5.4, py0 = RACK_Y + 0.6, py1 = RACK_Y + 1.9;   // 옆 개구부 바로 안쪽, 폭 1.4 · 깊이 1.3
+  const outlets = []; for (let j = 0; j < 12; j++) outlets.push(at([px1, (py0 + py1) / 2, z0 + 2.6 + j * 1.45]));
+  W.box("pdu.open", { x: px0, y: py0, w: px1 - px0, d: py1 - py0, r: 0.05 }, z0 + 1.6, 19, { cls: "pw-pdu", tone: "mid", steps: 1, info: "pdu",
+    extra: Dt(outlets, { size: 0.3, tone: "hi" }) });
+  const cords = [];
+  for (let s = 0; s < 4; s++) {
+    const zo = z0 + 2.6 + (s * 3 + 1) * 1.45, zs = SRV_Z0 + s * SRV_H + 2.4;
+    cords.push(k.wireSvg(at([px1, (py0 + py1) / 2, zo]), at([x0 + 5.15, RACK_Y + 3.0, zs]), { via: [at([px1, RACK_Y + 2.6, (zo + zs) / 2])], tone: "hi", size: 0.28 }));
   }
-  // 트레이 아래 드롭아웃 상자 → 전원 코드가 내려와 PDU 앞면 꼭대기 플러그로 (A·B 두 줄)
-  for (const [xc, nm] of [[x0 + 0.55, "a"], [x0 + RACK_W - 0.55, "b"]]) {
-    W.box(`rack${i}.dropout${nm}`, { x: xc - 0.45, y: Y + 0.05, w: 0.9, d: 0.9, r: 0.15 }, TRAY.z - 0.6, 0.6, { cls: "pw-steel", tone: "mid", steps: 2, info: "pdu", stamp: "dropout" });
-    cable(`drop${i}${nm}`, [[xc, Y + 0.5, TRAY.z - 0.6], [xc, Y + 0.5, z0 + 20]], 0.24, { flow: "load", bundle: `drop${i}`, info: "pdu", fillet: false, maxLength: 8 });
+  W.put("pdu.cords", [x0 + 5.3, RACK_Y + 2.4, z0 + 12], `<g class="pw-cords">${cords.join("")}</g>`, [R.solid(A.box([x0 + 5.15, py0, z0 + 2], [px1 + 0.05, RACK_Y + 3.0, z0 + 20], { name: "pdu.cords" }))], { info: "pdu", bias: 0.06 });
+}
+// 배기 팬 벽 (뜨거운 통로 끝, 프린스조지 홀 사진): 흰 틀에 정사각 팬 20 × 6, 위·오른쪽 끝은 잘린 면
+function fanWall() {
+  const z0 = HALL.floor, Yf = FAN.y + FAN.d;
+  const frames = [], rings = [], hubs = [];
+  for (let c = 0; c < 20; c++) for (let r = 0; r < 6; r++) {
+    const cx = FAN.x + 2.5 + c * 5, cz = z0 + 3 + r * 5;
+    frames.push(pathOf3(onFront(Yf, [[cx - 2.2, cz - 2.2], [cx + 2.2, cz - 2.2], [cx + 2.2, cz + 2.2], [cx - 2.2, cz + 2.2], [cx - 2.2, cz - 2.2]])));
+    rings.push(k.sideRing([cx, Yf, cz], 1.8, "y", P, 18));
+    hubs.push(at([cx, Yf, cz]));
   }
-  // 트레이 받침 기둥 (랙 위 → 트레이 아래)
-  W.box(`rack${i}.post`, { x: x0 + RACK_W / 2 - 0.25, y: Y - 0.7, w: 0.5, d: 0.5, r: 0.05 }, top, TRAY.z - 0.5 - top, { cls: "pw-steel", tone: "mid", steps: 1, info: "tray", stamp: "tpost" });
-  W.box(`rack${i}.arm`, { x: x0 + RACK_W / 2 - 0.25, y: Y - 0.7, w: 0.5, d: TRAY.y + TRAY.w - (Y - 0.7), r: 0.05 }, TRAY.z - 0.5, 0.5, { cls: "pw-steel", tone: "mid", steps: 1, info: "tray", stamp: "tarm" });
+  const X1 = FAN.x + FAN.w;
+  W.box("fanwall", { x: FAN.x, y: FAN.y, w: FAN.w, d: FAN.d, r: 0.02 }, z0, FAN.top - z0, { cls: "pw-panel", tone: "lo", steps: 1, info: "fanwall",
+    inner: L(frames.join(""), { tone: "lo" }) + L(rings.join(""), { tone: "mid" }),
+    extra: Dt(hubs, { size: 0.32, tone: "mid" })
+      + cutFace([[FAN.x, FAN.y, FAN.top], [X1, FAN.y, FAN.top], [X1, Yf, FAN.top], [FAN.x, Yf, FAN.top]], hatch(FAN.w, FAN.d, 2.2, (u, v) => [FAN.x + u, FAN.y + v, FAN.top]))
+      + cutFace([[X1, FAN.y, z0], [X1, Yf, z0], [X1, Yf, FAN.top], [X1, FAN.y, FAN.top]], hatch(FAN.d, FAN.top - z0, 2.2, (u, v) => [X1, FAN.y + u, z0 + v])) });
 }
 hallPower();
 
@@ -602,8 +679,10 @@ const PART_STOPS = [
   { key: "gen-aux", p: [GEN.x + GEN.w, GEN.y + 7, SLAB + GEN_TANK + 5], z: 3.2 },
   { key: "mer", p: [MER.x + 30, MER.y + MER.d, SLAB + 16], z: 2.2 },
   { key: "feeder", p: [111, 2, HOOD.z + 2], z: 2.8 },
-  { key: "pdu", p: [RACK0 + 4 * RACK_W + 0.55, RACK_Y + RACK_D + 1, HALL.floor + 12], z: 3.4 },
-  { key: "server", p: [RACK0 + 7 * RACK_W + 3, RACK_Y + RACK_D, HALL.floor + 9], z: 3.2 },
+  { key: "pdu", p: [RACK0 + 13 * RACK_W + 5.4, RACK_Y + 1.25, HALL.floor + 12], z: 3.6, side: "left" },
+  { key: "server", p: [RACK0 + 7 * RACK_W + 3, RACK_Y + RACK_D + 0.25, SRV_Z0 + 2 * SRV_H + 2.6], z: 3.4 },
+  { key: "intake", p: [186, 0, 6.5], z: 2.6 },
+  { key: "fanwall", p: [214, FAN.y + FAN.d, 28], z: 2.6 },
 ];
 // 정전 장면: 단계마다 짚을 곳 (말풍선에 그 단계 설명) — ATS 표시등 → 발전기 제어반(기동·배기) → 칼날 → 콘듀잇 …
 const LAMP_P = [SECTIONS[0] + 4.9, ATS.y + ATS.d + 0.3, ATS_Z + ATS_H - 4];
@@ -655,12 +734,16 @@ const INFO = {
   wall: ["데이터홀 벽 · 오른쪽은 허물어 안을 보여 줌 (빗금 = 잘린 면)", "Data-hall wall · broken away on the right to show inside (hatching = cut)"],
   door: ["홀 출입문", "Hall door"],
   lamp: ["벽등", "Wall light"],
-  hall: ["데이터홀 안 · 지붕을 떼어 냄", "Inside the data hall · roof removed"],
+  hall: ["데이터홀 안 · 지붕을 떼어 냄 (실제 지붕엔 원통형 배기구가 줄지어 있음)", "Inside the data hall · roof removed (the real roof has rows of round exhaust stacks)"],
+  "hall-floor": ["데이터홀 바닥 · 파랑 = 찬 통로(서버 앞), 주황 = 뜨거운 통로(서버 뒤) — 설명을 위해 칠한 색", "Hall floor · blue = cold aisle (server fronts), orange = hot aisle (server backs) — coloured for explanation"],
+  intake: [`흡기 루버 · 바깥의 찬 공기가 루버·필터로 들어와 찬 통로로 · BC 의 서늘한 공기를 그대로 써서 평균 PUE ${SITE.pue} (회사 홈페이지)`, `Intake louvers · cool outside air enters through louvers and filters into the cold aisle · free air cooling, average PUE ${SITE.pue} (company website)`],
+  fanwall: ["배기 팬 벽 · 서버를 지나며 데워진 공기를 뜨거운 통로에서 밖으로 내보냄 (프린스조지 홀 사진의 팬 벽)", "Exhaust fan wall · pulls the air warmed by the servers out of the hot aisle (as in the Prince George hall photo)"],
+  netlad: ["통신 케이블 사다리 (찬 통로 위) · 서버 앞면의 광케이블로 이어짐 (매켄지 홀 사진)", "Network cable ladder over the cold aisle · feeds the fibre at the server fronts (as in the Mackenzie hall photos)"],
   rpp: ["홀 배전반 · 랙마다 전원을 나눔 (모양은 예시)", "Hall power panel · splits power to the racks (illustrative)"],
-  tray: ["케이블 트레이 · 랙 위로 각 랙 PDU 에 전원", "Cable tray · power over the racks to each PDU"],
-  pdu: [`랙 PDU · 480 V 3상의 한 상(${V_PH} V)을 서버가 바로 씀 → 홀 안에 2차 변압기가 없음`, `Rack PDU · servers run on one phase of 480 V (${V_PH} V) directly, so no second transformer in the hall`],
-  server: [`공랭 B300 GPU 서버 · 랙당 ${EST.serversPerRack}대 = GPU ${EST.gpusPerRack}개 (사이트 가정)`, `Air-cooled B300 GPU servers · ${EST.serversPerRack} per rack = ${EST.gpusPerRack} GPUs (site assumption)`],
-  rack: [`랙 · 이 블록 하나가 약 ${EST.racks}대(GPU 약 ${fmt(EST.gpus)}개)를 먹임 · 추정 (GPU 1개당 ${EST.kwPerGpu.toFixed(1)} kW)`, `Rack · one block feeds about ${EST.racks} racks (~${fmt(EST.gpus)} GPUs) · estimate at ${EST.kwPerGpu.toFixed(1)} kW per GPU`],
+  tray: ["전원 트레이 (뜨거운 통로 위) · 홀 배전반에서 랙마다 전원 코드를 내림 (모양은 예시)", "Power tray over the hot aisle · drops a cord to each rack from the hall panel (illustrative)"],
+  pdu: [`랙 PDU (랙 뒤) · 480 V 3상의 한 상(${V_PH} V)을 서버 전원 공급기에 바로 → 홀 안에 2차 변압기가 없음 · 이 랙은 옆판을 떼어 보여 줌`, `Rack PDU at the back · servers run on one phase of 480 V (${V_PH} V) directly, so no second transformer · side panel removed on this rack`],
+  server: [`공랭 B300 GPU 서버 (Dell 은색 앞면, 녹색 광케이블) · 앞으로 찬 공기를 빨아들여 뒤로 내보냄 · 랙당 ${EST.serversPerRack}대 = GPU ${EST.gpusPerRack}개 (사이트 가정, 회사 사진의 랙에도 4대 안팎)`, `Air-cooled B300 GPU servers (Dell, silver fronts, green fibre) · pull cool air in at the front, push it out the back · ${EST.serversPerRack} per rack = ${EST.gpusPerRack} GPUs (site assumption; company photos show about four per rack)`],
+  rack: [`랙 · 1대 약 ${EST.rackKw} kW (GPU ${EST.gpusPerRack}개 × ${EST.kwPerGpu.toFixed(1)} kW, 가정) — 회사가 밝힌 최대 랙 밀도 ${SITE.rackMaxKw} kW 안 · 이 블록 하나가 약 ${EST.racks}대(GPU 약 ${fmt(EST.gpus)}개, 추정) · 그림은 한 줄 일부`, `Rack · about ${EST.rackKw} kW each (${EST.gpusPerRack} GPUs × ${EST.kwPerGpu.toFixed(1)} kW, assumption) — within the company's stated ${SITE.rackMaxKw} kW maximum rack density · one block feeds about ${EST.racks} racks (~${fmt(EST.gpus)} GPUs, estimate) · drawing shows part of one row`],
   bollard: ["보호 기둥 · 차량 충돌 방지", "Bollard · vehicle protection"],
 };
 const PHASE_TEXT = {
@@ -697,11 +780,11 @@ function page(ko) {
   const sub = ko ? `홀 1개 = ${BLOCK.perHall}칸 = ${BLOCK.mw * BLOCK.perHall} MW · 이 블록 ≈ 랙 ${EST.racks}대 · GPU ${fmt(EST.gpus)}개 (추정)` : `one hall = ${BLOCK.perHall} segments = ${BLOCK.mw * BLOCK.perHall} MW · this block ≈ ${EST.racks} racks · ${fmt(EST.gpus)} GPUs (estimate)`;
   const zt = zoomText(ko);
   const keys = ko
-    ? [["pw-k-flow", "전류가 흐르는 길"], ["pw-k-lit", "ATS 전환 접점 (움직이는 부분)"], ["pw-k-cut", "잘라 보여 준 면"]]
-    : [["pw-k-flow", "current flowing"], ["pw-k-lit", "ATS contacts (the moving part)"], ["pw-k-cut", "cut-away faces"]];
+    ? [["pw-k-flow", "전류가 흐르는 길"], ["pw-k-lit", "ATS 전환 접점 (움직이는 부분)"], ["pw-k-cold", "찬 통로 (서버 앞)"], ["pw-k-hot", "뜨거운 통로 (서버 뒤)"], ["pw-k-cut", "잘라 보여 준 면"]]
+    : [["pw-k-flow", "current flowing"], ["pw-k-lit", "ATS contacts (the moving part)"], ["pw-k-cold", "cold aisle (server fronts)"], ["pw-k-hot", "hot aisle (server backs)"], ["pw-k-cut", "cut-away faces"]];
   const caption = ko
-    ? `배치·전압·발전기 2.5 MW·콘듀잇 ${BLOCK.genConduits}개·MER 은 매켄지 현장을 분석한 제3자 스레드(<a href="${SOURCE.url}" target="_blank" rel="noreferrer">${SOURCE.by}, ${SOURCE.posted}</a>, ${SOURCE.filmed} 드론 영상) 기준이며 회사가 확인한 내용이 아닙니다. 케이블 가닥 수·홀 안 배전 모양은 그림 표현. GPU·랙 수는 사이트 가정(GPU 1개당 ${EST.kwPerGpu.toFixed(1)} kW, 랙당 ${EST.gpusPerRack}개)으로 계산한 추정. 정전·전환 시간은 압축해서 보여 줌. ${SOURCE.filmed} 영상 기준 이 칸들은 장비 설치·케이블 당김까지 — 다음은 종단 → 시험 → 로드뱅크 시운전 → 가동.`
-    : `Layout, voltages, the 2.5 MW generator, the ${BLOCK.genConduits} conduits and the MER follow a third-party analysis of the Mackenzie site (<a href="${SOURCE.url}" target="_blank" rel="noreferrer">${SOURCE.by}, ${SOURCE.posted}</a>, drone footage of ${SOURCE.filmed}); not company-confirmed. Cable counts and the in-hall distribution are illustrative. GPU and rack counts are estimates from the site's assumptions (${EST.kwPerGpu.toFixed(1)} kW per GPU, ${EST.gpusPerRack} per rack). Outage timing is compressed. As of the ${SOURCE.filmed} footage these segments had gear set and cables pulled — next: termination → testing → load-bank commissioning → live.`;
+    ? `배치·전압·발전기 2.5 MW·콘듀잇 ${BLOCK.genConduits}개·MER 은 매켄지 현장을 분석한 제3자 스레드(<a href="${SOURCE.url}" target="_blank" rel="noreferrer">${SOURCE.by}, ${SOURCE.posted}</a>, ${SOURCE.filmed} 드론 영상) 기준이며 회사가 확인한 내용이 아닙니다. 홀 안은 IREN 홈페이지의 <a href="${SITE.pages[0]}" target="_blank" rel="noreferrer">매켄지</a>·<a href="${SITE.pages[1]}" target="_blank" rel="noreferrer">프린스조지</a> 공랭 홀 사진을 보고 그림(흡기 → 찬 통로 → 랙 앞면 → 뜨거운 통로 → 배기 팬 벽, 평균 PUE ${SITE.pue}·최대 랙 밀도 ${SITE.rackMaxKw} kW 는 같은 페이지). 설명을 위해 지붕·벽을 잘라 냈고, 랙은 한 줄 일부만, 통로 바닥 색·케이블 가닥 수·홀 배전반과 트레이 모양은 그림 표현. GPU·랙 수는 사이트 가정(GPU 1개당 ${EST.kwPerGpu.toFixed(1)} kW, 랙당 ${EST.gpusPerRack}개)으로 계산한 추정. 정전·전환 시간은 압축해서 보여 줌. ${SOURCE.filmed} 영상 기준 이 칸들은 장비 설치·케이블 당김까지 — 다음은 종단 → 시험 → 로드뱅크 시운전 → 가동.`
+    : `Layout, voltages, the 2.5 MW generator, the ${BLOCK.genConduits} conduits and the MER follow a third-party analysis of the Mackenzie site (<a href="${SOURCE.url}" target="_blank" rel="noreferrer">${SOURCE.by}, ${SOURCE.posted}</a>, drone footage of ${SOURCE.filmed}); not company-confirmed. The hall interior is drawn from IREN's own <a href="${SITE.pages[0]}" target="_blank" rel="noreferrer">Mackenzie</a> and <a href="${SITE.pages[1]}" target="_blank" rel="noreferrer">Prince George</a> air-cooled hall photos (intake → cold aisle → rack fronts → hot aisle → exhaust fan wall; average PUE ${SITE.pue} and ${SITE.rackMaxKw} kW maximum rack density from the same pages). Roof and walls are cut away for explanation, only part of one rack row is shown, and aisle floor colours, cable counts, the hall panel and trays are illustrative. GPU and rack counts are estimates from the site's assumptions (${EST.kwPerGpu.toFixed(1)} kW per GPU, ${EST.gpusPerRack} per rack). Outage timing is compressed. As of the ${SOURCE.filmed} footage these segments had gear set and cables pulled — next: termination → testing → load-bank commissioning → live.`;
   return `<!doctype html><html lang="${ko ? "ko" : "en"}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title}</title><style>${k.ISO_CSS}${CSS}</style></head>
 <body class="iso pw-body" data-theme="light"><main class="pw-page">
 <div class="rk-fig pw-fig">
@@ -722,8 +805,9 @@ for (const ko of [true, false]) {
 }
 // 검사 예외 (4배 확대로 직접 보고 판단한 것만):
 //   cover: 칼날 그림 9장 중 하나만 보이므로 기록 모양(N 위치)보다 넓게 그려짐
-//   crowd: 래더·트레이 안에서 나란히 눕거나 끝나는 케이블과 레일, 이웃 랙의 PDU 코드끼리, 발전기 끝 보조관과 도랑 벽(깊이로 31 떨어짐)
+//   crowd: 래더·트레이·통신 사다리 안에서 나란히 눕거나 끝나는 케이블과 레일, 이웃 랙의 PDU 코드끼리, 발전기 끝 보조관과 도랑 벽(깊이로 31 떨어짐),
+//          ATS 위 피더 시작점과 얇은 홀 바닥판(깊이로 55 떨어짐 — 바닥판이 얇아 막대로 취급됨)
 auditAll({ power: W }, { power: {
   cover: ["ats.blade0", "ats.blade1", "ats.blade2"],
-  crowd: [["lv.run*", "ladder.rail*"], ["drop*", "pdu*"], ["drop*", "drop*"], ["branch.up*", "tray.rail*"], ["gen.auxconduit*", "stand.pw-gen.*"]],
+  crowd: [["lv.run*", "ladder.rail*"], ["net.cable*", "net.rail*"], ["drop*", "pdu*"], ["drop*", "drop*"], ["branch.up*", "tray.rail*"], ["gen.auxconduit*", "stand.pw-gen.*"], ["feeder.out*", "hall.floor"]],
 } });

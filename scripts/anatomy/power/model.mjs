@@ -18,6 +18,14 @@ export const SOURCE = {
   filmed: "2026-09-23",   // 드론·열화상 촬영일 (열 신호가 조용함 = 아직 통전 전)
 };
 
+// 회사 홈페이지(iren.com 매켄지·프린스조지 페이지)에 적힌 사양 — 공랭, 평균 PUE 1.1, 최대 랙 밀도 70 kW
+//   홀 안 모습은 같은 페이지 사진(찬 통로·Dell 서버 앞면·뜨거운 통로의 배기 팬 벽)을 보고 그림
+export const SITE = {
+  pages: ["https://iren.com/data-centers/mackenzie", "https://iren.com/data-centers/prince-george"],
+  pue: 1.1,
+  rackMaxKw: 70,
+};
+
 export const BLOCK = {
   mw: 2.5,              // 세그먼트 1칸 = 2.5 MW 전력 블록
   perHall: 8,           // 홀 1개 = 8칸 = 20 MW (매켄지 홀 4개 = 80 MW, 회사 발표 80 MW 와 맞음)
@@ -42,7 +50,7 @@ export const PHASE_V = phaseVolts(BLOCK.lvV);  // ≈ 277 V
 const HGX = GPU_PROFILES.find((p) => p.id === "hgx-blackwell");
 export const EST = (() => {
   const gpus = Math.round((BLOCK.mw * 1000) / HGX.kwPerGpu);
-  return { kwPerGpu: HGX.kwPerGpu, gpusPerRack: HGX.gpusPerRack, serversPerRack: HGX.gpusPerRack / 8, gpus, racks: Math.ceil(gpus / HGX.gpusPerRack) };
+  return { kwPerGpu: HGX.kwPerGpu, gpusPerRack: HGX.gpusPerRack, serversPerRack: HGX.gpusPerRack / 8, rackKw: HGX.gpusPerRack * HGX.kwPerGpu, gpus, racks: Math.ceil(gpus / HGX.gpusPerRack) };
 })();
 
 // ---------- 둘러보기 시간표 (초) ----------

@@ -930,6 +930,7 @@
           "name": "Air-cooled B300 halls",
           "name_ko": "공랭 B300 홀",
           "kind": "datahall_air",
+          "figure": "power-block",
           "it_mw": 80,
           "gross_mw": 80,
           "gpu": {

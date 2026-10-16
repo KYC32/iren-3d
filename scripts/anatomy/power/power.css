@@ -104,3 +104,13 @@
 .pw-dark{--anatomy-paper:#2a2e34;--anatomy-face:#30343b;--anatomy-top:#3b4048;--anatomy-shade-0:#1c1f23;--anatomy-shade-1:#202327;--anatomy-shade-2:#25282d;--anatomy-shade-3:#2a2d33;--anatomy-hi:#d9dee5;--anatomy-mid:#7a838f;--anatomy-lo:#555d68;--anatomy-faint:#3d434c}
 .pw-ins{--anatomy-paper:#8e4a3c;--anatomy-face:#985243;--anatomy-top:#b46a59;--anatomy-shade-0:#6c3328;--anatomy-shade-1:#77392d;--anatomy-shade-2:#823f33;--anatomy-shade-3:#8c4638;--anatomy-hi:#2a0d07;--anatomy-mid:#5a2419;--anatomy-lo:#7a3a2d;--anatomy-faint:#a86454}
 .pw-mer{--anatomy-paper:#e4e7ea;--anatomy-face:#eceef0;--anatomy-top:#f5f6f7;--anatomy-shade-0:#c3c8cd;--anatomy-shade-1:#ccd1d5;--anatomy-shade-2:#d5d9dd;--anatomy-shade-3:#dde1e4;--anatomy-hi:#2c3036;--anatomy-mid:#8a9098;--anatomy-lo:#a7adb4;--anatomy-faint:#c8cdd2}
+/* 홀 안 (회사 사진 기준): 은색 서버 앞면(Dell), 찬·뜨거운 통로 바닥(설명용 색), 통신 케이블(주황·파랑) */
+.pw-silver{--anatomy-paper:#c4c9d0;--anatomy-face:#ced3d9;--anatomy-top:#e2e6ea;--anatomy-shade-0:#9ba2ac;--anatomy-shade-1:#a7aeb7;--anatomy-shade-2:#b3b9c1;--anatomy-shade-3:#bec4cb;--anatomy-hi:#2a2f36;--anatomy-mid:#68707a;--anatomy-lo:#8a919b;--anatomy-faint:#a9b0b9;--anatomy-dot:#3a3f46;--anatomy-green:#21b26b}
+.pw-coldfloor{fill:#d9e8fa;stroke:none}
+.pw-hotfloor{fill:#fae3d0;stroke:none}
+.pw-fiber-or{--anatomy-paper:#e07b2e;--anatomy-face:#e8893c;--anatomy-top:#f6ad6c;--anatomy-shade-0:#b45a1b;--anatomy-shade-1:#c26420;--anatomy-shade-2:#d36f26;--anatomy-shade-3:#dc782b;--anatomy-hi:#4a1f05;--anatomy-mid:#7f3a0f;--anatomy-lo:#a8551b;--anatomy-faint:#f0a060}
+.pw-fiber-bl{--anatomy-paper:#3f7fd6;--anatomy-face:#4a8ae0;--anatomy-top:#80b2f2;--anatomy-shade-0:#2c5fa8;--anatomy-shade-1:#3268b5;--anatomy-shade-2:#3a74c4;--anatomy-shade-3:#427dce;--anatomy-hi:#0f2a52;--anatomy-mid:#1d467f;--anatomy-lo:#2c5fa8;--anatomy-faint:#7aa8e8}
+.pw-cords .iso-line{stroke:#1d2026;stroke-width:.9}
+.pw-cords .iso-wire-end{fill:#1d2026}
+.pw-k-cold{background:#d9e8fa;box-shadow:inset 0 0 0 1px #9fbde4}
+.pw-k-hot{background:#fae3d0;box-shadow:inset 0 0 0 1px #e2b48c}

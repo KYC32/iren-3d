@@ -16,6 +16,7 @@ import { CustomerLogo, logoKeyOf } from './logos/index.jsx'
 import HallEstimateCard from './HallEstimateCard.jsx'
 // 전력·통신 이중화 · 현장 진척(제3자 관찰) 칸 — 따로 불러와 첫 화면 번들에 안 들어감
 const SiteFacts = lazy(() => import('./SiteFacts.jsx'))
+const FigureButton = lazy(() => import('./FigureButton.jsx')) // 고른 건물의 그림(전력 경로·홀 안) 단추
 const TABS={overview:['현황','Overview'],history:['계획 이력','Plan history'],evidence:['사진·근거','Photos & evidence']}
 export default function CampusPanel(){
   const site=useAppStore(selectSelectedSite), st=useAppStore(), t=useT(), panel=useRef(null)
@@ -60,6 +61,8 @@ export default function CampusPanel(){
     <button className="surface-switch" onClick={()=>st.setSurface(st.surface==='map'?'3d':'map')}>{st.surface==='map'?<><Box size={14} aria-hidden="true"/>{ko?'3D 사업 구성도':'3D business diagram'}</>:<><MapIcon size={14} aria-hidden="true"/>{ko?'실제 지도로':'Geographic map'}</>}</button>
     <div className="zone-switch">{zones.map(z=><button key={z.key} aria-pressed={z.key===selectedZoneKey} onClick={()=>st.selectZone(z.key)}><span className="customer-mark" aria-hidden="true"><CustomerLogo name={logoKeyOf(z.name)} size={16}/></span><span>{z.name}</span></button>)}{(building||zone)&&<button onClick={()=>{st.requestCampusHome();st.syncHash()}}>{ko?'선택 해제':'Clear'}</button>}</div>
     {building&&<div className="selected-building"><b>{pickName(building,lang)}</b><span>{t.status[building.status]} · {building.lastReported ?? site.as_of}</span></div>}
+    {/* 고른 건물에 그림(전력 경로·홀 안)이 있으면 바로 아래 단추 — 따로 불러오는 묶음 */}
+    {building?.figure&&<Suspense fallback={null}><FigureButton name={building.figure} lang={lang} label={ko?'이 건물 안 자세히 보기 · 전력 경로':'Look inside · power path'}/></Suspense>}
     {/* 선택한 데이터홀: MW → GPU·랙·계약 기준 연 매출 (추정과 가정을 함께) */}
     {building&&detailTab==='overview'&&<HallEstimateCard building={building}/>}
     {st.surface==='3d'&&((appearance||landscape)?<details className="model-reference"><summary>{ko?'사진을 참고한 경관 · 출처':'Photo-informed setting · sources'}</summary>{appearance&&<p>{ko?appearance.notes_ko:appearance.notes_en}</p>}{landscape&&<p>{ko?landscape.notes_ko:landscape.notes_en} {ko?landscape.decoration_ko:landscape.decoration_en}</p>}<p>{ko?'건물·도로·경계의 위치와 규모는 용량을 설명하는 구성도입니다. 현장 실측·현재 공정률·계절을 재현하지 않습니다.':'Buildings, roads and boundaries illustrate capacity, not surveyed positions, current progress or seasons.'}</p><a href={landscape?.source??appearance.source} target="_blank" rel="noreferrer">{ko?'IREN 공식 자료':'IREN official reference'}<ArrowUpRight size={12} aria-hidden="true"/></a>{landscape?.regionalSource&&<a href={landscape.regionalSource} target="_blank" rel="noreferrer">{ko?'지역 경관 참고':'Regional landscape reference'}<ArrowUpRight size={12} aria-hidden="true"/></a>}</details>:<p className="research-note">{ko?'3D 사업 구성도 · 실제 건물 배치·공정률을 재현한 모형이 아닙니다.':'Business diagram · not a surveyed layout or measured construction model.'}</p>)}

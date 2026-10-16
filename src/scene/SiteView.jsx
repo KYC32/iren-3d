@@ -25,7 +25,8 @@ import { contentBox } from './campusCamera.js'
 import { devMilestones } from './devMilestones.js'
 import { fmtWhen } from '../data/events.js'
 import './scene.css' // 3D 화면 전용 스타일 (이 화면 코드와 함께 나중에 불러옴)
-import { Check, Activity, HardHat, CircleCheck, Clock, CircleDashed } from 'lucide-react'
+import { Check, Activity, HardHat, CircleCheck, Clock, CircleDashed, PlugZap } from 'lucide-react'
+import { openFigure } from '../ui/figureState.js'
 import { DryCampusGround } from './buildings/PhotoReferencedCampus.jsx'
 import { estimateHall, roundNice } from '../data/hallEstimate.js'
 import { buildingMwText } from './buildingLabel.js'
@@ -58,6 +59,13 @@ export default function SiteView({ site }) {
   const detail = useCampusDetail(L.side)
 
   // 선택한 데이터홀의 추정 랙 수 → 그 건물 블록들에 나눠 그림 (Block 이 완성된 홀일 때만 속을 엶)
+  // 사람이 건물을 누를 때: 고르고(새 건물이면 카메라가 다가감), 그 건물에 그림이 있으면 그림 대화상자를 엶
+  //   같은 건물을 다시 누르면 선택만 풀림 (둘러보기·공유 링크로 고를 때는 그림을 열지 않음)
+  const pickBuilding = (id, fly = id !== selectedId) => {
+    const fresh = id !== selectedId
+    selectBuilding(id, fly)
+    if (fresh && byId[id]?.figure) openFigure(byId[id].figure)
+  }
   const selectedEst = useMemo(() => (selectedId && byId[selectedId] ? estimateHall(byId[selectedId]) : null), [selectedId, byId])
   const selectedBlockCount = L.blocks.filter((b) => b.buildingId === selectedId).length || 1
   const racksPerBlock = selectedEst ? Math.ceil(selectedEst.racks / selectedBlockCount) : 0
@@ -108,7 +116,7 @@ export default function SiteView({ site }) {
           dimmed={!isStatusActive(activeStatuses, b.status) || !!zoneKey && customerKey(byId[b.buildingId]?.customer) !== zoneKey}
           onHover={(id) => setHover(id, '3d')}
           onLeave={(id) => useAppStore.getState().clearHover(id, '3d')}
-          onSelect={(id) => selectBuilding(id, id !== selectedId)} // 새 건물이면 카메라가 다가감, 같은 건물이면 선택 해제
+          onSelect={(id) => pickBuilding(id)} // 새 건물이면 카메라가 다가감(+ 그림이 있으면 엶), 같은 건물이면 선택 해제
         />
       ))}
 
@@ -119,7 +127,7 @@ export default function SiteView({ site }) {
       {/* 개요 화면의 건물 상태 칩: "Horizon 2 · 시운전" 처럼 이름과 상태를 함께 (전엔 상태만 있어 어느 건물인지 몰랐음)
           건설 중 건물도 칩으로 — "지금 어디까지 지어졌나"가 확대하지 않아도 보이게 (겹치면 낮은 우선순위가 비켜남) */}
       {!detail && L.blocks.filter(b=>b.isAnchor&&!b.asLot&&b.kind!=='miner_hall'&&['delivered','operating','commissioning','under_construction'].includes(b.status)&&(!zoneKey||customerKey(byId[b.buildingId]?.customer)===zoneKey)&&selectedId!==b.buildingId&&hoverId!==b.buildingId).map(b=><CampusLabel key={`signal-${b.key}`} position={[b.x,b.h+1,b.z]} priority={b.status==='under_construction'?50:55}>
-        <button className={`building-signal signal-${b.status}`} onClick={(e)=>{e.stopPropagation();selectBuilding(b.buildingId, true)}/* 클릭이 3D 로 퍼져 뒤 블록이 선택을 다시 풀지 않게 · 칩을 누르면 그 건물로 */} title={`${pickName(byId[b.buildingId],lang)} · ${t.status[b.status]}`}>
+        <button className={`building-signal signal-${b.status}`} onClick={(e)=>{e.stopPropagation();pickBuilding(b.buildingId, true)}/* 클릭이 3D 로 퍼져 뒤 블록이 선택을 다시 풀지 않게 · 칩을 누르면 그 건물로 */} title={`${pickName(byId[b.buildingId],lang)} · ${t.status[b.status]}`}>
           {b.status==='delivered'?<Check size={12}/>:b.status==='operating'?<Activity size={12}/>:b.status==='under_construction'?<HardHat size={12}/>:<span className="signal-pending"/>}
           <span className="signal-name">{pickName(byId[b.buildingId],lang)}</span>
           {b.status==='delivered'?(lang==='ko'?'인수 완료':'Accepted'):t.status[b.status]}
@@ -147,7 +155,7 @@ export default function SiteView({ site }) {
                 onPointerEnter={() => bld && setHover(bld.id)}
                 onPointerLeave={() => bld && useAppStore.getState().clearHover(bld.id)}
                 // stopPropagation: 라벨 클릭이 3D 쪽으로 퍼져 뒤에 있는 건물 블록도 "클릭"되면 선택이 바로 다시 풀림
-                onClick={(e) => { e.stopPropagation(); if (bld) selectBuilding(bld.id, bld.id !== selectedId) }}
+                onClick={(e) => { e.stopPropagation(); if (bld) pickBuilding(bld.id) }}
               >
                 <div className="row">
                   {b.status==='delivered'?<Check size={13} color={st.color}/>:<span className={`dot${b.status==='operating'?' operating-dot':''}`} style={{ background: st.color }} />}
@@ -162,6 +170,7 @@ export default function SiteView({ site }) {
                 {!bld && <div className="sub">{lang === 'ko' ? '용도 미발표 전력' : 'Unallocated power'}</div>}
                 {opened && (
                   <div className="selected-detail compact">
+                    {bld.figure && <FigureChip name={bld.figure} lang={lang} />}
                     <div>{t.status[b.status]}{bld.it_mw ? ` · ${bld.it_mw} MW IT` : bld.disclosedMw ? ` · ~${bld.disclosedMw} MW*` : ''}</div>
                     <div className="est">≈ GPU {roundNice(selectedEst.gpus).toLocaleString()} · {lang === 'ko' ? '랙' : 'racks'} {roundNice(selectedEst.racks).toLocaleString()} <i>{selectedEst.gpusReported ? (lang === 'ko' ? '랙 추정' : 'racks est.') : (lang === 'ko' ? '추정' : 'est.')}</i></div>
                   </div>
@@ -177,6 +186,7 @@ export default function SiteView({ site }) {
                     {selectedEst && selectedEst.gpusReported && <div className="est">≈ {lang === 'ko' ? '랙' : 'racks'} {roundNice(selectedEst.racks).toLocaleString()} <i>{lang === 'ko' ? '추정' : 'est.'}</i></div>}
                     {date && <div className="pending">{t.panel.target} · {date}</div>}
                     {bld.dates?.delivered && <div>{t.panel.delivered} · {bld.dates.delivered}</div>}
+                    {bld.figure && <FigureChip name={bld.figure} lang={lang} />}
                   </div>
                 )}
               </div>
@@ -289,4 +299,13 @@ function AreaLabels({ blocks, byId, t }) {
       <div className="tag area-label">{list.every(b=>b.status==='operating')&&<span className="dot operating-dot"/>}{t.campus[key]}{list.every(b=>b.status==='operating')&&<small>{t.status.operating}</small>}</div>
     </CampusLabel>
   })
+}
+
+// 고른 건물 라벨 안의 "안 자세히 보기" 단추: 그 건물의 그림(전력 경로·홀 안)을 다시 엶
+function FigureChip({ name, lang }) {
+  return (
+    <button type="button" className="bld-figure" onClick={(e) => { e.stopPropagation(); openFigure(name) }}>
+      <PlugZap size={12} aria-hidden="true" />{lang === 'ko' ? '안 자세히 보기' : 'Look inside'}
+    </button>
+  )
 }

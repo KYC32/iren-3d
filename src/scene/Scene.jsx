@@ -18,6 +18,7 @@ import SkyRig from './SkyRig.jsx'
 import { campusAppearance } from './campusAppearance.js'
 import { campusLandscape } from './campusLandscape.js'
 const RecordDirector = lazy(() => import('../record/RecordDirector.jsx'))
+import FigureLayer from '../ui/FigureLayer.jsx' // 건물을 눌러 연 그림 대화상자 (캔버스 밖 DOM)
 
 const BG = '#eceffa' // 배경 = 안개 색 (지평선이 자연스럽게 사라짐)
 
@@ -32,7 +33,7 @@ export default function Scene({ record = false }) {
   const shadowSpan = campus ? campusSide * 1.15 : 110
   const boardMode = Boolean(SINGLE_COMPANY) && !record
 
-  return (
+  return (<>
     <Canvas
       shadows="percentage"
       // 녹화 모드: 자동 렌더를 끄고(never) RecordDirector 가 한 프레임씩 직접 그림
@@ -89,5 +90,6 @@ export default function Scene({ record = false }) {
         <CameraRig />
       )}
     </Canvas>
-  )
+    {!record && <FigureLayer />}
+  </>)
 }
