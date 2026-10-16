@@ -10,6 +10,7 @@ import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from 
 import { validateResearch } from '../src/data/researchSchema.js'
 import { SourceDatesFile, HiringFile } from '../src/data/schema.js'
 import { validateObservations } from '../src/data/observationsSchema.js'
+import { validateShares } from '../src/data/sharesSchema.js'
 import { fileURLToPath } from 'node:url'
 
 // DATA_DIR=data-fake 처럼 지정하면 다른 폴더의 데이터로 빌드 (성능 시험용 가짜 데이터 등)
@@ -59,6 +60,15 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   mkdirSync(new URL('../public/data/', import.meta.url), { recursive: true })
   writeFileSync(new URL('../public/data/infra.json', import.meta.url), JSON.stringify(infra))
   console.log(`✅ infra.json — 회사 ${infra.companies.length}곳, 사이트 ${infra.sites.length}곳, 기준일 ${infra.as_of}`)
+  // 발행 주식 수·희석 (data/shares.json → 주가 페이지가 불러옴)
+  const sharesUrl = new URL('shares.json', DATA)
+  if (existsSync(sharesUrl)) {
+    const shares = JSON.parse(readFileSync(sharesUrl, 'utf8'))
+    const errors = validateShares(shares)
+    if (errors.length) throw new Error(errors.join('\n'))
+    writeFileSync(new URL('../public/data/shares.json', import.meta.url), JSON.stringify(shares) + '\n')
+    console.log(`✅ shares.json — 공시 ${shares.points.length}건, 조달 ${shares.raises.length}건, 전환사채 ${shares.converts.length}건`)
+  }
   const observations = buildObservations(infra.sites)
   if (observations) {
     writeFileSync(new URL('../public/data/observations.json', import.meta.url), JSON.stringify(observations))

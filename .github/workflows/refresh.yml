@@ -1,5 +1,5 @@
-# 주가·뉴스 자동 갱신 — 평일 미국 장 마감 후 1회 (22:30 UTC = 뉴욕 17:30 EST / 18:30 EDT)
-# scripts/fetch-stock.mjs, fetch-news.mjs 가 public/data/stock.json·news.json 을 고치고,
+# 주가·뉴스·주식 수 자동 갱신 — 평일 미국 장 마감 후 1회 (22:30 UTC = 뉴욕 17:30 EST / 18:30 EDT)
+# scripts/fetch-stock.mjs, fetch-news.mjs, fetch-shares.mjs 가 public/data/stock.json·news.json·shares.json(+ data/shares.json) 을 고치고,
 # 바뀐 게 있으면 커밋·푸시 → Vercel 이 자동 배포. 소스가 막히면 스크립트가 기존 파일을 그대로 두고 0 으로 끝남.
 name: refresh-data
 on:
@@ -24,12 +24,13 @@ jobs:
       - run: npm ci --ignore-scripts   # 스크립트가 zod 를 쓰므로 설치는 필요, predev/prebuild 훅은 불필요
       - run: node scripts/fetch-stock.mjs
       - run: node scripts/fetch-news.mjs --max=60
+      - run: node scripts/fetch-shares.mjs   # 새 10-Q·10-K 표지 주식 수를 SEC XBRL 에서 덧붙임
       - name: 바뀐 파일만 커밋·푸시
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/stock.json public/data/news.json
+          git add public/data/stock.json public/data/news.json data/shares.json public/data/shares.json
           if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
-          git commit -m "data: 주가·뉴스 자동 갱신 $(date -u +%F)"
+          git commit -m "data: 주가·뉴스·주식 수 자동 갱신 $(date -u +%F)"
           git pull --rebase origin main
           git push

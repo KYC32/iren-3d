@@ -50,6 +50,10 @@
         {
           "ko": "지도 화면의 지역 버튼(북미·전체…)·캠퍼스 목록이 KPI 판을 가리던 문제 수정: 숫자로 고정하던 자리 대신 KPI 판 바로 아래에 차례로 붙음 (데스크톱 포함). 768~1199px 3D 상단 바는 버튼이 모자라면 둘째 줄로 내려 가로로 넘치지 않고, 휴대폰 3D 는 기본 '지금' 하늘의 시각이 붙어도 상단 바가 두 줄",
           "en": "Map region buttons (North America, All…) and the campus list no longer cover the KPI strip: they now stack right below it instead of sitting at fixed offsets (desktop included). The 3D top bar at 768–1199px moves its buttons to a second row instead of overflowing sideways, and on phones it stays at two rows even with the default \"Now\" sky clock"
+        },
+        {
+          "ko": "주가 페이지에 \"주식 수 · 희석\" 칸 추가 (SEC 공시 기준): 발행 주식 3.94억 주(2026-08-14) · 상장 직후 약 5,490만 주의 7.2배 · 최근 1년 +44.9%. 주가 차트와 같은 기간 축의 주식 수 차트, 주식으로 조달한 돈(ATM 판매 계약 1.08억 주 $7.14 → 10억 달러 프로그램 $14.99 → 직접 공모 $41.12 → 60억 달러 프로그램 $52.84, 한도의 42%), 전환사채 6건 원금 약 $6.75bn — 최초 전환가로 모두 주식이 되면 약 1.27억 주(지금의 32%, 단순 계산). 새 10-Q·10-K 표지 주식 수는 매일 갱신 작업이 SEC XBRL 에서 덧붙임",
+          "en": "The stock page gains a \"Share count · dilution\" section (from SEC filings): 394M shares outstanding (2026-08-14), 7.2× the ~54.9M right after the IPO, +44.9% over the past year. A share-count chart on the same time axis as the price chart, equity raised (ATM Sales Agreement 108M shares at $7.14 → $1bn program $14.99 → registered direct $41.12 → $6bn program $52.84, 42% of the limit used) and six convertible notes with ~$6.75bn principal — about 127M shares (32% of today) if all converted at the initial price (simple calculation). New 10-Q/10-K cover share counts are appended daily from SEC XBRL"
         }
       ]
     },

@@ -1,0 +1,212 @@
+{
+  "checked": "2026-10-16",
+  "note_ko": "SEC 공시(424B4·20-F·10-K·10-Q 표지와 본문)에서 옮긴 수치. 주식 수는 공시마다 대출형 주식(LFS) 포함 여부 표기가 다를 수 있음. 새 10-Q·10-K 표지 수치는 매일 갱신 스크립트(scripts/fetch-shares.mjs)가 SEC XBRL 에서 덧붙임. ATM·전환사채는 공시 본문에서 사람이 옮김.",
+  "note_en": "Figures copied from SEC filings (424B4, 20-F, 10-K and 10-Q cover pages and text). Filings may differ on whether loan-funded shares are included. New 10-Q/10-K cover counts are appended daily from SEC XBRL by scripts/fetch-shares.mjs; ATM and convertible details are copied from filing text by hand.",
+  "points": [
+    {
+      "date": "2021-11-17",
+      "shares": 54899937,
+      "form": "424B4",
+      "kind": "calc",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036121038558/ny20000275x14_424b4.htm",
+      "note_ko": "상장 직후 (계산): 2021-09-30 4,676.7만 주 − 그 뒤 취소 13.6만 주 + 공모 826.9만 주",
+      "note_en": "Right after the IPO (calculated): 46.77M on 2021-09-30 − 0.14M cancelled + 8.27M IPO shares"
+    },
+    {
+      "date": "2022-06-30",
+      "shares": 54982916,
+      "form": "20-F",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036122033208/brhc10041484_20f.htm"
+    },
+    {
+      "date": "2023-06-30",
+      "shares": 66701526,
+      "form": "20-F",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036123043816/brhc20058647_20f.htm"
+    },
+    {
+      "date": "2024-06-30",
+      "shares": 187864454,
+      "form": "20-F",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000162828024038677/iren-20240630.htm"
+    },
+    {
+      "date": "2025-06-30",
+      "shares": 258103209,
+      "form": "10-K",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm",
+      "note_ko": "대출형 주식 포함 (FY26 10-K 비교 수치)",
+      "note_en": "Including loan-funded shares (FY26 10-K comparative)"
+    },
+    {
+      "date": "2025-08-15",
+      "shares": 271980494,
+      "form": "10-K",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000063/iren-20250630.htm"
+    },
+    {
+      "date": "2025-10-31",
+      "shares": 283465490,
+      "form": "10-Q",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000081/iren-20250930.htm"
+    },
+    {
+      "date": "2026-01-30",
+      "shares": 332280383,
+      "form": "10-Q",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000015/iren-20251231.htm"
+    },
+    {
+      "date": "2026-04-30",
+      "shares": 357378674,
+      "form": "10-Q",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000026/iren-20260331.htm"
+    },
+    {
+      "date": "2026-06-30",
+      "shares": 380710559,
+      "form": "10-K",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm",
+      "note_ko": "대출형 주식 포함",
+      "note_en": "Including loan-funded shares"
+    },
+    {
+      "date": "2026-08-14",
+      "shares": 394058648,
+      "form": "10-K",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm"
+    }
+  ],
+  "raises": [
+    {
+      "id": "atm-sales-agreement-2024",
+      "kind": "atm",
+      "label_ko": "ATM (판매 계약, 누적)",
+      "label_en": "ATM (Sales Agreement, cumulative)",
+      "until": "2024-06-30",
+      "shares": 108063868,
+      "gross_usd": 771438000,
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000162828024038677/iren-20240630.htm",
+      "note_ko": "2024-06-30 까지 판매 계약으로 판 누적 수치 (20-F FY24)",
+      "note_en": "Cumulative sales under the Sales Agreement through 2024-06-30 (FY24 20-F)"
+    },
+    {
+      "id": "atm-1b-2025",
+      "kind": "atm",
+      "label_ko": "ATM 10억 달러 프로그램",
+      "label_en": "ATM $1bn program",
+      "from": "2025-01-21",
+      "until": "2025-09",
+      "shares": 66707732,
+      "gross_usd": 999999452,
+      "limit_usd": 1000000000,
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm",
+      "note_ko": "2025-09 까지 다 씀",
+      "note_en": "Fully used by 2025-09"
+    },
+    {
+      "id": "direct-2025-12",
+      "kind": "direct",
+      "label_ko": "직접 공모 (전환사채 일부 재매입과 함께)",
+      "label_en": "Registered direct offering (with a partial convertible repurchase)",
+      "until": "2025-12-08",
+      "shares": 39699102,
+      "price_usd": 41.12,
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm",
+      "note_ko": "주당 41.12달러",
+      "note_en": "$41.12 per share"
+    },
+    {
+      "id": "atm-6b-2026",
+      "kind": "atm",
+      "label_ko": "ATM 60억 달러 프로그램",
+      "label_en": "ATM $6bn program",
+      "from": "2026-03-04",
+      "until": "2026-06-30",
+      "shares": 47165838,
+      "gross_usd": 2492057000,
+      "limit_usd": 6000000000,
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm",
+      "note_ko": "2026-08-14 에도 같은 수치 (7~8월 추가 판매 없음)",
+      "note_en": "Unchanged as of 2026-08-14 (no sales in July–August)"
+    }
+  ],
+  "converts": [
+    {
+      "id": "notes-2029",
+      "label_ko": "2029년 만기",
+      "label_en": "Due 2029",
+      "issued": "2025-06-13",
+      "maturity": "2029-12-15",
+      "coupon_pct": 3.5,
+      "principal_usd": 233389000,
+      "conversion_price_usd": 13.64,
+      "as_of": "2026-06-30",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm",
+      "note_ko": "원금 = 장부가 + 미상각 할인 (일부는 2025-12 재매입) · 2026-06-30 전환 조건 충족",
+      "note_en": "Principal = carrying value + unamortized discount (partly repurchased 2025-12) · conversion trigger met on 2026-06-30"
+    },
+    {
+      "id": "notes-2030",
+      "label_ko": "2030년 만기",
+      "label_en": "Due 2030",
+      "issued": "2024-12-06",
+      "maturity": "2030-06-15",
+      "coupon_pct": 3.25,
+      "principal_usd": 212310000,
+      "conversion_price_usd": 16.81,
+      "as_of": "2026-06-30",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm",
+      "note_ko": "원금 = 장부가 + 미상각 할인 (일부는 2025-12 재매입) · 2026-06-30 전환 조건 충족",
+      "note_en": "Principal = carrying value + unamortized discount (partly repurchased 2025-12) · conversion trigger met on 2026-06-30"
+    },
+    {
+      "id": "notes-2031",
+      "label_ko": "2031년 만기",
+      "label_en": "Due 2031",
+      "issued": "2025-10-14",
+      "maturity": "2031-07-01",
+      "coupon_pct": 0,
+      "principal_usd": 1000000000,
+      "conversion_price_usd": 85.63,
+      "as_of": "2026-06-30",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm"
+    },
+    {
+      "id": "notes-2032",
+      "label_ko": "2032년 만기",
+      "label_en": "Due 2032",
+      "issued": "2025-12-08",
+      "maturity": "2032-06-01",
+      "coupon_pct": 0.25,
+      "principal_usd": 1150000000,
+      "conversion_price_usd": 51.4,
+      "as_of": "2026-06-30",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm"
+    },
+    {
+      "id": "notes-2033-jun",
+      "label_ko": "2033년 6월 만기",
+      "label_en": "Due Jun 2033",
+      "issued": "2025-12-08",
+      "maturity": "2033-06-01",
+      "coupon_pct": 1.0,
+      "principal_usd": 1150000000,
+      "conversion_price_usd": 51.4,
+      "as_of": "2026-06-30",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm"
+    },
+    {
+      "id": "notes-2033-dec",
+      "label_ko": "2033년 12월 만기",
+      "label_en": "Due Dec 2033",
+      "issued": "2026-05-14",
+      "maturity": "2033-12-01",
+      "coupon_pct": 1.0,
+      "principal_usd": 3000000000,
+      "conversion_price_usd": 73.07,
+      "as_of": "2026-06-30",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm"
+    }
+  ]
+}

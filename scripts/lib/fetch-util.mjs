@@ -39,11 +39,12 @@ export function readJsonOr(path, fallback) {
 }
 
 // 바뀐 경우만 저장. ignoreKeys 에 적은 최상위 키(예: fetched_at)만 다르면 "안 바뀐 것"으로 봄
-export function writeJsonIfChanged(path, obj, { ignoreKeys = [] } = {}) {
+//   pretty: 사람이 고치는 data/*.json 처럼 2칸 들여쓰기로 저장 (내용 비교는 들여쓰기와 무관)
+export function writeJsonIfChanged(path, obj, { ignoreKeys = [], pretty = false } = {}) {
   const strip = (o) => { if (!o || typeof o !== 'object') return o; const c = { ...o }; for (const k of ignoreKeys) delete c[k]; return c }
   const prev = readJsonOr(path, null)
   if (prev && JSON.stringify(strip(prev)) === JSON.stringify(strip(obj))) return false
   mkdirSync(dirname(path), { recursive: true })
-  writeFileSync(path, JSON.stringify(obj) + '\n')
+  writeFileSync(path, JSON.stringify(obj, null, pretty ? 2 : undefined) + '\n')
   return true
 }

@@ -1,15 +1,16 @@
 // =============================================================
 // StockPage — 상장(2021-11-17)부터 지금까지 IREN 주가 (#page=stock, at=YYYY-MM-DD 로 날짜 강조)
-//   통계 카드 → 기간·눈금·표시 옵션 → 차트(StockChart) → 범례·출처
+//   통계 카드 → 기간·눈금·표시 옵션 → 차트(StockChart) → 범례 → 주식 수·희석(DilutionSection) → 출처
 //   데이터: public/data/stock.json (GitHub Action 이 매일 갱신). 시설 데이터(infra)와 독립이라 그게 없어도 열림
 // =============================================================
 import { useEffect, useMemo, useState } from 'react'
 import { TrendingUp, TrendingDown } from 'lucide-react'
 import PageShell from './PageShell.jsx'
 import StockChart from './StockChart.jsx'
+import DilutionSection from './DilutionSection.jsx'
 import { useAppStore } from '../store/useAppStore.js'
 import { useT } from '../i18n/useT.js'
-import { loadStock } from '../data/loadFeeds.js'
+import { loadStock, loadShares } from '../data/loadFeeds.js'
 import { toSeries, sliceRange, stats, eventsForChart, markerColor, RANGES } from '../data/stock.js'
 
 const pct = (n) => `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`
@@ -28,6 +29,9 @@ export default function StockPage() {
   const [showVolume, setShowVolume] = useState(true)
   const load = () => { setError(null); loadStock().then(setFile).catch((e) => setError(e.message)) }
   useEffect(load, [])
+  // 발행 주식 수·희석 — 못 받아도 주가 페이지는 그대로 (그 칸만 빠짐)
+  const [shares, setShares] = useState(null)
+  useEffect(() => { loadShares().then(setShares).catch(() => setShares(null)) }, [])
   // 강조 날짜가 있으면 그 날짜가 보이는 구간으로
   useEffect(() => { if (highlight && file) setRange('ALL') }, [highlight, file])
 
@@ -79,6 +83,7 @@ export default function StockPage() {
           <span><i className="hollow" />{ko ? '테두리만 = 월 단위 날짜' : 'Hollow = month-level date'}</span>
         </div>
       )}
+      {shares && <DilutionSection file={shares} series={shown} lang={lang} />}
       <p className="page-note">
         {t.stock.note} {st.date} · {ko ? '데이터 갱신' : 'refreshed'} {file.fetched_at.slice(0, 10)} · <a href={file.source.url} target="_blank" rel="noreferrer">{file.source.name}</a>
         {showEvents && <> · {t.stock.eventsNote}</>}

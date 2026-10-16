@@ -8,6 +8,7 @@ import { validateResearch } from '../src/data/researchSchema.js'
 import { validateAll } from './lib/validate-core.mjs'
 import { StockFile, NewsFile } from '../src/data/feedSchema.js'
 import { validateObservations } from '../src/data/observationsSchema.js'
+import { validateShares } from '../src/data/sharesSchema.js'
 
 const DATA = new URL('../data/', import.meta.url)
 const companiesFile = JSON.parse(readFileSync(new URL('companies.json', DATA), 'utf8'))
@@ -32,6 +33,9 @@ if (infra && existsSync(researchUrl)) errors.push(...validateResearch(JSON.parse
 // 현장 관찰·설비 이중화 (data/observations.json): 스키마·사이트·건물·날짜 규칙
 const obsUrl = new URL('observations.json', DATA)
 if (infra && existsSync(obsUrl)) errors.push(...validateObservations(JSON.parse(readFileSync(obsUrl, 'utf8')), infra.sites))
+// 발행 주식 수·희석 (data/shares.json)
+const sharesUrl = new URL('shares.json', DATA)
+if (existsSync(sharesUrl)) errors.push(...validateShares(JSON.parse(readFileSync(sharesUrl, 'utf8'))))
 // 공개일을 모르는 보고(reported) 기록 → 타임라인은 "사건 날짜에 공개됨"으로 대신 처리 (경고만)
 // 해결: 그 사실을 처음 공개한 자료를 찾아 published / published_source 를 적거나, data/source-dates.json 에 문서 공개일 추가
 if (infra) {
