@@ -768,7 +768,8 @@ const zoomText = (ko) => ({
 
 // ---------- 페이지 ----------
 const CSS = readFileSync(join(HERE, "power.css"), "utf8").replaceAll("__ASPECT__", (WIDTH / HEIGHT).toFixed(3));   // 그림 가로:세로 비율을 CSS 에 넘김
-const LIVE = readFileSync(join(HERE, "live.js"), "utf8");
+// 움직임 코드 = 공용 확대·말풍선(shared/zoomer.js) + 이 그림의 움직임(live.js)
+const LIVE = readFileSync(join(HERE, "..", "shared", "zoomer.js"), "utf8") + readFileSync(join(HERE, "live.js"), "utf8");
 const DATA = { W: WIDTH, H: HEIGHT, zoom: 2.4, focus: at([90, 10, 20]).map(r1), stops: STOPS, parts: PART_STOPS.length, phaseStop: PHASE_STOP, plan: PLAN, puff: puffAt.map(r1) };
 
 // 자리표(__이름__) 채우기: 함수로 바꿔 넣어야 값 속의 $ 기호가 특수 문자로 해석되지 않음

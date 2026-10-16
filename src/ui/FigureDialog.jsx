@@ -10,6 +10,7 @@ import './figureDialog.css'
 // 그림마다 대화상자 제목 (그림 이름은 데이터의 figure 값)
 export const FIGURES = {
   'power-block': { ko: '세그먼트 1칸(2.5MW)의 전력 경로 · 공랭 홀 안', en: 'Inside one 2.5MW segment · power path and air-cooled hall' },
+  'horizon-hall': { ko: 'Horizon 액체냉각 홀 · 전기와 냉각수가 도는 길', en: 'Horizon liquid-cooled hall · power and coolant paths' },
 }
 
 export default function FigureDialog({ name, lang, onClose }) {

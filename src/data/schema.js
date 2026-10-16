@@ -139,7 +139,7 @@ export const Building = z.object({
   customer: z.string().optional(),
   // gpu.basis: count 가 무엇을 세는지 — installed(설치됨) | installed_or_ordered(설치 또는 주문, 회사 홈페이지식 표기). 없으면 installed
   gpu: z.object({ model: z.string(), count: z.number().nullable(), basis: z.enum(['installed', 'installed_or_ordered']).optional() }).strict().optional(),
-  figure: z.enum(['power-block']).optional(),     // 3D 에서 이 건물을 누르면 열 그림 (public/figures/<이름>.<ko|en>.html)
+  figure: z.enum(['power-block', 'horizon-hall']).optional(),     // 3D 에서 이 건물을 누르면 열 그림 (public/figures/<이름>.<ko|en>.html)
   sources: z.array(Url).min(1),
 }).strict()
 

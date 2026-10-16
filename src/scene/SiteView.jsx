@@ -25,7 +25,8 @@ import { contentBox } from './campusCamera.js'
 import { devMilestones } from './devMilestones.js'
 import { fmtWhen } from '../data/events.js'
 import './scene.css' // 3D 화면 전용 스타일 (이 화면 코드와 함께 나중에 불러옴)
-import { Check, Activity, HardHat, CircleCheck, Clock, CircleDashed, PlugZap } from 'lucide-react'
+import { Check, Activity, HardHat, CircleCheck, Clock, CircleDashed } from 'lucide-react'
+import { figureIcon } from '../ui/figureIcons.js'
 import { openFigure } from '../ui/figureState.js'
 import { DryCampusGround } from './buildings/PhotoReferencedCampus.jsx'
 import { estimateHall, roundNice } from '../data/hallEstimate.js'
@@ -301,11 +302,12 @@ function AreaLabels({ blocks, byId, t }) {
   })
 }
 
-// 고른 건물 라벨 안의 "안 자세히 보기" 단추: 그 건물의 그림(전력 경로·홀 안)을 다시 엶
+// 고른 건물 라벨 안의 "안 자세히 보기" 단추: 그 건물의 그림(전력 경로·홀 안·냉각수 길)을 다시 엶
 function FigureChip({ name, lang }) {
+  const Icon = figureIcon(name)   // 그림 종류에 맞는 아이콘 (전력 = 플러그, 액체냉각 = 물방울)
   return (
     <button type="button" className="bld-figure" onClick={(e) => { e.stopPropagation(); openFigure(name) }}>
-      <PlugZap size={12} aria-hidden="true" />{lang === 'ko' ? '안 자세히 보기' : 'Look inside'}
+      <Icon size={12} aria-hidden="true" />{lang === 'ko' ? '안 자세히 보기' : 'Look inside'}
     </button>
   )
 }
