@@ -14,6 +14,10 @@
         {
           "ko": "Sweetwater 일정에 텍사스 PUC 대형 부하(75MW 이상) ERCOT 접속 규칙 채택 추가 (2026-09-18 채택 · 10/8 발효 · 연구비 $10만 · 보증금 MW당 $5만). Batch Zero 편입 기준은 이 규칙이 아니라 PGRR 145",
           "en": "Sweetwater timeline adds the Texas PUC large-load (75 MW+) ERCOT interconnection rule (adopted 2026-09-18, effective Oct 8, $100k study fee, $50k/MW security). Batch Zero eligibility is governed by PGRR 145, not this rule"
+        },
+        {
+          "ko": "계약 탭도 타임라인 날짜를 따름: 그 날짜 뒤에 서명한 계약은 숨김 (예: 2025년 12월엔 Microsoft 계약만 보이고, NVIDIA·프런티어 AI 연구소 계약은 서명한 달부터). 캠퍼스 패널과 같은 기준",
+          "en": "Contracts tab now follows the timeline: contracts signed after the selected month are hidden (e.g. only Microsoft in Dec 2025; NVIDIA and the frontier lab appear from their signing months), matching the campus panel"
         }
       ]
     },

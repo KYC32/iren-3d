@@ -4,14 +4,14 @@
 // 투자자 질문: "계약이 실제 용량으로 얼마나 넘어갔나?" (계약 금액 → 매출이 나오는 속도)
 // 계약마다 금액·기간·계약 용량과, 연결된 건물들이 그 날짜에 어느 단계인지 막대로 보여 줍니다.
 //   초록 = 인수·가동(매출 단계) / 연두 = 시운전 / 주황 = 건설중 / 회색 = 계획
-// 타임라인을 움직이면 그 시점 기준으로 바뀝니다 (기준일 이후는 회사 목표 기준 전망).
+// 타임라인을 움직이면 그 시점 기준으로 바뀝니다 (기준일 이후는 회사 목표 기준 전망). 그 날짜 뒤에 서명한 계약은 숨깁니다.
 // 맨 위 "계약 조건": 회사가 발표한 단가·회수 기간·선급금 (지표 중 show: 'contracts' 인 것, 발표 시점 이후에만)
 // =============================================================
 import { useMemo } from 'react'
 import { Link2 } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore.js'
 import { pickName } from '../i18n/useT.js'
-import { contractProgress } from '../data/contracts.js'
+import { contractProgress, signedContractsAt } from '../data/contracts.js'
 import { styleOf } from '../data/statusStyle.js'
 import { fmtWhen } from '../data/events.js'
 import { fmtMetric } from '../data/format.js'
@@ -57,7 +57,8 @@ export default function ContractsPanel() {
   const lang = useAppStore((s) => s.lang)
   const focusSiteOnMap = useAppStore((s) => s.focusSiteOnMap)
   const ko = lang === 'ko'
-  const contracts = useMemo(() => (data?.companies ?? []).flatMap((c) => c.contracts ?? []), [data])
+  // 계약 목록: 지금 보고 있는 날짜까지 서명된 것만 (그 뒤에 맺은 계약은 그때 공개 전이라 숨김)
+  const contracts = useMemo(() => signedContractsAt((data?.companies ?? []).flatMap((c) => c.contracts ?? []), data?.month), [data])
   const list = useMemo(() => contractProgress(data?.sites ?? [], contracts), [data, contracts])
   // 계약 조건 지표: 지금 보고 있는 날짜까지 발표된 것만 (그 전 날짜로 가면 숨김)
   const terms = useMemo(() => (data?.companies ?? []).flatMap((c) => reportedMetricsAt(c.metrics ?? [], data.month, 'contracts')), [data])

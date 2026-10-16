@@ -9,6 +9,14 @@
 // MW 기준: 건물의 IT MW. IT 기준이 공개되지 않은 계약(NVIDIA 약 60MW)은 공개된 용량(disclosedMw)으로
 // 세고 unit 을 'capacity' 로 표시합니다. 배치 사이트를 밝히지 않은 계약은 known=false.
 // =============================================================
+import { toMonth } from './timeline.js'
+
+// 타임라인 날짜(month: 월 번호)까지 서명된 계약만 골라냅니다.
+//   그 뒤에 맺은 계약은 그 날짜엔 아직 공개 전이라 뺍니다 ("그때 공개된 자료만").
+//   같은 달에 서명했으면 넣습니다 (예: 2026-05-07 서명 → 2026년 5월부터 보임).
+export function signedContractsAt(contracts, month) {
+  return contracts.filter((k) => toMonth(k.signed) <= month)
+}
 
 const STAGE_OF = { delivered: 'live', operating: 'live', commissioning: 'commissioning', under_construction: 'building', planned: 'planned' }
 
