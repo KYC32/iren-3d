@@ -1,6 +1,15 @@
 {
   "entries": [
     {
+      "date": "2026-10-16",
+      "items": [
+        {
+          "ko": "부팅 그림의 부품 설명을 짚는 곳 바로 옆 말풍선으로: 둘러보기에선 청록 원 옆에, 직접 확대할 땐 포인터·탭한 자리 옆에 이름과 역할이 떠서 눈을 그림 아래 줄까지 옮기지 않아도 됨. 원이 다음 부품으로 가면 말풍선도 선으로 이어진 채 함께 옮겨 가고, 그림이 아주 작은 화면에선 원을 가리지 않게 예전처럼 그림 아래 줄에",
+          "en": "Boot figure part descriptions now appear in a callout right beside the spot: next to the teal ring on the tour, next to the pointer or tap when you zoom yourself, so your eyes stay on the part. The callout glides with the ring to the next part, linked by a short line; on very small screens it falls back to the line under the figure so it never covers the part"
+        }
+      ]
+    },
+    {
       "date": "2026-10-15",
       "items": [
         {
