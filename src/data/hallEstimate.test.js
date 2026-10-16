@@ -75,11 +75,14 @@ it('화면용 반올림', () => {
   expect(roundNice(26)).toBe(26)
 })
 
-it('검산 기준 건물: GPU 수와 IT 전력을 함께 발표한 프린스조지 공랭 홀', async () => {
+it('검산 기준 건물: GPU 수와 전력(총 50MW · 회사 가정 PUE 1.1)을 함께 발표한 프린스조지 공랭 홀', async () => {
   const { referenceHall, fmtUsdM } = await import('./hallEstimate.js')
   const ref = referenceHall(raw.sites)
   expect(ref.site.id).toBe('prince-george')
-  expect(ref.kwPerGpu).toBeCloseTo(2.17, 2)
+  // 회사가 밝힌 건 IT 가 아니라 총(gross) 50MW + PUE 1.1 가정 → IT ≈ 45.5MW, GPU 23,000개 → 개당 약 1.98kW (회사 가정 1.93kW 와 비슷)
+  expect(ref.fromGross).toBe(true)
+  expect(ref.itMw).toBeCloseTo(45.5, 1)
+  expect(ref.kwPerGpu).toBeCloseTo(1.98, 2)
   expect(fmtUsdM(485)).toBe('$485M')
   expect(fmtUsdM(1940)).toBe('$1.94bn')
 })

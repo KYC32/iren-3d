@@ -216,23 +216,32 @@
           "gross_mw": 75,
           "replaces": "miners",
           "sources": [
-            "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000028/irentranscript.htm"
+            "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000028/irentranscript.htm",
+            "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60",
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
           ],
           "mw_basis": "gross",
           "phases": [
             {
               "status": "planned",
-              "from": "2026-10",
+              "from": "2026-05",
               "basis": "reported",
-              "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000028/irentranscript.htm"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
+            },
+            {
+              "status": "under_construction",
+              "from": "2026-08",
+              "basis": "reported",
+              "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
             },
             {
               "status": "operating",
               "from": "2027",
               "basis": "target",
-              "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000028/irentranscript.htm"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
             }
-          ]
+          ],
+          "progress": 0.1
         },
         {
           "id": "horizon-6",
@@ -242,23 +251,32 @@
           "gross_mw": 75,
           "replaces": "miners",
           "sources": [
-            "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000028/irentranscript.htm"
+            "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000028/irentranscript.htm",
+            "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60",
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
           ],
           "mw_basis": "gross",
           "phases": [
             {
               "status": "planned",
-              "from": "2026-10",
+              "from": "2026-05",
               "basis": "reported",
-              "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000028/irentranscript.htm"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
+            },
+            {
+              "status": "under_construction",
+              "from": "2026-08",
+              "basis": "reported",
+              "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
             },
             {
               "status": "operating",
               "from": "2027",
               "basis": "target",
-              "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000028/irentranscript.htm"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
             }
-          ]
+          ],
+          "progress": 0.1
         },
         {
           "id": "air-cooled-nvidia",
@@ -276,7 +294,8 @@
           },
           "sources": [
             "https://www.globenewswire.com/news-release/2026/05/07/3290760/0/en/iren-secures-3-4bn-ai-cloud-contract-with-nvidia.html",
-            "https://www.globenewswire.com/news-release/2026/05/26/3301524/0/en/iren-targets-4-4bn-in-arr-with-blackwell-deployment-at-childress.html"
+            "https://www.globenewswire.com/news-release/2026/05/26/3301524/0/en/iren-targets-4-4bn-in-arr-with-blackwell-deployment-at-childress.html",
+            "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
           ],
           "mw_basis": "gross",
           "phases": [
@@ -289,8 +308,8 @@
             {
               "status": "under_construction",
               "from": "2026-08",
-              "basis": "estimate",
-              "source": "https://www.globenewswire.com/news-release/2026/05/07/3290760/0/en/iren-secures-3-4bn-ai-cloud-contract-with-nvidia.html"
+              "basis": "reported",
+              "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
             },
             {
               "status": "operating",
@@ -301,31 +320,73 @@
           ]
         },
         {
+          "id": "air-cooled-2026",
+          "name": "Air-cooled retrofit (2026)",
+          "name_ko": "공랭 개조 (2026)",
+          "kind": "datahall_air",
+          "gross_mw": 50,
+          "replaces": "miners",
+          "sources": [
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm",
+            "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
+          ],
+          "mw_basis": "gross",
+          "phases": [
+            {
+              "status": "under_construction",
+              "from": "2026-05",
+              "basis": "reported",
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
+            },
+            {
+              "status": "operating",
+              "from": "2026-Q4",
+              "basis": "target",
+              "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
+            }
+          ],
+          "progress": 0.6
+        },
+        {
           "id": "air-cooled-2027",
           "name": "Air-cooled conversion (2027)",
           "name_ko": "공랭 개조 확장 (2027)",
           "kind": "datahall_air",
-          "it_mw": 150,
           "gross_mw": 190,
           "replaces": "miners",
           "sources": [
-            "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000028/irentranscript.htm"
+            "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000028/irentranscript.htm",
+            "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60",
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
           ],
           "mw_basis": "gross",
           "phases": [
             {
               "status": "planned",
-              "from": "2026-10",
+              "from": "2026-05",
               "basis": "reported",
-              "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000028/irentranscript.htm"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
+            },
+            {
+              "status": "under_construction",
+              "from": "2026-08",
+              "basis": "reported",
+              "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
+            },
+            {
+              "status": "commissioning",
+              "from": "2027-Q1",
+              "basis": "target",
+              "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
             },
             {
               "status": "operating",
               "from": "2027",
               "basis": "target",
-              "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000028/irentranscript.htm"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
             }
-          ]
+          ],
+          "progress": 0.15
         },
         {
           "id": "miners",
@@ -335,7 +396,9 @@
           "it_mw": 0,
           "gross_mw": 380,
           "sources": [
-            "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm"
+            "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm",
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000063/iren-20250630.htm",
+            "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
           ],
           "mw_basis": "gross",
           "phases": [
@@ -343,21 +406,21 @@
               "status": "operating",
               "from": "2023-04",
               "basis": "reported",
-              "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm",
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000063/iren-20250630.htm",
               "published": "2023-04-26",
               "published_source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036123020410/brhc20051994_ex99-1.htm"
             },
             {
               "status": "decommissioning",
-              "from": "2026-10",
+              "from": "2026-08",
               "basis": "reported",
-              "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm"
+              "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
             },
             {
               "status": "retired",
               "from": "2026-12",
               "basis": "target",
-              "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm"
             }
           ]
         }
@@ -420,6 +483,11 @@
           "note": "공랭 Blackwell (NVIDIA): 착공 시점은 기준일 진행률(30%)과 목표일로 역산한 추정",
           "note_en": "Air-cooled Blackwell (NVIDIA): construction start estimated from reported progress and target date",
           "source": "https://www.globenewswire.com/news-release/2026/05/07/3290760/0/en/iren-secures-3-4bn-ai-cloud-contract-with-nvidia.html"
+        },
+        {
+          "note": "진행률 추정: Horizon 5·6 10%(부지 정지·기초 공사) · 공랭 개조 2026 60%(두 홀 전기·네트워크 개조 중, GPU 4분기 도착) · 공랭 개조 2027 15%(ASIC 철거·개조 시작) — FY26 발표 자료(2026-08-27) 13·14쪽의 공사 단계 표현을 보고 매긴 값",
+          "note_en": "Progress estimates: Horizon 5–6 10% (grading and foundations) · 2026 air-cooled retrofit 60% (both halls being retrofitted, GPUs due Q4) · 2027 air-cooled retrofit 15% (ASIC removal, retrofit commenced) — set from the construction-stage wording on pp.13–14 of the FY26 presentation (2026-08-27)",
+          "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
         }
       ],
       "sources": [
@@ -493,7 +561,8 @@
           "progress": 0.15,
           "sources": [
             "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm",
-            "https://www.globenewswire.com/news-release/2026/09/08/3357498/0/en/iren-s-2gw-sweetwater-hub-included-as-base-load-in-ercot-batch-zero.html"
+            "https://www.globenewswire.com/news-release/2026/09/08/3357498/0/en/iren-s-2gw-sweetwater-hub-included-as-base-load-in-ercot-batch-zero.html",
+            "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
           ],
           "mw_basis": "gross",
           "phases": [
@@ -683,7 +752,6 @@
           "name": "Air-cooled GPU halls",
           "name_ko": "공랭 GPU 홀",
           "kind": "datahall_air",
-          "it_mw": 50,
           "gross_mw": 50,
           "gpu": {
             "model": "H200 / B200 / B300 / MI350X (mixed)",
@@ -693,42 +761,88 @@
           "sources": [
             "https://iren.com/data-centers/prince-george",
             "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000015/iren-20251231.htm",
-            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm",
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000081/iren-20250930.htm",
+            "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
           ],
           "mw_basis": "gross",
           "phases": [
+            {
+              "status": "under_construction",
+              "from": "2025-09",
+              "basis": "reported",
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000081/iren-20250930.htm"
+            },
             {
               "status": "commissioning",
               "from": "2025-12",
               "basis": "reported",
               "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000015/iren-20251231.htm"
+            },
+            {
+              "status": "operating",
+              "from": "2026-Q4",
+              "basis": "target",
+              "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
             }
-          ]
+          ],
+          "replaces": "pg-miners",
+          "pue": 1.1
+        },
+        {
+          "id": "pg-liquid-gb300",
+          "name": "GB300 liquid-cooled hall",
+          "name_ko": "GB300 액체냉각 홀",
+          "kind": "datahall_liquid",
+          "it_mw": 10,
+          "replaces": "pg-air",
+          "gpu": {
+            "model": "GB300 NVL72",
+            "count": null
+          },
+          "sources": [
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000062/ex991fy25pr.htm",
+            "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
+          ],
+          "mw_basis": "it",
+          "phases": [
+            {
+              "status": "under_construction",
+              "from": "2025-08",
+              "basis": "reported",
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000062/ex991fy25pr.htm"
+            },
+            {
+              "status": "operating",
+              "from": "2026-Q4",
+              "basis": "target",
+              "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
+            }
+          ],
+          "progress": 0.8
         },
         {
           "id": "pg-liquid-2027",
           "name": "Liquid-cooled expansion",
           "name_ko": "액체냉각 확장",
           "kind": "datahall_liquid",
-          "it_mw": 50,
-          "gross_mw": 50,
           "replaces": "pg-air",
           "sources": [
-            "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
           ],
           "mw_basis": "gross",
           "phases": [
             {
               "status": "planned",
-              "from": "2026-10",
+              "from": "2026-08",
               "basis": "reported",
-              "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
             },
             {
               "status": "operating",
               "from": "2027",
               "basis": "target",
-              "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
             }
           ]
         },
@@ -775,7 +889,8 @@
           "sources": [
             "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000063/iren-20250630.htm",
             "https://www.sec.gov/Archives/edgar/data/1878848/000114036125024747/ef20051566_ex99-1.htm",
-            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000015/iren-20251231.htm"
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000015/iren-20251231.htm",
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000081/iren-20250930.htm"
           ],
           "mw_basis": "gross",
           "phases": [
@@ -789,9 +904,9 @@
             },
             {
               "status": "decommissioning",
-              "from": "2025-07",
+              "from": "2025-09",
               "basis": "reported",
-              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036125024747/ef20051566_ex99-1.htm"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884825000081/iren-20250930.htm"
             },
             {
               "status": "retired",
@@ -878,6 +993,16 @@
           "note": "2026-05-08 실적 발표 콜: 프린스조지 공랭 GPU 는 모두 납품됐고 50MW 전체에서 \"가동 중이거나 시운전 중\" — 가동·시운전 비율이 미공개라 보수적으로 시운전으로 둠. 홈페이지의 \">23,000 GPU\" 는 설치 또는 주문 기준",
           "note_en": "Q3 FY26 call (2026-05-08): all air-cooled GPUs delivered and \"either operating or undergoing commissioning\" across the 50MW site — split undisclosed, so kept at commissioning (conservative). Website \">23,000 GPUs\" is installed-or-on-order",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
+        },
+        {
+          "note": "진행률 추정: GB300 액체냉각 홀 80% — FY26 발표 자료 13쪽 \"첫 액체냉각 GPU 설치 진행, 4분기 시운전 목표\"를 보고 매긴 값. 공랭 홀과 사이트 50MW 를 나눠 써서, 가동하면 공랭 홀 몫을 넘겨받는 것으로 봄(액체냉각 IT 10MW × 기본 PUE 1.3)",
+          "note_en": "Progress estimate: GB300 liquid-cooled hall 80% — from p.13 of the FY26 presentation (\"initial liquid-cooled GPU installations underway, commissioning targeted for Q4\"). It shares the 50MW site with the air-cooled hall, so it is modelled as taking over part of that hall once it runs (10MW IT × default PUE 1.3)",
+          "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
+        },
+        {
+          "note": "공랭 홀 PUE 1.1 — 회사 가정: 2025-07 보도자료 주석 2 \"총 50MW · PUE 1.1 · GPU 1개당 1.93kW\" (GPU 수 검산에 씀, 총 전력 50MW 는 그대로)",
+          "note_en": "Air-cooled hall PUE 1.1 — company assumption in note 2 of the July 2025 release (\"50MW gross · PUE 1.1 · 1.93kW per GPU\"); used for the GPU check, the 50MW gross stays as is",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036125024747/ef20051566_ex99-1.htm"
         }
       ],
       "sources": [
@@ -936,7 +1061,6 @@
           "name_ko": "공랭 B300 홀",
           "kind": "datahall_air",
           "figure": "power-block",
-          "it_mw": 80,
           "gross_mw": 80,
           "gpu": {
             "model": "B300 (Blackwell Ultra)",
@@ -946,55 +1070,50 @@
             "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm",
             "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm",
             "https://www.sec.gov/Archives/edgar/data/1878848/000114036126007905/ny20064909x3_ex99-1.htm",
-            "https://www.unite.ai/blue-owl-funds-lead-2-4b-ai-factory-equipment-financing-for-iren/"
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000015/iren-20251231.htm",
+            "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60",
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm"
           ],
           "mw_basis": "gross",
           "phases": [
             {
               "status": "under_construction",
-              "from": "2026-05",
+              "from": "2025-12",
               "basis": "reported",
-              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm",
-              "published": "2026-05-07"
-            },
-            {
-              "status": "commissioning",
-              "from": "2026-10",
-              "basis": "estimate",
-              "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000015/iren-20251231.htm"
             },
             {
               "status": "operating",
               "from": "2026-Q4",
               "basis": "target",
-              "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm"
+              "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
             }
-          ]
+          ],
+          "replaces": "mk-miners",
+          "progress": 0.75
         },
         {
           "id": "mk-liquid-2027",
           "name": "Liquid-cooled expansion",
           "name_ko": "액체냉각 확장",
           "kind": "datahall_liquid",
-          "it_mw": 50,
-          "gross_mw": 50,
           "replaces": "mk-air",
           "sources": [
-            "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
           ],
           "mw_basis": "gross",
           "phases": [
             {
               "status": "planned",
-              "from": "2026-10",
+              "from": "2026-08",
               "basis": "reported",
-              "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
             },
             {
               "status": "operating",
               "from": "2027",
               "basis": "target",
-              "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
             }
           ]
         },
@@ -1096,6 +1215,11 @@
           "note": "공랭 B300 홀 시운전 2026-10: 10-K 의 \"2026-12-31까지 단계 인도\"와 \"2026 하반기 설치 시작\" 발언으로 추정. Tier 1 에서 시운전 개시를 직접 확인하지 못함 (추정)",
           "note_en": "Commissioning from Oct 2026: inferred from staged delivery through Dec 31, 2026 (10-K) and H2 2026 installation start; not directly confirmed in Tier 1 (estimate)",
           "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm"
+        },
+        {
+          "note": "진행률 추정: 공랭 B300 홀 75% — FY26 발표 자료 13쪽 \"4개 홀 중 2개에서 GPU 설치 진행, 4분기 시운전 목표\"를 보고 매긴 값",
+          "note_en": "Progress estimate: air-cooled B300 halls 75% — from p.13 of the FY26 presentation (\"GPU installations underway across two of four data halls, commissioning targeted for Q4\")",
+          "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
         }
       ],
       "sources": [
@@ -1152,63 +1276,34 @@
       },
       "buildings": [
         {
-          "id": "cf-air",
-          "name": "Air-cooled AI retrofit",
-          "name_ko": "공랭 AI 개조 홀",
-          "kind": "datahall_air",
-          "it_mw": 30,
-          "gross_mw": 30,
-          "sources": [
-            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm",
-            "https://www.sec.gov/Archives/edgar/data/1878848/000114036126007905/ny20064909x3_ex99-1.htm",
-            "https://iren.com/data-centers/canal-flats"
-          ],
-          "mw_basis": "gross",
-          "replaces": "cf-miners",
-          "phases": [
-            {
-              "status": "planned",
-              "from": "2026-05",
-              "basis": "reported",
-              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm",
-              "published": "2026-05-07"
-            },
-            {
-              "status": "operating",
-              "from": "2027",
-              "basis": "target",
-              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
-            }
-          ]
-        },
-        {
           "id": "cf-liquid-2027",
           "name": "GB300 liquid-cooled conversion",
           "name_ko": "GB300 액체냉각 전환",
           "kind": "datahall_liquid",
-          "it_mw": 30,
           "gross_mw": 30,
-          "replaces": "cf-air",
+          "replaces": "cf-miners",
           "gpu": {
             "model": "GB300",
             "count": null
           },
           "sources": [
-            "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm",
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm",
+            "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
           ],
           "mw_basis": "gross",
           "phases": [
             {
               "status": "planned",
-              "from": "2026-10",
+              "from": "2026-05",
               "basis": "reported",
-              "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
             },
             {
               "status": "operating",
               "from": "2027",
               "basis": "target",
-              "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
             }
           ]
         },

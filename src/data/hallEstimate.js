@@ -39,7 +39,8 @@ export function estimateHall(building) {
   const profile = gpuProfile(building)
   if (!profile) return null
   // 화면용 건물(view.js)은 IT 전력이 없으면 0 으로 채워 둠 → 0 도 "없음"으로 봄 (|| 사용)
-  const itMw = building.it_mw || building.disclosedMw || (building.gross_mw ? building.gross_mw / PUE : null)
+  // IT 전력이 없으면 총 전력 ÷ PUE (건물에 회사 PUE 가 적혀 있으면 그 값, 없으면 1.3)
+  const itMw = building.it_mw || building.disclosedMw || (building.gross_mw ? building.gross_mw / (building.pue ?? PUE) : null)
   const itBasis = building.it_mw ? 'it' : building.disclosedMw ? 'disclosed' : 'gross'
   const reported = building.gpu?.count
   if (!reported && !itMw) return null
@@ -66,12 +67,14 @@ export function roundNice(n) {
   return n >= 100 ? Math.round(n / 10) * 10 : n
 }
 
-// 검산용 기준 건물: 회사가 GPU 수와 IT 전력을 함께 발표한 첫 건물 → GPU 1개당 실제 kW
-//   (지금 데이터에선 프린스조지 공랭 홀: 50MW · 23,000개 ≈ 2.2kW) 화면에서 가정과 나란히 보여 줌
+// 검산용 기준 건물: 회사가 GPU 수와 전력을 함께 발표한 첫 건물 → GPU 1개당 실제 kW
+//   IT 전력을 밝혔으면 그 값, 총(gross) 전력과 PUE 를 밝혔으면 총 ÷ PUE 를 IT 로 씀 (fromGross 표시)
+//   (지금 데이터에선 프린스조지 공랭 홀: 총 50MW · 회사 가정 PUE 1.1 → IT 약 45MW · 23,000개 ≈ 2.0kW) 화면에서 가정과 나란히 보여 줌
 export function referenceHall(sites) {
   for (const site of sites) {
     for (const b of site.buildings) {
-      if (b.gpu?.count && b.it_mw) return { site, building: b, itMw: b.it_mw, gpus: b.gpu.count, kwPerGpu: (b.it_mw * 1000) / b.gpu.count }
+      const itMw = b.it_mw || (b.gross_mw && b.pue ? b.gross_mw / b.pue : null)
+      if (b.gpu?.count && itMw) return { site, building: b, itMw, gpus: b.gpu.count, kwPerGpu: (itMw * 1000) / b.gpu.count, fromGross: !b.it_mw, grossMw: b.gross_mw, pue: b.pue }
     }
   }
   return null

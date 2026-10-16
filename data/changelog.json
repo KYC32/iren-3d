@@ -4,6 +4,11 @@
       "date": "2026-10-17",
       "items": [
         {
+          "ko": "건물 근거 검토를 모든 건물로 (원문 확인 5동 → 20동): 회사 공시·발표 자료로 단계·MW 를 다시 확인 — 칠드레스 Horizon 5·6·공랭 개조는 2026-08 '착공' 발표대로 건설 중, 빠져 있던 칠드레스 2026 공랭 50MW 블록과 프린스조지 GB300 액체냉각 홀(IT 10MW) 추가, 회사가 밝히지 않은 BC 홀 IT MW·2027 액체냉각 MW 는 비움, 커낼플랫츠는 공랭 개조안이 액체냉각 전환으로 바뀌어 한 건물로. 그 결과 2026년 말 AI 가동 전망 380→480MW(회사 2026년 목표 480MW 와 같음)",
+          "en": "Building evidence review extended to every building (5 → 20 source-reviewed): stages and MW rechecked against company filings and decks — Childress Horizon 5–6 and air-cooled retrofits now under construction per the August 'construction commenced' update, the missing 2026 Childress 50MW air-cooled block and the Prince George GB300 liquid-cooled hall (10MW IT) added, undisclosed BC hall IT MW and 2027 liquid MW cleared, and Canal Flats' superseded air-cooled plan merged into its liquid-cooled conversion. The end-2026 AI-live outlook moves 380→480MW, matching IREN's 480MW 2026 target",
+          "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
+        },
+        {
           "ko": "9개 캠퍼스 위치를 원문으로 확인해 지도 핀을 실제 부지로: 칠드레스(SEC 첨부 주소 620 FM 1033 + 주정부 필지, 시내 동남동 약 9마일)·스위트워터 1·2(피셔 카운티 IREN 자회사 소유 필지 — 스위트워터 2는 그동안 놀런 카운티에 잘못 찍혀 있었음)·프린스조지·매켄지·커낼플랫츠(BC 지적·송전선·지자체 공고, 면적이 10-K 와 일치)·키오와(카운티 공고 법적 경계)·번디(IREN 자회사 연방 환경 신고 주소)·바다호스(주정부 법령 지정 필지). 표시는 '주소 위치 · 경계 미확인'",
           "en": "All nine campus locations verified against primary records and the map pins moved to the actual sites: Childress (SEC exhibit address 620 FM 1033 + state parcel data, ~9 mi ESE of town), Sweetwater 1 & 2 (Fisher County parcels owned by IREN subsidiaries — Sweetwater 2 had been placed in Nolan County), Prince George, Mackenzie and Canal Flats (BC cadastre, transmission records and municipal notices; areas match the 10-K), Kiowa (county legal notice), Bundey (address in an IREN subsidiary's federal EPBC referral) and Badajoz (parcels named in a regional decree). Shown as 'Address · boundary unverified'",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/a1037commontermsagreemen.htm"

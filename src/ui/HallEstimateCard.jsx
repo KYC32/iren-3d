@@ -66,8 +66,8 @@ export default function HallEstimateCard({ building }) {
             ? `IT 전력 ÷ GPU 1개당 약 ${p.kwPerGpu.toFixed(1)}kW(CPU·네트워크·스토리지 몫 포함)로 계산했습니다.${p.modelKnown ? '' : ' GPU 모델 미발표 — 냉각 방식으로 최신 세대를 가정.'}${est.itBasis === 'gross' ? ' IT 전력 미공개 — 전체 전력 ÷ 1.3 으로 환산.' : ''}${est.itBasis === 'disclosed' ? ' 발표 용량이 IT 기준인지 미공개 — IT 로 보고 계산.' : ''}`
             : `IT power ÷ ~${p.kwPerGpu.toFixed(1)} kW per GPU (incl. CPU, network, storage share).${p.modelKnown ? '' : ' GPU model undisclosed — latest generation assumed from cooling type.'}${est.itBasis === 'gross' ? ' IT undisclosed — gross ÷ 1.3.' : ''}${est.itBasis === 'disclosed' ? ' Disclosed capacity basis unclear — treated as IT.' : ''}`)}
         {ref && !isRef && (ko
-          ? ` 검산: ${ref.site.name_ko ?? ref.site.name}는 IT ${ref.itMw}MW 에 GPU ${ref.gpus.toLocaleString()}개를 회사가 발표 (개당 약 ${ref.kwPerGpu.toFixed(1)}kW).`
-          : ` Check: ${ref.site.name} reported ${ref.gpus.toLocaleString()} GPUs on ${ref.itMw} MW IT (~${ref.kwPerGpu.toFixed(1)} kW each).`)}
+          ? ` 검산: ${ref.site.name_ko ?? ref.site.name}는 ${ref.fromGross ? `총 ${ref.grossMw}MW(회사 가정 PUE ${ref.pue} → IT 약 ${Math.round(ref.itMw)}MW)` : `IT ${ref.itMw}MW`} 에 GPU ${ref.gpus.toLocaleString()}개를 회사가 발표 (개당 약 ${ref.kwPerGpu.toFixed(1)}kW).`
+          : ` Check: ${ref.site.name} reported ${ref.gpus.toLocaleString()} GPUs on ${ref.fromGross ? `${ref.grossMw} MW gross (company PUE ${ref.pue} → ~${Math.round(ref.itMw)} MW IT)` : `${ref.itMw} MW IT`} (~${ref.kwPerGpu.toFixed(1)} kW each).`)}
         {run && (ko
           ? ` 매출 환산은 계약 금액이 기간${run.whole ? '' : '·용량'}에 고르게 나뉜다고 가정한 값으로, 회계상 매출·인식 시점과 다릅니다.`
           : ' Run-rate assumes contract value is spread evenly over term and capacity; it is not recognized revenue.')}
