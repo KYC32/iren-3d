@@ -19,7 +19,7 @@ import * as G from "../kit/lathe.mjs";
 import * as A from "../kit/audit.mjs";
 import { tubePieces, tubeSvg } from "../kit/tube.mjs";
 import { workshop, auditAll } from "../rack/shop.mjs";
-import { BLOCK, AMPS, PHASE_V, EST, SOURCE, SITE, tourPlan, stateAt } from "./model.mjs";
+import { BLOCK, AMPS, PHASE_V, EST, SOURCE, SITE, T as TIMES, tourPlan, stateAt, obsTotals, looksInstalled, hallCounts } from "./model.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..", "..");
@@ -562,8 +562,9 @@ hallPower();
 function generator() {
   const z0 = SLAB, zt = z0 + GEN_TANK, zb = zt + GEN_BOX, Y = GEN.y + GEN.d, X = GEN.x + GEN.w;
   // 연료 탱크 (어두운 회색): 들어 올림 고리, 주유구, 레벨 게이지
+  //   위 띠 이음선: 앞면 → 둥근 모서리 → 오른쪽 면을 돌아 윤곽선에서 끝남 (직선 두 개로 그으면 둥근 모서리 너머로 삐져나옴)
   W.box("gen.tank", GEN, z0, GEN_TANK, { cls: "pw-tank", tone: "mid", steps: 2, info: "tank",
-    inner: L(seg([GEN.x, Y, z0 + GEN_TANK - 1.2], [X, Y, z0 + GEN_TANK - 1.2]) + seg([X, GEN.y, z0 + GEN_TANK - 1.2], [X, Y, z0 + GEN_TANK - 1.2]), { tone: "lo" }) });
+    inner: L(k.sideSeam(GEN, z0 + GEN_TANK - 1.2, P, 2), { tone: "lo" }) });
   for (const x of [GEN.x + 3, X - 6]) W.box(`gen.lug${x}`, { x, y: Y, w: 3, d: 0.6, r: 0.1 }, z0 + 2, 3, { cls: "pw-tank", tone: "mid", steps: 1, info: "tank", stamp: "glug" });
   W.box("gen.fill", { x: 70, y: Y, w: 4.5, d: 1.4, r: 0.2 }, z0 + 3.5, 4.5, { cls: "pw-tank", tone: "mid", steps: 2, info: "tank" });
   // 레벨 게이지: 탱크 앞면의 둥근 계기 (눈금 + 바늘)
@@ -664,6 +665,25 @@ for (const [x, y, z] of [[-4, 33, 0], [33, 33, SLAB], [96, 22, SLAB], [130, 22, 
   W.cyl(`bollard.cap${x}${y}`, x, y, 1.15, z + 10, 0.5, { cls: "pw-yellow", tone: "mid", info: "bollard", stamp: "bcap" });
 }
 
+// ---------- 9/23 관찰 보기: 흐리게 칠할 부품에 표시 (모양·칠하는 순서는 그대로, 보기를 바꾸면 색만 바뀜) ----------
+// 숫자는 사이트 데이터(data/observations.json)에서 이 그림을 가리키는 진척 항목 → 캠퍼스 패널의 칸 그림과 같은 숫자
+const OBS = JSON.parse(readFileSync(join(ROOT, "data", "observations.json"), "utf8")).progress.find((p) => p.figure === "power-block");
+const OT = obsTotals(OBS);
+// 부품 이름 앞부분 → 관찰한 장비 종류 (cabling = 케이블을 당겨 놓은 홀 수로 판단)
+//   땅속 콘듀잇(gen.duct)은 패드를 붓기 전에 깔리므로 패드와 함께 진하게 둠 → 종류 없음(null)
+const OBS_KIND = [["gen.duct", null], ["ats.", "ats"], ["gen.", "generators"], ["mer.", "mer"], ["xf.", "transformers"], ["pad.", "pads"], ["ladder.", "cabling"], ["lv.", "cabling"], ["feeder.out", "cabling"]];
+// 홀 안 = 지붕 아래라 드론으로 안 보이는 곳
+const HALL_INSIDE = ["hall.floor", "rpp", "tray.", "branch.", "net.", "rack", "srv", "pdu.", "drop", "fanwall", "feeder.in"];
+const shareOf = (kind) => (kind === "cabling" ? [OT.pulledHalls, OT.halls] : [OT[kind], OT.segments]);   // [설치된 수, 전체]
+const missing = (kind) => !looksInstalled(...shareOf(kind));   // 1칸 그림에서 흐리게 칠할 종류인가
+function obsTag(name) {
+  if (HALL_INSIDE.some((p) => name.startsWith(p))) return "unseen";   // 안 보임
+  const hit = OBS_KIND.find(([p]) => name.startsWith(p));
+  return hit && hit[1] && missing(hit[1]) ? "miss" : "";              // 대부분의 칸에 아직 없음
+}
+// 표시 = 부품 그림을 <g data-obs> 로 한 번 더 감쌈 (CSS 가 9/23 보기일 때만 이 안의 색을 옅게 바꿈)
+for (const item of R.items) { const tag = obsTag(item.name); if (tag) item.svg = `<g data-obs="${tag}">${item.svg}</g>`; }
+
 // ---------- 그리기 (칠하는 순서 = 광선으로 잰 앞뒤) ----------
 const body = W.render();
 
@@ -691,7 +711,18 @@ const BLADE_P = [PHASE_X[1], PIVOT.y + 1.5, PIVOT.z];
 const DUCT_P = [TRENCH.x + 10, TRENCH.y + 30, TRENCH.pit + 1];
 const PHASE_STOPS = [["outage", LAMP_P], ["crank", PANEL_P], ["transfer", BLADE_P], ["gen", DUCT_P], ["restore", LAMP_P], ["retransfer", BLADE_P], ["cooldown", PANEL_P]]
   .map(([phase, p]) => ({ key: `ph-${phase}`, phase, p, z: 2.1, side: p === BLADE_P ? "left" : undefined }));
-const STOPS = [...PART_STOPS, ...PHASE_STOPS].map((s) => { const [x, y] = at(s.p); return { key: s.key, fx: +(x / WIDTH).toFixed(4), fy: +(y / HEIGHT).toFixed(4), z: s.z, ...(s.side ? { side: s.side } : {}) }; });
+// 9/23 보기의 둘러보기: 전기가 흐르는 순서대로 장비마다 설치 개수를 짚음 (아래 개수 단추와 같은 순서 → 단추 i = 여기 i번)
+const OBS_STOPS = [
+  { key: "obs-pad", kind: "pads", p: [150, 48, SLAB], z: 2.0 },
+  { key: "obs-xfmr", kind: "transformers", p: [XF.x + 12, XF.y + 9, SLAB + 12], z: 2.3 },
+  { key: "obs-cable", kind: "cabling", p: [44, 6, LADDER.z + 1], z: 2.3 },
+  { key: "obs-ats", kind: "ats", p: [90, ATS.y + ATS.d, ATS_Z + 12], z: 2.3 },
+  { key: "obs-gen", kind: "generators", p: [60, GEN.y + GEN.d, SLAB + GEN_TANK + 14], z: 1.9 },
+  { key: "obs-mer", kind: "mer", p: [MER.x + 30, MER.y + MER.d, SLAB + 16], z: 2.2 },
+  { key: "obs-hall", p: [186, -26, 12], z: 1.8 },
+];
+const STOPS = [...PART_STOPS, ...PHASE_STOPS, ...OBS_STOPS].map((s) => { const [x, y] = at(s.p); return { key: s.key, fx: +(x / WIDTH).toFixed(4), fy: +(y / HEIGHT).toFixed(4), z: s.z, ...(s.side ? { side: s.side } : {}) }; });
+const OBS_FIRST = PART_STOPS.length + PHASE_STOPS.length;   // STOPS 안에서 9/23 짚을 곳이 시작하는 번호
 const PHASE_STOP = Object.fromEntries(PHASE_STOPS.map((s, i) => [s.phase, PART_STOPS.length + i]));   // 단계 이름 → 짚을 곳 번호
 const PLAN = tourPlan(PART_STOPS.length);
 const puffAt = at(STACK_TOP);
@@ -757,8 +788,61 @@ const PHASE_TEXT = {
   cooldown: ["발전기 무부하 냉각 후 정지", "Generator cools down unloaded, then stops"],
 };
 for (const [phase, text] of Object.entries(PHASE_TEXT)) INFO[`ph-${phase}`] = text;
+
+// ---------- 9/23 보기 글 (숫자는 모두 OBS 에서 → 관찰 데이터를 고치면 글·진하게/흐리게가 함께 바뀜) ----------
+const obsDay = (ko) => { const [, m, d] = OBS.date.split("-").map(Number); return ko ? `${m}/${d}` : new Date(`${OBS.date}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" }); };
+// 종류마다 이름: [말풍선 이름(한), (영), 개수 단위, 단추 이름(한), (영)]
+const OBS_NAME = {
+  pads: ["콘크리트 패드", "Concrete pads", "칸", "패드", "Pads"],
+  transformers: ["변압기", "Transformers", "대", "변압기", "Transformers"],
+  cabling: ["케이블", "Cables", "", "케이블 당김", "Cables pulled"],
+  ats: ["ATS·배전반", "ATS / switchboard", "개", "ATS·배전반", "ATS / switchboard"],
+  generators: ["2.5 MW 발전기", "2.5 MW generators", "대", "발전기", "Generators"],
+  mer: ["MER (전기실)", "MER (electrical room)", "개", "MER", "MERs"],
+};
+const COUNTED = ["pads", "transformers", "generators", "mer", "ats"];
+const least = COUNTED.reduce((a, b) => (OT[b] < OT[a] ? b : a));                        // 가장 덜 된 장비 (지금은 ATS)
+const partial = COUNTED.filter((kind) => !missing(kind) && OT[kind] < OT.segments);    // 진하게 그렸지만 일부 칸엔 아직 없는 장비
+const missNames = (ko) => COUNTED.filter(missing).map((kind) => OBS_NAME[kind][ko ? 3 : 4]);
+const hallsOf = (pick) => OBS.halls.filter(pick).map((h) => h.name);
+function obsText(kind, ko) {
+  const d = obsDay(ko), N = OT.segments;
+  if (kind === "hall") return ko ? "홀 안 · 지붕 아래라 드론으로는 안 보임 · 랙·GPU 반입 여부는 이 관찰로 알 수 없음 (흐리게)" : "Inside the hall · under the roof, so the drone can't see it · this observation can't tell whether racks or GPUs are in (faded)";
+  if (kind === "cabling") {
+    const yes = hallsOf((h) => h.cabling === "pulled"), no = hallsOf((h) => h.cabling !== "pulled");
+    return ko
+      ? `케이블 · ${d}: ${yes.join("·")}홀은 당겨 놓았지만 아직 결선 전${no.length ? ` · ${no.join("·")}홀은 아직 케이블 전` : ""} · 열화상도 조용함 = 아직 통전 전`
+      : `Cables · ${d}: pulled in hall${yes.length > 1 ? "s" : ""} ${yes.join(", ")} but not yet terminated${no.length ? ` · none yet in hall${no.length > 1 ? "s" : ""} ${no.join(", ")}` : ""} · quiet thermal = not yet energized`;
+  }
+  const n = OT[kind], [nameKo, nameEn, unit] = OBS_NAME[kind];
+  const count = n === N ? (ko ? `${N}칸 모두 설치` : `all ${N} in place`) : ko ? `${N}칸 중 ${n}${unit}` : `${n} of ${N}`;
+  const notes = [kind === least && n < N ? (ko ? "가장 덜 된 장비" : "the least-complete item") : "", missing(kind) ? (ko ? "점선 = 대부분의 칸에 아직 없음" : "dashed = not yet in most segments") : ""].filter(Boolean);
+  return [`${ko ? nameKo : nameEn}`, `${d}: ${count} (${hallCounts(OBS, kind, ko)})`, ...notes].join(" · ");
+}
+// 9/23 보기에서 부품을 가리키면 나오는 설명 (그 부품이 속한 장비의 개수) + 짚을 곳 글
+const OBS_INFO_KEYS = {
+  pads: ["pad"], transformers: ["xfmr", "xfmr-hv", "ground"], cabling: ["ladder", "feeder"],
+  ats: ["ats", "ats-in", "ats-blade", "ats-n", "ats-e", "ats-contact", "ats-operator", "ats-lamps", "ats-dist", "ats-feed"],
+  generators: ["gen", "gen-intake", "gen-panel", "gen-estop", "gen-stack", "gen-aux", "tank"], mer: ["mer", "mer-door", "mer-hvac", "mer-feed"],
+  hall: ["hall", "hall-floor", "rpp", "tray", "netlad", "rack", "server", "pdu", "fanwall"],
+};
+const OBS_INFO = {};
+for (const [kind, keys] of Object.entries(OBS_INFO_KEYS)) for (const key of keys) OBS_INFO[key] = [obsText(kind, true), obsText(kind, false)];
+for (const s of OBS_STOPS) INFO[s.key] = [obsText(s.kind ?? "hall", true), obsText(s.kind ?? "hall", false)];
+// 9/23 보기의 아래 줄 (전체 보기일 때)
+const OBS_LINE = (ko) => (ko ? `${obsDay(true)} 드론 관찰 · 장비 설치·케이블 당김까지 · 아직 통전 전` : `${obsDay(false)} drone view · gear set, cables pulled · not yet energized`);
+PHASE_TEXT.obs = [OBS_LINE(true), OBS_LINE(false)];
+// 아래 개수 단추: 장비마다 이름 · 설치 수/전체 · 막대 (누르면 둘러보기가 그 장비로 감)
+const obsChips = (ko) => OBS_STOPS.map((s, i) => {
+  if (!s.kind) return "";
+  const [n, total] = shareOf(s.kind), value = s.kind === "cabling" ? (ko ? `${n}/${total}홀` : `${n}/${total} halls`) : `${n}/${total}`;
+  return `<button type="button" class="pw-chip${missing(s.kind) ? " is-miss" : ""}" data-obs-stop="${i}"><b>${OBS_NAME[s.kind][ko ? 3 : 4]}</b><span>${value}</span><i style="--f:${Math.round((n / total) * 100)}%"></i></button>`;
+}).join("");
 const ICON_IN = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="11" x2="11" y1="8" y2="14"/><line x1="8" x2="14" y1="11" y2="11"/></svg>';
 const ICON_OUT = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></svg>';
+// 보기 전환 단추 아이콘 (lucide zap = 완공 후 전기가 흐르는 모습, lucide drone = 드론 관찰)
+const ICON_ZAP = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.914 4a1.5 1.5 0 00-2.474-1.561l-9 9A1.5 1.5 0 005.5 14h4.002a.5.5 0 01.471.666L8.086 20a1.5 1.5 0 002.475 1.56l9-9A1.5 1.5 0 0018.5 10h-3.997a.5.5 0 01-.472-.667z"/></svg>';
+const ICON_DRONE = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 10 7 7"/><path d="m10 14-3 3"/><path d="m14 10 3-3"/><path d="m14 14 3 3"/><path d="M14.205 4.139a4 4 0 1 1 5.439 5.863"/><path d="M19.637 14a4 4 0 1 1-5.432 5.868"/><path d="M4.367 10a4 4 0 1 1 5.438-5.862"/><path d="M9.795 19.862a4 4 0 1 1-5.429-5.873"/><rect x="10" y="8" width="4" height="8" rx="1"/></svg>';
 const zoomText = (ko) => ({
   in: ICON_IN + `<span>${ko ? "확대" : "Zoom"}</span>`, out: ICON_OUT + `<span>${ko ? "전체 보기" : "Full view"}</span>`,
   aria: ko ? ["전력 블록 그림: 변전소에서 GPU 서버까지 전기가 흐르는 길을 저절로 확대해 하나씩 짚고, 정전 때 ATS 가 발전기로 넘어가는 모습을 보여 줍니다. + 키나 확대 단추로 직접 확대할 수 있습니다", "확대: 포인터나 화살표 키로 둘러보고, Esc 로 전체 보기"]
@@ -767,10 +851,23 @@ const zoomText = (ko) => ({
 });
 
 // ---------- 페이지 ----------
-const CSS = readFileSync(join(HERE, "power.css"), "utf8").replaceAll("__ASPECT__", (WIDTH / HEIGHT).toFixed(3));   // 그림 가로:세로 비율을 CSS 에 넘김
+// 9/23 보기의 "흐리게" 색: 부품마다 붙은 재료 색(.pw-rack 등)은 var(--fx-이름, 원래 색) 으로 바꿔 두고(아래 FADE_CSS),
+//   흐리게 칠할 부품을 감싼 <g data-obs> 에 --fx-* 를 정함 → 재료 색이 모두 옅은 회색으로 바뀜
+//   (<use> 로 복사한 부품도 감싼 쪽에서 값을 물려받으므로 똑같이 바뀜. 투명하게 하지 않아 뒤가 비치지 않음)
+const FADE = { paper: "#eef1f4", face: "#f2f4f6", top: "#f7f8fa", "shade-0": "#dfe4e9", "shade-1": "#e4e8ec", "shade-2": "#e8ecef", "shade-3": "#edf0f2", "lit-top": "#f7f8fa", "lit-shade": "#e8ecef",
+  hi: "#a9b1ba", mid: "#bcc3cb", lo: "#cdd3d9", faint: "#dce1e6", lit: "#a9b1ba", dot: "#9aa3ad", green: "#bcc3cb", red: "#bcc3cb", blue: "#bcc3cb" };
+const FADE_VARS = Object.entries(FADE).map(([name, color]) => `--fx-${name}:${color};--anatomy-${name}:${color}`).join(";");
+const FADE_CSS = `.pw-fig[data-view=obs] [data-obs]{${FADE_VARS};--fx-cut:#e9ecef;--fx-led:#c3c9cf;--fx-cord:#c3c9cf;--fx-cold:#eef1f4;--fx-hot:#eef1f4;--fx-lamp:#d5d9de}`
+  // 아직 없는 장비(miss)는 윤곽선을 점선으로 = 도면에서 "들어올 자리(계획)"를 그리는 방식 → 안 보이는 홀 안(unseen)과 구분
+  + `.pw-fig[data-view=obs] [data-obs=miss] .iso-edge{stroke-dasharray:2.2 1.8;stroke:#9ea7b1}`;
+// 그림 가로:세로 비율을 CSS 에 넘기고, 재료 색 선언(--anatomy-이름:색)을 var(--fx-이름,색) 으로 바꾼 뒤 9/23 흐리게 규칙을 붙임
+const CSS = readFileSync(join(HERE, "power.css"), "utf8").replaceAll("__ASPECT__", (WIDTH / HEIGHT).toFixed(3))
+  .replace(/--anatomy-([a-z0-9-]+):([^;}]+)/g, (all, name, color) => `--anatomy-${name}:var(--fx-${name},${color})`) + FADE_CSS;
 // 움직임 코드 = 공용 확대·말풍선(shared/zoomer.js) + 이 그림의 움직임(live.js)
 const LIVE = readFileSync(join(HERE, "..", "shared", "zoomer.js"), "utf8") + readFileSync(join(HERE, "live.js"), "utf8");
-const DATA = { W: WIDTH, H: HEIGHT, zoom: 2.4, focus: at([90, 10, 20]).map(r1), stops: STOPS, parts: PART_STOPS.length, phaseStop: PHASE_STOP, plan: PLAN, puff: puffAt.map(r1) };
+const DATA = { W: WIDTH, H: HEIGHT, zoom: 2.4, focus: at([90, 10, 20]).map(r1), stops: STOPS, parts: PART_STOPS.length, phaseStop: PHASE_STOP, plan: PLAN, puff: puffAt.map(r1),
+  obs: { first: OBS_FIRST, n: OBS_STOPS.length, stopsAt: TIMES.obsStopsAt, stopLen: TIMES.obsStopLen, hold: TIMES.obsHold } };   // 9/23 보기 둘러보기
+
 
 // 자리표(__이름__) 채우기: 함수로 바꿔 넣어야 값 속의 $ 기호가 특수 문자로 해석되지 않음
 const fill = (src, values) => src.replace(/__([A-Z]+)__/g, (all, name) => (name in values ? values[name] : all));
@@ -786,16 +883,32 @@ function page(ko) {
   const caption = ko
     ? `배치·전압·발전기 2.5 MW·콘듀잇 ${BLOCK.genConduits}개·MER 은 매켄지 현장을 분석한 제3자 스레드(<a href="${SOURCE.url}" target="_blank" rel="noreferrer">${SOURCE.by}, ${SOURCE.posted}</a>, ${SOURCE.filmed} 드론 영상) 기준이며 회사가 확인한 내용이 아닙니다. 홀 안은 IREN 홈페이지의 <a href="${SITE.pages[0]}" target="_blank" rel="noreferrer">매켄지</a>·<a href="${SITE.pages[1]}" target="_blank" rel="noreferrer">프린스조지</a> 공랭 홀 사진을 보고 그림(흡기 → 찬 통로 → 랙 앞면 → 뜨거운 통로 → 배기 팬 벽, 평균 PUE ${SITE.pue}·최대 랙 밀도 ${SITE.rackMaxKw} kW 는 같은 페이지). 설명을 위해 지붕·벽을 잘라 냈고, 랙은 한 줄 일부만, 통로 바닥 색·케이블 가닥 수·홀 배전반과 트레이 모양은 그림 표현. GPU·랙 수는 사이트 가정(GPU 1개당 ${EST.kwPerGpu.toFixed(1)} kW, 랙당 ${EST.gpusPerRack}개)으로 계산한 추정. 정전·전환 시간은 압축해서 보여 줌. ${SOURCE.filmed} 영상 기준 이 칸들은 장비 설치·케이블 당김까지 — 다음은 종단 → 시험 → 로드뱅크 시운전 → 가동.`
     : `Layout, voltages, the 2.5 MW generator, the ${BLOCK.genConduits} conduits and the MER follow a third-party analysis of the Mackenzie site (<a href="${SOURCE.url}" target="_blank" rel="noreferrer">${SOURCE.by}, ${SOURCE.posted}</a>, drone footage of ${SOURCE.filmed}); not company-confirmed. The hall interior is drawn from IREN's own <a href="${SITE.pages[0]}" target="_blank" rel="noreferrer">Mackenzie</a> and <a href="${SITE.pages[1]}" target="_blank" rel="noreferrer">Prince George</a> air-cooled hall photos (intake → cold aisle → rack fronts → hot aisle → exhaust fan wall; average PUE ${SITE.pue} and ${SITE.rackMaxKw} kW maximum rack density from the same pages). Roof and walls are cut away for explanation, only part of one rack row is shown, and aisle floor colours, cable counts, the hall panel and trays are illustrative. GPU and rack counts are estimates from the site's assumptions (${EST.kwPerGpu.toFixed(1)} kW per GPU, ${EST.gpusPerRack} per rack). Outage timing is compressed. As of the ${SOURCE.filmed} footage these segments had gear set and cables pulled — next: termination → testing → load-bank commissioning → live.`;
+  // 9/23 보기: 제목 아래 줄·범례·설명 (보기를 바꾸면 CSS 가 완공 후 글과 바꿔 보여 줌)
+  const d = obsDay(ko), miss = missNames(ko), part = partial.map((kind) => OBS_NAME[kind][ko ? 3 : 4]);
+  const subObs = ko ? `${d} 드론 관찰 · ${OT.segments}칸(홀 ${OT.halls}개 × ${OBS.segments_per_hall}칸) 중 대부분의 모습 · 진하게 = 설치됨` : `${d} drone view · what most of the ${OT.segments} segments (${OT.halls} halls × ${OBS.segments_per_hall}) looked like · solid = installed`;
+  // 범례: 진하게(설치) · 점선(아직 없음 — 그런 장비가 있을 때만) · 흐리게(안 보임)
+  const keysObs = (ko
+    ? [["pw-k-solid", "진하게 = 대부분의 칸에 설치됨"], miss.length && ["pw-k-miss", `점선 = 아직 없음 (${miss.join("·")})`], ["pw-k-fade", "흐리게 = 드론으로 안 보임 (홀 안)"]]
+    : [["pw-k-solid", "solid = in place in most segments"], miss.length && ["pw-k-miss", `dashed = not there yet (${miss.join(", ")})`], ["pw-k-fade", "faded = not visible from the drone (hall interior)"]]).filter(Boolean);
+  const captionObs = ko
+    ? `개수는 제3자 관찰(<a href="${OBS.source}" target="_blank" rel="noreferrer">${OBS.by}</a>, ${OBS.date} 드론 영상, ${OBS.published} 게시)을 센 것이며 회사가 확인한 내용이 아닙니다 — 사이트의 공식 상태(건설·가동)는 바꾸지 않습니다. 1칸 그림은 ${OT.segments}칸 중 대부분의 모습이라 절반을 넘게 설치된 장비만 진하게${part.length ? `(일부 칸엔 아직 없음: ${part.join("·")})` : ""}, 대부분 아직 없는 장비는 점선으로 그렸습니다. 케이블은 당겨 놓았지만 결선 전이고 열화상도 조용해 아직 통전 전으로 보입니다(전류 표시 없음). 다음 단계: 결선 → 시험 → 로드뱅크 시운전 → 가동. 개수 단추를 누르면 그 장비로 확대해 홀별 개수를 보여 줍니다.`
+    : `Counts come from a third-party observation (<a href="${OBS.source}" target="_blank" rel="noreferrer">${OBS.by}</a>, drone footage of ${OBS.date}, posted ${OBS.published}); not company-confirmed, and they never change the site's official statuses. The one-segment drawing shows what most of the ${OT.segments} segments looked like, so only gear in place in more than half of them is drawn solid${part.length ? ` (${part.join(", ")} still missing in some segments)` : ""} and gear missing from most of them is dashed. Cables were pulled but not terminated and the thermal view was quiet, so the block looks not yet energized (no current shown). Next: termination → testing → load-bank commissioning → live. Press a count to zoom to that gear and see the per-hall numbers.`;
+  const viewBtn = (v, icon, label) => `<button type="button" data-view-btn="${v}" aria-pressed="${v === "built"}">${icon}<span>${label}</span></button>`;
   return `<!doctype html><html lang="${ko ? "ko" : "en"}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title}</title><style>${k.ISO_CSS}${CSS}</style></head>
 <body class="iso pw-body" data-theme="light"><main class="pw-page">
-<div class="rk-fig pw-fig">
-  <div class="rk-head"><h2>${title} <small>${sub}</small></h2><button class="rk-zoom" type="button" data-zoom="pw" data-call aria-pressed="false">${zt.in}</button></div>
+<div class="rk-fig pw-fig" data-view="built">
+  <div class="rk-head"><h2>${title} <small class="pw-only-built">${sub}</small><small class="pw-only-obs">${subObs}</small></h2>
+    <div class="pw-view" role="group" aria-label="${ko ? "보기" : "View"}">${viewBtn("built", ICON_ZAP, ko ? "완공 후" : "Complete")}${viewBtn("obs", ICON_DRONE, ko ? `${d} 관찰` : `${d} observed`)}</div>
+    <button class="rk-zoom" type="button" data-zoom="pw" data-call aria-pressed="false">${zt.in}</button></div>
   <div class="rk-stage pw-stage" data-fig="power" tabindex="0" role="group" aria-label="${zt.aria[0]}">${svg.replace(/ role="img" aria-label="[^"]*"/, ' aria-hidden="true"')}<span class="rk-aim" aria-hidden="true"></span><div class="rk-tip"><b></b><span></span></div></div>
   <div class="rk-read" data-readout="power">${PHASE_TEXT.normal[ko ? 0 : 1]}</div>
-  <div class="pw-legend">${keys.map(([c, t]) => `<span><i class="${c}"></i>${t}</span>`).join("")}</div>
-  <p class="pw-caption">${caption}</p>
+  <div class="pw-chips pw-only-obs" role="group" aria-label="${ko ? `${d} 설치 개수 · 누르면 그 장비로 확대` : `${d} counts · press to zoom to that gear`}">${obsChips(ko)}</div>
+  <div class="pw-legend pw-only-built">${keys.map(([c, t]) => `<span><i class="${c}"></i>${t}</span>`).join("")}</div>
+  <div class="pw-legend pw-only-obs">${keysObs.map(([c, t]) => `<span><i class="${c}"></i>${t}</span>`).join("")}</div>
+  <p class="pw-caption pw-only-built">${caption}</p>
+  <p class="pw-caption pw-only-obs">${captionObs}</p>
 </div></main>
-<script>(function(){${fill(LIVE, { DATA: JSON.stringify(DATA), KO: ko ? "true" : "false", INFO: JSON.stringify(INFO), PHASE: JSON.stringify(PHASE_TEXT), ZOOM: JSON.stringify(zt), STATE: stateAt.toString() })}})();</script>
+<script>(function(){${fill(LIVE, { DATA: JSON.stringify(DATA), KO: ko ? "true" : "false", INFO: JSON.stringify(INFO), OBSINFO: JSON.stringify(OBS_INFO), PHASE: JSON.stringify(PHASE_TEXT), ZOOM: JSON.stringify(zt), STATE: stateAt.toString() })}})();</script>
 </body></html>`;
 }
 mkdirSync(join(ROOT, "public", "figures"), { recursive: true });

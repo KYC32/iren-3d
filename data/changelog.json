@@ -4,6 +4,11 @@
       "date": "2026-10-17",
       "items": [
         {
+          "ko": "전력 경로 그림에 '9/23 관찰' 보기 추가: 그림 위 단추로 '완공 후'와 바꿔 보며, 제3자 드론 관찰(9/23 촬영) 기준으로 대부분의 칸에 설치된 장비는 진하게, 대부분 아직 없는 ATS·배전반은 점선, 드론으로 안 보이는 홀 안은 흐리게 — 장비마다 32칸 중 설치 개수(패드 27 · 변압기 32 · 발전기 20 · MER 23 · ATS 4)와 홀별 개수를 짚어 줌. 캠퍼스 패널 '현장 진척' 칸의 단추는 이 보기로 엶. 공식 상태는 바꾸지 않음",
+          "en": "Power-path figure gains a 'Sep 23 observed' view: toggle it against 'Complete' above the drawing; per the third-party drone observation (filmed Sep 23), gear in place in most segments is solid, the mostly-missing ATS / switchboard is dashed and the hall interior the drone can't see is faded — it walks each item's count out of 32 (pads 27 · transformers 32 · generators 20 · MERs 23 · ATS 4) with per-hall numbers. The campus panel's site-progress button opens this view. Official statuses are unchanged",
+          "source": "https://x.com/AceKicker13/status/2105268452839596511"
+        },
+        {
           "ko": "칠드레스 Horizon 액체냉각 홀 그림 추가: 3D 칠드레스 화면에서 Horizon 1~4 를 누르면(또는 캠퍼스 패널 '이 건물 안 자세히 보기') 홀 한 토막의 모형이 열림 — 전기(1차 변전소 6 → 홀 변압기 → 배전반 → UPS → 버스웨이 → GB300 NVL72 랙)와 냉각수(GPU 냉각판 → 랙 매니폴드 → 천장 2차 배관 → CDU → 1차 배관 → 건식 냉각기·칠러)를 함께 짚고, 더운 오후에 칠러가 보태는 모습과 CDU 하나를 정비해도 냉각이 이어지는 '동시 유지보수'를 보여 줌. 수치는 회사 발표(75MW·IT 50MW·랙 130~200kW·Tier III 수준), 모습은 회사 Horizon 1 인도 영상 기준",
           "en": "New Childress Horizon liquid-cooled hall figure: click Horizon 1–4 in the 3D Childress view (or 'Look inside this building' in the campus panel) to open a model of a hall slice — it walks the power path (Primary Substation 6 → hall transformers → switchboards → UPS → busway → GB300 NVL72 racks) and the coolant loops (GPU cold plates → rack manifolds → overhead secondary loop → CDUs → facility loop → dry coolers and chiller), then shows the chiller helping on a hot afternoon and a CDU being serviced while cooling carries on (concurrent maintainability). Figures per company disclosures (75MW gross, 50MW IT, 130–200kW racks, Tier III-equivalent); appearance from the company's Horizon 1 delivery video",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036126032638/ef20080141_ex99-1.htm"

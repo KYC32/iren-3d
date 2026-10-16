@@ -53,6 +53,23 @@ export const EST = (() => {
   return { kwPerGpu: HGX.kwPerGpu, gpusPerRack: HGX.gpusPerRack, serversPerRack: HGX.gpusPerRack / 8, rackKw: HGX.gpusPerRack * HGX.kwPerGpu, gpus, racks: Math.ceil(gpus / HGX.gpusPerRack) };
 })();
 
+// ---------- 9/23 관찰 (data/observations.json 의 진척 항목: 홀마다 센 장비 개수) ----------
+// 홀 4개 × 8칸 = 32칸을 캠퍼스 전체로 더함 → 그림의 진하게/흐리게와 말풍선 숫자가 여기서 나옴
+const KINDS = ["pads", "transformers", "generators", "mer", "ats"];
+export function obsTotals(obs) {
+  const sum = (key) => obs.halls.reduce((n, h) => n + h[key], 0);
+  return {
+    segments: obs.halls.length * obs.segments_per_hall,
+    halls: obs.halls.length,
+    ...Object.fromEntries(KINDS.map((key) => [key, sum(key)])),
+    pulledHalls: obs.halls.filter((h) => h.cabling === "pulled").length,   // 케이블을 당겨 놓은 홀 수
+  };
+}
+// 1칸 그림은 32칸 중 "대부분"의 모습 → 절반을 넘게 설치된 장비만 진하게 (딱 절반은 대부분이 아님)
+export const looksInstalled = (count, total) => count * 2 > total;
+// 말풍선용 홀별 개수: "1홀 8, 2홀 6, …" / "H1 8, H2 6, …" (말풍선은 " · " 에서 줄을 바꾸므로 쉼표로 이음)
+export const hallCounts = (obs, key, ko) => obs.halls.map((h) => (ko ? `${h.name}홀 ${h[key]}` : `H${h.name} ${h[key]}`)).join(", ");
+
 // ---------- 둘러보기 시간표 (초) ----------
 // 확대해 부품을 차례로 짚은 뒤(말풍선) 전체로 돌아와 정전 → 발전기 기동 → 전환 → 복전 → 되돌림을 보여 줌
 //   (실제 시간은 압축: 발전기는 보통 10초 안팎에 전압·주파수가 서고, 복전 뒤 되돌림은 몇 분 기다리는 게 보통)
@@ -60,6 +77,9 @@ export const T = {
   stopsAt: 3.2,      // 확대 시작 (처음 몇 초는 전체 모형을 보여 줌)
   stopLen: 2.6,      // 부품 한 곳을 짚는 시간
   outage: 0,         // (아래 tourPlan 이 정함) 정전 순간
+  obsStopsAt: 1.6,   // 9/23 보기: 확대 시작
+  obsStopLen: 3.4,   // 9/23 보기: 장비 한 곳 (개수까지 읽을 시간이라 조금 김)
+  obsHold: 5,        // 9/23 보기: 다 짚은 뒤 전체 보기로 쉬는 시간
 };
 export const PHASES = ["normal", "outage", "crank", "transfer", "gen", "restore", "retransfer", "cooldown"];
 

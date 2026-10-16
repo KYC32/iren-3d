@@ -6,13 +6,14 @@ import { useState } from 'react'
 import FigureDialog from './FigureDialog.jsx'
 import { figureIcon } from './figureIcons.js'
 
-export default function FigureButton({ name, lang, label }) {
+// view = 그림을 열 때의 보기 (예: 현장 진척 칸은 'obs' → 관찰 시점 모습으로 엶)
+export default function FigureButton({ name, lang, label, view }) {
   const [open, setOpen] = useState(false)
   const Icon = figureIcon(name)   // 그림 종류에 맞는 아이콘
   return <>
     <button className="facts-figure-btn" type="button" onClick={() => setOpen(true)} aria-haspopup="dialog">
       <Icon size={14} aria-hidden="true" />{label}
     </button>
-    <FigureDialog name={open ? name : null} lang={lang} onClose={() => setOpen(false)} />
+    <FigureDialog name={open ? name : null} lang={lang} view={view} onClose={() => setOpen(false)} />
   </>
 }

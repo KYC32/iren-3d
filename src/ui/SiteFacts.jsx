@@ -71,7 +71,8 @@ export default function SiteFacts({ site, month, lang }) {
             <div className="seg-legend">{STAGES.map(([k, l]) => <span key={k}><i className={`seg-${k}`} />{ko ? l.ko : l.en}</span>)}</div>
             <p className="facts-note">{ko ? `1칸 = 세그먼트 ${p.segment_mw}MW · 칸 순서는 설치 개수만 나타냄(실제 위치 아님)` : `1 cell = ${p.segment_mw}MW segment · cell order shows counts only, not positions`}</p>
           </>}
-          {p.figure && <FigureButton name={p.figure} lang={lang} label={ko ? '1칸 안을 그림으로 보기 · 변전소 → GPU' : 'See inside one segment · substation → GPU'} />}
+          {/* 관찰 칸에서 여는 그림은 관찰 시점 보기(#obs)로 시작 — 그림 안에서 "완공 후"로 바꿀 수 있음 */}
+          {p.figure && <FigureButton name={p.figure} lang={lang} view="obs" label={ko ? '이 관찰을 그림으로 보기 · 1칸 안 무엇이 설치됐나' : 'See this observation in the drawing · what one segment had'} />}
           <p className="facts-note">{ko ? p.note_ko : p.note_en}</p>
         </div>
       })}

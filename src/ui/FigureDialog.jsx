@@ -13,7 +13,8 @@ export const FIGURES = {
   'horizon-hall': { ko: 'Horizon 액체냉각 홀 · 전기와 냉각수가 도는 길', en: 'Horizon liquid-cooled hall · power and coolant paths' },
 }
 
-export default function FigureDialog({ name, lang, onClose }) {
+// view = 그림 페이지를 어떤 보기로 열지 (주소 끝 #view, 예: 'obs' = 전력 경로 그림의 9/23 관찰 보기). 없으면 기본 보기
+export default function FigureDialog({ name, lang, view, onClose }) {
   const ko = lang === 'ko'
   const dialog = useRef(null)
   // name 이 생기면 열고, 없어지면 닫음 (Esc·닫기 단추로 닫히면 onClose 로 알려 줌)
@@ -23,7 +24,7 @@ export default function FigureDialog({ name, lang, onClose }) {
     if (name && !d.open) d.showModal()
     if (!name && d.open) d.close()
   }, [name])
-  const src = name ? `/figures/${name}.${ko ? 'ko' : 'en'}.html` : ''
+  const src = name ? `/figures/${name}.${ko ? 'ko' : 'en'}.html${view ? `#${view}` : ''}` : ''
   const title = name ? (FIGURES[name]?.[ko ? 'ko' : 'en'] ?? name) : ''
   return (
     <dialog ref={dialog} className="facts-figure" aria-label={title} onCancel={onClose} onClose={onClose}>
