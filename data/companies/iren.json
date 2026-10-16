@@ -539,6 +539,12 @@
           "event": "2GW Sweetwater 허브 ERCOT Batch Zero 'Base Load' 편입, 300MW 1단계 건설 중",
           "event_en": "2GW Sweetwater hub included as Base Load in ERCOT Batch Zero; 300MW Phase 1 under construction",
           "source": "https://www.globenewswire.com/news-release/2026/09/08/3357498/0/en/iren-s-2gw-sweetwater-hub-included-as-base-load-in-ercot-batch-zero.html"
+        },
+        {
+          "date": "2026-09-18",
+          "event": "텍사스 PUC, 75MW 이상 대형 부하의 ERCOT 접속 규칙 채택 (10/8 발효 · 연구비 $10만 · 보증금 MW당 $5만)",
+          "event_en": "Texas PUC adopts ERCOT large-load (75 MW+) interconnection rule (effective Oct 8 · $100k study fee · $50k/MW security)",
+          "source": "https://interchange.puc.texas.gov/Documents/58481_218_1684654.PDF"
         }
       ],
       "estimates": [

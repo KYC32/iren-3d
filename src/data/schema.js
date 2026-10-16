@@ -22,15 +22,18 @@ export const When = z.string().refine(isValidWhen, '유효한 날짜: 2026 / 202
 export const Basis = z.enum(['reported', 'target', 'estimate'])
 
 // ---------- 회사 ----------
-const ReportedMetric = z.object({
+export const ReportedMetric = z.object({
   key: z.string(),          // 예: contracted_arr_usd_bn
   value: z.number(),
-  unit: z.string(),         // 예: USD bn, GPU, EH/s
+  value_max: z.number().optional(),                 // 범위면 큰 쪽 (예: 선급금 45~55% → value 45, value_max 55)
+  qualifier: z.enum(['over', 'about']).optional(),  // 회사가 쓴 표현: over = "이상"(>$20m), about = "약"(~$25m)
+  unit: z.string(),         // 예: USD bn, USD m, %, years, GPU
   label_ko: z.string(),
   label_en: z.string(),
   as_of: When,
+  show: z.enum(['kpi', 'contracts']).optional(),    // 보여 줄 자리: 없으면 위쪽 KPI 줄, contracts = 계약 탭 "계약 조건" 요약
   source: Url,
-}).strict()
+}).strict().refine((m) => m.value_max == null || m.value_max >= m.value, '범위의 최대(value_max)는 최소(value) 이상이어야 함')
 
 // 코로케이션·임차 시설: 다른 회사가 짓고 소유한 데이터센터에 입주한 곳
 // → 지도 핀·순위 합계에는 넣지 않고, 회사 정보에만 "병기" 합니다 (자체 캠퍼스와 이중 계산 방지)

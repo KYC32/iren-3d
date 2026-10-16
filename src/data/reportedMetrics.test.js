@@ -20,3 +20,21 @@ describe('발표 지표 시점', () => {
     expect(reportedMetricsAt(metrics, toMonth('2028'))[0].value).toBe(4)
   })
 })
+
+// show: 지표를 어디에 보여 줄지 (없으면 KPI 줄, 'contracts' = 계약 탭의 계약 조건 요약)
+describe('지표를 보여 줄 자리', () => {
+  const list = [
+    { key: 'arr', value: 4, as_of: '2026-08' },
+    { key: 'per_mw', value: 20, as_of: '2026-08', show: 'contracts' },
+    { key: 'gpus', value: 100, as_of: '2026-03' },
+  ]
+  it('기본(KPI 줄)은 계약 탭 전용 지표를 뺌', () => {
+    expect(reportedMetricsAt(list, toMonth('2026-09')).map((m) => m.key)).toEqual(['arr', 'gpus'])
+  })
+  it('계약 탭은 그 자리 지표만', () => {
+    expect(reportedMetricsAt(list, toMonth('2026-09'), 'contracts').map((m) => m.key)).toEqual(['per_mw'])
+  })
+  it('계약 탭 지표도 발표 전 시점엔 숨김 (그때 있던 KPI 지표가 섞이지 않게)', () => {
+    expect(reportedMetricsAt(list, toMonth('2026-07'), 'contracts')).toEqual([])
+  })
+})

@@ -49,6 +49,50 @@
           "label_en": "GPUs (installed + ordered)",
           "as_of": "2026-03",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036126007905/ny20064909x3_ex99-1.htm"
+        },
+        {
+          "key": "contract_rev_per_mw_usd_m",
+          "value": 20,
+          "qualifier": "over",
+          "unit": "USD m",
+          "label_ko": "최근 3년 계약 · MW(IT)당 매출",
+          "label_en": "Recent 3-yr deals · revenue per MW (IT)",
+          "as_of": "2026-08",
+          "show": "contracts",
+          "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+        },
+        {
+          "key": "discussed_rev_per_mw_usd_m",
+          "value": 25,
+          "qualifier": "about",
+          "unit": "USD m",
+          "label_ko": "협의 중 · MW(IT)당 매출",
+          "label_en": "In discussion · revenue per MW (IT)",
+          "as_of": "2026-08",
+          "show": "contracts",
+          "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+        },
+        {
+          "key": "contract_payback_years",
+          "value": 2,
+          "qualifier": "about",
+          "unit": "years",
+          "label_ko": "투자 회수 기간 (회사 추정)",
+          "label_en": "Payback (company estimate)",
+          "as_of": "2026-08",
+          "show": "contracts",
+          "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+        },
+        {
+          "key": "prepayment_pct_gpu_capex",
+          "value": 45,
+          "value_max": 55,
+          "unit": "%",
+          "label_ko": "최근 선급금 (GPU 투자 대비)",
+          "label_en": "Recent prepayments (% of GPU capex)",
+          "as_of": "2026-08",
+          "show": "contracts",
+          "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
         }
       ],
       "sources": [
@@ -65,6 +109,22 @@
           "title_en": "Q1 FY27 results (expected · date not yet announced)",
           "basis": "estimate",
           "source": "https://iren.gcs-web.com/events-and-presentations"
+        },
+        {
+          "date": "2026-12",
+          "kind": "other",
+          "title_ko": "누적 약 0.3GW(IT) 인도 (2026년)",
+          "title_en": "~0.3 GW (IT) cumulative delivery (2026)",
+          "basis": "target",
+          "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+        },
+        {
+          "date": "2027-12",
+          "kind": "other",
+          "title_ko": "누적 약 0.8GW(IT) 인도 (2027년)",
+          "title_en": "~0.8 GW (IT) cumulative delivery (2027)",
+          "basis": "target",
+          "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
         }
       ],
       "contracts": [
@@ -126,6 +186,20 @@
           "note_ko": "Perplexity·Figure AI·Together AI·Fluidstack 등 다년 계약(가중평균 약 4년), 배치 사이트는 회사 미공개",
           "note_en": "Perplexity, Figure AI, Together AI, Fluidstack and others; multi-year (weighted avg ~4 yrs); sites not disclosed",
           "source": "https://www.globenewswire.com/news-release/2026/07/20/3329624/0/en/iren-signs-2-8bn-in-new-customer-contracts-with-leading-ai-developers-raises-2026-arr-target-to-over-4bn.html"
+        },
+        {
+          "id": "frontier-lab-2026",
+          "customer": "Leading frontier AI lab (undisclosed)",
+          "customer_ko": "프런티어 AI 연구소 (이름 미공개)",
+          "value_usd_bn": null,
+          "term_years": null,
+          "signed": "2026-08",
+          "it_mw": null,
+          "sites": [],
+          "color": "#d6336c",
+          "note_ko": "FY26 실적 발표(2026-08-27)에서 공개된 다년 AI 클라우드 계약. 고객 이름·금액·기간·용량·배치 사이트는 회사 미공개 (날짜는 발표한 달). 같은 발표에 최근 다른 계약 고객으로 Cohere·Prometheus·Perplexity·Figure AI·Fal AI·Higgsfield AI 언급",
+          "note_en": "Multi-year AI Cloud contract disclosed with FY26 results (2026-08-27). Customer, value, term, capacity and sites not disclosed (date = announcement month). The same release lists Cohere, Prometheus, Perplexity, Figure AI, Fal AI and Higgsfield AI among other recent signings",
+          "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
         }
       ]
     }

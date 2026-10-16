@@ -26,8 +26,8 @@ describe('buildEvents', () => {
   it('지난 공식 건물 단계·계획 발표는 넣지 않음', () => {
     expect(events.filter((e) => e.kind === 'phase' && (e.basis === 'reported' || e.status === 'planned'))).toHaveLength(0)
   })
-  it('계약 3건과 실적 발표 예상일이 있음', () => {
-    expect(events.filter((e) => e.kind === 'contract')).toHaveLength(3)
+  it('계약 4건(이름 미공개 프런티어 AI 연구소 포함)과 실적 발표 예상일이 있음', () => {
+    expect(events.filter((e) => e.kind === 'contract')).toHaveLength(4)
     expect(events.some((e) => e.kind === 'earnings' && e.basis === 'estimate')).toBe(true)
   })
 })
@@ -35,6 +35,10 @@ describe('buildEvents', () => {
 describe('upcomingEvents', () => {
   it('모두 기준일 이후(또는 같은 달의 목표·추정)', () => {
     for (const e of up) expect(e.month > asOf || (e.month === asOf && e.basis !== 'reported')).toBe(true)
+  })
+  it('FY26 발표의 누적 인도 목표(2026·2027년, IT 기준)가 회사 목표로 들어 있음', () => {
+    const targets = up.filter((e) => e.kind === 'other' && e.basis === 'target' && e.title_ko.includes('GW(IT)'))
+    expect(targets.map((e) => e.when)).toEqual(['2026-12', '2027-12'])
   })
   it('Horizon 2 가동 목표(2026-Q4)와 Sweetwater 2 통전 목표가 들어 있음', () => {
     expect(up.some((e) => e.buildingId === 'horizon-2' && e.status === 'operating')).toBe(true)

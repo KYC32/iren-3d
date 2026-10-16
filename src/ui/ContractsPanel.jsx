@@ -5,6 +5,7 @@
 // 계약마다 금액·기간·계약 용량과, 연결된 건물들이 그 날짜에 어느 단계인지 막대로 보여 줍니다.
 //   초록 = 인수·가동(매출 단계) / 연두 = 시운전 / 주황 = 건설중 / 회색 = 계획
 // 타임라인을 움직이면 그 시점 기준으로 바뀝니다 (기준일 이후는 회사 목표 기준 전망).
+// 맨 위 "계약 조건": 회사가 발표한 단가·회수 기간·선급금 (지표 중 show: 'contracts' 인 것, 발표 시점 이후에만)
 // =============================================================
 import { useMemo } from 'react'
 import { Link2 } from 'lucide-react'
@@ -13,7 +14,35 @@ import { pickName } from '../i18n/useT.js'
 import { contractProgress } from '../data/contracts.js'
 import { styleOf } from '../data/statusStyle.js'
 import { fmtWhen } from '../data/events.js'
+import { fmtMetric } from '../data/format.js'
+import { reportedMetricsAt } from '../data/reportedMetrics.js'
 import { CustomerLogo } from './logos/index.jsx'
+
+// 계약 조건 요약: 지표마다 이름 · 값 한 줄. 출처가 첫 줄과 같으면 머리글의 링크 하나로 갈음
+function ContractTerms({ terms, lang }) {
+  const ko = lang === 'ko'
+  const first = terms[0]
+  return (
+    <section className="contract-terms" aria-label={ko ? '회사가 발표한 계약 조건' : 'Contract terms reported by the company'}>
+      <header>
+        <b>{ko ? '계약 조건' : 'Contract terms'}</b>
+        <small>{ko ? '회사 발표' : 'Company reported'} · {fmtWhen(first.as_of, lang)}{' '}
+          <a href={first.source} target="_blank" rel="noreferrer" aria-label={ko ? '발표 원문' : 'Source'}><Link2 size={11} aria-hidden="true" /></a>
+        </small>
+      </header>
+      <dl>
+        {terms.map((x) => (
+          <div key={x.key}>
+            <dt>{ko ? x.label_ko : x.label_en}</dt>
+            <dd>{fmtMetric(x, lang)}{x.source !== first.source && (
+              <a href={x.source} target="_blank" rel="noreferrer" aria-label={ko ? '원문' : 'Source'}><Link2 size={10} aria-hidden="true" /></a>
+            )}</dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  )
+}
 
 // 막대 구간 순서·색 (상태 범례와 같은 색)
 const STAGES = [
@@ -30,10 +59,13 @@ export default function ContractsPanel() {
   const ko = lang === 'ko'
   const contracts = useMemo(() => (data?.companies ?? []).flatMap((c) => c.contracts ?? []), [data])
   const list = useMemo(() => contractProgress(data?.sites ?? [], contracts), [data, contracts])
+  // 계약 조건 지표: 지금 보고 있는 날짜까지 발표된 것만 (그 전 날짜로 가면 숨김)
+  const terms = useMemo(() => (data?.companies ?? []).flatMap((c) => reportedMetricsAt(c.metrics ?? [], data.month, 'contracts')), [data])
   if (!list.length) return <p className="up-hint">{ko ? '공개된 계약이 없습니다' : 'No disclosed contracts'}</p>
 
   return (
     <div className="contracts-panel">
+      {terms.length > 0 && <ContractTerms terms={terms} lang={lang} />}
       <p className="up-hint">{ko ? '계약 용량 중 그 시점에 어느 단계까지 왔나' : 'How much of each contract has reached each stage'}</p>
       {list.map((k) => {
         const name = ko ? k.customer_ko ?? k.customer : k.customer
@@ -42,7 +74,8 @@ export default function ContractsPanel() {
           <article key={k.id} className="contract-card" style={{ borderColor: k.color }}>
             <header>
               <b style={{ color: k.color }}>{k.logo && <CustomerLogo name={k.logo} size={14} />}{name}</b>
-              <span>{k.value_usd_bn != null && `$${k.value_usd_bn}bn`}{k.term_years != null && ` · ${k.term_years}${ko ? '년' : 'y'}`}</span>
+              {/* 금액을 밝히지 않은 계약은 "금액 미공개" (빈칸이면 빠뜨린 것처럼 보임) */}
+              <span>{k.value_usd_bn != null ? `$${k.value_usd_bn}bn` : (ko ? '금액 미공개' : 'Value undisclosed')}{k.term_years != null && ` · ${k.term_years}${ko ? '년' : 'y'}`}</span>
             </header>
             <small className="contract-meta">
               {fmtWhen(k.signed, lang)}{k.total ? ` · ${k.total}MW ${k.unit === 'IT' ? 'IT' : (ko ? '(IT 기준 미공개)' : '(IT basis undisclosed)')}` : ''}
@@ -73,7 +106,8 @@ export default function ContractsPanel() {
                 })}
               </>
             ) : (
-              <small className="contract-unknown">{ko ? '배치 사이트 미공개' : 'Deployment site not disclosed'}</small>
+              // 배치 사이트를 밝히지 않은 계약: 연결할 막대가 없으니 계약 설명(고객 이름 등)을 대신 보여 줌
+              <small className="contract-unknown">{(ko ? k.note_ko : k.note_en) ?? (ko ? '배치 사이트 미공개' : 'Deployment site not disclosed')}</small>
             )}
           </article>
         )

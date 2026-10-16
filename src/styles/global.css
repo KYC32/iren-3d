@@ -654,7 +654,16 @@ button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit;
 .contract-legend strong { margin-left: auto; color: #1f7f66; font-size: 10.5px; }
 .contract-site { justify-self: start; border: 0; background: none; padding: 0; font: inherit; font-size: 10.5px; color: #3c6f9e; cursor: pointer; text-align: left; }
 .contract-site:hover { text-decoration: underline; }
-.contract-unknown { font-size: 10.5px; color: #7a6a3a; }
+.contract-unknown { font-size: 10.5px; color: #7a6a3a; line-height: 1.45; }
+/* 계약 탭 맨 위 "계약 조건": 회사가 발표한 단가·회수 기간·선급금 (이름은 왼쪽, 값은 오른쪽 굵게) */
+.contract-terms { border: 1px solid #e4ebed; border-radius: 10px; padding: 9px 11px; background: #f3f7f5; display: grid; gap: 6px; }
+.contract-terms header { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; font-size: 12.5px; }
+.contract-terms header small { font-size: 10.5px; color: #56675f; white-space: nowrap; }
+.contract-terms a { color: inherit; vertical-align: -1px; margin-left: 2px; }
+.contract-terms dl { margin: 0; display: grid; gap: 3px; }
+.contract-terms dl div { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 11.5px; }
+.contract-terms dt { color: #4a5a52; word-break: keep-all; } /* 한국어를 낱말 중간에서 끊지 않음 */
+.contract-terms dd { margin: 0; font-weight: 700; color: #34405e; white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 /* 캠퍼스 목록의 일정 신호 배지: 지연(붉은색) / 목표 경과·완료 미확인(노란색) */
 .schedule-flags { display: flex; flex-wrap: wrap; gap: 4px; }

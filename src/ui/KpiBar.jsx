@@ -5,18 +5,10 @@ import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { useT } from '../i18n/useT.js'
 import { siteMetrics } from '../data/loadSites.js'
 import { totalsAt } from '../data/timeline.js'
-import { fmtMw } from '../data/format.js'
+import { fmtMw, fmtMetric } from '../data/format.js'
 import { reportedMetricsAt } from '../data/reportedMetrics.js'
 import { SINGLE_COMPANY } from '../config.js'
 import { growthPath } from '../data/outlook.js'
-
-// 회사 발표 지표 표시: 단위에 맞게 ($bn / $m / GW·MW / 개수)
-function fmtMetric(x) {
-  if (x.unit === 'USD bn') return `$${x.value}bn`
-  if (x.unit === 'USD m') return `$${x.value}m`
-  if (x.unit === 'GW' || x.unit === 'MW') return `${x.value} ${x.unit}`
-  return x.value >= 1000 ? `~${Math.round(x.value / 1000)}k` : String(x.value)
-}
 
 function MetricValue({ value }) {
   const parts = value.match(/^(.*?)\s+(MW|GW)$/)
@@ -72,7 +64,7 @@ export default function KpiBar() {
       cards.push({
         icon: x.unit.startsWith('USD') ? CircleDollarSign : Cpu,
         label: lang === 'ko' ? x.label_ko : x.label_en,
-        value: fmtMetric(x),
+        value: fmtMetric(x, lang),
         tone: 'pending',
         sub: `${t.kpi2.reported} · ${x.as_of}`,
         source: x.source,

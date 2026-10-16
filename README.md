@@ -62,6 +62,7 @@ npm run build      # validate → 빌드 (dist/)
    - `basis`: `reported`(발표된 사실) · `target`(회사 목표) · `estimate`(우리 추정, `estimates` 에 근거 필요)
    - 기존 건물 전력을 재사용하는 전환(예: 채굴동 → AI 홀)은 `replaces: "<기존 건물 id>"`
    - 고객 계약은 `contracts`(사이트·건물 연결), 실적 발표 같은 회사 일정은 `events`
+   - 회사 발표 지표는 `metrics`. 위쪽 KPI 줄에는 앞의 2개만 나오고, `show: "contracts"` 인 지표는 계약 탭 맨 위 "계약 조건"에 나옵니다. 회사가 "이상"·"약"으로 쓴 값은 `qualifier: "over"`(>$20m) · `"about"`(~$25m), 범위는 `value_max`(예: 선급금 45~55% → `value: 45, value_max: 55`)
 2. **`data/changelog.json` 맨 위에 오늘 날짜로 바뀐 내용을 적습니다.** 데이터 기준일보다 최신 기록이 없으면 빌드가 실패합니다.
 3. `npm run validate` 로 검사합니다. 스키마·날짜 순서·매달 전력 합계·좌표·계약 참조·갱신 기록을 확인합니다.
 4. 사이트를 추가하거나 좌표를 바꿨다면 `npm run geo` (보드판·지구본 타일 다시 계산).

@@ -6,6 +6,14 @@
         {
           "ko": "부팅 그림의 부품 설명을 짚는 곳 바로 옆 말풍선으로: 둘러보기에선 청록 원 옆에, 직접 확대할 땐 포인터·탭한 자리 옆에 이름과 역할이 떠서 눈을 그림 아래 줄까지 옮기지 않아도 됨. 원이 다음 부품으로 가면 말풍선도 선으로 이어진 채 함께 옮겨 가고, 그림이 아주 작은 화면에선 원을 가리지 않게 예전처럼 그림 아래 줄에",
           "en": "Boot figure part descriptions now appear in a callout right beside the spot: next to the teal ring on the tour, next to the pointer or tap when you zoom yourself, so your eyes stay on the part. The callout glides with the ring to the next part, linked by a short line; on very small screens it falls back to the line under the figure so it never covers the part"
+        },
+        {
+          "ko": "계약 탭에 FY26 계약 조건 요약 추가 (회사 실적 발표 기준): 최근 3년 계약 MW(IT)당 매출 $20m 이상 · 투자 회수 약 2년(회사 추정), 협의 중 약 $25m, 최근 고객 선급금 GPU 투자의 45~55%. 이름·금액이 공개되지 않은 \"프런티어 AI 연구소\" 다년 계약을 계약 목록에, 회사 누적 인도 목표(2026년 약 0.3GW · 2027년 약 0.8GW, IT 기준)를 다가오는 일정에 추가",
+          "en": "Contracts tab gains an FY26 contract-terms summary (per the company results release): recent 3-yr contracts at >$20m revenue per MW (IT) with ~2-year payback (company estimate), ~$25m in active discussions, recent customer prepayments at 45–55% of GPU capex. Added the undisclosed \"leading frontier AI lab\" multi-year contract to the list and the company cumulative delivery targets (~0.3 GW in 2026, ~0.8 GW in 2027, IT basis) to Upcoming"
+        },
+        {
+          "ko": "Sweetwater 일정에 텍사스 PUC 대형 부하(75MW 이상) ERCOT 접속 규칙 채택 추가 (2026-09-18 채택 · 10/8 발효 · 연구비 $10만 · 보증금 MW당 $5만). Batch Zero 편입 기준은 이 규칙이 아니라 PGRR 145",
+          "en": "Sweetwater timeline adds the Texas PUC large-load (75 MW+) ERCOT interconnection rule (adopted 2026-09-18, effective Oct 8, $100k study fee, $50k/MW security). Batch Zero eligibility is governed by PGRR 145, not this rule"
         }
       ]
     },
