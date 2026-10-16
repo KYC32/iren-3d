@@ -1,6 +1,6 @@
 // 상단 바: 제목·기준일 / 뒤로가기 / 하늘(낮·노을·밤·지금) / 공유 / 한영 토글
 import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, Languages, Server, ListOrdered, Maximize2, Move, Rotate3D, Share2, Check, Sun, Sunset, Moon, Clock, Compass, Map as MapIcon, ChartLine, Newspaper } from 'lucide-react'
+import { ArrowLeft, Languages, UtilityPole, ListOrdered, Maximize2, Move, Rotate3D, Share2, Check, Sun, Sunset, Moon, Clock, Compass, Map as MapIcon, ChartLine, Newspaper } from 'lucide-react'
 import { localClock } from '../scene/sun.js'
 import { AI_LIGHT, MINER_LIGHT } from '../scene/nightColors.js'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
@@ -32,7 +32,7 @@ export default function TopBar() {
             <ArrowLeft size={18} />
           </button>
         ) : (
-          <span className="brand-icon"><Server size={18} /></span>
+          <span className="brand-icon" aria-hidden="true">{/* 전신주 = 전력 인프라: 전력을 먼저 확보하는 데이터센터 */}<UtilityPole size={17} strokeWidth={2.1} /></span>
         )}
         <div>
           <div className="title">
