@@ -123,7 +123,7 @@ npm run build      # validate → 빌드 (dist/)
 - 주가: `public/data/stock.json` — Nasdaq 공개 일봉(상장 2021-11-17부터). `node scripts/fetch-stock.mjs` (증분, `--full` 전체)
 - 뉴스: `public/data/news.json` — [회사 발표] SEC EDGAR 제출(8-K 첨부 보도자료 제목·실적·공시·내부자), [언론] Google 뉴스 RSS. `node scripts/fetch-news.mjs [--max=N] [--retry-titles]`
 - 주식 수·희석: `data/shares.json` (SEC 공시 424B4·20-F·10-K·10-Q 의 발행 주식 수, ATM·직접 공모 조달, 전환사채 원금·최초 전환가 — 항목마다 원문 링크) → 빌드가 검사해 `public/data/shares.json`. 주가 페이지 아래 "주식 수 · 희석" 칸이 같은 기간 축의 주식 수 차트·조달 표·전환사채 표를 보여 줌 (전환 시 주식 수는 최초 전환가 단순 계산). 새 10-Q·10-K 표지 주식 수는 `node scripts/fetch-shares.mjs` 가 SEC XBRL 에서 덧붙이고, ATM·전환사채는 공시 본문에서 사람이 옮김
-- `.github/workflows/refresh.yml` 이 평일 22:30 UTC 에 세 스크립트(주가·뉴스·주식 수)를 돌려 바뀐 파일을 커밋 → Vercel 자동 배포. 소스가 막히면 기존 파일 유지(사이트는 정상). 수동 실행: GitHub Actions → refresh-data → Run workflow
+- `.github/workflows/refresh.yml` 이 하루 두 번 — 다음 날 아침(화~토 11:30 UTC, 전날 종가: Nasdaq 일봉 표는 장 마감 뒤 몇 시간이 지나야 그날 행이 올라옴)과 장 마감 직후(월~금 22:30 UTC, 그날 공시·언론) — 세 스크립트(주가·뉴스·주식 수)를 돌려 바뀐 파일을 커밋 → Vercel 자동 배포. 소스가 막히면 기존 파일 유지(사이트는 정상). 수동 실행: GitHub Actions → refresh-data → Run workflow
 - 차트의 사건 마커는 이 레포의 타임라인 데이터(회사 발표 기준)이며 주가 인과를 뜻하지 않습니다. 투자 조언이 아닙니다.
 
 ## 영상 만들기 (X·쇼츠용)
