@@ -9,15 +9,15 @@ import { useMemo } from 'react'
 import { Cpu } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore.js'
 import { estimateHall, contractRunRate, referenceHall, roundNice, fmtUsdM } from '../data/hallEstimate.js'
-import { toMonth } from '../data/timeline.js'
+import { signedContractsAt } from '../data/contracts.js'
 
 export default function HallEstimateCard({ building }) {
   const data = useAppStore((s) => s.data)
   const month = useAppStore((s) => s.month)
   const ko = useAppStore((s) => s.lang) === 'ko'
-  // 그 날짜에 이미 서명된 계약만 (서명 전 날짜에는 계약 매출을 보여 주지 않음)
+  // 그 날짜에 이미 서명된 계약만 (서명 전 날짜에는 계약 매출을 보여 주지 않음) — 계약 탭과 같은 함수
   const contracts = useMemo(
-    () => (data?.companies ?? []).flatMap((c) => c.contracts ?? []).filter((k) => toMonth(k.signed) <= month),
+    () => signedContractsAt((data?.companies ?? []).flatMap((c) => c.contracts ?? []), month),
     [data, month],
   )
   const ref = useMemo(() => referenceHall(data?.raw.sites ?? []), [data])
