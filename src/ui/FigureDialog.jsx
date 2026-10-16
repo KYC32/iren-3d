@@ -11,6 +11,7 @@ import './figureDialog.css'
 export const FIGURES = {
   'power-block': { ko: '세그먼트 1칸(2.5MW)의 전력 경로 · 공랭 홀 안', en: 'Inside one 2.5MW segment · power path and air-cooled hall' },
   'horizon-hall': { ko: 'Horizon 액체냉각 홀 · 전기와 냉각수가 도는 길', en: 'Horizon liquid-cooled hall · power and coolant paths' },
+  'sweetwater-1': { ko: '스위트워터 1 · 변전소에서 액체냉각 홀까지', en: 'Sweetwater 1 · from substation to liquid-cooled hall' },
 }
 
 // view = 그림 페이지를 어떤 보기로 열지 (주소 끝 #view, 예: 'obs' = 전력 경로 그림의 9/23 관찰 보기). 없으면 기본 보기

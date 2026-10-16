@@ -1,0 +1,31 @@
+/* =============================================================
+   sweetwater.css — 스위트워터 1 그림 (build.mjs 가 power.css · horizon.css 뒤에 붙여 페이지에 넣음)
+   그림 칸·확대·말풍선·흐름 점선·표시등·홀 안 재료(hz-*)는 Horizon 그림과 같고, 여기에는 변전소 재료와 이 그림만의 것
+   ============================================================= */
+/* ---- 표시등: CDU 두 대 모두 늘 가동 (정비 장면 없음) ---- */
+.sw-stage .hz-lamp[data-cdu=b]{fill:#2fd06f}
+/* ---- 다음 단계 (흐린 그림): 움직임 코드가 --future 를 0 → 1 → 0 으로 바꿈 ---- */
+.sw-ghost{opacity:calc(var(--future,0) * .62);pointer-events:none;
+  --anatomy-paper:#dbe7f6;--anatomy-face:#e3edf9;--anatomy-top:#eef4fc;--anatomy-shade-0:#bdd0ea;--anatomy-shade-1:#c6d7ee;--anatomy-shade-2:#cfddf1;--anatomy-shade-3:#d6e2f4;--anatomy-hi:#2c5d9e;--anatomy-mid:#4f7fbf;--anatomy-lo:#7ea3d4;--anatomy-faint:#a9c3e6}
+.sw-ghost .iso-line{stroke-dasharray:1.6 1.4}
+/* ---- 변전소 재료 (kit 토큰을 바꿔 칠함) ---- */
+.sw-gravel{--anatomy-paper:#c9c5bc;--anatomy-face:#cfcbc3;--anatomy-top:#d6d2c9;--anatomy-shade-0:#aaa69c;--anatomy-shade-1:#b3afa5;--anatomy-shade-2:#bcb8ae;--anatomy-shade-3:#c4c0b6;--anatomy-hi:#3b3833;--anatomy-mid:#8b867c;--anatomy-lo:#9d988e;--anatomy-faint:#b7b2a8;--anatomy-dot:#8d887e}
+.sw-asphalt{--anatomy-paper:#55595f;--anatomy-face:#5b5f65;--anatomy-top:#62666c;--anatomy-shade-0:#3f4247;--anatomy-shade-1:#45484d;--anatomy-shade-2:#4b4e54;--anatomy-shade-3:#51545a;--anatomy-hi:#f1e3a3;--anatomy-mid:#8b9097;--anatomy-lo:#6d7178;--anatomy-faint:#5f636a}
+.sw-lane{fill:#e8d27a;stroke:none}
+.sw-mesh{--anatomy-faint:#8f979f}
+.sw-lattice{--anatomy-paper:#b7bdc4;--anatomy-face:#c0c6cc;--anatomy-top:#d6dade;--anatomy-shade-0:#959ca4;--anatomy-shade-1:#9fa5ad;--anatomy-shade-2:#a8aeb5;--anatomy-shade-3:#b1b7be;--anatomy-hi:#252a31;--anatomy-mid:#5f6670;--anatomy-lo:#7c838c;--anatomy-faint:#9aa1a9;--anatomy-dot:#3a3f46}
+.sw-glass{--anatomy-paper:#7fb0a8;--anatomy-face:#8bbab2;--anatomy-top:#b4d8d1;--anatomy-shade-0:#5c8d85;--anatomy-shade-1:#669890;--anatomy-shade-2:#70a39b;--anatomy-shade-3:#7aada5;--anatomy-hi:#13302b;--anatomy-mid:#3d6b64;--anatomy-lo:#54827b;--anatomy-faint:#79a9a1}
+.sw-porcelain{--anatomy-paper:#9a6a4c;--anatomy-face:#a57456;--anatomy-top:#c8987a;--anatomy-shade-0:#764d34;--anatomy-shade-1:#80563c;--anatomy-shade-2:#8b5f44;--anatomy-shade-3:#95684c;--anatomy-hi:#2a160b;--anatomy-mid:#5a3926;--anatomy-lo:#6f4830;--anatomy-faint:#a37b62}
+.sw-conductor{--anatomy-paper:#b4bac1;--anatomy-face:#bdc3c9;--anatomy-top:#d9dde1;--anatomy-shade-0:#8f969e;--anatomy-shade-1:#99a0a8;--anatomy-shade-2:#a3a9b0;--anatomy-shade-3:#acb2b9;--anatomy-hi:#22272d;--anatomy-mid:#4f5761;--anatomy-lo:#6c747e;--anatomy-faint:#8d949c}
+.sw-alu{--anatomy-paper:#cfd4d9;--anatomy-face:#d7dbe0;--anatomy-top:#eceff2;--anatomy-shade-0:#a6adb5;--anatomy-shade-1:#b1b7be;--anatomy-shade-2:#bcc2c8;--anatomy-shade-3:#c6cbd1;--anatomy-hi:#262b32;--anatomy-mid:#6b737d;--anatomy-lo:#8a919a;--anatomy-faint:#aeb4bb}
+.sw-tank{--anatomy-paper:#c4c9cd;--anatomy-face:#cbd0d4;--anatomy-top:#dee1e4;--anatomy-shade-0:#a1a7ad;--anatomy-shade-1:#abb1b6;--anatomy-shade-2:#b5babf;--anatomy-shade-3:#bdc2c7;--anatomy-hi:#262a2f;--anatomy-mid:#646b73;--anatomy-lo:#828990;--anatomy-faint:#a3a9af}
+.sw-xfmr{--anatomy-paper:#a4abb0;--anatomy-face:#adb3b8;--anatomy-top:#c0c5c9;--anatomy-shade-0:#83898f;--anatomy-shade-1:#8c9298;--anatomy-shade-2:#959ba1;--anatomy-shade-3:#9ea4a9;--anatomy-lit-top:#ced2d5;--anatomy-hi:#1f2326;--anatomy-mid:#545b61;--anatomy-lo:#71787e;--anatomy-faint:#8c9399;--anatomy-dot:#2b3034}
+.sw-pvc{--anatomy-paper:#8f969d;--anatomy-face:#99a0a7;--anatomy-top:#c2c7cc;--anatomy-shade-0:#686f76;--anatomy-shade-1:#737a81;--anatomy-shade-2:#7e858c;--anatomy-shade-3:#898f96;--anatomy-hi:#24292e;--anatomy-mid:#474e55;--anatomy-lo:#636a71;--anatomy-faint:#848b92}
+.sw-house{--anatomy-paper:#e9e7e1;--anatomy-face:#efede8;--anatomy-top:#f6f5f2;--anatomy-shade-0:#c9c6be;--anatomy-shade-1:#d2cfc8;--anatomy-shade-2:#dad8d1;--anatomy-shade-3:#e1dfd9;--anatomy-hi:#2d2b27;--anatomy-mid:#8e8a82;--anatomy-lo:#aba79f;--anatomy-faint:#c9c5bd;--anatomy-dot:#5e5a53}
+/* 잘린 면 (받침판 끝에서 자른 송전선) */
+.sw-cut{--anatomy-paper:#ddd1bd;--anatomy-face:#ddd1bd;--anatomy-top:#e6dccb;--anatomy-shade-0:#c9bba3;--anatomy-shade-1:#cfc2ab;--anatomy-shade-2:#d5c8b2;--anatomy-shade-3:#dacdb8;--anatomy-hi:#3a3328;--anatomy-mid:#7a6f5e;--anatomy-lo:#968a77;--anatomy-faint:#b8ab96}
+/* 범례 */
+.sw-k-ghost{box-sizing:border-box;background:#e3edf9;border:1px dashed #4f7fbf}
+/* 아래 줄 단계 점: 더운 오후(주황) · 다음 단계(파랑) */
+.rk-read[data-phase=warm]:not([data-cap])::before,.rk-read[data-phase=hot]:not([data-cap])::before{background:#ff8a3d}
+.rk-read[data-phase=grow]:not([data-cap])::before,.rk-read[data-phase=grown]:not([data-cap])::before,.rk-read[data-phase=settle]:not([data-cap])::before{background:#4f7fbf}

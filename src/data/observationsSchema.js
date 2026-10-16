@@ -48,7 +48,7 @@ const Progress = z.object({
   segments_per_hall: z.number().int().positive().optional(),
   segment_mw: z.number().positive().optional(),
   halls: z.array(Hall).optional(),
-  figure: z.enum(['power-block', 'horizon-hall']).optional(),   // 이 관찰 칸에서 열 그림 (public/figures/<이름>.<ko|en>.html — scripts/anatomy/power 가 만듦)
+  figure: z.enum(['power-block', 'horizon-hall', 'sweetwater-1']).optional(),   // 이 관찰 칸에서 열 그림 (public/figures/<이름>.<ko|en>.html — scripts/anatomy/power 가 만듦)
   note_ko: z.string(),
   note_en: z.string(),
 }).strict()

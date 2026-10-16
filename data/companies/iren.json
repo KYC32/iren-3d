@@ -487,6 +487,7 @@
           "name": "Phase 1",
           "name_ko": "1단계",
           "kind": "datahall_liquid",
+          "figure": "sweetwater-1",
           "it_mw": 200,
           "gross_mw": 300,
           "progress": 0.15,

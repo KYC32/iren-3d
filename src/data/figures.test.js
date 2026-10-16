@@ -20,4 +20,9 @@ describe('building figures', () => {
     expect(horizons).toHaveLength(4)
     for (const b of horizons) expect(b.figure, b.id).toBe('horizon-hall')
   })
+  it('Sweetwater 1 phase 1 (liquid-cooled, Vera Rubin-ready) opens the substation-to-hall figure', () => {
+    const phase1 = buildings.find((b) => b.id === 'sw1-phase1')
+    expect(phase1?.site).toBe('sweetwater-1')
+    expect(phase1.figure).toBe('sweetwater-1')
+  })
 })
