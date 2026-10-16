@@ -170,6 +170,7 @@
           "cabling": "none"
         }
       ],
+      "figure": "power-block",
       "note_ko": "홀 4개 × 2.5MW 세그먼트 8칸 = 80MW (회사 발표 80MW 와 맞음). 케이블은 당겼지만 결선 전이고 열화상도 조용함 — 아직 통전 전으로 보임. 남은 장비: 발전기 12대·전기실 9개·ATS 28개. 다음 단계는 결선 → 시험 → 부하 시험(load bank) → GPU 가동",
       "note_en": "Four halls × eight 2.5MW segments = 80MW (matches the reported 80MW). Cables pulled but not terminated, and the thermal signature is quiet — not yet energized. Still to come: 12 generators, 9 MERs, 28 ATS units. Next: termination → testing → load-bank commissioning → GPUs live"
     },

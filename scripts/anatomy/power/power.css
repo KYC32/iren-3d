@@ -1,0 +1,106 @@
+/* =============================================================
+   power.css — 전력 블록 그림 페이지 (build.mjs 가 페이지에 그대로 넣음)
+   그림 칸·확대·말풍선 모양은 부팅 그림(랙)과 같게 → 사이트 안에서 같은 물건처럼 보임
+   ============================================================= */
+.pw-body{margin:0;background:#fff;color-scheme:light}
+/* 그림 폭: 화면 높이에도 맞춤 (대화상자 안에서 설명까지 스크롤 없이 보이게). __ASPECT__ = 그림 가로:세로 (빌드가 채움) */
+.pw-page{box-sizing:border-box;max-width:min(1180px,calc((100vh - 230px) * __ASPECT__));min-width:min(100%,560px);margin:0 auto;padding:12px 14px 16px;font:13px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+/* ---- 그림 칸 (부팅 그림과 같은 규칙) ---- */
+.rk-stage{position:relative;touch-action:pan-y;outline:none}
+.rk-stage>svg{display:block;width:100%;height:auto}
+.rk-stage:focus-visible{outline:1px solid var(--anatomy-muted);outline-offset:6px}
+.rk-stage[data-zoom]{overflow:hidden;border-radius:6px}
+.rk-aim{position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border:1.5px solid var(--anatomy-strong);border-radius:50%;box-shadow:0 0 0 2px var(--anatomy-card);pointer-events:none;opacity:0;transition:opacity .25s,left .6s ease,top .6s ease}
+.rk-stage[data-aim] .rk-aim{opacity:1}
+.rk-stage[data-aim=auto] .rk-aim{width:30px;height:30px;margin:-15px 0 0 -15px;border:2px solid #2ea88a;box-shadow:0 0 0 2px rgba(255,255,255,.75),inset 0 0 0 1px rgba(255,255,255,.6);animation:rk-aim 1.6s ease-in-out infinite}
+@keyframes rk-aim{50%{transform:scale(1.18)}}
+.rk-tip{position:absolute;left:0;top:0;z-index:1;width:max-content;max-width:min(280px,56%);padding:7px 11px 8px;border-radius:10px;background:rgba(255,255,255,.97);color:#16213a;box-shadow:0 6px 18px rgba(22,33,58,.2),0 0 0 1.5px #2ea88a;font:500 13px/1.42 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;pointer-events:none;opacity:0;transition:opacity .25s}
+.rk-tip b{display:block;font-size:14px;font-weight:700;margin-bottom:1px}
+.rk-tip span{display:block;color:#3c4760;text-wrap:pretty}
+.rk-tip b,.rk-tip span{word-break:keep-all;overflow-wrap:anywhere}
+.rk-tip[data-on]{opacity:1}
+.rk-tip[data-glide]{transition:opacity .25s,left .6s ease,top .6s ease}
+.rk-tip::before{content:"";position:absolute;background:#2ea88a}
+.rk-tip[data-side=right]::before,.rk-tip[data-side=left]::before{top:var(--lead,50%);width:11px;height:2px;margin-top:-1px}
+.rk-tip[data-side=right]::before{right:100%}
+.rk-tip[data-side=left]::before{left:100%}
+.rk-tip[data-side=top]::before,.rk-tip[data-side=bottom]::before{left:var(--lead,50%);width:2px;height:11px;margin-left:-1px}
+.rk-tip[data-side=top]::before{top:100%}
+.rk-tip[data-side=bottom]::before{bottom:100%}
+@media (max-width:767px){.rk-tip{max-width:min(230px,68%);padding:6px 9px 7px;font-size:12px}.rk-tip b{font-size:13px}}
+@media (prefers-reduced-motion:reduce){.rk-aim,.rk-tip[data-glide]{transition:opacity .25s}}
+.rk-fig{min-width:0;display:flex;flex-direction:column}
+.rk-fig h2{margin:0 0 4px;font:600 13px/1.4 var(--anatomy-mono);color:var(--anatomy-strong);letter-spacing:.02em}
+.rk-fig h2 small{display:block;font-weight:400;color:var(--anatomy-muted)}
+.rk-head{display:flex;align-items:flex-start;gap:8px}
+.rk-head h2{flex:1;min-width:0}
+.rk-icon{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.rk-zoom{flex:none;display:inline-flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:6px 13px 6px 10px;background:#16213a;color:#fff;font:600 12.5px/1.2 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;cursor:pointer;box-shadow:0 2px 8px rgba(22,33,58,.22)}
+.rk-zoom:hover{background:#24365c}
+.rk-zoom:focus-visible{outline:2px solid #2ea88a;outline-offset:2px}
+.rk-zoom[aria-pressed="true"]{background:#fff;color:#16213a;box-shadow:inset 0 0 0 1.5px #16213a}
+.rk-zoom[data-call]{animation:rk-call 1.8s ease-out 1.5s 3}
+@keyframes rk-call{0%{box-shadow:0 2px 8px rgba(22,33,58,.22),0 0 0 0 rgba(46,168,138,.6)}75%{box-shadow:0 2px 8px rgba(22,33,58,.22),0 0 0 12px rgba(46,168,138,0)}100%{box-shadow:0 2px 8px rgba(22,33,58,.22),0 0 0 0 rgba(46,168,138,0)}}
+@media (prefers-reduced-motion:reduce){.rk-zoom[data-call]{animation:none}}
+/* 그림 아래 수치 줄 (두 줄 자리를 미리 잡아 글이 바뀌어도 들썩이지 않음) */
+.rk-read{margin-top:4px;font:500 13.5px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--anatomy-text);min-height:2.9em;word-break:keep-all}
+.rk-read[data-cap]{color:var(--anatomy-strong)}
+.rk-read b{font-weight:700}
+.rk-read[data-cap]::before{content:"";display:inline-block;width:9px;height:9px;margin-right:7px;border:2px solid #2ea88a;border-radius:50%;vertical-align:-1px}
+.rk-read[data-phase]:not([data-cap])::before{content:"";display:inline-block;width:9px;height:9px;margin-right:7px;border-radius:50%;vertical-align:0;background:#2fd06f}
+.rk-read[data-phase=outage]:not([data-cap])::before,.rk-read[data-phase=transfer]:not([data-cap])::before,.rk-read[data-phase=retransfer]:not([data-cap])::before{background:#e5484d}
+.rk-read[data-phase=crank]:not([data-cap])::before,.rk-read[data-phase=gen]:not([data-cap])::before,.rk-read[data-phase=restore]:not([data-cap])::before{background:#ffb02e}
+/* 범례·설명 */
+.pw-legend{display:flex;flex-wrap:wrap;gap:4px 16px;margin-top:2px;font-size:12px;color:var(--anatomy-text)}
+.pw-legend span{display:inline-flex;align-items:center;gap:6px}
+.pw-legend i{display:inline-block;width:22px;height:8px;border-radius:2px}
+.pw-k-flow{background:repeating-linear-gradient(90deg,#f29f05 0 5px,transparent 5px 9px)}
+.pw-k-lit{background:#e8a56d;box-shadow:inset 0 0 0 1px #3a1c0b}
+.pw-k-cut{background:repeating-linear-gradient(135deg,#d8ccb8 0 3px,#a9afb6 3px 4px)}
+.pw-caption{margin:6px 0 0;font-size:11.5px;line-height:1.55;color:var(--anatomy-muted);word-break:keep-all}
+.pw-caption a{color:inherit}
+/* ---- 흐름 점선: 전류가 흐르는 동안만 보이고 움직임 (조각마다 --d0 = 그 조각이 시작하는 자리의 무늬 위치) ---- */
+.pw-flow{fill:none;stroke:#f29f05;stroke-width:.95;stroke-linecap:round;stroke-dasharray:1.7 4.3;vector-effect:none;opacity:0;transition:opacity .35s;stroke-dashoffset:var(--d0)}
+.pw-stage[data-hv] .pw-flow[data-flow=hv],.pw-stage[data-lv] .pw-flow[data-flow=lv],.pw-stage[data-gen] .pw-flow[data-flow=gen],.pw-stage[data-load] .pw-flow[data-flow=load]{opacity:1;animation:pw-run .9s linear infinite}
+@keyframes pw-run{from{stroke-dashoffset:var(--d0)}to{stroke-dashoffset:calc(var(--d0) - 6px)}}
+@media (prefers-reduced-motion:reduce){.pw-stage .pw-flow{animation:none!important}}
+/* 표시등 */
+.pw-lamp{fill:#59606a;stroke:#2a2f36;stroke-width:.35;vector-effect:none;transition:fill .3s}
+.pw-stage[data-grid] .pw-lamp[data-lamp=n]{fill:#2fd06f}
+.pw-stage[data-genready] .pw-lamp[data-lamp=e]{fill:#ffb02e}
+.pw-runlamp{fill:#59606a;stroke:#2a2f36;stroke-width:.3;vector-effect:none;transition:fill .3s}
+.pw-stage[data-genrun] .pw-runlamp{fill:#2fd06f}
+.pw-leds .iso-dots circle{fill:#2fd06f;opacity:.95}
+/* 배기 연기 (발전기가 기동하면) */
+.pw-puff{fill:#868d95;opacity:0;transform-box:fill-box;transform-origin:center;animation:pw-puff 2.8s ease-out forwards}
+.pw-puff[data-dark]{fill:#4f555c;animation-duration:3.4s}
+@keyframes pw-puff{0%{opacity:0;transform:translate(0,0) scale(.4)}10%{opacity:.62}100%{opacity:0;transform:translate(var(--dx,4px),-30px) scale(2.8)}}
+/* 단면(잘린 면)·도랑 */
+.pw-cutfill{fill:#ddd1bd;stroke:none}
+.pw-cutedge{fill:none;stroke:var(--anatomy-mid);stroke-width:.55;stroke-linejoin:round}
+.pw-soilfloor{fill:#b9a68a}
+.pw-soilwall{fill:#cdbb9f}
+.pw-soilwall2{fill:#c4b195}
+.pw-soil{--anatomy-lo:#8f7c62;--anatomy-mid:#7a684f}
+/* ---- 재료 색 (kit 토큰을 바꿔 칠함: 선·면·명암 규칙은 그대로) ---- */
+.pw-base{--anatomy-paper:#3b4048;--anatomy-face:#444a53;--anatomy-top:#59606b;--anatomy-shade-0:#2c3036;--anatomy-shade-1:#31363c;--anatomy-shade-2:#363b42;--anatomy-shade-3:#3c4249;--anatomy-hi:#e3e8ee;--anatomy-mid:#9aa3ae;--anatomy-lo:#7c8590;--anatomy-faint:#5f6772;--anatomy-dot:#c9d1da}
+.pw-concrete{--anatomy-paper:#d6d1c8;--anatomy-face:#dcd7cf;--anatomy-top:#e6e2da;--anatomy-shade-0:#b4aea3;--anatomy-shade-1:#beb8ad;--anatomy-shade-2:#c8c2b8;--anatomy-shade-3:#d1ccc2;--anatomy-hi:#3a3630;--anatomy-mid:#8d877d;--anatomy-lo:#a39d92;--anatomy-faint:#c3bdb2;--anatomy-dot:#6d675e}
+.pw-floor{--anatomy-paper:#d9dce0;--anatomy-face:#e0e3e6;--anatomy-top:#e9ebee;--anatomy-shade-0:#b5bac0;--anatomy-shade-1:#bfc3c9;--anatomy-shade-2:#c9cdd2;--anatomy-shade-3:#d2d6da;--anatomy-hi:#2c3036;--anatomy-mid:#8d939b;--anatomy-lo:#a9afb6;--anatomy-faint:#cdd1d6}
+.pw-panel{--anatomy-paper:#e3e6e9;--anatomy-face:#eaecee;--anatomy-top:#f2f3f4;--anatomy-shade-0:#c2c7cd;--anatomy-shade-1:#cbd0d5;--anatomy-shade-2:#d4d8dc;--anatomy-shade-3:#dde0e4;--anatomy-hi:#2c3036;--anatomy-mid:#8d939b;--anatomy-lo:#a9afb6;--anatomy-faint:#c6cbd0}
+.pw-grey{--anatomy-paper:#c3c7ca;--anatomy-face:#cbcfd2;--anatomy-top:#d8dbdd;--anatomy-shade-0:#a0a5aa;--anatomy-shade-1:#aaafb4;--anatomy-shade-2:#b4b9bd;--anatomy-shade-3:#bdc1c5;--anatomy-hi:#24282d;--anatomy-mid:#6c727a;--anatomy-lo:#8a9097;--anatomy-faint:#a5abb1;--anatomy-dot:#3a3f46}
+.pw-xfmr{--anatomy-paper:#a9afb2;--anatomy-face:#b2b7ba;--anatomy-top:#c2c7c9;--anatomy-shade-0:#878d91;--anatomy-shade-1:#90969a;--anatomy-shade-2:#999fa3;--anatomy-shade-3:#a2a8ac;--anatomy-lit-top:#d0d4d6;--anatomy-hi:#1f2326;--anatomy-mid:#565d62;--anatomy-lo:#737a7f;--anatomy-faint:#8e959a;--anatomy-dot:#2b3034}
+.pw-gen{--anatomy-paper:#dcd6c9;--anatomy-face:#e3ddd1;--anatomy-top:#eeeae1;--anatomy-shade-0:#bab3a5;--anatomy-shade-1:#c4bdaf;--anatomy-shade-2:#cdc6b9;--anatomy-shade-3:#d6cfc2;--anatomy-lit-top:#f5f2eb;--anatomy-hi:#2f2b25;--anatomy-mid:#857e71;--anatomy-lo:#a0988a;--anatomy-faint:#c0b9ab}
+.pw-tank{--anatomy-paper:#474c53;--anatomy-face:#4f555c;--anatomy-top:#5c626a;--anatomy-shade-0:#33373d;--anatomy-shade-1:#393d43;--anatomy-shade-2:#3f444a;--anatomy-shade-3:#454a51;--anatomy-hi:#e1e5ea;--anatomy-mid:#9aa1ab;--anatomy-lo:#727a84;--anatomy-faint:#5a616a;--anatomy-dot:#d4d9df}
+.pw-black{--anatomy-paper:#2b2f35;--anatomy-face:#30353b;--anatomy-top:#5d646e;--anatomy-shade-0:#121417;--anatomy-shade-1:#191c20;--anatomy-shade-2:#25292e;--anatomy-shade-3:#2b2f35;--anatomy-hi:#08090b;--anatomy-mid:#0c0d10;--anatomy-lo:#3a3f46;--anatomy-faint:#2b2f35}
+.pw-pvc{--anatomy-paper:#9aa1a8;--anatomy-face:#a4abb2;--anatomy-top:#cbd0d5;--anatomy-shade-0:#6f767e;--anatomy-shade-1:#7d848c;--anatomy-shade-2:#959ca3;--anatomy-shade-3:#a1a8af;--anatomy-hi:#2a2f35;--anatomy-mid:#4c535b;--anatomy-lo:#6b727a;--anatomy-faint:#8c939b}
+.pw-yellow{--anatomy-paper:#e2ae1d;--anatomy-face:#e9b723;--anatomy-top:#f6cf55;--anatomy-shade-0:#b98a10;--anatomy-shade-1:#c79513;--anatomy-shade-2:#d49f17;--anatomy-shade-3:#dea91c;--anatomy-hi:#3d2c02;--anatomy-mid:#7d5c06;--anatomy-lo:#a4790b;--anatomy-faint:#d2a43a}
+.pw-red{--anatomy-paper:#c9302c;--anatomy-face:#d23a35;--anatomy-top:#ee6a61;--anatomy-shade-0:#9c1f1c;--anatomy-shade-1:#a92421;--anatomy-shade-2:#b62a26;--anatomy-shade-3:#c22f2b;--anatomy-hi:#3d0907;--anatomy-mid:#7a1512;--anatomy-lo:#a0221e;--anatomy-faint:#d85a54}
+.pw-copper{--anatomy-paper:#c98757;--anatomy-face:#d39466;--anatomy-top:#e8b083;--anatomy-shade-0:#a3663d;--anatomy-shade-1:#b07047;--anatomy-shade-2:#bd7b51;--anatomy-shade-3:#c9875b;--anatomy-hi:#4b2612;--anatomy-mid:#875230;--anatomy-lo:#a46d45;--anatomy-faint:#bb8660;--anatomy-dot:#5a3018}
+.pw-tin{--anatomy-paper:#b9bfc6;--anatomy-face:#c3c9cf;--anatomy-top:#dde2e7;--anatomy-shade-0:#959ca5;--anatomy-shade-1:#9fa6ae;--anatomy-shade-2:#a9b0b8;--anatomy-shade-3:#b3b9c0;--anatomy-hi:#252a31;--anatomy-mid:#5d6570;--anatomy-lo:#7c848e;--anatomy-faint:#9aa1aa}
+.pw-blade{--anatomy-paper:#d58f55;--anatomy-face:#df9c62;--anatomy-top:#f0b884;--anatomy-lit-top:#f7cb9c;--anatomy-lit-shade:#c97f45;--anatomy-shade-0:#ac6532;--anatomy-shade-1:#b96f3a;--anatomy-shade-2:#c57a42;--anatomy-shade-3:#d0864c;--anatomy-hi:#3a1c0b;--anatomy-mid:#7a4220;--anatomy-lo:#a05a2f;--anatomy-faint:#c98a5a;--anatomy-lit:#2a1206}
+.pw-rack{--anatomy-paper:#24282e;--anatomy-face:#2b3037;--anatomy-top:#3d434c;--anatomy-shade-0:#191c20;--anatomy-shade-1:#1d2025;--anatomy-shade-2:#22262b;--anatomy-shade-3:#272b31;--anatomy-hi:#d9dee5;--anatomy-mid:#7d8692;--anatomy-lo:#5b6470;--anatomy-faint:#3f4650}
+.pw-pdu{--anatomy-paper:#34383f;--anatomy-face:#3a3f46;--anatomy-top:#4d535c;--anatomy-shade-0:#24272c;--anatomy-shade-1:#292c32;--anatomy-shade-2:#2e3238;--anatomy-shade-3:#33373e;--anatomy-hi:#ff9f43;--anatomy-mid:#9aa3ae;--anatomy-lo:#69717c;--anatomy-faint:#4a5059;--anatomy-dot:#ffb36b}
+.pw-steel{--anatomy-paper:#aab2bd;--anatomy-face:#b4bbc5;--anatomy-top:#cfd5dd;--anatomy-shade-0:#8a929d;--anatomy-shade-1:#939ba6;--anatomy-shade-2:#9ca4af;--anatomy-shade-3:#a5adb8;--anatomy-hi:#262b33;--anatomy-mid:#5d6570;--anatomy-lo:#79818c;--anatomy-faint:#959daa;--anatomy-dot:#3a3f46}
+.pw-dark{--anatomy-paper:#2a2e34;--anatomy-face:#30343b;--anatomy-top:#3b4048;--anatomy-shade-0:#1c1f23;--anatomy-shade-1:#202327;--anatomy-shade-2:#25282d;--anatomy-shade-3:#2a2d33;--anatomy-hi:#d9dee5;--anatomy-mid:#7a838f;--anatomy-lo:#555d68;--anatomy-faint:#3d434c}
+.pw-ins{--anatomy-paper:#8e4a3c;--anatomy-face:#985243;--anatomy-top:#b46a59;--anatomy-shade-0:#6c3328;--anatomy-shade-1:#77392d;--anatomy-shade-2:#823f33;--anatomy-shade-3:#8c4638;--anatomy-hi:#2a0d07;--anatomy-mid:#5a2419;--anatomy-lo:#7a3a2d;--anatomy-faint:#a86454}
+.pw-mer{--anatomy-paper:#e4e7ea;--anatomy-face:#eceef0;--anatomy-top:#f5f6f7;--anatomy-shade-0:#c3c8cd;--anatomy-shade-1:#ccd1d5;--anatomy-shade-2:#d5d9dd;--anatomy-shade-3:#dde1e4;--anatomy-hi:#2c3036;--anatomy-mid:#8a9098;--anatomy-lo:#a7adb4;--anatomy-faint:#c8cdd2}
