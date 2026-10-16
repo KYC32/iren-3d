@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, lazy, Suspense } from 'react'
 import { ChevronRight, Box, Map as MapIcon, ArrowUpRight, X } from 'lucide-react' // MapIcon: 자바스크립트 기본 Map 과 이름 겹침 방지
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { pickName, useT } from '../i18n/useT.js'
@@ -14,6 +14,8 @@ import { campusAppearance } from '../scene/campusAppearance.js'
 import { campusLandscape } from '../scene/campusLandscape.js'
 import { CustomerLogo, logoKeyOf } from './logos/index.jsx'
 import HallEstimateCard from './HallEstimateCard.jsx'
+// 전력·통신 이중화 · 현장 진척(제3자 관찰) 칸 — 따로 불러와 첫 화면 번들에 안 들어감
+const SiteFacts = lazy(() => import('./SiteFacts.jsx'))
 const TABS={overview:['현황','Overview'],history:['계획 이력','Plan history'],evidence:['사진·근거','Photos & evidence']}
 export default function CampusPanel(){
   const site=useAppStore(selectSelectedSite), st=useAppStore(), t=useT(), panel=useRef(null)
@@ -75,6 +77,7 @@ export default function CampusPanel(){
       <h3>{zone?`${zone.name} · `:''}{ko?'건물·단계':'Buildings & phases'}</h3><div className="research-buildings">{buildings.map(b=><button key={b.id} className={b.id===selectedBuildingId?'selected':''} onClick={()=>st.selectBuilding(b.id,true)}><span className="dot" style={{background:styleOf(b.status).color}}/><span><b>{pickName(b,lang)}</b><small>{t.status[b.status]} · {b.evidenceReview==='verified'?(ko?'원문 확인':'Source reviewed'):(ko?'재검토 필요':'Needs review')}</small></span><strong>{b.it_mw?`${b.it_mw} IT`:b.disclosedMw?`~${b.disclosedMw} MW*`:b.gross_mw?`${b.gross_mw} MW`:'—'}</strong></button>)}</div>
       {buildings.some(b=>b.disclosedMw)&&<p className="research-note">{ko?'* IT·총전력 기준 미명시. 용량 합계와 분리합니다.':'* IT/gross basis unspecified; excluded from typed capacity totals.'}</p>}
       {!buildings.length&&<p className="research-empty">{ko?'이 시점에 확인 가능한 건물 기록 없음':'No building records available at this date'}</p>}
+      {!zone&&<Suspense fallback={null}><SiteFacts site={site} month={month} lang={lang}/></Suspense>}
       <h3>{ko?'현장 자료':'Site imagery'}</h3><PhotoGallery site={site} buildingId={selectedBuildingId} buildingIds={zone?.buildings.map(b=>b.id)} research={research} month={month} lang={lang} compact/>
       <h3>{ko?'위치 근거':'Location evidence'}</h3><p className="research-note">{ko?location.note_ko:location.note_en}</p><a href={location.source??site.sources[0]} target="_blank" rel="noreferrer">{ko?'위치 관련 원문':'Location source'}<ArrowUpRight size={12} aria-hidden="true"/></a>
     </>}

@@ -1,0 +1,30 @@
+/* =============================================================
+   siteFacts.css — 캠퍼스 패널 "전력·통신 이중화 · 현장 진척" 칸 (SiteFacts.jsx 와 함께 나중에 불러옴)
+   ============================================================= */
+.site-facts { display: grid; gap: 6px; }
+.facts-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
+.facts-list li { display: grid; grid-template-columns: 14px 1fr auto; gap: 7px; align-items: start; font-size: 11.5px; color: #34405e; line-height: 1.4; }
+.facts-list li svg { margin-top: 2px; color: #5b6b85; }
+.facts-list li span, .facts-note, .facts-disclaimer { word-break: keep-all; } /* 한국어를 낱말 중간에서 끊지 않음 */
+.facts-tag { display: inline-flex; align-items: center; gap: 2px; font-size: 10px; font-weight: 700; white-space: nowrap; border-radius: 999px; padding: 1px 7px; text-decoration: none; }
+.facts-tag.is-reported { color: #1f7f66; background: #eaf6f1; }   /* 회사 자료 */
+.facts-tag.is-observed { color: #8a5a1c; background: #fbf1e3; }   /* 제3자 관찰 */
+.facts-progress { display: grid; gap: 6px; }
+.facts-meta { margin: 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 10.5px; color: #56675f; }
+.facts-meta a { color: inherit; }
+/* 홀 × 세그먼트 칸 */
+.seg-grid { display: grid; gap: 4px; }
+.seg-row { display: grid; grid-template-columns: 34px auto 1fr; align-items: center; gap: 7px; font-size: 11px; color: #34405e; }
+.seg-hall { font-weight: 700; }
+.seg-cells { display: inline-grid; grid-template-columns: repeat(8, 14px); gap: 3px; }
+.seg-cells i, .seg-legend i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; box-sizing: border-box; }
+.seg-row small { font-size: 10px; color: #6b7591; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.seg-ats { background: #e06f3c; }                             /* ATS·배전반까지 — 가장 앞섬 */
+.seg-equipment { background: #f0a679; }                       /* 전기실·변압기·발전기 */
+.seg-pad { background: #e8ddd3; }                             /* 콘크리트 패드 */
+.seg-none { background: #fff; border: 1px dashed #c3cbd6; }   /* 패드 전 */
+.seg-legend { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 10px; color: #56675f; }
+.seg-legend span { display: inline-flex; align-items: center; gap: 4px; }
+.seg-legend i { width: 10px; height: 10px; }
+.facts-note { margin: 0; font-size: 10.5px; color: #56675f; line-height: 1.45; }
+.facts-disclaimer { margin: 2px 0 0; font-size: 10px; color: #7a6a3a; line-height: 1.4; }

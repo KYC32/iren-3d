@@ -9,6 +9,7 @@
 import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { validateResearch } from '../src/data/researchSchema.js'
 import { SourceDatesFile, HiringFile } from '../src/data/schema.js'
+import { validateObservations } from '../src/data/observationsSchema.js'
 import { fileURLToPath } from 'node:url'
 
 // DATA_DIR=data-fake 처럼 지정하면 다른 폴더의 데이터로 빌드 (성능 시험용 가짜 데이터 등)
@@ -41,10 +42,26 @@ export function buildInfra() {
   return { ...(research ? { research } : {}), ...(sourceDates ? { sourceDates } : {}), ...(hiring ? { hiring } : {}), schema_version: 2, as_of: asOf, companies, programs, sites, ...(changelog ? { changelog } : {}) }
 }
 
+// 현장 관찰·설비 이중화 (data/observations.json) — infra.json 과 따로 둠:
+//   캠퍼스 패널의 "현장 관찰·이중화" 칸이 열릴 때만 불러와서 첫 화면 데이터·번들이 커지지 않게
+export function buildObservations(sites) {
+  const url = new URL('observations.json', DATA)
+  if (!existsSync(url)) return null
+  const file = JSON.parse(readFileSync(url, 'utf8'))
+  const errors = validateObservations(file, sites)
+  if (errors.length) throw new Error(errors.join('\n'))
+  return file
+}
+
 // 직접 실행했을 때만 파일로 저장
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const infra = buildInfra()
   mkdirSync(new URL('../public/data/', import.meta.url), { recursive: true })
   writeFileSync(new URL('../public/data/infra.json', import.meta.url), JSON.stringify(infra))
   console.log(`✅ infra.json — 회사 ${infra.companies.length}곳, 사이트 ${infra.sites.length}곳, 기준일 ${infra.as_of}`)
+  const observations = buildObservations(infra.sites)
+  if (observations) {
+    writeFileSync(new URL('../public/data/observations.json', import.meta.url), JSON.stringify(observations))
+    console.log(`✅ observations.json — 설비 ${observations.facilities.length}건, 현장 관찰 ${observations.progress.length}건`)
+  }
 }

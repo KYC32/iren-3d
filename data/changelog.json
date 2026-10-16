@@ -42,6 +42,10 @@
         {
           "ko": "3D 부지의 기본 하늘을 \"지금\"(그 부지의 현지 시각)으로 — 링크에 하늘 값이 없으면 현지 시각대로 낮·노을·밤이 보임(낮을 고르면 링크에 남음). 밤 화면을 읽기 쉽게: 달빛·주변광을 올리고 창문 띠를 두껍게, 가동 중 채굴동은 지붕 환기팬에 주황 불빛, 시운전 홀 불빛 0.4→0.6. 범례의 불빛 안내는 실제로 어두울 때만. 건물을 3D 에서 고르거나 공유 링크로 열면 카메라가 그 건물로 다가감(완성된 홀은 랙이 보이게)",
           "en": "3D campuses now default to \"Now\" (the site's local time): links without a sky value show day, dusk or night by local time (choosing Day is kept in the link). Night is easier to read: brighter moonlight and ambient light, thicker window bands, glowing roof vents on live mining halls, and commissioning halls at 0.6 instead of 0.4. The legend's lights note shows only when it is actually dark. Selecting a building in 3D or opening a shared #building link now moves the camera to it (finished halls open to show racks)"
+        },
+        {
+          "ko": "캠퍼스 패널 \"현황\" 탭에 \"전력·통신 이중화\"(회사 홈페이지: IREN 소유 현장 변전소·광케이블 이중 경로 — 칠드레스·프린스조지·매켄지·커낼플랫츠 / 제3자 관찰: 변압기 2대·발전기·UPS)와 \"현장 진척 · 제3자 관찰\"(매켄지 9/23 드론: 홀 4개 × 2.5MW 세그먼트 8칸의 패드·장비·ATS 설치 개수, 프린스조지 10/13 열화상) 추가. 관찰은 공식 상태를 바꾸지 않는 근거로만. 건물이 없는 개발 부지(카이오와·번디·바다호스·스위트워터 2) 3D 에 개발 단계 카드(부지·전력 확보 → 통전 → 착공 → 가동)",
+          "en": "The campus panel Overview tab gains \"Power & network redundancy\" (company website: IREN-owned on-site substations and dual diverse fiber at Childress, Prince George, Mackenzie and Canal Flats; third-party: twin transformers, generators, UPS) and \"Site progress · third-party\" (Mackenzie 9/23 drone: pads, equipment and ATS counts across four halls × eight 2.5MW segments; Prince George 10/13 thermal). Observations are evidence only and never change official statuses. Development sites without buildings (Kiowa, Bundey, Badajoz, Sweetwater 2) show a milestone card in 3D (land & power → energization → construction → go-live)"
         }
       ]
     },

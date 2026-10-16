@@ -22,7 +22,10 @@ import { campusLandscape } from './campusLandscape.js'
 import CampusLandscape from './buildings/CampusLandscape.jsx'
 import ZoneCallouts from './ZoneCallouts.jsx'
 import { contentBox } from './campusCamera.js'
-import { Check, Activity, HardHat } from 'lucide-react'
+import { devMilestones } from './devMilestones.js'
+import { fmtWhen } from '../data/events.js'
+import './scene.css' // 3D 화면 전용 스타일 (이 화면 코드와 함께 나중에 불러옴)
+import { Check, Activity, HardHat, CircleCheck, Clock, CircleDashed } from 'lucide-react'
 import { DryCampusGround } from './buildings/PhotoReferencedCampus.jsx'
 import { estimateHall, roundNice } from '../data/hallEstimate.js'
 import { buildingMwText } from './buildingLabel.js'
@@ -181,6 +184,8 @@ export default function SiteView({ site }) {
           )
         })}
 
+      {/* 개발 부지(그 날짜에 건물 기록이 없음): 빈 땅 위에 개발 이정표 */}
+      {site.buildings.length === 0 && <DevMilestones site={site} month={month} lang={lang} side={L.side} />}
       {/* 블록 1칸이 몇 MW 인지 항상 표시 — 빈 부지(점선 칸)가 얼마만큼의 전력인지 읽을 수 있게 */}
       <CampusLabel position={[-L.side / 2 + 3, 0.5, L.side / 2 - 1]} priority={5}>
         <div className="tag">{lang === 'ko' ? `1칸 = ${L.blockMw}MW` : `1 block = ${L.blockMw}MW`}</div>
@@ -191,6 +196,29 @@ export default function SiteView({ site }) {
       {appearance && <DryCampusGround layout={L} appearance={appearance}/>}
       {landscape ? <CampusLandscape siteId={site.id} layout={layout} profile={landscape}/> : <Trees side={L.side} seed={site.id.length * 7} roadZ={L.road.z} />}
     </group>
+  )
+}
+
+// ---------- 개발 이정표 ----------
+// 건물이 아직 없는 개발 부지: 빈 땅만으로는 "언제 돈이 되나"를 읽을 수 없어 단계별 진행을 카드로
+//   ✓ 완료(발표·확인) · 시계 = 회사 목표 · 점선 원 = 미발표 (devMilestones.js)
+const STEP_ICON = { done: CircleCheck, target: Clock, unknown: CircleDashed }
+function DevMilestones({ site, month, lang, side }) {
+  const ko = lang === 'ko'
+  const NAME = ko ? { secured: '부지·전력 확보', energized: '통전', construction: '착공', operating: '가동' }
+    : { secured: 'Land & power secured', energized: 'Energization', construction: 'Construction', operating: 'Go-live' }
+  const when = (s) => s.state === 'unknown' ? (ko ? '미발표' : 'Not announced') : s.state === 'target' ? `${ko ? '목표' : 'Target'} ${fmtWhen(s.when, lang)}` : fmtWhen(s.when, lang)
+  return (
+    // 부지 가운데: 카메라가 건물 영역을 화면 가운데에 맞추므로 휴대폰에서도 아래 패널에 가리지 않음
+    <CampusLabel position={[0, 1.2, 0]} priority={45}>
+      <div className="dev-steps" role="group" aria-label={ko ? '개발 단계' : 'Development milestones'}>
+        <b>{ko ? '개발 단계' : 'Development milestones'}</b>
+        <ol>{devMilestones(site._raw, month).map((s) => {
+          const Icon = STEP_ICON[s.state]
+          return <li key={s.key} className={`is-${s.state}`}><Icon size={13} aria-hidden="true" /><span>{NAME[s.key]}</span><em>{when(s)}</em></li>
+        })}</ol>
+      </div>
+    </CampusLabel>
   )
 }
 
