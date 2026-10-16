@@ -46,6 +46,10 @@
         {
           "ko": "캠퍼스 패널 \"현황\" 탭에 \"전력·통신 이중화\"(회사 홈페이지: IREN 소유 현장 변전소·광케이블 이중 경로 — 칠드레스·프린스조지·매켄지·커낼플랫츠 / 제3자 관찰: 변압기 2대·발전기·UPS)와 \"현장 진척 · 제3자 관찰\"(매켄지 9/23 드론: 홀 4개 × 2.5MW 세그먼트 8칸의 패드·장비·ATS 설치 개수, 프린스조지 10/13 열화상) 추가. 관찰은 공식 상태를 바꾸지 않는 근거로만. 건물이 없는 개발 부지(카이오와·번디·바다호스·스위트워터 2) 3D 에 개발 단계 카드(부지·전력 확보 → 통전 → 착공 → 가동)",
           "en": "The campus panel Overview tab gains \"Power & network redundancy\" (company website: IREN-owned on-site substations and dual diverse fiber at Childress, Prince George, Mackenzie and Canal Flats; third-party: twin transformers, generators, UPS) and \"Site progress · third-party\" (Mackenzie 9/23 drone: pads, equipment and ATS counts across four halls × eight 2.5MW segments; Prince George 10/13 thermal). Observations are evidence only and never change official statuses. Development sites without buildings (Kiowa, Bundey, Badajoz, Sweetwater 2) show a milestone card in 3D (land & power → energization → construction → go-live)"
+        },
+        {
+          "ko": "지도 화면의 지역 버튼(북미·전체…)·캠퍼스 목록이 KPI 판을 가리던 문제 수정: 숫자로 고정하던 자리 대신 KPI 판 바로 아래에 차례로 붙음 (데스크톱 포함). 768~1199px 3D 상단 바는 버튼이 모자라면 둘째 줄로 내려 가로로 넘치지 않고, 휴대폰 3D 는 기본 '지금' 하늘의 시각이 붙어도 상단 바가 두 줄",
+          "en": "Map region buttons (North America, All…) and the campus list no longer cover the KPI strip: they now stack right below it instead of sitting at fixed offsets (desktop included). The 3D top bar at 768–1199px moves its buttons to a second row instead of overflowing sideways, and on phones it stays at two rows even with the default \"Now\" sky clock"
         }
       ]
     },
