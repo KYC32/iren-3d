@@ -45,8 +45,8 @@ const GEN = { x: -30, y: 80, w: 58, d: 24, r: 0.8 }, GEN_TANK = 8, GEN_BOX = 24;
 const GT = { x: 34, y: 8, w: 14, d: 76, pit: SLAB - 3.6 };      // 발전기 → 배전반 관 도랑
 // 전기실 (홀 안 왼쪽, 벽에서 먼 줄): 배전반 A(2칸)·B(2칸) · UPS · 배터리
 const SB = { x: 20, y: -34, w: 9, d: 12, h: 23, n: 4 };       // 칸 x 20, 29 | 38, 47
-const UPS = { x: 59, y: -32, w: 11, d: 10, h: 20, r: 0.2 };
-const BAT = { x: 71, y: -32, w: 9, d: 10, h: 20, r: 0.2 };
+// UPS A·B: 함마다 왼쪽 절반 = UPS(어두운 함·화면), 오른쪽 절반 = 배터리 칸(환기 슬롯·경고판) — 그림에서는 한 함으로 묶음
+const UPS = { xs: [58.5, 68.5], y: -32, w: 9, d: 10, h: 20, r: 0.2 };
 // CDU 3대 (벽 바로 안쪽, 앞면이 벽·보는 쪽): A 가동 · B 가동(앞판을 뗌) · C 대기
 const CDU = { xs: [88, 100, 112], tags: ["a", "c", "b"], y: -16, w: 10, d: 12, h: 22 };
 const cduX = (tag) => CDU.xs[CDU.tags.indexOf(tag)];      // 이름(a·b·c) → 왼쪽 끝 x
@@ -60,7 +60,9 @@ const CART = { x: 230, y: -16, w: 20, d: 10 };                 // 정비 카트 
 // 천장 쪽: 2차 냉각수 공급(파랑)·회수(빨강) 배관, 버스웨이, 광케이블 트레이
 const SUP = { y: -16.5, z: 28.5, r: 1.0 }, RET = { y: -19.5, z: 31.5, r: 1.0 };
 const HDR = { x0: 90, x1: 223 };
-const BUS = { y: -28, z: 30.5, w: 1.8, h: 2.4, x0: 64, x1: 222 };
+// 버스웨이 A·B (랙 위 두 줄): 랙마다 양쪽에서 받음 → 한쪽 길을 정비해도 GPU 는 계속 (Tier III 수준 동시 유지보수)
+const BUSES = [{ tag: "a", y: -30, x0: 60, joints: [60, 90, 116, 142, 168, 194, 222], tapX: 1.7 }, { tag: "b", y: -25, x0: 70, joints: [70, 90, 116, 142, 168, 194, 222], tapX: 3.9 }];
+const BUS = { z: 30.5, w: 1.8, h: 2.4, y: BUSES[0].y };   // 공통 높이·폭 (y = 뒤쪽 줄, 랙 위 받침대 팔 길이 기준)
 const FIB = { y: -42, z: 31, w: 4 };
 // 이음쇠(공) 반지름: 호스(0.3)·CDU 관(0.6) → 천장 배관(1.0), 가지관(0.6) → 마당 배관(1.6), 펌프 관(0.8) → 공급 배관, 꺾이는 엘보
 const TEE = { hose: 1.15, riser: 1.25, yard: 1.8, pump: 1.85, elbow: 1.9 };
@@ -354,37 +356,46 @@ function switchboards() {
 switchboards();
 function upsLine() {
   const z0 = HALL.floor, Y = UPS.y + UPS.d;
-  // UPS: 어두운 함 · 화면 · 상태 띠 · 아래 환기 슬롯
-  W.box("ups", UPS, z0, UPS.h, { cls: "hz-ups", tone: "mid", steps: 1, info: "ups",
-    inner: L(frontSeams(Y, [UPS.x + UPS.w / 2], z0, z0 + UPS.h), { tone: "lo" }) + L(frontSlots(Y, UPS.x + 1.4, UPS.x + UPS.w - 1.4, z0 + 1.4, 4, 1.2, 0.5), { tone: "lo" }) });
-  W.box("ups.screen", { x: UPS.x + 1.2, y: Y, w: 3.6, d: 0.3, r: 0.1 }, z0 + 13, 2.6, { cls: "hz-screen", tone: "mid", steps: 1, info: "ups" });
-  W.box("ups.bar", { x: UPS.x + 6.6, y: Y, w: 3.2, d: 0.3, r: 0.1 }, z0 + 14.6, 0.7, { cls: "hz-screen", tone: "mid", steps: 1, info: "ups" });
-  // 배터리 함: 회색 · 환기 슬롯 · 노란 경고판
-  W.box("bat", BAT, z0, BAT.h, { cls: "pw-grey", tone: "mid", steps: 1, info: "battery",
-    inner: L(frontSlots(BAT.y + BAT.d, BAT.x + 1.2, BAT.x + BAT.w - 1.2, z0 + 2, 9, 1.6, 0.5), { tone: "lo" }) });
-  W.box("bat.sign", { x: BAT.x + 3, y: BAT.y + BAT.d, w: 3, d: 0.2, r: 0.05 }, z0 + 16.5, 2, { cls: "pw-yellow", tone: "mid", steps: 1, info: "battery" });
-  // 배전반 B → UPS (굵은 케이블), UPS → 버스웨이 (세로로 올라감)
-  cable("ups.in", [[56, -28, HALL.floor + SB.h], [56, -28, HALL.floor + SB.h + 4], [63, -28, HALL.floor + SB.h + 4], [63, -28, z0 + UPS.h]], 0.45, { flow: "pw", info: "ups", bend: 1.8, maxLength: 8 });
-  cable("ups.out", [[67, -28, z0 + UPS.h], [67, -28, BUS.z]], 0.45, { flow: "pw", info: "busway", fillet: false, maxLength: 12 });
+  UPS.xs.forEach((x, j) => {
+    const tag = "ab"[j], half = UPS.w / 2;
+    // 왼쪽 절반: UPS (어두운 함 · 화면 · 상태 띠 · 아래 환기 슬롯)
+    W.box(`ups${tag}`, { x, y: UPS.y, w: half, d: UPS.d, r: UPS.r }, z0, UPS.h, { cls: "hz-ups", tone: "mid", steps: 1, info: "ups", stamp: "ups-body",
+      inner: L(frontSlots(Y, x + 0.8, x + half - 0.8, z0 + 1.4, 4, 1.2, 0.5), { tone: "lo" }) });
+    W.box(`ups${tag}.screen`, { x: x + 0.8, y: Y, w: 2.9, d: 0.3, r: 0.1 }, z0 + 13, 2.4, { cls: "hz-screen", tone: "mid", steps: 1, info: "ups", stamp: "ups-screen" });
+    W.box(`ups${tag}.bar`, { x: x + 0.8, y: Y, w: 2.9, d: 0.3, r: 0.1 }, z0 + 11.4, 0.7, { cls: "hz-screen", tone: "mid", steps: 1, info: "ups", stamp: "ups-bar" });
+    // 오른쪽 절반: 배터리 칸 (회색 · 환기 슬롯 · 노란 경고판)
+    W.box(`bat${tag}`, { x: x + half, y: UPS.y, w: half, d: UPS.d, r: UPS.r }, z0, UPS.h, { cls: "pw-grey", tone: "mid", steps: 1, info: "battery", stamp: "bat-body",
+      inner: L(frontSlots(Y, x + half + 0.8, x + UPS.w - 0.8, z0 + 2, 8, 1.6, 0.5), { tone: "lo" }) });
+    W.box(`bat${tag}.sign`, { x: x + half + 1.1, y: Y, w: 2.3, d: 0.2, r: 0.05 }, z0 + 16.6, 1.8, { cls: "pw-yellow", tone: "mid", steps: 1, info: "battery", stamp: "bat-sign" });
+  });
+  // 배전반 → UPS (굵은 케이블, 배전반 둘째 칸 위에서 나와 UPS 위로): A 는 뒤 줄(y −31.2), B 는 앞 줄(y −24)
+  const sbTop = HALL.floor + SB.h, [xa, xb] = UPS.xs;
+  cable("ups.inA", [[36.5, -31.2, sbTop], [36.5, -31.2, sbTop + 2.8], [xa + 1.0, -31.2, sbTop + 2.8], [xa + 1.0, -31.2, z0 + UPS.h]], 0.45, { flow: "pw", info: "ups", bend: 1.6, maxLength: 8 });
+  cable("ups.inB", [[56, -23.4, sbTop], [56, -23.4, sbTop + 4.2], [xb + 1.5, -23.4, sbTop + 4.2], [xb + 1.5, -23.4, z0 + UPS.h]], 0.45, { flow: "pw", info: "ups", bend: 2.0, maxLength: 8 });
+  // UPS → 버스웨이 (세로로 올라감)
+  BUSES.forEach((bus, j) => cable(`ups.out${bus.tag}`, [[UPS.xs[j] + 3, bus.y, z0 + UPS.h], [UPS.xs[j] + 3, bus.y, BUS.z]], 0.45, { flow: "pw", info: "busway", fillet: false, maxLength: 12 }));
 }
 upsLine();
 
 // ---------- 8) 버스웨이 (랙 위를 지나는 굵은 전원 통로) + 받침 ----------
 function busway() {
-  const z = BUS.z, h = BUS.h, y0 = BUS.y - BUS.w / 2, Y = y0 + BUS.w;
-  const joints = [64, 90, 116, 142, 168, 194, 222];
+  const z = BUS.z, h = BUS.h;
   const pxPerX = Math.hypot(...[0, 1].map((i) => at([1, BUS.y, z])[i] - at([0, BUS.y, z])[i]));   // 화면에서 x 1 단위의 길이 (흐름 무늬 이어 붙이기)
-  for (let s = 0; s < joints.length - 1; s++) {
-    const a = joints[s], b = joints[s + 1];
-    W.box(`bus.${s}`, { x: a, y: y0, w: b - a, d: BUS.w, r: 0.1 }, z, h, { cls: "hz-bus", tone: "mid", steps: 1, info: "busway", owner: "bus",
-      inner: L(k.sideSeam({ x: a, y: y0, w: b - a, d: BUS.w, r: 0.1 }, z + 0.5, P, 1) + k.sideSeam({ x: a, y: y0, w: b - a, d: BUS.w, r: 0.1 }, z + h - 0.5, P, 1), { tone: "faint" }),
-      extra: `<path class="pw-flow" data-flow="pw" style="--d0:${r1((a - BUS.x0) * pxPerX)}px" d="${pathOf3([[a, Y, z + h / 2], [b, Y, z + h / 2]])}"/>` });
+  for (const bus of BUSES) {
+    const y0 = bus.y - BUS.w / 2, Y = y0 + BUS.w;
+    for (let s = 0; s < bus.joints.length - 1; s++) {
+      const a = bus.joints[s], b = bus.joints[s + 1], plan = { x: a, y: y0, w: b - a, d: BUS.w, r: 0.1 };
+      W.box(`bus${bus.tag}.${s}`, plan, z, h, { cls: "hz-bus", tone: "mid", steps: 1, info: "busway", owner: `bus${bus.tag}`,
+        inner: L(k.sideSeam(plan, z + 0.5, P, 1) + k.sideSeam(plan, z + h - 0.5, P, 1), { tone: "faint" }),
+        extra: `<path class="pw-flow" data-flow="pw" style="--d0:${r1((a - bus.x0) * pxPerX)}px" d="${pathOf3([[a, Y, z + h / 2], [b, Y, z + h / 2]])}"/>` });
+    }
+    for (const x of bus.joints.slice(1, -1)) W.box(`bus${bus.tag}.joint${x}`, { x: x - 0.7, y: y0 - 0.15, w: 1.4, d: BUS.w + 0.3, r: 0.1 }, z - 0.15, h + 0.3, { cls: "hz-bus", tone: "mid", steps: 1, info: "busway", stamp: "bus-joint", owner: `bus${bus.tag}` });
+    // 받침: 바닥 기둥 (CDU 뒤) — 랙 위에서는 랙 위 받침대의 팔이 받침
+    W.box(`bus${bus.tag}.post`, { x: 103.7, y: bus.y - 0.3, w: 0.6, d: 0.6, r: 0.05 }, HALL.floor, z - HALL.floor, { cls: "pw-steel", tone: "mid", steps: 1, info: "busway", stamp: "bus-post" });
+    W.box(`bus${bus.tag}.foot`, { x: 102.5, y: bus.y - 1.2, w: 3, d: 2.4, r: 0.1 }, HALL.floor, 0.4, { cls: "pw-steel", tone: "mid", steps: 1, info: "busway", stamp: "bus-foot" });
   }
-  for (const x of joints.slice(1, -1)) W.box(`bus.joint${x}`, { x: x - 0.7, y: y0 - 0.15, w: 1.4, d: BUS.w + 0.3, r: 0.1 }, z - 0.15, h + 0.3, { cls: "hz-bus", tone: "mid", steps: 1, info: "busway", stamp: "bus-joint", owner: "bus" });
-  // 받침: 배터리 함 위 기둥 · 바닥 기둥 (CDU 뒤) — 랙 위에서는 랙 위 받침대의 팔이 받침
-  W.box("bus.post0", { x: 75.7, y: BUS.y - 0.3, w: 0.6, d: 0.6, r: 0.05 }, HALL.floor + BAT.h, z - HALL.floor - BAT.h, { cls: "pw-steel", tone: "mid", steps: 1, info: "busway" });
-  W.box("bus.post1", { x: 103.7, y: BUS.y - 0.3, w: 0.6, d: 0.6, r: 0.05 }, HALL.floor, z - HALL.floor, { cls: "pw-steel", tone: "mid", steps: 1, info: "busway" });
-  W.box("bus.foot1", { x: 102.5, y: BUS.y - 1.5, w: 3, d: 3, r: 0.1 }, HALL.floor, 0.4, { cls: "pw-steel", tone: "mid", steps: 1, info: "busway" });
+  // A 줄은 UPS B 위를 지나감 → 그 함 위 기둥으로 받침
+  W.box("busa.postUps", { x: UPS.xs[1] + 6.7, y: BUSES[0].y - 0.3, w: 0.6, d: 0.6, r: 0.05 }, HALL.floor + UPS.h, z - HALL.floor - UPS.h, { cls: "pw-steel", tone: "mid", steps: 1, info: "busway" });
 }
 busway();
 
@@ -473,11 +484,14 @@ function rack(i, x0) {
   // 랙 위 받침대: 뒤 모서리 기둥 + 아래 팔(공급 배관) + 위 팔(회수 배관·버스웨이)
   W.box(`rack${i}.post`, { x: x0 + 2.75, y: REAR - 0.9, w: 0.5, d: 0.5, r: 0.05 }, top, 30 - top, { cls: "pw-steel", tone: "mid", steps: 1, info: "rack-post", stamp: "rpost" });
   W.box(`rack${i}.armS`, { x: x0 + 2.75, y: REAR - 0.9, w: 0.5, d: SUP.y + 0.7 - (REAR - 0.9), r: 0.05 }, SUP.z - SUP.r - 0.5, 0.5, { cls: "pw-steel", tone: "mid", steps: 1, info: "rack-post", stamp: "rarmS" });
-  W.box(`rack${i}.armT`, { x: x0 + 2.75, y: BUS.y - 0.9, w: 0.5, d: RET.y + 0.7 - (BUS.y - 0.9), r: 0.05 }, 30, 0.5, { cls: "pw-steel", tone: "mid", steps: 1, info: "rack-post", stamp: "rarmT" });
-  // 버스웨이 탭오프 상자 → 전원 코드 → 랙 위 인입구
-  W.box(`rack${i}.tap`, { x: x0 + 3.8, y: BUS.y - 0.6, w: 1.4, d: 1.2, r: 0.15 }, BUS.z - 2.5, 2.5, { cls: "hz-bus", tone: "mid", steps: 2, info: "tapoff", stamp: "tap" });
-  W.box(`rack${i}.gland`, { x: x0 + 4.0, y: BUS.y - 0.5, w: 1.0, d: 1.0, r: 0.25 }, top, 0.5, { cls: "pw-dark", tone: "mid", steps: 2, info: "tapoff", stamp: "gland" });
-  cable(`rack${i}.cord`, [[x0 + 4.5, BUS.y, BUS.z - 2.5], [x0 + 4.5, BUS.y, top + 0.5]], 0.24, { flow: "pw", info: "tapoff", fillet: false, maxLength: 8 });
+  W.box(`rack${i}.armT`, { x: x0 + 2.75, y: BUSES[0].y - 0.9, w: 0.5, d: RET.y + 0.7 - (BUSES[0].y - 0.9), r: 0.05 }, 30, 0.5, { cls: "pw-steel", tone: "mid", steps: 1, info: "rack-post", stamp: "rarmT" });
+  // 버스웨이 탭오프 상자 A·B → 전원 코드 → 랙 위 인입구 (랙 하나가 두 갈래 전원을 받음)
+  for (const bus of BUSES) {
+    const tx = x0 + bus.tapX;
+    W.box(`tap${bus.tag}${i}`, { x: tx - 0.7, y: bus.y - 0.6, w: 1.4, d: 1.2, r: 0.15 }, BUS.z - 2.5, 2.5, { cls: "hz-bus", tone: "mid", steps: 2, info: "tapoff", stamp: "tap" });
+    W.box(`gland${bus.tag}${i}`, { x: tx - 0.5, y: bus.y - 0.5, w: 1.0, d: 1.0, r: 0.25 }, top, 0.5, { cls: "pw-dark", tone: "mid", steps: 2, info: "tapoff", stamp: "gland" });
+    cable(`cord${bus.tag}${i}`, [[tx, bus.y, BUS.z - 2.5], [tx, bus.y, top + 0.5]], 0.24, { flow: "pw", info: "tapoff", fillet: false, maxLength: 8 });
+  }
   // 광케이블 트레이 받침 (랙 앞 모서리)
   W.box(`rack${i}.fpost`, { x: x0 + 2.75, y: RACK_Y + 0.3, w: 0.5, d: 0.5, r: 0.05 }, top, FIB.z - 0.5 - top, { cls: "pw-steel", tone: "mid", steps: 1, info: "fibre", stamp: "fpost" });
   W.box(`rack${i}.farm`, { x: x0 + 2.75, y: FIB.y - 0.3, w: 0.5, d: RACK_Y + 0.8 - (FIB.y - 0.3), r: 0.05 }, FIB.z - 0.5, 0.5, { cls: "pw-steel", tone: "mid", steps: 1, info: "fibre", stamp: "farm" });
@@ -836,8 +850,8 @@ const PART_STOPS = [
   { key: "ladder", p: [-10, LAD.y0 + 2, LAD.z + 1], z: 2.6 },
   { key: "sb-a", p: [SB.x + 9, SB.y + SB.d, HALL.floor + 14], z: 2.6 },
   { key: "gen", p: [GEN.x + 22, GEN.y + GEN.d, SLAB + GEN_TANK + 12], z: 2.0 },
-  { key: "ups", p: [UPS.x + 5, UPS.y + UPS.d, HALL.floor + 14], z: 2.8 },
-  { key: "tapoff", p: [RACK0 + 3 * RACK_W + 4.5, BUS.y, BUS.z - 1.2], z: 3.4 },
+  { key: "ups", p: [UPS.xs[0] + 2.2, UPS.y + UPS.d, HALL.floor + 14], z: 2.8 },
+  { key: "tapoff", p: [RACK0 + 3 * RACK_W + BUSES[1].tapX, BUSES[1].y, BUS.z - 1.2], z: 3.4 },
   { key: "rack", p: [RACK0 + 6 * RACK_W + 3, REAR, HALL.floor + 12], z: 2.8 },
   { key: "tray", p: [CART.x + 6, CART.y + 5, HALL.floor + 9], z: 4.2, side: "left" },
   { key: "manifold", p: [RACK0 + 9 * RACK_W + 5.2, MANI.y1, HALL.floor + 14], z: 3.6 },
@@ -846,6 +860,7 @@ const PART_STOPS = [
   { key: "branch", p: [cduX("b") + 3, 2, 7], z: 3.0 },
   { key: "drycooler", p: [DC.x + 30, DC.y + DC.d, SLAB + 12], z: 2.2 },
   { key: "chiller", p: [CH.x + 18, CH.y + CH.d, SLAB + 12], z: 2.2 },
+  { key: "pumps", p: [PUMP.hx + PUMP.hr + 5.5, PUMP.ys[0], PUMP.z + 0.8], z: 3.0 },   // 식힌 물을 다시 CDU 로 → 냉각수 고리가 닫힘
 ];
 // 장면마다 짚을 곳: 온도계 → 칠러 팬 → 온도계 → CDU C 상태등 → B 밸브 → B → B 밸브
 const THERMO_P = [THERMO.x, THERMO.y + 0.8, THERMO.z];
@@ -876,14 +891,14 @@ const INFO = {
   ground: ["접지봉", "Ground rod"],
   ladder: ["저압 케이블 · 변압기 위로 나와 래더를 타고 벽 관통 상자로", "Low-voltage cables · leave the transformer top and ride a ladder to the wall entry box"],
   "lv-in": ["벽 관통 · 저압 케이블이 홀 안으로 들어가 배전반 A·B 위로", "Wall entry · the low-voltage cables pass into the hall and over switchboards A and B"],
-  "sb-a": ["배전반 A · 홀 전원을 나눔 (A 경로) · 회사 영상 속 통로 벽의 회색 전기반", "Switchboard A · splits hall power (path A) · like the grey electrical lineup in the company video"],
-  "sb-b": ["배전반 B · B 경로 · 발전기 관도 땅속으로 여기에 이어짐", "Switchboard B · path B · the generator conduits arrive here underground"],
+  "sb-a": ["배전반 A · 전원 A 길 (변압기 A → 배전반 A → UPS A → 버스웨이 A) · 회사 영상 속 통로 벽의 회색 전기반", "Switchboard A · power path A (transformer A → switchboard A → UPS A → busway A) · like the grey electrical lineup in the company video"],
+  "sb-b": ["배전반 B · 전원 B 길 (변압기 B → 배전반 B → UPS B → 버스웨이 B) · 발전기 관도 땅속으로 배전반에 이어짐", "Switchboard B · power path B (transformer B → switchboard B → UPS B → busway B) · the generator conduits also arrive here underground"],
   "sb-meter": ["계량기 창 · 전력 사용량", "Meter window · power use"],
-  ups: ["UPS · 정전 순간부터 발전기가 설 때까지 배터리로 끊김 없이 전원을 이어 줌 (회사: UPS 백업)", "UPS · bridges from the instant of an outage until the generators are up, with no break (company: UPS back-up)"],
-  battery: ["배터리 함 · UPS 의 에너지 저장", "Battery cabinet · the UPS energy store"],
-  busway: ["버스웨이 · 랙 위를 지나는 굵은 전원 통로 (모양은 예시)", "Busway · the heavy power run over the racks (illustrative)"],
-  tapoff: ["탭오프 상자 · 버스웨이에서 랙마다 전원을 내려 랙 위 인입구로", "Tap-off box · drops power from the busway into each rack's top entry"],
-  gen: ["디젤 발전기 · 긴 정전 때 전원 (회사: 디젤 발전기 백업 · Horizon 3 발전기는 가동 전 대기 배출 허가 대상 — 2026 금융 계약서)", "Diesel generator · power through long outages (company: diesel back-up; Horizon 3's generators need an air permit before operating — 2026 financing agreement)"],
+  ups: ["UPS A·B · 정전 순간부터 발전기가 설 때까지(10~15초) 배터리로 끊김 없이 전원을 이어 줌 · 함 오른쪽 절반이 배터리 칸 (회사: UPS 백업)", "UPS A and B · bridge the 10–15 s from the instant of an outage until the generator is up, with no break · battery section on the right of each cabinet (company: UPS back-up)"],
+  battery: ["배터리 칸 · UPS 의 에너지 저장 (그림에서는 UPS 와 한 함)", "Battery section · the UPS energy store (drawn in the same cabinet as the UPS)"],
+  busway: ["버스웨이 A·B · 랙 위를 지나는 두 갈래 전원 · 랙마다 양쪽에서 받아, 한쪽 길을 통째로 정비해도 GPU 는 계속 (Tier III 수준 동시 유지보수, 모양은 예시)", "Busways A and B · two power runs over the racks · every rack takes both, so one whole path can be serviced while the GPUs run on (Tier III-equivalent concurrent maintainability; shape illustrative)"],
+  tapoff: ["탭오프 A·B · 버스웨이마다 랙으로 전원을 내림 → 랙 위 인입구 2개", "Tap-offs A and B · each busway drops a feed into the rack → two top entries per rack"],
+  gen: ["디젤 발전기 · 배전반 A·B 로 들어오는 예비 전원 (땅속 관) · 정전 순간은 UPS 배터리가 메우고 10~15초 안에 기동해 이어받음 (회사: 디젤 발전기 백업 · Horizon 3 발전기는 가동 전 대기 배출 허가 대상 — 2026 금융 계약서)", "Diesel generator · the standby source into switchboards A and B (underground conduits) · the UPS batteries cover the first seconds, the generator starts and takes over within 10–15 s (company: diesel back-up; Horizon 3's generators need an air permit before operating — 2026 financing agreement)"],
   tank: ["기초 연료 탱크 · 발전기 밑에 디젤을 담음", "Sub-base fuel tank · diesel under the generator"],
   "gen-conduits": ["발전기 → 배전반 관 · 도랑을 잘라 보여 줌 (평소엔 대기)", "Generator → switchboard conduits · trench cut open (on standby normally)"],
   rack: [`GB300 NVL72 랙 (뒷면) · GPU ${HORIZON.gpusPerRack} + CPU ${HORIZON.cpusPerRack} 이 한 NVLink 도메인 · 1대 약 ${EST.rackKw} kW (가정) — 회사 설계 범위 ${HORIZON.rackKw[0]}~${HORIZON.rackKw[1]} kW · Horizon 1칸 ≈ 랙 ${EST.racks}대 · GPU ${fmt(EST.gpus)}개 (추정) · 그림은 한 줄 일부`, `GB300 NVL72 rack (rear) · ${HORIZON.gpusPerRack} GPUs + ${HORIZON.cpusPerRack} CPUs in one NVLink domain · about ${EST.rackKw} kW each (assumption) — company design range ${HORIZON.rackKw[0]}–${HORIZON.rackKw[1]} kW · one Horizon ≈ ${EST.racks} racks · ${fmt(EST.gpus)} GPUs (estimate) · drawing shows part of one row`],
@@ -916,7 +931,7 @@ const INFO = {
   "ch-comp": ["압축기 칸 · 냉매를 압축해 열을 퍼 올림", "Compressor bay · compresses refrigerant to pump heat out"],
   "ch-panel": ["칠러 제어반 · 초록 등 = 칠러 가동", "Chiller controls · green lamp = chiller running"],
   "ch-fan": ["응축기 팬 · 칠러가 퍼 올린 열을 버림", "Condenser fans · reject the heat the chiller pumps out"],
-  pumps: ["1차 냉각수 펌프 2대 (1대 예비) · 시설 물을 CDU 로 보냄 · 초록 등 = 가동", "Facility water pumps (one spare) · send the water to the CDUs · green lamp = running"],
+  pumps: ["1차 냉각수 펌프 2대 (1대 예비) · 식힌 물을 벽 쪽 공급 배관으로 다시 CDU 에 보냄 → 냉각수 고리가 닫힘 · 초록 등 = 가동", "Facility water pumps (one spare) · send the cooled water back along the supply main to the CDUs, closing the loop · green lamp = running"],
   thermo: [`바깥 기온 (예시) · 빨간 띠 = 35 °C 이상 · 칠드레스 여름 오후는 ${TEMP.hot} °C 안팎`, `Outdoor temperature (example) · red band = 35 °C and up · Childress summer afternoons reach about ${TEMP.hot} °C`],
   cart: ["정비 카트", "Service cart"],
   tray: ["꺼낸 컴퓨트 트레이 (덮개를 엶) · GPU 4 + CPU 2 위에 구리 냉각판, 구리관으로 이어져 물이 칩 바로 위를 지나며 열을 가져감 (회사 영상의 냉각판)", "Compute tray pulled for service (lid off) · copper cold plates over 4 GPUs + 2 CPUs, linked by copper tube so water carries the heat straight off the chips (the cold plates in the company video)"],
@@ -989,10 +1004,11 @@ for (const ko of [true, false]) {
 //   allow: 엘보 공 속에서 만나는 두 토막 (겹치는 넓이 1.5 px² 이하)
 //   crowd: 화면에서만 가까운 쌍 — 래더·트레이 안에서 나란한 케이블과 레일, 벽을 지나가는 관과 허문 벽(깊이로 7 이상),
 //          옆 랙의 매니폴드 위로 보이는 호스 시작점(깊이 9), 멀리 뒤의 버스웨이 기둥, 바닥판(얇아서 막대로 취급),
-//          도랑 벽에서 시작하는 중압 관과 그 벽을 이루는 가는 패드 조각, 열린 CDU B 안에서 서로 붙어 있는 관·열교환기 틀
+//          도랑 벽에서 시작하는 중압 관과 그 벽을 이루는 가는 패드 조각, 열린 CDU B 안에서 서로 붙어 있는 관·열교환기 틀,
+//          랙 위 인입구로 내려오는 탭오프 코드와 앞쪽 회수 배관(깊이 15), UPS 위에서 엇갈리는 입력·출력 케이블(깊이 11)
 auditAll({ horizon: W }, { horizon: {
   cover: ["cdub.vS.lever", "cdub.vR.lever", "cdub.vFs.lever", "cdub.vFr.lever"],
   allow: [["yard.sup0*", "yard.sup1*"], ["yard.sup2*", "yard.sup1*"], ["yard.ret2*", "yard.ret3*"]],
-  crowd: [["lv.a*", "lad.vrail*"], ["fib.bundle", "fib.rail*"], ["hoseS*", "manis*"], ["tcs.sup", "tcs.fall*"], ["lv.b*", "hall.floor"], ["tcs.fall*", "bus.post*"], ["tcs.rise*", "bus.post*"],
-    ["branch.*", "wall.*"], ["yard.*", "wall.*"], ["yard.ret*", "dc.*"], ["yard.ret1", "yard.ret2"], ["yard.sup4", "yard.sup2"], ["yard.sup0", "ps.suction"], ["branch.rb", "cdub.hxend0"], ["mv.duct*", "pad.*"], ["cdub*", "cdub*"], ["cdub*", "hall.floor"]],
+  crowd: [["lv.a*", "lad.vrail*"], ["fib.bundle", "fib.rail*"], ["hoseS*", "manis*"], ["tcs.sup", "tcs.fall*"], ["lv.b*", "hall.floor"], ["tcs.fall*", "bus*"], ["tcs.rise*", "bus*"],
+    ["branch.*", "wall.*"], ["yard.*", "wall.*"], ["yard.ret*", "dc.*"], ["yard.ret1", "yard.ret2"], ["yard.sup4", "yard.sup2"], ["yard.sup0", "ps.suction"], ["branch.rb", "cdub.hxend0"], ["mv.duct*", "pad.*"], ["cdub*", "cdub*"], ["cdub*", "hall.floor"], ["cord*", "tcs.ret"], ["ups.*", "ups.*"], ["ups.inA", "busa.*"]],
 } });

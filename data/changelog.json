@@ -11,6 +11,10 @@
         {
           "ko": "건물 그림 단추를 그림 종류에 맞게: 아이콘은 전력 = 플러그, 액체냉각 = 물방울, 캠퍼스 패널 문구는 '이 건물 안 자세히 보기'",
           "en": "Building figure buttons match the figure: plug icon for the power path, droplets for liquid cooling; campus panel label now 'Look inside this building'"
+        },
+        {
+          "ko": "Horizon 그림 바로잡기: 전원이 랙까지 A·B 두 갈래로 가게(UPS 2대·버스웨이 2줄·랙마다 탭오프 2개 — 회사가 밝힌 Tier III 수준 동시 유지보수는 두 갈래가 있어야 성립, 전에는 A 길이 배전반에서 끊겨 있었음), 둘러보기에 '펌프' 단계를 넣어 냉각수 고리를 닫음, 발전기 설명을 '배전반으로 들어오는 예비 전원 · UPS 가 10~15초를 메운 뒤 이어받음'으로",
+          "en": "Horizon figure corrected: power now reaches the racks on two paths, A and B (two UPS units, two busways, two tap-offs per rack — the Tier III-equivalent concurrent maintainability the company describes needs both; path A previously stopped at its switchboard); the tour adds a 'pumps' stop to close the coolant loop; the generator is described as the standby source into the switchboards that takes over after the UPS covers the first 10–15 s"
         }
       ]
     },
