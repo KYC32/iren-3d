@@ -318,8 +318,7 @@ button { font: inherit; cursor: pointer; }
 .surface-3d.camera-pan .canvas-wrap canvas:active { cursor:grabbing; }
 .sheet-btn { display: none; }
 @media (max-width: 767px) {
-  .surface-3d .topbar { flex-wrap:wrap; gap:8px; }
-  .surface-3d .top-actions { margin-left:auto; }
+  /* 상단 바 줄바꿈(두 줄 배치)은 아래 "좁은 화면(767px 이하) 상단 바" 블록에서 모든 화면에 함께 적용 */
   .sheet-btn { display: grid; }
   /* 순위·사이트 패널: 평소엔 숨기고, 상단 버튼으로 바텀시트처럼 열기 */
   .left-panel { display: none; }
@@ -425,12 +424,23 @@ button { font: inherit; cursor: pointer; }
 .selected-detail { max-width: 220px; white-space: normal; background: rgba(255,255,255,0.97); border: 1px solid #c3d3e9; border-radius: 9px; padding: 6px 10px; font-size: 11px; line-height: 1.5; box-shadow: 0 4px 14px rgba(30,45,90,0.12); pointer-events: none; }
 .area-label { border-color: #b8c5cf; color: #46596a; padding: 4px 9px; }
 .home-btn { border-radius: 9px; white-space: nowrap; }
+/* 좁은 화면(767px 이하) 상단 바: 두 줄 배치 — 데스크톱(768px 이상)은 그대로
+     1줄: [아이콘 · 제목/부제목 …………… 지도|주가|뉴스]
+     2줄: [………………………… 화면마다 다른 버튼들 (오른쪽 정렬)]
+   한 줄에 모두 넣으면 버튼(약 300px)이 폭을 다 차지해 제목 칸이 0px이 되고,
+   "IREN 현장 리서치"가 한 글자씩 세로로 줄바꿈되던 문제(375px 화면)를 막습니다. */
 @media (max-width: 767px) {
   .home-btn span { display: none; }
-  .brand { min-width: 0; }
+  .topbar { flex-wrap: wrap; gap: 8px; padding: 10px 12px; } /* 넘치는 항목은 다음 줄로 (좌우 여백을 2px씩 줄여 제목 칸 확보) */
+  /* flex: 1 1 0 → 줄을 나눌 때 제목 칸을 0px로 계산하므로 페이지 네비는 언제나 첫 줄에 남고,
+     남는 폭은 모두 제목 칸이 차지 (지도·3D·주가·뉴스 어느 화면에서도 네비 자리가 같음) */
+  .brand { flex: 1 1 0; min-width: 0; gap: 8px; }
+  .brand > :first-child { flex-shrink: 0; } /* 왼쪽 아이콘·뒤로가기 버튼은 찌그러지지 않게 */
   .brand > div { min-width: 0; }
-  .brand .subtitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .top-actions { flex-shrink: 0; }
+  .brand .title, .brand .subtitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* 길면 한 줄에서 … 으로 */
+  /* flex: 1 0 100% → 버튼 묶음은 언제나 둘째 줄 전체 폭. 3D처럼 버튼이 많아 그래도 넘치면 묶음 안에서 한 번 더 줄바꿈 */
+  .top-actions { flex: 1 0 100%; justify-content: flex-end; flex-wrap: wrap; }
+  .top-actions > .camera-mode button span { display: none; } /* 3D 회전·이동: 아이콘만 (이름은 aria-label·title 에 있음) */
 }
 .selected-detail { width: 210px; max-width: 210px; text-align: left; }
 .campus-label { position: relative; }
