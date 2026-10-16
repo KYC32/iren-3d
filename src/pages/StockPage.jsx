@@ -48,7 +48,8 @@ export default function StockPage() {
   const cards = [
     { label: t.stock.price, value: usd(st.last), sub: `${st.date} · ${t.stock.prev} ${pct(st.chgPct)}`, tone: up ? 'up' : 'down', icon: up ? TrendingUp : TrendingDown },
     { label: t.stock.vsIpo, value: pct(st.vsIpoPct), sub: `${file.ipo.date}`, tone: st.vsIpoPct >= 0 ? 'up' : 'down' },
-    { label: `${t.stock.high52} / ${t.stock.low52}`, value: `${usd(st.high52)} / ${usd(st.low52)}` },
+    // 52주 최고·최저도 종가 기준 (사상 최고·최대 낙폭·차트와 같은 기준) + 그 날짜
+    { label: `${t.stock.high52} / ${t.stock.low52}`, value: `${usd(st.high52.price)} / ${usd(st.low52.price)}`, sub: `${st.high52.date} / ${st.low52.date}` },
     { label: t.stock.ath, value: usd(st.ath.price), sub: st.ath.date },
     { label: t.stock.drawdown, value: pct(st.maxDrawdownPct), sub: `${st.drawdownFrom} → ${st.drawdownTo}`, tone: 'down' },
   ]

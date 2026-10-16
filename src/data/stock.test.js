@@ -84,9 +84,20 @@ describe('통계', () => {
     const st = stats(s, 28)
     expect(st.last).toBe(19); expect(st.chg).toBe(5); expect(st.chgPct).toBeCloseTo(35.714)
     expect(st.vsIpoPct).toBeCloseTo(-32.143)
-    expect(st.high52).toBe(21); expect(st.low52).toBe(4)
+    // 52주 최고·최저도 차트·사상 최고·최대 낙폭처럼 종가 기준 (장중 고가 21·저가 4 가 아님) + 그 날짜
+    expect(st.high52).toEqual({ price: 20, date: '2024-01-03' }); expect(st.low52).toEqual({ price: 5, date: '2024-01-04' })
     expect(st.ath).toEqual({ price: 20, date: '2024-01-03' })
     expect(st.maxDrawdownPct).toBeCloseTo(-75); expect(st.drawdownFrom).toBe('2024-01-03'); expect(st.drawdownTo).toBe('2024-01-04')
+  })
+  it('52주 최고는 사상 최고를 넘지 않음 (같은 날 장중 고가가 종가보다 높아도)', () => {
+    // 실제 사례: 2025-11-05 장중 $76.87 · 종가 $76.41 → 예전엔 "52주 최고 76.87 > 사상 최고 76.41" 로 보였음
+    const s = [
+      { date: '2025-11-05', open: 70, high: 76.87, low: 69, close: 76.41, volume: 1 },
+      { date: '2026-10-14', open: 33, high: 33.85, low: 30.38, close: 30.56, volume: 1 },
+    ]
+    const st = stats(s, 28)
+    expect(st.high52.price).toBe(76.41)
+    expect(st.high52.price).toBeLessThanOrEqual(st.ath.price)
   })
 })
 

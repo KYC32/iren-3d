@@ -4,6 +4,11 @@
       "date": "2026-10-17",
       "items": [
         {
+          "ko": "주가 페이지: 52주 최고·최저를 사상 최고·최대 낙폭·차트와 같은 종가 기준으로 맞추고 그 날짜를 붙임 (전엔 장중 고가라 같은 날인데 '52주 최고 $76.87 > 사상 최고 $76.41' 로 어긋나 보였음)",
+          "en": "Stock page: the 52-week high/low now use closing prices like the all-time high, max drawdown and chart, with their dates (previously intraday, so the 52-week high looked higher than the all-time high on the same day)",
+          "source": "https://www.nasdaq.com/market-activity/stocks/iren/historical"
+        },
+        {
           "ko": "스위트워터 1 그림 추가: 3D 스위트워터 1 화면에서 1단계 건물을 누르면(또는 캠퍼스 패널 '이 건물 안 자세히 보기') 이미 통전된 1,400MW 변전소에서 1단계 액체냉각 홀까지의 모형이 열림 — 345kV 송전선 → 차단기 → 모선 → 대형 변압기(345→138kV) → 1차 변압기(138→34.5kV) → 홀 → Vera Rubin 랙, 냉각수는 CDU → 건식 냉각기 → 펌프로 칠러 없이 돎. 더운 오후 39°C 에도 칠러 없이 식는 모습과 비워 둔 자리에 다음 단계가 붙는 모습(예시)을 보여 줌. 수치는 회사 발표, 홀 안은 NVIDIA 공개 사양(45°C 물) 기준 그림 표현",
           "en": "New Sweetwater 1 figure: click Phase 1 in the 3D Sweetwater 1 view (or 'Look inside this building' in the campus panel) to open a model from the already-energized 1,400MW substation to the phase 1 liquid-cooled hall — 345kV line → breakers → bus → large transformers (345→138kV) → primary transformer (138→34.5kV) → hall → Vera Rubin racks, with the coolant running CDU → dry cooler → pumps and no chiller. It shows the hall cooling without chillers on a 39°C afternoon and the next phase filling the empty bays (example). Numbers per company releases; the hall interior is illustrative, based on NVIDIA's public spec (45°C water)",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"

@@ -135,6 +135,8 @@ export function nearestIndex(series, date) {
 }
 
 // ---- 통계 ----
+// 목록에서 better(지금까지 고른 것, 새것) 가 참일 때마다 새것으로 바꿔 끝까지 고른 날의 { 종가, 날짜 }
+const pick = (list, better) => { const p = list.reduce((a, b) => (better(a, b) ? b : a)); return { price: p.close, date: p.date } }
 export function stats(series, ipoPrice = IPO.price) {
   if (!series.length) return null
   const last = series.at(-1), prev = series.at(-2) ?? last
@@ -152,7 +154,9 @@ export function stats(series, ipoPrice = IPO.price) {
     last: last.close, date: last.date, prevClose: prev.close,
     chg: last.close - prev.close, chgPct: prev.close ? ((last.close - prev.close) / prev.close) * 100 : 0,
     vsIpoPct: ((last.close - ipoPrice) / ipoPrice) * 100,
-    high52: Math.max(...recent.map((p) => p.high)), low52: Math.min(...recent.map((p) => p.low)),
+    // 52주 최고·최저: 차트(종가 선)·사상 최고·최대 낙폭과 같은 종가 기준 + 그 날짜
+    //   (장중 고가를 쓰면 같은 날 "52주 최고 76.87 > 사상 최고 76.41" 처럼 서로 어긋나 보임)
+    high52: pick(recent, (a, b) => b.close > a.close), low52: pick(recent, (a, b) => b.close < a.close),
     ath: { price: ath.close, date: ath.date },
     maxDrawdownPct: maxDd * 100, drawdownFrom: ddFrom.date, drawdownTo: ddTo.date,
     from: series[0].date, to: last.date, days: series.length,
