@@ -67,6 +67,7 @@
 .basis.kind-filing { background: #eef0f5; color: #6b7591; }  .basis.kind-insider { background: #f3e8f6; color: #6d3b86; }
 .basis.kind-press-media { background: #eef0f5; color: #4c5a72; max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
 .news-chart-btn { display: inline-flex; align-items: center; gap: 3px; border: 0; background: none; color: var(--accent); font-size: 11px; padding: 0; cursor: pointer; }
+.news-pending { display: inline-flex; align-items: center; border-radius: 999px; padding: 0 7px; background: #fbf1d3; color: #8a6400; font-weight: 600; font-size: 10.5px; } /* 기준일 뒤 공시 = 사이트 숫자에 아직 반영 전일 수 있음 */
 .news-more { margin: 12px auto 0; display: flex; }
 @media (max-width: 767px) {
   .stock-stats { grid-template-columns: repeat(2, 1fr); }

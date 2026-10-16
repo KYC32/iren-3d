@@ -15,6 +15,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  issues: write   # 기준일 뒤 새 회사 공시가 있으면 이슈를 열고·고치고·닫음 (scripts/check-asof.mjs)
 concurrency:
   group: refresh-data
   cancel-in-progress: false
@@ -32,11 +33,15 @@ jobs:
       - run: node scripts/fetch-stock.mjs
       - run: node scripts/fetch-news.mjs --max=60
       - run: node scripts/fetch-shares.mjs   # 새 10-Q·10-K 표지 주식 수를 SEC XBRL 에서 덧붙임
+      - name: 기준일 뒤 새 회사 공시 확인 (현황 페이지 안내 파일 + GitHub 이슈)
+        run: node scripts/check-asof.mjs --issue
+        env:
+          GH_TOKEN: ${{ github.token }}
       - name: 바뀐 파일만 커밋·푸시
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/stock.json public/data/news.json data/shares.json public/data/shares.json
+          git add public/data/stock.json public/data/news.json data/shares.json public/data/shares.json public/data/asof-check.json
           if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
           git commit -m "data: 주가·뉴스·주식 수 자동 갱신 $(date -u +%F)"
           git pull --rebase origin main

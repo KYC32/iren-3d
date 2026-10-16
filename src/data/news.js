@@ -149,3 +149,11 @@ export function filingTitle(f) {
 export function sortNews(items) {
   return [...items].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (KIND_ORDER[a.kind] ?? 9) - (KIND_ORDER[b.kind] ?? 9)))
 }
+
+// 사이트 숫자의 기준일(as_of) "뒤"에 나온 회사 공시 = 아직 사이트에 반영 안 됐을 수 있는 것 (최신순 그대로)
+//   기준일 당일 공시는 반영된 것으로 봄. 내부자 거래(Form 4)는 캠퍼스·계약 숫자와 상관없어 뺌
+//   현황·뉴스 페이지의 "기준일 뒤 · 미반영" 안내와 자동 갱신의 GitHub 이슈(scripts/check-asof.mjs)가 같이 씀
+export function filingsAfter(items, asOf) {
+  if (!asOf || !items) return []
+  return items.filter((it) => it.date > asOf && it.kind !== 'insider')
+}

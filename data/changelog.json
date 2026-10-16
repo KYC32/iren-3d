@@ -4,6 +4,11 @@
       "date": "2026-10-17",
       "items": [
         {
+          "ko": "기준일 뒤 새 회사 공시 알림: 사이트 숫자의 기준일보다 뒤에 SEC 공시가 나오면 현황 페이지 위에 '기준일 뒤 회사 공시 n건 — 아직 반영 전' 안내, 뉴스 페이지 그 줄에 '기준일 뒤 · 미반영' 표시 (자동 갱신이 매일 확인, 내부자 거래 제외)",
+          "en": "After-as-of filing notice: when SEC filings appear after the site's as-of date, the Overview page shows 'n company filings after the as-of date — not yet reflected' and the News page tags those rows (checked on every refresh; insider filings excluded)",
+          "source": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001878848&type=&dateb=&owner=include&count=40"
+        },
+        {
           "ko": "주가 자동 갱신을 하루 두 번으로: 다음 날 아침(UTC 11:30)에 전날 종가를 받음 — 장 마감 직후에만 돌 때는 Nasdaq 일봉 표에 그날 행이 아직 없어 주가가 늘 1~2 거래일 늦었음(금요일 종가는 월요일 밤에야 반영)",
           "en": "Stock refresh now runs twice a day: the next morning (11:30 UTC) picks up the previous close — running only right after the close missed that day's row in Nasdaq's daily table, so prices lagged 1–2 sessions (Friday's close only arrived Monday night)",
           "source": "https://www.nasdaq.com/market-activity/stocks/iren/historical"

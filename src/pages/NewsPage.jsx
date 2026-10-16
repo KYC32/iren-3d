@@ -9,7 +9,7 @@ import PageShell from './PageShell.jsx'
 import { useAppStore } from '../store/useAppStore.js'
 import { useT } from '../i18n/useT.js'
 import { loadNews } from '../data/loadFeeds.js'
-import { KIND_LABEL, domainOf, itemLabels } from '../data/news.js'
+import { KIND_LABEL, domainOf, itemLabels, filingsAfter } from '../data/news.js'
 
 const PAGE = 60 // 한 번에 보여 줄 항목 수 ("더 보기"로 늘림)
 
@@ -17,6 +17,7 @@ export default function NewsPage() {
   const t = useT()
   const lang = useAppStore((s) => s.lang)
   const setPage = useAppStore((s) => s.setPage)
+  const asOf = useAppStore((s) => s.data?.raw?.as_of)   // 사이트 숫자의 기준일 (캠퍼스 데이터를 아직 못 받았으면 없음)
   const ko = lang === 'ko'
   const [file, setFile] = useState(null)
   const [error, setError] = useState(null)
@@ -29,6 +30,8 @@ export default function NewsPage() {
   useEffect(() => setLimit(PAGE), [tab, kinds, source])
 
   const block = file?.[tab]
+  // 기준일 뒤에 나온 회사 공시 = 사이트 숫자에 아직 반영 안 됐을 수 있는 것 → 줄마다 표시 + 목록 위 안내
+  const pending = useMemo(() => new Set(filingsAfter(file?.company.items, asOf).map((x) => x.id)), [file, asOf])
   // 언론 탭: 매체별 건수 상위 6개를 칩으로
   const topSources = useMemo(() => {
     if (!file) return []
@@ -70,6 +73,9 @@ export default function NewsPage() {
             ...topSources.map(([s, n]) => <button key={s} className={`chip${source === s ? ' on' : ''}`} aria-pressed={source === s} onClick={() => setSource(source === s ? null : s)}>{s} <small>{n}</small></button>)]}
       </div>
       {!block.ok && <p className="page-warn">{block.error} · {t.news.stale}{block.fetched_at ? ` (${block.fetched_at.slice(0, 10)})` : ''}</p>}
+      {tab === 'company' && pending.size > 0 && <p className="page-warn">{ko
+        ? `기준일(${asOf}) 뒤 회사 공시 ${pending.size}건 — 캠퍼스·계약·지표 숫자에는 아직 반영 전일 수 있어요`
+        : `${pending.size} company filing${pending.size > 1 ? 's' : ''} after the as-of date (${asOf}) — campus, contract and KPI numbers may not include ${pending.size > 1 ? 'them' : 'it'} yet`}</p>}
       {groups.length === 0 && <p className="up-hint">{t.news.empty}</p>}
       <ul className="news-list">
         {groups.map((g) => (
@@ -84,6 +90,7 @@ export default function NewsPage() {
                     {tab === 'company'
                       ? <>sec.gov · {it.form}{it.title_from === 'form' && itemLabels(it.items, ko ? 'ko' : 'en').length > 0 && <> · {itemLabels(it.items, ko ? 'ko' : 'en').join(' · ')}</>}{it.title_from === 'exhibit' && ' · Exhibit 99.1'}</>
                       : domainOf(it.source_url || it.link)}
+                    {tab === 'company' && pending.has(it.id) && <> · <span className="news-pending">{ko ? '기준일 뒤 · 미반영' : 'after as-of · not in site data yet'}</span></>}
                     {tab === 'company' && <> · <button className="news-chart-btn" onClick={() => setPage('stock', it.date)}><ChartLine size={11} aria-hidden="true" />{t.stock.showOnChart}</button></>}
                   </small>
                 </div>

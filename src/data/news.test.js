@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { itemLabels, parseRss, rssItemId, classifyFiling, recentFilings, pickExhibit, headlineFromHtml, filingTitle, sortNews, domainOf, decodeEntities, filingFolder, INCLUDE_FORMS } from './news.js'
+import { itemLabels, parseRss, rssItemId, classifyFiling, recentFilings, pickExhibit, headlineFromHtml, filingTitle, sortNews, domainOf, decodeEntities, filingFolder, INCLUDE_FORMS, filingsAfter } from './news.js'
 
 const rss = readFileSync(new URL('./fixtures/google-news.rss.xml', import.meta.url), 'utf8')
 const submissions = JSON.parse(readFileSync(new URL('./fixtures/edgar-submissions.sample.json', import.meta.url), 'utf8'))
@@ -76,5 +76,26 @@ describe('SEC EDGAR 분류', () => {
     expect(sorted.map((x) => `${x.date}:${x.kind}`)).toEqual(['2026-02-01:insider', '2026-01-01:press', '2026-01-01:filing'])
     expect(domainOf('https://www.sec.gov/Archives/x')).toBe('sec.gov')
     expect(itemLabels(['5.02', '9.01'], 'ko')).toEqual(['임원·이사 변동'])
+  })
+})
+
+describe('기준일 뒤 회사 공시 (사이트 숫자에 아직 반영 전)', () => {
+  // 회사 발표 목록은 최신순 (news.json company.items 와 같은 모양)
+  const items = [
+    { id: 'a', date: '2026-11-12', kind: 'earnings', form: '10-Q', title: 'Quarterly report' },
+    { id: 'b', date: '2026-10-20', kind: 'insider', form: '4', title: 'Statement of changes' },
+    { id: 'c', date: '2026-10-07', kind: 'press', form: '8-K', title: 'IREN update' },
+    { id: 'd', date: '2026-10-06', kind: 'press', form: '8-K', title: 'Same day as the as-of date' },
+    { id: 'e', date: '2026-08-27', kind: 'earnings', form: '10-K', title: 'Annual report' },
+  ]
+  it('기준일보다 뒤에 나온 것만, 최신순 그대로 (기준일 당일은 이미 반영된 것으로 봄)', () => {
+    expect(filingsAfter(items, '2026-10-06').map((x) => x.id)).toEqual(['a', 'c'])
+  })
+  it('내부자 거래(Form 4)는 사이트 숫자와 상관없어 뺌', () => {
+    expect(filingsAfter(items, '2026-10-06').some((x) => x.kind === 'insider')).toBe(false)
+  })
+  it('기준일이 없거나 목록이 없으면 빈 목록', () => {
+    expect(filingsAfter(items, null)).toEqual([])
+    expect(filingsAfter(undefined, '2026-10-06')).toEqual([])
   })
 })
