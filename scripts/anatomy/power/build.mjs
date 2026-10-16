@@ -667,7 +667,9 @@ for (const [x, y, z] of [[-4, 33, 0], [33, 33, SLAB], [96, 22, SLAB], [130, 22, 
 
 // ---------- 9/23 관찰 보기: 흐리게 칠할 부품에 표시 (모양·칠하는 순서는 그대로, 보기를 바꾸면 색만 바뀜) ----------
 // 숫자는 사이트 데이터(data/observations.json)에서 이 그림을 가리키는 진척 항목 → 캠퍼스 패널의 칸 그림과 같은 숫자
-const OBS = JSON.parse(readFileSync(join(ROOT, "data", "observations.json"), "utf8")).progress.find((p) => p.figure === "power-block");
+//   같은 그림을 가리키는 칸 관찰(halls)이 여럿이면 가장 최근 관찰을 씀 → 새 드론 집계를 넣고 다시 빌드하면 그림·단추가 그 날짜로 바뀜
+const OBS = JSON.parse(readFileSync(join(ROOT, "data", "observations.json"), "utf8")).progress
+  .filter((p) => p.figure === "power-block" && p.halls).sort((a, b) => b.date.localeCompare(a.date))[0];
 const OT = obsTotals(OBS);
 // 부품 이름 앞부분 → 관찰한 장비 종류 (cabling = 케이블을 당겨 놓은 홀 수로 판단)
 //   땅속 콘듀잇(gen.duct)은 패드를 붓기 전에 깔리므로 패드와 함께 진하게 둠 → 종류 없음(null)

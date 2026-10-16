@@ -55,10 +55,11 @@ export default function SiteFacts({ site, month, lang }) {
           </li>
         })}</ul>
       </>}
-      {progress.map((p) => {
+      {progress.map((p, i) => {
         const m = METHOD[p.method]
         return <div className="facts-progress" key={p.id}>
-          <h3>{ko ? '현장 진척 · 제3자 관찰' : 'Site progress · third-party'}</h3>
+          {/* 관찰이 여럿이면 제목은 첫 항목에만 (같은 제목이 되풀이되지 않게) */}
+          {i === 0 && <h3>{ko ? '현장 진척 · 제3자 관찰' : 'Site progress · third-party'}</h3>}
           <p className="facts-meta"><m.Icon size={12} aria-hidden="true" />{fmtWhen(p.date, lang)} {ko ? m.ko : m.en} · {p.by} · <a href={p.source} target="_blank" rel="noreferrer">{ko ? '원문' : 'Source'}<ArrowUpRight size={10} aria-hidden="true" /></a></p>
           {p.halls && <>
             <div className="seg-grid" role="img" aria-label={p.halls.map((h) => `${ko ? '홀' : 'Hall'} ${h.name}: ATS ${h.ats}/${p.segments_per_hall}`).join(', ')}>

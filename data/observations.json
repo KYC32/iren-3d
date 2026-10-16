@@ -1,5 +1,5 @@
 {
-  "checked": "2026-10-16",
+  "checked": "2026-10-17",
   "about_ko": "회사 자료(홈페이지 설비 설명)와 제3자 현장 관찰(드론·열화상)을 모은 파일. 제3자 관찰은 공식 상태(건설·가동)를 바꾸지 않고 근거로만 보여 줍니다 — 채용 선행지표와 같은 원칙.",
   "about_en": "Company facility descriptions (website) and third-party site observations (drone, thermal). Observations never change official statuses; they are shown as evidence only — the same rule as the hiring indicator.",
   "facilities": [
@@ -173,6 +173,29 @@
       "figure": "power-block",
       "note_ko": "홀 4개 × 2.5MW 세그먼트 8칸 = 80MW (회사 발표 80MW 와 맞음). 케이블은 당겼지만 결선 전이고 열화상도 조용함 — 아직 통전 전으로 보임. 남은 장비: 발전기 12대·전기실 9개·ATS 28개. 다음 단계는 결선 → 시험 → 부하 시험(load bank) → GPU 가동",
       "note_en": "Four halls × eight 2.5MW segments = 80MW (matches the reported 80MW). Cables pulled but not terminated, and the thermal signature is quiet — not yet energized. Still to come: 12 generators, 9 MERs, 28 ATS units. Next: termination → testing → load-bank commissioning → GPUs live"
+    },
+    {
+      "id": "mk-2026-09-23-liquid-prep",
+      "site": "mackenzie",
+      "building": "mk-liquid-2027",
+      "method": "drone",
+      "date": "2026-09-23",
+      "published": "2026-10-02",
+      "by": "Ace-Kicker (@AceKicker13)",
+      "source": "https://x.com/AceKicker13/status/2106007142926864614",
+      "note_ko": "액체냉각 준비로 보이는 공사: 홀 길이만큼 판 도랑을 따라 검은 2~3인치 강관이 일정 간격으로 홀 벽 안으로 들어가고, 일부는 기초 콘크리트에 묻히는 중 — 관찰자 해석은 '공랭 개조 중에 2027년 액체냉각 전환(회사 계획)용 배관을 미리 묻어 나중에 콘크리트를 뚫지 않으려는 것'",
+      "note_en": "Work that looks like liquid-cooling prep: black 2–3 inch rigid pipes enter the hall walls at regular intervals along an open trench the length of the building, some being cast into the foundations — the observer reads it as pre-placing piping for the planned 2027 liquid-cooled conversion so no concrete has to be cored later"
+    },
+    {
+      "id": "pg-2026-10-09-drone",
+      "site": "prince-george",
+      "method": "drone",
+      "date": "2026-10-09",
+      "published": "2026-10-14",
+      "by": "Ace-Kicker (@AceKicker13)",
+      "source": "https://x.com/AceKicker13/status/2110344158363673054",
+      "note_ko": "10/9 드론: 1번 홀(세그먼트 4칸) — 홀 배전반 1/1·MER 4/4·ATS 4/4·변압기(34.5kV→480V) 4/4·저압 변압기 4/4·세그먼트 배전반 4/4 설치, 발전기 0/4 · 열 신호로 보아 4칸 모두 가동. 같은 관찰자가 답글에선 '매켄지처럼 홀당 8칸'이라고도 해 칸 수가 엇갈리고, 홀·칸 용량이 회사 발표(50MW)와 맞춰지지 않아 칸 그림은 그리지 않음",
+      "note_en": "Oct 9 drone: Hall 1 (four segments) — hall switchgear 1/1, MERs 4/4, ATS 4/4, 34.5kV→480V transformers 4/4, low-voltage transformers 4/4, segment switchgear 4/4 installed, generators 0/4 · all four segments look operating from heat. The same observer also replied \"eight zones per hall like Mackenzie\", so the segment count conflicts, and hall/segment capacity does not reconcile with the reported 50MW — no segment grid is drawn"
     },
     {
       "id": "pg-2026-10-13-thermal",

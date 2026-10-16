@@ -4,6 +4,11 @@
       "date": "2026-10-17",
       "items": [
         {
+          "ko": "현장 관찰 2건 추가 (제3자 · 공식 상태는 그대로): 프린스조지 10/9 드론 — 1번 홀 MER·ATS·변압기·배전반 4/4 설치, 발전기 0/4 / 매켄지 9/23 영상 — 홀 벽으로 들어가는 강관이 2027년 액체냉각 전환을 위한 준비로 보임. 전력 경로 그림의 관찰 보기는 앞으로 가장 최근 칸 집계를 씀",
+          "en": "Two more third-party site observations (official statuses unchanged): Prince George Oct 9 drone — Hall 1 MERs, ATS, transformers and switchgear 4/4, generators 0/4; Mackenzie Sep 23 footage — rigid pipes into the hall walls look like prep for the planned 2027 liquid-cooled conversion. The power-path figure's observed view now always uses the latest segment count",
+          "source": "https://x.com/AceKicker13/status/2110344158363673054"
+        },
+        {
           "ko": "기준일 뒤 새 회사 공시 알림: 사이트 숫자의 기준일보다 뒤에 SEC 공시가 나오면 현황 페이지 위에 '기준일 뒤 회사 공시 n건 — 아직 반영 전' 안내, 뉴스 페이지 그 줄에 '기준일 뒤 · 미반영' 표시 (자동 갱신이 매일 확인, 내부자 거래 제외)",
           "en": "After-as-of filing notice: when SEC filings appear after the site's as-of date, the Overview page shows 'n company filings after the as-of date — not yet reflected' and the News page tags those rows (checked on every refresh; insider filings excluded)",
           "source": "https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001878848&type=&dateb=&owner=include&count=40"
