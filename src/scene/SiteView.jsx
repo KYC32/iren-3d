@@ -30,7 +30,7 @@ import { figureIcon } from '../ui/figureIcons.js'
 import { openFigure } from '../ui/figureState.js'
 import { DryCampusGround } from './buildings/PhotoReferencedCampus.jsx'
 import { estimateHall, roundNice } from '../data/hallEstimate.js'
-import { buildingMwText } from './buildingLabel.js'
+import { buildingMwText, areaKeyOf } from './buildingLabel.js'
 
 export default function SiteView({ site }) {
   const appearance = campusAppearance(site.id)
@@ -56,6 +56,8 @@ export default function SiteView({ site }) {
   const L = { ...layout, ...S } // 아래 코드가 L.blocks / L.substation / L.cranes … 로 읽음
   // 라벨에 쓰는 건물 정보 (그 날짜의 화면용 값: 상태·날짜·진행률)
   const byId = useMemo(() => Object.fromEntries(site.buildings.map((b) => [b.id, b])), [site])
+  // 퇴역한 건물까지 모든 건물 — 구역 라벨이 "넘겨받는 건물이 채굴동인가"를 볼 때 씀 (그 채굴동이 이미 퇴역했어도)
+  const allById = useMemo(() => Object.fromEntries(site._raw.buildings.map((b) => [b.id, b])), [site._raw])
   const half = L.side / 2
   const detail = useCampusDetail(L.side)
 
@@ -123,7 +125,7 @@ export default function SiteView({ site }) {
 
       {/* 고객 계약 구역: 건물마다 고객 칩을 반복하는 대신, 바닥 테두리 + 고객 배지 한 번 */}
       <CustomerZones blocks={L.blocks} byId={byId} contracts={contracts} box={contentBox(L)} selectedKey={zoneKey} onSelect={selectZone} lang={lang} />
-      {!detail && !zoneKey && <AreaLabels blocks={L.blocks} byId={byId} t={t} />}
+      {!detail && !zoneKey && <AreaLabels blocks={L.blocks} byId={byId} allById={allById} t={t} />}
 
       {/* 개요 화면의 건물 상태 칩: "Horizon 2 · 시운전" 처럼 이름과 상태를 함께 (전엔 상태만 있어 어느 건물인지 몰랐음)
           건설 중 건물도 칩으로 — "지금 어디까지 지어졌나"가 확대하지 않아도 보이게 (겹치면 낮은 우선순위가 비켜남) */}
@@ -279,17 +281,16 @@ function CustomerZones({ blocks, byId, contracts, box, selectedKey, onSelect, la
   </>
 }
 
-// 계약이 없는 건물도 전체 보기에서는 종류별 구역으로 묶습니다.
-//   계획 중인 공랭 건물이 기존 설비 전력을 넘겨받으면(replaces) "AI 전환 예정" (기존 채굴동 개조 — 커낼플랫츠 등),
-//   새로 짓는 건물은 "확장 예정 부지"
+// 계약이 없는 건물도 전체 보기에서는 종류별 구역으로 묶습니다 (종류 규칙은 buildingLabel.js 의 areaKeyOf).
+//   계획 중인 건물이 채굴동 전력을 넘겨받으면 "AI 전환 예정" (채굴 → AI — 커낼플랫츠 등),
+//   그 밖의 계획 건물은 "확장 예정 부지"
 //   라벨 자리는 무리의 평균점이 아니라 평균에 가장 가까운 "그 무리의 블록" 위
-//   (흩어진 블록의 평균점은 다른 건물 위로 떨어져, 칠드레스에선 Horizon 건물 위에 "확장 예정 부지"가 얹혔음)
-function AreaLabels({ blocks, byId, t }) {
+//   (흩어진 블록의 평균점은 다른 건물 위로 떨어져, 차일드레스에선 Horizon 건물 위에 "확장 예정 부지"가 얹혔음)
+function AreaLabels({ blocks, byId, allById, t }) {
   const groups = new Map()
   for (const b of blocks) {
     if (!b.isAnchor || b.asLot || !b.buildingId || byId[b.buildingId]?.customer) continue
-    const key = b.status === 'planned' ? (b.kind === 'datahall_air' && byId[b.buildingId]?.replaces ? 'convert' : 'planned')
-      : b.kind === 'miner_hall' ? 'mining' : b.kind === 'datahall_liquid' ? 'liquid' : 'air'
+    const key = areaKeyOf(b, byId, allById)
     if (!groups.has(key)) groups.set(key, [])
     groups.get(key).push(b)
   }
