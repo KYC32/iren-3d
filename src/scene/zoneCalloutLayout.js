@@ -64,3 +64,15 @@ export function placeZoneCallouts(items, footprint, safe) {
   }
   return placed
 }
+
+// 점선 끝점 고르기: 구역 테두리 모서리(화면 좌표) 중 배지 쪽 시작점(from)에 가장 가까운 곳
+//   단, 건물 라벨(covered 사각형)이 덮은 모서리는 건너뜀 — 점이 다른 건물 칩 위에 떨어지면
+//   그 고객이 그 건물인 것처럼 읽힘 (차일드레스: NVIDIA 점선 끝이 "Horizon 6 건설중" 칩 글자 위)
+//   모든 모서리가 덮였으면 가장 가까운 곳 (점은 늘 그림)
+// margin: 라벨 가장자리에서 이만큼 바깥까지도 덮인 것으로 봄 (점 반지름 3.2px + 흰 테두리)
+export function calloutEnd(corners, from, covered, margin = 4) {
+  const dist = (c) => Math.hypot(c.x - from.x, c.y - from.y)
+  const sorted = [...corners].sort((a, b) => dist(a) - dist(b))   // 가까운 모서리부터
+  const isCovered = (c) => covered.some((r) => c.x > r.left - margin && c.x < r.right + margin && c.y > r.top - margin && c.y < r.bottom + margin)
+  return sorted.find((c) => !isCovered(c)) ?? sorted[0]
+}

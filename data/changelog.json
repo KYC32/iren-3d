@@ -4,6 +4,10 @@
       "date": "2026-10-17",
       "items": [
         {
+          "ko": "차일드레스 3D 라벨 다듬음: '70 MW · 용도 미발표 전력'을 흰 상자 하나로(아랫줄이 배경 없이 건물 선 위에 떠 흐려 보였음), NVIDIA 점선 끝 점이 비켜 간 'Horizon 6 건설중' 칩 글자 위에 떨어지던 것 → 라벨이 덮지 않은 구역 모서리로",
+          "en": "Childress 3D labels tidied: '70 MW · Unallocated power' now sits in one white box (the second line floated over building lines without a background), and the NVIDIA callout's end dot no longer lands on the shifted 'Horizon 6 under construction' chip — it picks a zone corner no label covers"
+        },
+        {
           "ko": "스위트워터 1 그림에 '회사 확인' 보기 추가: 그림 위 단추로 바꾸면 회사 공시·사진으로 확인한 변전소 설비는 색 그대로, 회사가 밝히지 않아 그린 홀 안·냉각 설비·다음 단계 자리는 하얗게 보여 줌(말풍선 맨 위에 '회사 확인'/'그림 표현'). 정교한 그림을 사실로 오해하지 않게 하려는 것으로, 부품이 아니라 구역 단위로 나눠 그림은 깔끔하게 유지",
           "en": "Sweetwater 1 figure gains a 'Company-confirmed' view: toggle it above the drawing to keep substation gear confirmed by filings and photos in colour while the hall interior, cooling plant and next-phase bays the company hasn't disclosed turn white (tips start with 'Company-confirmed' or 'Drawn'). It keeps the detailed drawing from being read as fact, and is split by zones rather than parts so the picture stays clean",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036125001477/ny20037451x2_ex99-1.htm"

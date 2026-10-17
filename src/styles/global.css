@@ -191,6 +191,10 @@ button { font: inherit; cursor: pointer; }
 .bld-label .prog { display: inline-block; width: 30px; height: 5px; border-radius: 3px; background: #f4ddd3; overflow: hidden; }
 .bld-label .prog i { display: block; height: 100%; background: var(--c-construction); border-radius: 3px; }
 .bld-label .sub { font-size: 10px; color: var(--text-muted); }
+/* 남는 전력 칸 라벨("70 MW" + "용도 미발표 전력"): 두 줄을 흰 상자 하나로 — 크기는 예전 그대로라 라벨 배치도 그대로
+   (예전엔 아랫줄이 배경 없이 건물 선 위에 떠서 흐려 보였음) */
+.bld-label.is-lot { gap: 0; background: rgba(255,255,255,0.92); border: 1px solid rgba(20,30,60,0.1); border-radius: 10px; padding: 2px 8px 3px; box-shadow: 0 2px 8px rgba(30,45,90,0.1); }
+.bld-label.is-lot .row { background: none; border: 0; box-shadow: none; padding: 0; }
 /* 호버 상세: 라벨 "위쪽" 공중에 띄우는 툴팁.
    - 라벨 크기가 변하지 않아 화면 위치가 흔들리지 않고
    - 건물(라벨 아래쪽)을 가리지 않으며

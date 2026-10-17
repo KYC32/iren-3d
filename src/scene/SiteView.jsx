@@ -154,7 +154,7 @@ export default function SiteView({ site }) {
           return (
             <CampusLabel key={`lbl-${b.key}`} position={opened ? [b.x, b.h + 0.5, b.z - b.d / 2] : [b.x, b.h + 1.3, b.z]} priority={selected ? 100 : hovered ? 90 : bld ? 60 : 10}>
               <div
-                className={`bld-label${hovered ? ' is-hover' : ''}${selected ? ' is-selected' : ''}`}
+                className={`bld-label${hovered ? ' is-hover' : ''}${selected ? ' is-selected' : ''}${bld ? '' : ' is-lot'}`}
                 onPointerEnter={() => bld && setHover(bld.id)}
                 onPointerLeave={() => bld && useAppStore.getState().clearHover(bld.id)}
                 // stopPropagation: 라벨 클릭이 3D 쪽으로 퍼져 뒤에 있는 건물 블록도 "클릭"되면 선택이 바로 다시 풀림
@@ -170,6 +170,7 @@ export default function SiteView({ site }) {
                     </span>
                   )}
                 </div>
+                {/* 남는 전력 칸의 설명 줄 — 두 줄을 흰 상자 하나로 감쌈(.is-lot, 예전엔 아랫줄이 배경 없이 건물 선과 섞여 흐려 보였음) */}
                 {!bld && <div className="sub">{lang === 'ko' ? '용도 미발표 전력' : 'Unallocated power'}</div>}
                 {opened && (
                   <div className="selected-detail compact">
