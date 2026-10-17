@@ -192,7 +192,7 @@ function bus345() {
     const gaps = teeGaps(tees.map((x) => x - x0), TEE_B, BUS.r);
     cable(`bus${i}`, [[x0 + reach(TEE_B, BUS.r), y, z], [BUS.x1, y, z]], BUS.r, { cls: "sw-alu", flow: "pw", fw: 1.1, fillet: false, maxLength: 30, info: "bus345", gaps, touch: ["bpost*"] });
     fitting(`bus${i}.start`, [x0, y, z], TEE_B, { cls: "sw-alu", info: "bus345" });
-    tees.forEach((x, j) => fitting(`bus${i}.tee${j}`, [x, y, z], TEE_B, { cls: "sw-alu", owner: `bus${i}`, info: j < HV_X.length ? "bus345" : "spare" }));
+    tees.forEach((x, j) => fitting(`bus${i}.tee${j}`, [x, y, z], TEE_B, { cls: "sw-alu", owner: `bus${i}`, info: "bus345" }));
     W.disc(`bus${i}.cap`, G.frameAlong([BUS.x1, y, z], [1, 0, 0]), 0, 0.5, BUS.r + 0.25, { cls: "sw-alu", tone: "mid", info: "bus345" });
     // 차단기 나가는 부싱 단자 → 모선 시작 공
     cable(`riser${i}`, [[CB.outX, y, CB_TOP], [CB.outX, y, z - reach(TEE_B, 0.25)]], 0.25, { cls: "sw-conductor", flow: "pw", info: "bus345", fillet: false, maxLength: 12 });
@@ -572,6 +572,23 @@ function thermometer() {
 }
 thermometer();
 
+// ---------- '회사 확인' 보기: 구역 나눔 (부품 설명 키 data-info 기준) ----------
+// 부품 하나하나가 아니라 구역 단위로 나눔 → 진한 것과 하얀 것이 바둑판처럼 섞이지 않음
+//   confirmed = 회사 공시·사진으로 종류를 확인한 변전소 설비 (대수·간격·케이블 길은 그림) → 색 그대로
+//   drawn     = 회사가 밝히지 않아 NVIDIA 공개 사양·일반 설계로 그린 홀 안·냉각 설비·다음 단계 자리 → 하얗게
+//   neutral   = 모형 받침·도로 (어느 쪽도 아님)
+const ZONE = {
+  confirmed: ["line", "gantry", "string", "ds", "breaker", "bus345", "xfmr", "xfmr-rad", "xfmr-hv", "xfmr-lv", "xfmr-cons", "head", "cable138", "primary", "primary-mv", "cable34", "control", "mast", "yard", "fence"],
+  drawn: ["hall", "wall", "mvsg", "hallxf", "lvsb", "busway", "tapoff", "rack", "manifold", "busbar", "rack-post", "hose", "tcs", "tcs-riser", "cdu", "cdu-open", "cdu-hx", "cdu-pump", "branch", "yard-sup", "yard-ret", "drycooler", "dc-fan", "dc-panel", "pumps", "thermo", "pad", "future", "spare"],
+  neutral: ["base", "road"],
+};
+const zoneOf = (key) => (ZONE.confirmed.includes(key) ? "confirmed" : ZONE.drawn.includes(key) ? "drawn" : ZONE.neutral.includes(key) ? "neutral" : null);
+// 표시 = 하얗게 칠할 부품 그림을 <g data-drawn> 으로 한 번 더 감쌈 (CSS 가 '회사 확인' 보기일 때만 이 안의 색을 하얗게 바꿈)
+for (const item of R.items) {
+  const key = /^<g data-info="([^"]+)">/.exec(item.svg)?.[1];
+  if (key && zoneOf(key) === "drawn") item.svg = `<g data-drawn>${item.svg}</g>`;
+}
+
 // ---------- 그리기 (칠하는 순서 = 광선으로 잰 앞뒤) ----------
 const body = W.render();
 
@@ -673,9 +690,23 @@ const PHASE_TEXT = {
   grown: [`첫 단계 ${SITE.phase1Gross} MW = 변전소 ${fmt(SITE.mw)} MW 의 약 ${PCT}% · 회사: '첫 단계가 다음 단계를 더 빨리 붙이는 뼈대' · 스위트워터 1·2 = ${SITE.hubMw / 1000} GW 허브`, `Phase 1's ${SITE.phase1Gross} MW = about ${PCT}% of the ${fmt(SITE.mw)} MW substation · company: 'the first phase creates the backbone for faster subsequent phases' · Sweetwater 1 + 2 = a ${SITE.hubMw / 1000} GW hub`],
   settle: ["지금 모습으로 · 1단계 건설 중, 2027년 4분기 목표 (회사)", "Back to today · phase 1 under construction, targeted for Q4 2027 (company)"],
 };
+// '회사 확인' 보기의 아래 줄 (둘러보기는 멈추고 전체 모습을 보여 줌)
+PHASE_TEXT.confirmed = ["회사 확인 보기 · 색 = 회사 공시·사진으로 확인한 변전소 설비 · 하양 = 회사가 밝히지 않아 그린 홀 안·냉각 설비·다음 단계 자리",
+  "Company-confirmed view · colour = substation gear confirmed by filings and photos · white = hall interior, cooling plant and next-phase bays the company hasn't disclosed (drawn)"];
 for (const [phase, text] of Object.entries(PHASE_TEXT)) INFO[`ph-${phase}`] = text;
+// 구역이 정해지지 않은 설명 키가 있으면 빌드를 멈춤 (새 부품을 넣을 때 ZONE 에 같이 적을 것)
+const unzoned = Object.keys(INFO).filter((key) => !key.startsWith("ph-") && !zoneOf(key));
+if (unzoned.length) throw new Error(`'회사 확인' 보기 구역(ZONE)이 정해지지 않은 설명 키: ${unzoned.join(", ")}`);
+// '회사 확인' 보기의 말풍선: 맨 앞(굵은 줄)에 회사 확인 / 그림 표현 을 붙임
+const ZONE_TAG = { confirmed: ["회사 확인", "Company-confirmed"], drawn: ["그림 표현", "Drawn (not disclosed)"] };
+const CONF_INFO = Object.fromEntries(Object.entries(INFO).map(([key, [ko, en]]) => {
+  const tag = ZONE_TAG[zoneOf(key)];
+  return [key, tag ? [`${tag[0]} · ${ko}`, `${tag[1]} · ${en}`] : [ko, en]];
+}));
 const ICON_IN = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="11" x2="11" y1="8" y2="14"/><line x1="8" x2="14" y1="11" y2="11"/></svg>';
 const ICON_OUT = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></svg>';
+const ICON_LAYERS = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z"/><path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12"/><path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17"/></svg>';
+const ICON_CHECK = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m16 9-5.5 5.5L8 12"/></svg>';
 const zoomText = (ko) => ({
   in: ICON_IN + `<span>${ko ? "확대" : "Zoom"}</span>`, out: ICON_OUT + `<span>${ko ? "전체 보기" : "Full view"}</span>`,
   aria: ko ? ["스위트워터 1 그림: 345 kV 송전선에서 변전소·홀·랙까지 전기가 내려오는 길과 냉각수가 도는 길을 저절로 확대해 하나씩 짚고, 더운 오후에도 칠러 없이 식는 모습과 비워 둔 자리에 다음 단계가 붙는 모습을 보여 줍니다. + 키나 확대 단추로 직접 확대할 수 있습니다", "확대: 포인터나 화살표 키로 둘러보고, Esc 로 전체 보기"]
@@ -685,7 +716,21 @@ const zoomText = (ko) => ({
 
 // ---------- 페이지 ----------
 const ASPECT = (WIDTH / HEIGHT).toFixed(3);
-const CSS = ["power/power.css", "horizon/horizon.css", "sweetwater/sweetwater.css"].map((f) => readFileSync(join(HERE, "..", f), "utf8")).join("").replaceAll("__ASPECT__", ASPECT);
+// '회사 확인' 보기의 "하얗게": 재료 색(.sw-xfmr 등)은 var(--fx-이름, 원래 색) 으로 바꿔 두고, 하얗게 칠할 부품을 감싼 <g data-drawn> 에 --fx-* 를 정함
+//   → 재료 색이 모두 흰 모형 색으로 바뀜 (<use> 로 복사한 부품도 감싼 쪽에서 값을 물려받아 똑같이 바뀜)
+//   반투명으로 하지 않음 → 겹친 부품이 비쳐 탁해 보이지 않음. 흐름 점선은 --fx-vis 로 숨김
+const WHITE = { paper: "#fbfbfc", face: "#fdfdfd", top: "#ffffff", "shade-0": "#e6e9ed", "shade-1": "#ebeef1", "shade-2": "#f0f2f5", "shade-3": "#f5f7f8", "lit-top": "#ffffff", "lit-shade": "#eef0f3",
+  hi: "#9aa2ab", mid: "#b2b9c1", lo: "#c7cdd3", faint: "#dce0e5", lit: "#9aa2ab", dot: "#b2b9c1", green: "#c7cdd3", red: "#c7cdd3", blue: "#c7cdd3" };
+const WHITE_VARS = Object.entries(WHITE).map(([name, color]) => `--fx-${name}:${color};--anatomy-${name}:${color}`).join(";");
+const CONF_CSS = `.sw-fig[data-view=confirmed] [data-drawn]{${WHITE_VARS};--fx-cut:#f3f5f7;--fx-vis:hidden}`
+  + `.sw-stage .pw-flow{visibility:var(--fx-vis,visible)}`
+  + `.sw-fig[data-view=confirmed] [data-drawn] :is(.hz-lamp,.hz-pumplamp){fill:#eef0f3!important;stroke:#c7cdd3!important}`
+  + `.sw-fig[data-view=confirmed] [data-drawn] .hz-needle .iso-line{stroke:#b2b9c1!important}`
+  + `.sw-fig[data-view=confirmed] [data-drawn] .hz-hotarc{stroke:#dce0e5!important}`
+  + `.sw-fig[data-view=confirmed] .hz-puffs{display:none}`
+  + `.sw-fig:not([data-view=confirmed]) .sw-only-conf,.sw-fig[data-view=confirmed] .sw-only-all{display:none!important}`;
+const CSS = ["power/power.css", "horizon/horizon.css", "sweetwater/sweetwater.css"].map((f) => readFileSync(join(HERE, "..", f), "utf8")).join("").replaceAll("__ASPECT__", ASPECT)
+  .replace(/--anatomy-([a-z0-9-]+):([^;}]+)/g, (all, name, color) => `--anatomy-${name}:var(--fx-${name},${color})`) + CONF_CSS;
 const LIVE = readFileSync(join(HERE, "..", "shared", "zoomer.js"), "utf8") + readFileSync(join(HERE, "live.js"), "utf8");
 const DATA = { W: WIDTH, H: HEIGHT, zoom: 2.4, focus: at([130, -30, 15]).map(r1), stops: STOPS, parts: PART_STOPS.length, phaseStop: PHASE_STOP, plan: PLAN, puffs: PUFFS, needle: { min: NEEDLE[0], n: NEEDLE.length }, fan: FAN_FRAMES };
 const fill = (src, values) => src.replace(/__([A-Z]+)__/g, (all, name) => (name in values ? values[name] : all));
@@ -699,19 +744,31 @@ function page(ko) {
   const keys = ko
     ? [["hz-k-cold", "공급 물 (식힌 물)"], ["hz-k-warm", "회수 물 (데워진 물)"], ["pw-k-flow", "전류"], ["sw-k-ghost", "다음 단계 (예시)"], ["pw-k-cut", "잘라 보여 준 면"]]
     : [["hz-k-cold", "supply water (cooled)"], ["hz-k-warm", "return water (warmed)"], ["pw-k-flow", "current"], ["sw-k-ghost", "next phase (example)"], ["pw-k-cut", "cut-away faces"]];
+  const subConf = ko ? "회사 확인 보기 · 색 = 회사가 밝힌 설비 종류 (대수·간격은 그림) · 하양 = 회사가 밝히지 않아 그린 부분" : "Company-confirmed view · colour = equipment types the company disclosed (counts and spacing drawn) · white = drawn, not disclosed";
+  const keysConf = ko
+    ? [["sw-k-solid", "색 = 회사 공시·사진으로 확인한 변전소 설비"], ["sw-k-white", "하양 = 회사가 밝히지 않아 그린 부분"]]
+    : [["sw-k-solid", "colour = substation gear confirmed by filings and photos"], ["sw-k-white", "white = drawn, not disclosed by the company"]];
+  const captionConf = ko
+    ? `회사 확인 보기: 색이 있는 부분은 회사 공시·사진으로 종류를 확인한 설비입니다 — 345 kV 송전선, 인입 가대·단로기·차단기·관형 모선, 대형 변압기(345/138 kV), 1차 변압기(138/34.5 kV), 제어동·피뢰 기둥·자갈 마당(${a(SOURCES.plant, "2025-01 공시")}, ${a(SOURCES.site, "회사 사진")}). 대수·간격·케이블 길은 그림입니다. 하얀 부분은 회사가 밝히지 않은 것입니다 — 홀 안 전기·랙·CDU·천장 배관과 벽 밖 배관·건식 냉각기·펌프는 NVIDIA 가 공개한 Vera Rubin 사양(45 °C 물, ${a(SOURCES.nvidia, "보도")})과 일반적인 액체냉각 설계로 그렸고, 비워 둔 자리·앞마당 패드는 '첫 단계가 다음 단계를 더 빨리 붙이는 뼈대'라는 회사 설명(${a(SOURCES.call, "FY26 3분기 실적 발표")})을 보여 주는 예시입니다. 홀이 있다는 것(IT ${SITE.phase1It} MW 액체냉각 데이터센터 건설 중)은 회사가 밝혔고, 안의 모습만 그림입니다. 부품을 가리키면 말풍선 맨 위에 '회사 확인' 또는 '그림 표현'이 나옵니다. 비공식 · 투자 조언 아님.`
+    : `Company-confirmed view: the coloured parts are equipment types confirmed by company filings and photos — the 345 kV line, dead-end gantry, disconnects, breakers and tubular bus, large transformers (345/138 kV), the primary transformer (138/34.5 kV), control building, lightning masts and gravel yard (${a(SOURCES.plant, "Jan 2025 filing")}, ${a(SOURCES.site, "company photos")}); counts, spacing and cable routes are drawn. The white parts are not disclosed — the hall's electrics, racks, CDUs and overhead loop, and the outside pipework, dry cooler and pumps are drawn from NVIDIA's public Vera Rubin spec (45 °C water, ${a(SOURCES.nvidia, "as reported")}) and common liquid-cooling design, and the empty bay and front-yard pads illustrate the company's point that 'the first phase creates the backbone for faster subsequent phases' (${a(SOURCES.call, "Q3 FY26 results call")}). That the hall exists (${SITE.phase1It} MW IT of liquid-cooled data centers under construction) is disclosed; only its insides are drawn. Point at a part and the tip starts with 'Company-confirmed' or 'Drawn'. Unofficial · not investment advice.`;
+  const viewBtn = (v, icon, label) => `<button type="button" data-view-btn="${v}" aria-pressed="${v === "all"}">${icon}<span>${label}</span></button>`;
   const caption = ko
     ? `IREN 발표 기준: 스위트워터 1 = 계통 연결 ${fmt(SITE.mw)} MW, 대형 변전소(345 kV/138 kV)와 1차 변전소(138 kV/34.5 kV)(${a(SOURCES.plant, "2025-01 공시")}) · 고압 변전소 2026-05-01 예정대로 통전(${a(SOURCES.energized, "보도자료")}), IT ${SITE.phase1It} MW 액체냉각 데이터센터 첫 단계 건설 중, 'NVIDIA Vera Rubin 같은 차세대 칩 구조를 위해 설계', '첫 단계가 다음 단계를 더 빨리 붙이는 뼈대'(${a(SOURCES.call, "FY26 3분기 실적 발표")}) · 첫 단계 ${SITE.phase1Gross} MW·2027년 4분기 목표, 스위트워터 1·2 = ${SITE.hubMw / 1000} GW 허브(ERCOT Batch Zero)(${a(SOURCES.batch, "2026-09 발표")}) · 마당 모습(${a(SOURCES.site, "회사 사진")}). NVIDIA: Vera Rubin 은 ${WATER.supply} °C 물로 식혀 칠러가 필요 없음(CES 2026, ${a(SOURCES.nvidia, "보도")}). 홀 안 설계·냉각 설비 구성·대수·랙 사양은 회사가 밝히지 않아 위 사양을 바탕으로 한 그림 표현이고, 냉각기·CDU 온도차 ${WATER.approach} °C 와 기온은 가정입니다. 변전소 설비는 실제보다 작게, 거리는 크게 줄였습니다. 비공식 · 투자 조언 아님.`
     : `Per IREN: Sweetwater 1 = ${fmt(SITE.mw)} MW of grid connection, a bulk substation (345 kV/138 kV) and primary substations (138 kV/34.5 kV) (${a(SOURCES.plant, "Jan 2025 filing")}); the high-voltage substation was energized on schedule on 2026-05-01 (${a(SOURCES.energized, "release")}) and the initial ${SITE.phase1It} MW IT phase of liquid-cooled data centers is under construction, 'designed for next generation chip architectures, including the NVIDIA Vera Rubin', sequenced so that 'the first phase creates the backbone for faster subsequent phases' (${a(SOURCES.call, "Q3 FY26 results call")}); phase 1 = ${SITE.phase1Gross} MW targeted for Q4 2027, and Sweetwater 1 + 2 form a ${SITE.hubMw / 1000} GW hub (ERCOT Batch Zero) (${a(SOURCES.batch, "Sep 2026 release")}); yard as in the ${a(SOURCES.site, "company photos")}. NVIDIA: Vera Rubin is cooled with ${WATER.supply} °C water, so no chillers are needed (CES 2026, ${a(SOURCES.nvidia, "as reported")}). The hall layout, cooling plant, unit counts and rack specs are not disclosed, so they are drawn from those specs; the ${WATER.approach} °C cooler + CDU approach and the temperatures are assumptions. Substation equipment is drawn smaller than life and distances heavily shortened. Unofficial · not investment advice.`;
   return `<!doctype html><html lang="${ko ? "ko" : "en"}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title}</title><style>${k.ISO_CSS}${CSS}</style></head>
 <body class="iso pw-body" data-theme="light"><main class="pw-page">
-<div class="rk-fig pw-fig">
-  <div class="rk-head"><h2>${title} <small>${sub}</small></h2><button class="rk-zoom" type="button" data-zoom="sw" data-call aria-pressed="false">${zt.in}</button></div>
+<div class="rk-fig pw-fig sw-fig" data-view="all">
+  <div class="rk-head"><h2>${title} <small class="sw-only-all">${sub}</small><small class="sw-only-conf">${subConf}</small></h2>
+    <div class="pw-view" role="group" aria-label="${ko ? "보기" : "View"}">${viewBtn("all", ICON_LAYERS, ko ? "전체" : "All")}${viewBtn("confirmed", ICON_CHECK, ko ? "회사 확인" : "Company-confirmed")}</div>
+    <button class="rk-zoom" type="button" data-zoom="sw" data-call aria-pressed="false">${zt.in}</button></div>
   <div class="rk-stage hz-stage sw-stage" data-fig="sweetwater" tabindex="0" role="group" aria-label="${zt.aria[0]}">${svg.replace(/ role="img" aria-label="[^"]*"/, ' aria-hidden="true"')}<span class="rk-aim" aria-hidden="true"></span><div class="rk-tip"><b></b><span></span></div></div>
   <div class="rk-read" data-readout="sweetwater">${PHASE_TEXT.normal[ko ? 0 : 1]}</div>
-  <div class="pw-legend">${keys.map(([c, t]) => `<span><i class="${c}"></i>${t}</span>`).join("")}</div>
-  <p class="pw-caption">${caption}</p>
+  <div class="pw-legend sw-only-all">${keys.map(([c, t]) => `<span><i class="${c}"></i>${t}</span>`).join("")}</div>
+  <div class="pw-legend sw-only-conf">${keysConf.map(([c, t]) => `<span><i class="${c}"></i>${t}</span>`).join("")}</div>
+  <p class="pw-caption sw-only-all">${caption}</p>
+  <p class="pw-caption sw-only-conf">${captionConf}</p>
 </div></main>
-<script>(function(){${fill(LIVE, { DATA: JSON.stringify(DATA), KO: ko ? "true" : "false", INFO: JSON.stringify(INFO), PHASE: JSON.stringify(PHASE_TEXT), ZOOM: JSON.stringify(zt), STATE: stateAt.toString() })}})();</script>
+<script>(function(){${fill(LIVE, { DATA: JSON.stringify(DATA), KO: ko ? "true" : "false", INFO: JSON.stringify(INFO), CONFINFO: JSON.stringify(CONF_INFO), PHASE: JSON.stringify(PHASE_TEXT), ZOOM: JSON.stringify(zt), STATE: stateAt.toString() })}})();</script>
 </body></html>`;
 }
 mkdirSync(join(ROOT, "public", "figures"), { recursive: true });

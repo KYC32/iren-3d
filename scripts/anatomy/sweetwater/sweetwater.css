@@ -25,7 +25,11 @@
 /* 잘린 면 (받침판 끝에서 자른 송전선) */
 .sw-cut{--anatomy-paper:#ddd1bd;--anatomy-face:#ddd1bd;--anatomy-top:#e6dccb;--anatomy-shade-0:#c9bba3;--anatomy-shade-1:#cfc2ab;--anatomy-shade-2:#d5c8b2;--anatomy-shade-3:#dacdb8;--anatomy-hi:#3a3328;--anatomy-mid:#7a6f5e;--anatomy-lo:#968a77;--anatomy-faint:#b8ab96}
 /* 범례 */
+/* '회사 확인' 보기 범례: 색(변전소 재료 = 애자 갈색 + 변압기 회색) · 하양 */
+.sw-k-solid{background:linear-gradient(90deg,#9a6a4c 0 50%,#a4abb0 50%);box-shadow:inset 0 0 0 1px #545b61}
+.sw-k-white{background:#fff;box-shadow:inset 0 0 0 1px #b2b9c1}
 .sw-k-ghost{box-sizing:border-box;background:#e3edf9;border:1px dashed #4f7fbf}
 /* 아래 줄 단계 점: 더운 오후(주황) · 다음 단계(파랑) */
 .rk-read[data-phase=warm]:not([data-cap])::before,.rk-read[data-phase=hot]:not([data-cap])::before{background:#ff8a3d}
 .rk-read[data-phase=grow]:not([data-cap])::before,.rk-read[data-phase=grown]:not([data-cap])::before,.rk-read[data-phase=settle]:not([data-cap])::before{background:#4f7fbf}
+.rk-read[data-phase=confirmed]:not([data-cap])::before{background:#fff;box-shadow:inset 0 0 0 2px #9aa2ab}

@@ -4,6 +4,11 @@
       "date": "2026-10-17",
       "items": [
         {
+          "ko": "스위트워터 1 그림에 '회사 확인' 보기 추가: 그림 위 단추로 바꾸면 회사 공시·사진으로 확인한 변전소 설비는 색 그대로, 회사가 밝히지 않아 그린 홀 안·냉각 설비·다음 단계 자리는 하얗게 보여 줌(말풍선 맨 위에 '회사 확인'/'그림 표현'). 정교한 그림을 사실로 오해하지 않게 하려는 것으로, 부품이 아니라 구역 단위로 나눠 그림은 깔끔하게 유지",
+          "en": "Sweetwater 1 figure gains a 'Company-confirmed' view: toggle it above the drawing to keep substation gear confirmed by filings and photos in colour while the hall interior, cooling plant and next-phase bays the company hasn't disclosed turn white (tips start with 'Company-confirmed' or 'Drawn'). It keeps the detailed drawing from being read as fact, and is split by zones rather than parts so the picture stays clean",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036125001477/ny20037451x2_ex99-1.htm"
+        },
+        {
           "ko": "건물 근거 검토를 모든 건물로 (원문 확인 5동 → 20동): 회사 공시·발표 자료로 단계·MW 를 다시 확인 — 칠드레스 Horizon 5·6·공랭 개조는 2026-08 '착공' 발표대로 건설 중, 빠져 있던 칠드레스 2026 공랭 50MW 블록과 프린스조지 GB300 액체냉각 홀(IT 10MW) 추가, 회사가 밝히지 않은 BC 홀 IT MW·2027 액체냉각 MW 는 비움, 커낼플랫츠는 공랭 개조안이 액체냉각 전환으로 바뀌어 한 건물로. 그 결과 2026년 말 AI 가동 전망 380→480MW(회사 2026년 목표 480MW 와 같음)",
           "en": "Building evidence review extended to every building (5 → 20 source-reviewed): stages and MW rechecked against company filings and decks — Childress Horizon 5–6 and air-cooled retrofits now under construction per the August 'construction commenced' update, the missing 2026 Childress 50MW air-cooled block and the Prince George GB300 liquid-cooled hall (10MW IT) added, undisclosed BC hall IT MW and 2027 liquid MW cleared, and Canal Flats' superseded air-cooled plan merged into its liquid-cooled conversion. The end-2026 AI-live outlook moves 380→480MW, matching IREN's 480MW 2026 target",
           "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"

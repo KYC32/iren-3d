@@ -4,12 +4,18 @@
 //             ① 더운 오후: 온도계 바늘이 오르고 냉각기 팬이 빨라지지만 칠러는 없음 → 저녁에 느려짐
 //             ② 다음 단계: 비워 둔 자리에 흐린 변압기가 나타났다 사라짐 → 처음으로
 //   상태(기온·팬·다음 단계·흐름)는 model.mjs 의 stateAt 을 빌드 때 그대로 넣어 계산 → 그림과 글이 어긋나지 않음
+//   보기: 전체 | 회사 확인 — '회사 확인'은 회사가 밝히지 않아 그린 구역(홀 안·냉각 설비·다음 단계 자리)을 하얗게 (주소 끝 #confirmed 로도 열림)
 // =============================================================
-const D=__DATA__, KO=__KO__, INFO=__INFO__, PH=__PHASE__, ZT=__ZOOM__;
+const D=__DATA__, KO=__KO__, PH=__PHASE__, ZT=__ZOOM__;
+const BASE_INFO=__INFO__, CONF_INFO=__CONFINFO__;   // 부품 설명: 전체 보기 / '회사 확인' 보기 (맨 앞에 회사 확인·그림 표현)
+let INFO=BASE_INFO;                                  // 확대·말풍선 코드(zoomer.js)가 부를 때마다 이 이름을 찾음 → 보기를 바꾸면 설명도 바뀜
 const stateAt=__STATE__;
 const stage=document.querySelector(".sw-stage");
 const read=document.querySelector("[data-readout=sweetwater]");
 const btn=document.querySelector("[data-zoom=sw]");
+const fig=document.querySelector(".sw-fig");
+const viewBtns=[...document.querySelectorAll("[data-view-btn]")];
+let view="all";
 // 온도계 바늘 그림 (needles[i] = D.needle.min + i °C) · 팬 날개 그림 (fans[i] = 15° × i 돌린 날개, 팬 5개가 같은 번호를 씀)
 const needles=[...stage.querySelectorAll("[data-needle]")];
 const fans=Array.from({length:D.fan},(_,i)=>[...stage.querySelectorAll('[data-fan="'+i+'"]')]);
@@ -61,29 +67,45 @@ function draw(s,dt){
   if(flags!==lastFlags){lastFlags=flags;for(const key of Object.keys(on))stage.toggleAttribute("data-"+key,on[key]);}
   // 데워진 공기: 팬이 빠를수록 자주
   puffClock+=dt;if(puffClock>1.25-.8*(s.fan-.45)/.55){puffClock=0;puff(D.puffs[Math.floor(Math.random()*D.puffs.length)]);}
-  // 그림 아래 줄: 확대 중 말풍선을 못 띄웠으면 부품 설명, 직접 확대 중엔 쓰는 법, 그 밖엔 지금 장면
-  const cap=Z.caption();
-  say(read,cap||(Z.on?ZT.hint:PH[s.phase][KO?0:1]),!!cap,cap||Z.on?"":s.phase);
+  // 그림 아래 줄: 확대 중 말풍선을 못 띄웠으면 부품 설명, 직접 확대 중엔 쓰는 법, 그 밖엔 지금 장면 ('회사 확인' 보기면 그 보기 안내)
+  const cap=Z.caption(), ph=view==="confirmed"?"confirmed":s.phase;
+  say(read,cap||(Z.on?ZT.hint:PH[ph][KO?0:1]),!!cap,cap||Z.on?"":ph);
 }
 function tick(now){
   const dt=last?Math.min((now-last)/1000,1/20):1/60;last=now;const calm=still.matches;
   // 직접 확대 중엔 둘러보기 시계를 멈춤 (끝나면 멈춘 곳부터 이어짐). 움직임 줄이기: 평소 상태로 정지
-  if(!calm&&!Z.on)clock+=dt;
-  const T=tourAt(calm?0:clock);
-  if(!calm&&!Z.on)Z.tour(T.zoomOn,T.stop);else Z.tour(false,-1);
+  // '회사 확인' 보기도 둘러보기를 멈추고 평소 모습 (직접 확대·말풍선은 됨)
+  const hold=calm||view==="confirmed";
+  if(!hold&&!Z.on)clock+=dt;
+  const T=tourAt(hold?0:clock);
+  if(!hold&&!Z.on)Z.tour(T.zoomOn,T.stop);else Z.tour(false,-1);
   Z.step(dt,calm);Z.apply();
-  draw(T.s,calm?0:dt);
+  draw(T.s,hold?0:dt);
   frame=visible?requestAnimationFrame(tick):0;
 }
 const run=()=>{if(!frame&&visible){last=0;frame=requestAnimationFrame(tick);}};
+// ---------- 보기 바꾸기: 그림은 그대로, .sw-fig 의 data-view 만 바꿈 → CSS 가 하얗게 칠할 구역의 색과 글(제목 아래 줄·범례·설명)을 바꿈 ----------
+function setView(v){
+  if(v===view||(v!=="all"&&v!=="confirmed"))return;view=v;
+  fig.setAttribute("data-view",v);
+  for(const b of viewBtns)b.setAttribute("aria-pressed",String(b.getAttribute("data-view-btn")===v));
+  INFO=v==="confirmed"?CONF_INFO:BASE_INFO;
+  Z.tour(false,-1);clock=0;Z.moved=true;   // 둘러보기는 처음부터, 직접 확대 중이면 말풍선 설명을 새 보기로 다시 찾음
+  try{history.replaceState(null,"",v==="confirmed"?"#confirmed":location.pathname+location.search);}catch(e){}   // 새로 고쳐도 같은 보기
+  draw(tourAt(0).s,0);   // 아래 줄 글을 바로 바꿈 (화면 밖·숨은 탭이라 다음 그리기가 늦어도)
+  run();
+}
+for(const b of viewBtns)b.addEventListener("click",()=>setView(b.getAttribute("data-view-btn")));
 for(const ev of ["pointermove","pointerdown"])stage.addEventListener(ev,Z.pointer);
 stage.addEventListener("keydown",Z.key);
 document.addEventListener("visibilitychange",()=>{visible=!document.hidden;if(visible)run();});
 // 화면 밖이면 멈춤
 new IntersectionObserver(([e])=>{visible=e.isIntersecting&&!document.hidden;if(visible)run();}).observe(stage);
+if(/^#confirmed\b/.test(location.hash))setView("confirmed");   // 주소 끝이 #confirmed 면 '회사 확인' 보기로 시작
 run();
-// 검수용: 둘러보기 t 초 장면으로 바로 이동 / 상태 읽기 / 루프 멈춤
+// 검수용: 둘러보기 t 초 장면으로 바로 이동 / 상태 읽기 / 루프 멈춤 / 보기 바꾸기
 window.__swSeek=(t)=>{clock=t;const T=tourAt(t);Z.tour(T.zoomOn,T.stop);Z.k=Z.on||Z.auto?1:0;Z.fx=Z.tfx;Z.fy=Z.tfy;Z.zc=Z.zt;Z.apply();draw(T.s,0);};
-window.__swState=()=>{const T=tourAt(clock);return {clock:+clock.toFixed(2),phase:T.s.phase,stop:T.stop,zoom:+Z.k.toFixed(3),flags:lastFlags,temp:+T.s.temp.toFixed(1),fan:+T.s.fan.toFixed(2),future:+T.s.future.toFixed(2),tip:stage.querySelector(".rk-tip").hasAttribute("data-on")?stage.querySelector(".rk-tip").textContent:""};};
+window.__swState=()=>{const T=tourAt(clock);return {clock:+clock.toFixed(2),view,phase:T.s.phase,stop:T.stop,zoom:+Z.k.toFixed(3),flags:lastFlags,temp:+T.s.temp.toFixed(1),fan:+T.s.fan.toFixed(2),future:+T.s.future.toFixed(2),tip:stage.querySelector(".rk-tip").hasAttribute("data-on")?stage.querySelector(".rk-tip").textContent:""};};
 window.__swPlan=PLAN;
+window.__swView=setView;
 window.__swStop=()=>{visible=false;if(frame)cancelAnimationFrame(frame);frame=0;};
