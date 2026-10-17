@@ -25,7 +25,7 @@ describe('작은 부지의 블록 1칸 크기', () => {
   it('빈 부지만 있는 기가와트급(카이오와 1.6GW)은 그대로 75MW 칸 — 빈 칸 상한(16) 때문에 작은 칸으로 내려가지 않음', () => {
     expect(layoutCampus(site('kiowa')).blockMw).toBe(75)
   })
-  it('칠드레스·스위트워터 1 은 그대로 75MW 칸', () => {
+  it('차일드레스·스위트워터 1 은 그대로 75MW 칸', () => {
     expect(layoutCampus(site('childress')).blockMw).toBe(75)
     expect(layoutCampus(site('sweetwater-1')).blockMw).toBe(75)
   })

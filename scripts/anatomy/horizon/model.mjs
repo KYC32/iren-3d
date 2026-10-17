@@ -2,11 +2,11 @@
 // model.mjs — Horizon 액체냉각 홀 그림의 "진실": 숫자·출처·둘러보기 시간표 (그림·움직임·글이 모두 여기서 나옴)
 // -------------------------------------------------------------
 // 회사 자료 (IREN 보도자료·SEC 공시):
-//   · Horizon 1~4 = 칠드레스의 50 MW(IT) 직접 칩 액체냉각 AI 클라우드 4개, Microsoft 5년 $9.7bn 계약 (8-K 2026-08-13)
+//   · Horizon 1~4 = 차일드레스의 50 MW(IT) 직접 칩 액체냉각 AI 클라우드 4개, Microsoft 5년 $9.7bn 계약 (8-K 2026-08-13)
 //   · Horizon 1 = 75 MW gross (IT 50 MW), 랙 밀도 200 kW 까지 설계 (2025-02 실적 자료·2025-03 월간 업데이트)
 //   · 랙 밀도 130~200 kW, "Tier III 수준 동시 유지보수(concurrent maintainability)" (2025-11 Microsoft 계약 발표 자료)
 //   · 냉각 설비 = 패키지 칠러 플랜트·칠러·건식 냉각기·냉각수 분배기(CDU), 백업 = UPS·디젤 발전기 (6-K 2025-01-21)
-//   · Horizon 1 은 1차 변전소 6번에서 전력을 받음 (2025-02 월간 업데이트의 칠드레스 배치도, 2025-06 회사 영상: 중압 변압기 2대)
+//   · Horizon 1 은 1차 변전소 6번에서 전력을 받음 (2025-02 월간 업데이트의 차일드레스 배치도, 2025-06 회사 영상: 중압 변압기 2대)
 //   · GPU 서버 = Dell 이 공급하는 GB300 NVL72 (2026-08 10-K 첨부 금융 계약서), 발전기는 대기 배출 허가 대상 (같은 계약서)
 // 홀 안·바깥 모습은 IREN 의 "Horizon 1 인도" 영상(2026-08-13 X 게시)을 보고 그림:
 //   NVL72 랙 줄과 노란 광케이블, 구리 냉각판과 구리관, 통로 벽의 회색 전기반, 천장 케이블 트레이,
@@ -60,7 +60,7 @@ export const OVERHEAD_MW = HORIZON.grossMw - HORIZON.itMw;
 //   ② 동시 유지보수: 대기 CDU C 를 켜고 → CDU B 의 밸브를 닫아 떼어 냄 → 정비 중에도 냉각 계속 → 복귀
 // (실제 시간은 압축: 기온 변화는 몇 시간, 정비는 몇 시간~며칠)
 export const T = { stopsAt: 3.2, stopLen: 2.6 };
-export const TEMP = { cool: 22, hot: 39 };   // 바깥 기온 예시 (°C): 아침·저녁 / 칠드레스 여름 오후
+export const TEMP = { cool: 22, hot: 39 };   // 바깥 기온 예시 (°C): 아침·저녁 / 차일드레스 여름 오후
 export const PHASES = ["normal", "warm", "chill", "evening", "standby", "isolate", "maint", "restore"];
 
 export function tourPlan(n) {

@@ -41,7 +41,7 @@ export function buildTourSteps(data, lang = 'ko') {
       : `${total.sites} sites · ${fmtMw(total.secured)} secured · ${fmtMw(total.ai)} AI live · ${fmtMw(total.mining)} mining. A bitcoin miner turning into an AI data center company.`,
   })
 
-  // 2) 칠드레스: 지도 → 3D → Microsoft 구역 → Horizon 1 속 → NVIDIA 구역 → 밤
+  // 2) 차일드레스: 지도 → 3D → Microsoft 구역 → Horizon 1 속 → NVIDIA 구역 → 밤
   const ch = site('childress')
   if (ch) {
     const m = siteMetrics(ch)
@@ -108,7 +108,7 @@ export function buildTourSteps(data, lang = 'ko') {
       id: 'sweetwater-map', surface: 'map', site: 'sweetwater-1', dur: 6 * SEC,
       title: `${name(sw)} · ${sw.region}`,
       text: ko
-        ? `계통 ${fmtMw(sw.grid_mw)} — ${sw.substation.status === 'energized' ? '변전소 통전 완료' : '변전소 통전 예정'}. 칠드레스보다 큰 다음 성장 엔진입니다.${next?.latest?.target ? ` 다음 목표 ${next.latest.target}.` : ''}`
+        ? `계통 ${fmtMw(sw.grid_mw)} — ${sw.substation.status === 'energized' ? '변전소 통전 완료' : '변전소 통전 예정'}. 차일드레스보다 큰 다음 성장 엔진입니다.${next?.latest?.target ? ` 다음 목표 ${next.latest.target}.` : ''}`
         : `${fmtMw(sw.grid_mw)} grid — ${sw.substation.status === 'energized' ? 'substation energized' : 'substation pending'}. The next growth engine, larger than Childress.${next?.latest?.target ? ` Next target ${next.latest.target}.` : ''}`,
     })
     const swm = siteMetrics(sw)

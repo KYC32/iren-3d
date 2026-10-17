@@ -30,7 +30,7 @@ export default function PortfolioPage() {
   useEffect(() => { let alive = true; loadAsOfCheck().then((c) => { if (alive) setCheck(c) }); return () => { alive = false } }, [])
   if (!data) return <PageShell><div className="page-loading">{t.loading}</div></PageShell>
   // 캠퍼스별 숫자: 확보 전력(계통 연결 용량) · AI 가동(고객 인수 포함) · 채굴 · 건설·시운전 · 계획 — 지금 고른 날짜 기준
-  //   (채굴 열이 있어야 칠드레스처럼 채굴동이 남은 곳의 합이 확보 전력과 맞음)
+  //   (채굴 열이 있어야 차일드레스처럼 채굴동이 남은 곳의 합이 확보 전력과 맞음)
   const rows = data.sites.map((s) => ({ site: s, m: siteMetrics(s) }))
   // 사이트 기준일보다 뒤에 나온 공시만 (파일이 예전 기준일로 만들어졌어도 지금 기준일로 다시 거름)
   const asOf = data.raw?.as_of

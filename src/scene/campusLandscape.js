@@ -22,7 +22,7 @@ const official = slug => `https://iren.com/data-centers/${slug}`
 export const CAMPUS_LANDSCAPES = {
   childress: {
     ...texas, source: official('childress'),
-    notes_ko: '칠드레스 항공사진의 평탄한 흙빛 부지와 마른 초지, 낮은 수목 군락을 반영했습니다.',
+    notes_ko: '차일드레스 항공사진의 평탄한 흙빛 부지와 마른 초지, 낮은 수목 군락을 반영했습니다.',
     notes_en: 'Flat earth-toned terrain, dry grassland and clusters of low trees follow Childress aerial imagery.',
   },
   'sweetwater-1': {

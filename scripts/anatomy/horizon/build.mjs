@@ -1,5 +1,5 @@
 // =============================================================
-// build.mjs — "Horizon 액체냉각 홀" 그림: 칠드레스 Horizon 홀 한 토막 (anatomy 스킬 방식)
+// build.mjs — "Horizon 액체냉각 홀" 그림: 차일드레스 Horizon 홀 한 토막 (anatomy 스킬 방식)
 // -------------------------------------------------------------
 // "물건이 곧 설명": 두 길이 랙에서 만남
 //   전기  : 1차 변전소 6 → 중압(땅속) → 홀 변압기 A·B → 저압 케이블 → 배전반 A·B (← 디젤 발전기) → UPS·배터리
@@ -11,7 +11,7 @@
 //
 // 사용법: node scripts/anatomy/horizon/build.mjs           (그림 만들기)
 //         node scripts/anatomy/horizon/build.mjs --audit   (+ 관통·끝점·칠하는 순서 검사)
-//   → public/figures/horizon-hall.ko.html / horizon-hall.en.html (3D 칠드레스 화면에서 Horizon 건물을 누르면 열림)
+//   → public/figures/horizon-hall.ko.html / horizon-hall.en.html (3D 차일드레스 화면에서 Horizon 건물을 누르면 열림)
 // 단위: 1 = 10 cm. x = 홀 벽을 따라 오른쪽, y = 벽에서 마당 쪽(+y 가 보는 쪽), z = 위
 // =============================================================
 import { writeFileSync, readFileSync, mkdirSync } from "node:fs";
@@ -885,7 +885,7 @@ const L_RACK = fmt(FLOW.rack), L_HALL = fmt(Math.round(FLOW.hall / 1000) * 1000)
 const INFO = {
   base: ["모형 받침 · 앞 모서리 자: 작은 눈금 1 m, 큰 눈금 5 m (실제 비율)", "Model base · edge ruler: 1 m ticks, 5 m majors (true scale)"],
   pad: ["마당 콘크리트 패드", "Yard concrete pad"],
-  mv: ["중압 인입 · 칠드레스 1차 변전소 6번에서 땅속 관으로 (회사 배치도: Horizon 1 = 변전소 6) · 그 변전소에 Horizon 1 용 중압 변압기 2대 (회사 영상)", "Medium-voltage feed · underground from Childress Primary Substation 6 (company site plan: Horizon 1 = substation 6), where two MV transformers serve Horizon 1 (company video)"],
+  mv: ["중압 인입 · 차일드레스 1차 변전소 6번에서 땅속 관으로 (회사 배치도: Horizon 1 = 변전소 6) · 그 변전소에 Horizon 1 용 중압 변압기 2대 (회사 영상)", "Medium-voltage feed · underground from Childress Primary Substation 6 (company site plan: Horizon 1 = substation 6), where two MV transformers serve Horizon 1 (company video)"],
   xfmr: ["홀 변압기 A·B · 중압을 저압으로 낮춤 · 두 갈래(A·B)라 하나를 정비해도 전기는 계속 (모양은 그림 표현)", "Hall transformers A and B · step medium voltage down · two paths, so one can be serviced while power continues (shape illustrative)"],
   "xfmr-hv": ["변압기 앞 단자함 · 중압 케이블이 도랑에서 올라와 들어옴", "Transformer front compartment · the MV cables rise into it from the trench"],
   ground: ["접지봉", "Ground rod"],
@@ -932,7 +932,7 @@ const INFO = {
   "ch-panel": ["칠러 제어반 · 초록 등 = 칠러 가동", "Chiller controls · green lamp = chiller running"],
   "ch-fan": ["응축기 팬 · 칠러가 퍼 올린 열을 버림", "Condenser fans · reject the heat the chiller pumps out"],
   pumps: ["1차 냉각수 펌프 2대 (1대 예비) · 식힌 물을 벽 쪽 공급 배관으로 다시 CDU 에 보냄 → 냉각수 고리가 닫힘 · 초록 등 = 가동", "Facility water pumps (one spare) · send the cooled water back along the supply main to the CDUs, closing the loop · green lamp = running"],
-  thermo: [`바깥 기온 (예시) · 빨간 띠 = 35 °C 이상 · 칠드레스 여름 오후는 ${TEMP.hot} °C 안팎`, `Outdoor temperature (example) · red band = 35 °C and up · Childress summer afternoons reach about ${TEMP.hot} °C`],
+  thermo: [`바깥 기온 (예시) · 빨간 띠 = 35 °C 이상 · 차일드레스 여름 오후는 ${TEMP.hot} °C 안팎`, `Outdoor temperature (example) · red band = 35 °C and up · Childress summer afternoons reach about ${TEMP.hot} °C`],
   cart: ["정비 카트", "Service cart"],
   tray: ["꺼낸 컴퓨트 트레이 (덮개를 엶) · GPU 4 + CPU 2 위에 구리 냉각판, 구리관으로 이어져 물이 칩 바로 위를 지나며 열을 가져감 (회사 영상의 냉각판)", "Compute tray pulled for service (lid off) · copper cold plates over 4 GPUs + 2 CPUs, linked by copper tube so water carries the heat straight off the chips (the cold plates in the company video)"],
   qd: ["퀵 커넥터 (파랑 = 들어옴, 빨강 = 나감) · 랙에 밀어 넣으면 매니폴드에 꽂힘", "Quick disconnects (blue in, red out) · mate with the manifold when the tray slides in"],
@@ -971,8 +971,8 @@ const fill = (src, values) => src.replace(/__([A-Z]+)__/g, (all, name) => (name 
 const a = (href, text) => `<a href="${href}" target="_blank" rel="noreferrer">${text}</a>`;
 
 function page(ko) {
-  const svg = k.figureSvg({ width: WIDTH, height: HEIGHT, label: ko ? "칠드레스 Horizon 액체냉각 홀 한 토막의 모형" : "Model of a slice of a Childress Horizon liquid-cooled hall", body: `<defs>${CLIPS.join("")}</defs>${BASE_SVG}${body}<g class="hz-puffs" aria-hidden="true"></g>`, className: "pw-svg" });
-  const title = ko ? "Horizon 액체냉각 홀 · 칠드레스" : "Horizon liquid-cooled hall · Childress";
+  const svg = k.figureSvg({ width: WIDTH, height: HEIGHT, label: ko ? "차일드레스 Horizon 액체냉각 홀 한 토막의 모형" : "Model of a slice of a Childress Horizon liquid-cooled hall", body: `<defs>${CLIPS.join("")}</defs>${BASE_SVG}${body}<g class="hz-puffs" aria-hidden="true"></g>`, className: "pw-svg" });
+  const title = ko ? "Horizon 액체냉각 홀 · 차일드레스" : "Horizon liquid-cooled hall · Childress";
   const sub = ko ? `Horizon 1칸 = ${HORIZON.grossMw} MW (IT ${HORIZON.itMw} MW) · 랙 약 ${EST.racks}대 · GPU 약 ${fmt(EST.gpus)}개 (추정) · 그림은 홀 한 토막` : `one Horizon = ${HORIZON.grossMw} MW (${HORIZON.itMw} MW IT) · about ${EST.racks} racks · ${fmt(EST.gpus)} GPUs (estimate) · drawing shows a slice of one hall`;
   const zt = zoomText(ko);
   const keys = ko

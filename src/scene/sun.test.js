@@ -8,7 +8,7 @@ describe('태양 위치 (sunPosition)', () => {
     const s = sunPosition(new Date(Date.UTC(2026, 2, 20, 12, 7)), 0, 0)
     expect(s.elevation).toBeGreaterThan(88)
   })
-  it('하지 칠드레스 남중 고도 ≈ 90 − (위도 − 23.44)', () => {
+  it('하지 차일드레스 남중 고도 ≈ 90 − (위도 − 23.44)', () => {
     // 경도 −100.2° → 남중은 약 18:43 UTC
     const s = sunPosition(new Date(Date.UTC(2026, 5, 21, 18, 43)), 34.43, -100.2)
     expect(s.elevation).toBeCloseTo(90 - (34.43 - 23.44), 0)
@@ -35,7 +35,7 @@ describe('하늘 목표 (skyTarget)', () => {
     expect(skyTarget('night', childress, m).night).toBe(1)
   })
   it('지금(현지) 모드는 실제 시각의 태양 고도로 밤낮을 정함', () => {
-    // 칠드레스 현지 자정 무렵 (06:00 UTC) → 밤, 현지 정오 무렵 (18:40 UTC) → 낮
+    // 차일드레스 현지 자정 무렵 (06:00 UTC) → 밤, 현지 정오 무렵 (18:40 UTC) → 낮
     const night = skyTarget('live', childress, m, new Date(Date.UTC(2026, 9, 10, 6, 0)))
     const noon = skyTarget('live', childress, m, new Date(Date.UTC(2026, 9, 10, 18, 40)))
     expect(night.night).toBe(1)

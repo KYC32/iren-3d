@@ -7,7 +7,7 @@ const raw = buildInfra()
 const data = viewInfra(raw, asOfMonth(raw.as_of))
 
 describe('자동 투어 대본 (buildTourSteps)', () => {
-  it('지도 → 칠드레스 3D → 계약·건물 → 밤 → 스위트워터 → 캐나다 → 확장 → 전망 → 마무리 순서', () => {
+  it('지도 → 차일드레스 3D → 계약·건물 → 밤 → 스위트워터 → 캐나다 → 확장 → 전망 → 마무리 순서', () => {
     const ids = buildTourSteps(data, 'ko').map((s) => s.id)
     expect(ids).toEqual(['intro', 'childress-map', 'childress-3d', 'childress-microsoft', 'childress-horizon-1', 'childress-nvidia', 'childress-night',
       'sweetwater-map', 'sweetwater-3d', 'bc-map', 'expansion-map', 'outlook', 'outro'])

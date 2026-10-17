@@ -9,12 +9,25 @@
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036125001477/ny20037451x2_ex99-1.htm"
         },
         {
-          "ko": "건물 근거 검토를 모든 건물로 (원문 확인 5동 → 20동): 회사 공시·발표 자료로 단계·MW 를 다시 확인 — 칠드레스 Horizon 5·6·공랭 개조는 2026-08 '착공' 발표대로 건설 중, 빠져 있던 칠드레스 2026 공랭 50MW 블록과 프린스조지 GB300 액체냉각 홀(IT 10MW) 추가, 회사가 밝히지 않은 BC 홀 IT MW·2027 액체냉각 MW 는 비움, 커낼플랫츠는 공랭 개조안이 액체냉각 전환으로 바뀌어 한 건물로. 그 결과 2026년 말 AI 가동 전망 380→480MW(회사 2026년 목표 480MW 와 같음)",
+          "ko": "Childress 한국어 표기를 '칠드레스' → '차일드레스'로 바꿈 (지도·3D·패널·투어·Horizon 그림·갱신 기록 전부)",
+          "en": "Korean spelling of Childress changed from '칠드레스' to '차일드레스' everywhere (map, 3D, panels, tour, Horizon figure, changelog)"
+        },
+        {
+          "ko": "3D 커낼플랫츠 구역 라벨 바로잡음: 계획을 회사 발표대로 'GB300 액체냉각 전환'으로 고친 뒤 '확장 예정 부지'로 잘못 바뀌었던 것 → 'AI 전환 예정' (채굴동 전력을 넘겨받는 계획 건물은 공랭·액체냉각 상관없이 전환으로 표시)",
+          "en": "3D Canal Flats zone label fixed: after the plan was corrected to the company's 'GB300 liquid-cooled conversion' it wrongly read 'Expansion area' → now 'AI conversion planned' (any planned building that takes over a mining hall's power counts as a conversion, air- or liquid-cooled)",
+          "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
+        },
+        {
+          "ko": "갱신 기록을 지도 왼쪽 패널의 탭에서 상단 바 ≡ 메뉴로 옮김 — 왼쪽 패널은 캠퍼스 · 계약 · 일정",
+          "en": "Changelog moved from the map's left-panel tab into the top-bar ≡ menu — the left panel is now Campuses · Contracts · Calendar"
+        },
+        {
+          "ko": "건물 근거 검토를 모든 건물로 (원문 확인 5동 → 20동): 회사 공시·발표 자료로 단계·MW 를 다시 확인 — 차일드레스 Horizon 5·6·공랭 개조는 2026-08 '착공' 발표대로 건설 중, 빠져 있던 차일드레스 2026 공랭 50MW 블록과 프린스조지 GB300 액체냉각 홀(IT 10MW) 추가, 회사가 밝히지 않은 BC 홀 IT MW·2027 액체냉각 MW 는 비움, 커낼플랫츠는 공랭 개조안이 액체냉각 전환으로 바뀌어 한 건물로. 그 결과 2026년 말 AI 가동 전망 380→480MW(회사 2026년 목표 480MW 와 같음)",
           "en": "Building evidence review extended to every building (5 → 20 source-reviewed): stages and MW rechecked against company filings and decks — Childress Horizon 5–6 and air-cooled retrofits now under construction per the August 'construction commenced' update, the missing 2026 Childress 50MW air-cooled block and the Prince George GB300 liquid-cooled hall (10MW IT) added, undisclosed BC hall IT MW and 2027 liquid MW cleared, and Canal Flats' superseded air-cooled plan merged into its liquid-cooled conversion. The end-2026 AI-live outlook moves 380→480MW, matching IREN's 480MW 2026 target",
           "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
         },
         {
-          "ko": "9개 캠퍼스 위치를 원문으로 확인해 지도 핀을 실제 부지로: 칠드레스(SEC 첨부 주소 620 FM 1033 + 주정부 필지, 시내 동남동 약 9마일)·스위트워터 1·2(피셔 카운티 IREN 자회사 소유 필지 — 스위트워터 2는 그동안 놀런 카운티에 잘못 찍혀 있었음)·프린스조지·매켄지·커낼플랫츠(BC 지적·송전선·지자체 공고, 면적이 10-K 와 일치)·키오와(카운티 공고 법적 경계)·번디(IREN 자회사 연방 환경 신고 주소)·바다호스(주정부 법령 지정 필지). 표시는 '주소 위치 · 경계 미확인'",
+          "ko": "9개 캠퍼스 위치를 원문으로 확인해 지도 핀을 실제 부지로: 차일드레스(SEC 첨부 주소 620 FM 1033 + 주정부 필지, 시내 동남동 약 9마일)·스위트워터 1·2(피셔 카운티 IREN 자회사 소유 필지 — 스위트워터 2는 그동안 놀런 카운티에 잘못 찍혀 있었음)·프린스조지·매켄지·커낼플랫츠(BC 지적·송전선·지자체 공고, 면적이 10-K 와 일치)·키오와(카운티 공고 법적 경계)·번디(IREN 자회사 연방 환경 신고 주소)·바다호스(주정부 법령 지정 필지). 표시는 '주소 위치 · 경계 미확인'",
           "en": "All nine campus locations verified against primary records and the map pins moved to the actual sites: Childress (SEC exhibit address 620 FM 1033 + state parcel data, ~9 mi ESE of town), Sweetwater 1 & 2 (Fisher County parcels owned by IREN subsidiaries — Sweetwater 2 had been placed in Nolan County), Prince George, Mackenzie and Canal Flats (BC cadastre, transmission records and municipal notices; areas match the 10-K), Kiowa (county legal notice), Bundey (address in an IREN subsidiary's federal EPBC referral) and Badajoz (parcels named in a regional decree). Shown as 'Address · boundary unverified'",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/a1037commontermsagreemen.htm"
         },
@@ -49,7 +62,7 @@
           "source": "https://x.com/AceKicker13/status/2105268452839596511"
         },
         {
-          "ko": "칠드레스 Horizon 액체냉각 홀 그림 추가: 3D 칠드레스 화면에서 Horizon 1~4 를 누르면(또는 캠퍼스 패널 '이 건물 안 자세히 보기') 홀 한 토막의 모형이 열림 — 전기(1차 변전소 6 → 홀 변압기 → 배전반 → UPS → 버스웨이 → GB300 NVL72 랙)와 냉각수(GPU 냉각판 → 랙 매니폴드 → 천장 2차 배관 → CDU → 1차 배관 → 건식 냉각기·칠러)를 함께 짚고, 더운 오후에 칠러가 보태는 모습과 CDU 하나를 정비해도 냉각이 이어지는 '동시 유지보수'를 보여 줌. 수치는 회사 발표(75MW·IT 50MW·랙 130~200kW·Tier III 수준), 모습은 회사 Horizon 1 인도 영상 기준",
+          "ko": "차일드레스 Horizon 액체냉각 홀 그림 추가: 3D 차일드레스 화면에서 Horizon 1~4 를 누르면(또는 캠퍼스 패널 '이 건물 안 자세히 보기') 홀 한 토막의 모형이 열림 — 전기(1차 변전소 6 → 홀 변압기 → 배전반 → UPS → 버스웨이 → GB300 NVL72 랙)와 냉각수(GPU 냉각판 → 랙 매니폴드 → 천장 2차 배관 → CDU → 1차 배관 → 건식 냉각기·칠러)를 함께 짚고, 더운 오후에 칠러가 보태는 모습과 CDU 하나를 정비해도 냉각이 이어지는 '동시 유지보수'를 보여 줌. 수치는 회사 발표(75MW·IT 50MW·랙 130~200kW·Tier III 수준), 모습은 회사 Horizon 1 인도 영상 기준",
           "en": "New Childress Horizon liquid-cooled hall figure: click Horizon 1–4 in the 3D Childress view (or 'Look inside this building' in the campus panel) to open a model of a hall slice — it walks the power path (Primary Substation 6 → hall transformers → switchboards → UPS → busway → GB300 NVL72 racks) and the coolant loops (GPU cold plates → rack manifolds → overhead secondary loop → CDUs → facility loop → dry coolers and chiller), then shows the chiller helping on a hot afternoon and a CDU being serviced while cooling carries on (concurrent maintainability). Figures per company disclosures (75MW gross, 50MW IT, 130–200kW racks, Tier III-equivalent); appearance from the company's Horizon 1 delivery video",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036126032638/ef20080141_ex99-1.htm"
         },
@@ -87,7 +100,7 @@
           "en": "On phones (375–390px) the top bar now uses two rows: the title and [Map|Stock|News] on top, the buttons below. Fixes the title breaking one character per line and the 3D campus view pushing buttons off-screen into a sideways overflow (desktop unchanged)"
         },
         {
-          "ko": "칠드레스 3D 캠퍼스에서 공랭 Blackwell(NVIDIA) 건물 라벨이 \"~60 MW*0 MW gross\" 로 붙어 나오던 문제 수정 → \"~60 MW*\" (계약에 밝힌 용량 약 60MW, IT 기준인지는 미공개). 모르는 전체 전력은 0 으로 적지 않고 뺌",
+          "ko": "차일드레스 3D 캠퍼스에서 공랭 Blackwell(NVIDIA) 건물 라벨이 \"~60 MW*0 MW gross\" 로 붙어 나오던 문제 수정 → \"~60 MW*\" (계약에 밝힌 용량 약 60MW, IT 기준인지는 미공개). 모르는 전체 전력은 0 으로 적지 않고 뺌",
           "en": "Fixed the Childress 3D label for the air-cooled Blackwell (NVIDIA) building, which ran together as \"~60 MW*0 MW gross\"; it now reads \"~60 MW*\" (the ~60 MW disclosed in the contract, IT basis not stated). Unknown gross power is left out instead of shown as 0"
         },
         {
@@ -107,7 +120,7 @@
           "en": "3D campuses now default to \"Now\" (the site's local time): links without a sky value show day, dusk or night by local time (choosing Day is kept in the link). Night is easier to read: brighter moonlight and ambient light, thicker window bands, glowing roof vents on live mining halls, and commissioning halls at 0.6 instead of 0.4. The legend's lights note shows only when it is actually dark. Selecting a building in 3D or opening a shared #building link now moves the camera to it (finished halls open to show racks)"
         },
         {
-          "ko": "캠퍼스 패널 \"현황\" 탭에 \"전력·통신 이중화\"(회사 홈페이지: IREN 소유 현장 변전소·광케이블 이중 경로 — 칠드레스·프린스조지·매켄지·커낼플랫츠 / 제3자 관찰: 변압기 2대·발전기·UPS)와 \"현장 진척 · 제3자 관찰\"(매켄지 9/23 드론: 홀 4개 × 2.5MW 세그먼트 8칸의 패드·장비·ATS 설치 개수, 프린스조지 10/13 열화상) 추가. 관찰은 공식 상태를 바꾸지 않는 근거로만. 건물이 없는 개발 부지(카이오와·번디·바다호스·스위트워터 2) 3D 에 개발 단계 카드(부지·전력 확보 → 통전 → 착공 → 가동)",
+          "ko": "캠퍼스 패널 \"현황\" 탭에 \"전력·통신 이중화\"(회사 홈페이지: IREN 소유 현장 변전소·광케이블 이중 경로 — 차일드레스·프린스조지·매켄지·커낼플랫츠 / 제3자 관찰: 변압기 2대·발전기·UPS)와 \"현장 진척 · 제3자 관찰\"(매켄지 9/23 드론: 홀 4개 × 2.5MW 세그먼트 8칸의 패드·장비·ATS 설치 개수, 프린스조지 10/13 열화상) 추가. 관찰은 공식 상태를 바꾸지 않는 근거로만. 건물이 없는 개발 부지(카이오와·번디·바다호스·스위트워터 2) 3D 에 개발 단계 카드(부지·전력 확보 → 통전 → 착공 → 가동)",
           "en": "The campus panel Overview tab gains \"Power & network redundancy\" (company website: IREN-owned on-site substations and dual diverse fiber at Childress, Prince George, Mackenzie and Canal Flats; third-party: twin transformers, generators, UPS) and \"Site progress · third-party\" (Mackenzie 9/23 drone: pads, equipment and ATS counts across four halls × eight 2.5MW segments; Prince George 10/13 thermal). Observations are evidence only and never change official statuses. Development sites without buildings (Kiowa, Bundey, Badajoz, Sweetwater 2) show a milestone card in 3D (land & power → energization → construction → go-live)"
         },
         {
@@ -209,7 +222,7 @@
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036121035328/ny20000275x5_f1.htm"
         },
         {
-          "ko": "칠드레스 정정: 채굴 가동 2022 → 2023-04(600MW 변전소 2023-04-06 통전), 전력 600MW로 시작 → 2024-07 750MW 증설 (증설분 통전 시점은 미상이라 증설 발표 시점으로 둠)",
+          "ko": "차일드레스 정정: 채굴 가동 2022 → 2023-04(600MW 변전소 2023-04-06 통전), 전력 600MW로 시작 → 2024-07 750MW 증설 (증설분 통전 시점은 미상이라 증설 발표 시점으로 둠)",
           "en": "Childress corrected: mining start 2022 → 2023-04 (600MW substation energized 2023-04-06); power 600MW, raised to 750MW in 2024-07 (energization date of the added 150MW unknown; set at the announcement)",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036123018117/brhc20051418_ex99-1.htm"
         },
@@ -237,7 +250,7 @@
           "source": "https://iren.gcs-web.com/events-and-presentations"
         },
         {
-          "ko": "회사 보도자료로 재확인: 스위트워터 1 통전 2026-05-01(고압 변전소의 ERCOT 연결, 실제 전력 사용은 단계적), 번디 800MW 2026-06-03(2028년 통전 시작), 칠드레스 첫 20MW 가동 2023-04-26 6-K",
+          "ko": "회사 보도자료로 재확인: 스위트워터 1 통전 2026-05-01(고압 변전소의 ERCOT 연결, 실제 전력 사용은 단계적), 번디 800MW 2026-06-03(2028년 통전 시작), 차일드레스 첫 20MW 가동 2023-04-26 6-K",
           "en": "Re-verified from company releases: Sweetwater 1 energization 2026-05-01 (substation connected to ERCOT; power delivery ramps in phases), Bundey 800MW 2026-06-03 (energization from 2028), Childress first 20MW operational (2023-04-26 6-K)",
           "source": "https://iren.gcs-web.com/news-releases/news-release-details/iren-announces-successful-energization-sweetwater-1"
         },

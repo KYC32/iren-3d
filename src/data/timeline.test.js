@@ -70,7 +70,7 @@ describe('실제 데이터 (IREN)', () => {
     expect(t.operating).toBe(455)
     expect(t.ai).toBe(75)
     expect(t.mining).toBe(380)
-    expect(t.building).toBe(725) // 건설·시운전: 프린스조지 50MW 시운전 포함 + 칠드레스 Horizon 5·6·공랭 개조 착공(2026-08, 회사 발표)
+    expect(t.building).toBe(725) // 건설·시운전: 프린스조지 50MW 시운전 포함 + 차일드레스 Horizon 5·6·공랭 개조 착공(2026-08, 회사 발표)
     expect(t.planned).toBe(4430)
     expect(t.gpus).toBe(23000)
   })

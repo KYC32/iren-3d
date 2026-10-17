@@ -55,7 +55,7 @@ export function labelRanksBy(sites, near, dist) {
   const leads = []
   const ranks = {}
   // 대표 선정: 상태가 앞선 사이트(가동 > 시운전 > 건설 > 계획 > 폐쇄중) 먼저, 같으면 계통 전력이 큰 순서
-  // → 예) 텍사스 무리는 1.4GW 건설중인 스위트워터 1보다 가동중인 칠드레스가 대표
+  // → 예) 텍사스 무리는 1.4GW 건설중인 스위트워터 1보다 가동중인 차일드레스가 대표
   const rank = (s) => LEAD_ORDER.indexOf(s.status) === -1 ? 9 : LEAD_ORDER.indexOf(s.status)
   for (const s of [...sites].sort((a, b) => rank(a) - rank(b) || b.grid_mw - a.grid_mw)) {
     const lead = leads.find((l) => dist(l, s) < near)
