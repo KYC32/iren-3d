@@ -1,10 +1,13 @@
-// 상단 바: 제목·기준일 / 뒤로가기 / 하늘(낮·노을·밤·지금) / 공유 / 한영 토글
-import { useEffect, useRef, useState } from 'react'
-import { ArrowLeft, Languages, Zap, ListOrdered, Maximize2, Move, Rotate3D, Share2, Check, Sun, Sunset, Moon, Clock, Compass, Map as MapIcon, ChartLine, Newspaper, LayoutDashboard } from 'lucide-react'
+// 상단 바: 제목·기준일 / 뒤로가기 / 하늘(낮·노을·밤·지금) / 공유 / 한영 토글 / ≡ 메뉴(갱신 기록)
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { ArrowLeft, Languages, Zap, ListOrdered, Maximize2, Move, Rotate3D, Share2, Check, Sun, Sunset, Moon, Clock, Compass, Map as MapIcon, ChartLine, Newspaper, LayoutDashboard, Menu } from 'lucide-react'
 import { localClock } from '../scene/sun.js'
 import { AI_LIGHT, MINER_LIGHT } from '../scene/nightColors.js'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { useT, pickName } from '../i18n/useT.js'
+
+// ≡ 메뉴 서랍은 처음 열 때 불러옴 (첫 화면 번들에 넣지 않음 — 첫 화면 용량 한도가 빠듯함)
+const AppMenu = lazy(() => import('./AppMenu.jsx'))
 
 export default function TopBar() {
   const t = useT()
@@ -55,8 +58,10 @@ export default function TopBar() {
         <button aria-pressed={dragMode==='rotate'} aria-label={t.campus.rotateLabel} title={t.campus.rotateLabel} onClick={()=>setDragMode('rotate')}><Rotate3D size={15}/><span>{t.campus.rotate}</span></button>
         <button aria-pressed={dragMode==='pan'} aria-label={t.campus.panLabel} title={t.campus.panLabel} onClick={()=>setDragMode('pan')}><Move size={15}/><span>{t.campus.pan}</span></button>
       </div>}
+      {/* 전체 보기: 아이콘만 (이름은 마우스를 올리면 — title·aria-label). ≡ 메뉴가 들어갈 자리를 위해 글자를 뺌
+          (1200~1440px 3D 상단 바는 버튼이 꽉 차서, 글자가 있으면 제목이 두 줄로 접혔음) */}
       {inMap && view === 'site' && surface==='3d' && <button className="lang-btn home-btn" onClick={() => useAppStore.getState().requestCampusHome()} aria-label={t.campus.home} title={t.campus.home}>
-        <Maximize2 size={15} /><span>{t.campus.home}</span>
+        <Maximize2 size={15} aria-hidden="true" />
       </button>}
       {inMap && surface === 'map' && (
         <button className="icon-btn sheet-btn" onClick={toggleSheet} aria-label={lang==='ko'?'캠퍼스 목록':'Campus list'} title={lang==='ko'?'캠퍼스 목록':'Campus list'}>
@@ -72,8 +77,25 @@ export default function TopBar() {
       <button className="lang-btn" onClick={toggleLang} aria-label="language">
         <Languages size={15} /> {t.langToggle}
       </button>
+      <MenuButton t={t} />
       </div>
     </header>
+  )
+}
+
+// ≡ 메뉴 단추: 자주 보지 않는 것(지금은 갱신 기록)을 오른쪽 서랍에 숨겨 둠 — AppMenu.jsx
+//   한 번 연 뒤로는 서랍을 붙여 둔 채 열고 닫기만 함 (다시 불러오지 않음)
+function MenuButton({ t }) {
+  const [open, setOpen] = useState(false)
+  const [loaded, setLoaded] = useState(false) // 한 번이라도 열었나 (그 전엔 서랍 코드를 받지 않음)
+  return (
+    <>
+      <button className="lang-btn menu-btn" onClick={() => { setLoaded(true); setOpen(true) }}
+        aria-label={t.menu.open} title={t.menu.open} aria-haspopup="dialog" aria-expanded={open}>
+        <Menu size={15} aria-hidden="true" />
+      </button>
+      {loaded && <Suspense fallback={null}><AppMenu open={open} onClose={() => setOpen(false)} /></Suspense>}
+    </>
   )
 }
 

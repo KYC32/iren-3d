@@ -63,6 +63,9 @@ button { font: inherit; cursor: pointer; }
 .brand-icon { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; background: #71da80; color: #0b344f; }
 .icon-btn { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 9px; border: 1px solid var(--panel-border); background: #fff; color: var(--text); }
 .icon-btn:hover { background: #eef2fb; }
+/* ≡ 메뉴 단추 (TopBar): 옆 알약 단추(.lang-btn)와 같은 높이, 아이콘만이라 좌우 여백은 좁게 (폭 33px)
+   .lang-btn.menu-btn 로 쓴 건: 아래 .lang-btn { padding: 6px 12px } 보다 우선하도록 (한 클래스면 뒤에 오는 규칙이 이김) */
+.lang-btn.menu-btn { padding: 6px 8px; }
 .title { font-weight: 700; font-size: 16px; letter-spacing: -0.2px; }
 .subtitle { font-size: 12px; color: var(--text-muted); margin-top: 1px; }
 .lang-btn { display: flex; align-items: center; gap: 5px; border: 1px solid var(--panel-border); background: #fff; border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 600; color: var(--text); }
@@ -367,11 +370,11 @@ button { font: inherit; cursor: pointer; }
 }
 
 
-/* ---------- 다가오는 일정·갱신 기록 (왼쪽 패널 탭) ---------- */
-.upcoming, .changelog { overflow-y: auto; padding: 4px 6px 8px; font-size: 12.5px; }
+/* ---------- 다가오는 일정 (왼쪽 패널 탭) — 갱신 기록 모양은 ≡ 메뉴와 함께 src/ui/appMenu.css ---------- */
+.upcoming { overflow-y: auto; padding: 4px 6px 8px; font-size: 12.5px; }
 .up-hint { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-muted); padding: 4px 4px 6px; }
-.upcoming h5, .changelog h5 { font-size: 11.5px; color: #34405e; margin: 10px 4px 4px; }
-.upcoming ul, .changelog ul { list-style: none; display: flex; flex-direction: column; gap: 1px; }
+.upcoming h5 { font-size: 11.5px; color: #34405e; margin: 10px 4px 4px; }
+.upcoming ul { list-style: none; display: flex; flex-direction: column; gap: 1px; }
 .upcoming li { display: flex; align-items: center; gap: 4px; border-radius: 9px; }
 .upcoming li:hover { background: #eef2fb; }
 .upcoming li.passed { opacity: 0.55; } /* 타임라인을 그 시점 이후로 옮기면 지난 일정은 흐리게 */
@@ -385,9 +388,6 @@ button { font: inherit; cursor: pointer; }
 .basis.target { background: #fff3cc; color: #8a6400; }
 .basis.estimate { background: #eef0f5; color: #6b7591; }
 .up-src { padding: 6px; color: var(--text-muted); }
-.changelog li { display: flex; gap: 6px; align-items: flex-start; padding: 5px 6px; line-height: 1.45; color: #2a3550; }
-.changelog li::before { content: ''; flex-shrink: 0; width: 5px; height: 5px; border-radius: 50%; background: #9aa6bd; margin-top: 7px; }
-.cl-repo { display: inline-block; margin: 10px 6px 0; font-size: 11px; }
 
 /* 타임라인 사건 눈금 */
 .tl-track { position: relative; }
@@ -431,7 +431,6 @@ button { font: inherit; cursor: pointer; }
    한 줄에 모두 넣으면 버튼(약 300px)이 폭을 다 차지해 제목 칸이 0px이 되고,
    "IREN 현장 리서치"가 한 글자씩 세로로 줄바꿈되던 문제(375px 화면)를 막습니다. */
 @media (max-width: 767px) {
-  .home-btn span { display: none; }
   .topbar { flex-wrap: wrap; gap: 8px; padding: 10px 12px; } /* 넘치는 항목은 다음 줄로 (좌우 여백을 2px씩 줄여 제목 칸 확보) */
   /* flex: 1 1 0 → 줄을 나눌 때 제목 칸을 0px로 계산하므로 페이지 네비는 언제나 첫 줄에 남고,
      남는 폭은 모두 제목 칸이 차지 (지도·3D·주가·뉴스 어느 화면에서도 네비 자리가 같음) */
@@ -444,13 +443,18 @@ button { font: inherit; cursor: pointer; }
   .top-actions > .camera-mode button span { display: none; } /* 3D 회전·이동: 아이콘만 (이름은 aria-label·title 에 있음) */
   /* 3D: 하늘 버튼에 현지 시각(기본 '지금' 모드, 예 05:42)이 붙어도 버튼 묶음이 한 줄에 들어가도록
      간격·안쪽 여백을 조금 줄임 (375px 에서 35px 모자라 상단 바가 3줄이 되던 것 → 2줄). 지도 화면 버튼은 그대로 */
-  .surface-3d .top-actions { gap: 4px; }
+  .top-actions { gap: 4px; } /* 지도 화면도 같은 간격: ≡ 메뉴가 생기며 영어 지도 둘째 줄('Campuses 9' 단추가 김)이 375px 에서 넘치던 것 */
   .surface-3d .top-actions > .lang-btn { padding: 6px 9px; } /* 전체 보기·투어·공유·언어 버튼 */
   .surface-3d .top-actions > .camera-mode button { padding: 5px 6px; } /* 회전·이동 */
+  /* 3D: 둘째 줄이 위 버튼들로 꽉 차서(375px 에서 남는 폭 8px) ≡ 메뉴가 셋째 줄로 밀림 → 첫 줄 오른쪽 위 모서리로 옮김
+     네비 오른쪽에 ≡ 자리(단추 35px + 간격 4px)를 비워 둠. 첫 줄 제목은 캠퍼스 이름이라 짧아서 그대로 들어감
+     (가장 긴 'Prince George' 107px, 한국어는 '스위트워터 2' 83px — 제목 칸 104px, 영어 한 곳만 끝이 … 로 줄 수 있음) */
+  .surface-3d .topbar .menu-btn { position: absolute; top: 12px; right: 12px; }
+  .surface-3d .topbar .page-nav { margin-right: 39px; }
 }
 /* 태블릿·좁은 데스크톱(768~1199px) 상단 바: 자리가 모자랄 때만 버튼 묶음을 다음 줄로
    3D 화면은 버튼(하늘·시점·전체 보기·투어·공유·언어)만 690~790px 라, 예전엔 제목 칸이 찌그러져
-   "칠드레스"가 세로로 끊기거나(한국어) 버튼이 화면 밖으로 밀려 가로로 넘쳤음(영어는 1143px 보다 좁으면).
+   "차일드레스"가 세로로 끊기거나(한국어) 버튼이 화면 밖으로 밀려 가로로 넘쳤음(영어는 1143px 보다 좁으면).
    지도·주가·뉴스처럼 한 줄에 다 들어가는 화면은 예전과 똑같이 보임. 1200px 이상은 손대지 않음 */
 @media (min-width: 768px) and (max-width: 1199px) {
   .topbar { flex-wrap: wrap; row-gap: 8px; } /* 한 줄에 안 들어가는 항목은 다음 줄로 */
@@ -462,6 +466,11 @@ button { font: inherit; cursor: pointer; }
   .brand > :first-child { flex-shrink: 0; } /* 왼쪽 아이콘·뒤로가기 버튼은 찌그러지지 않게 */
   .brand > div { min-width: 0; }
   .brand .title, .brand .subtitle { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* 길면 한 줄에서 … 으로 */
+}
+/* 768~879px 지도: 한 줄 상단 바가 이미 꽉 차 있어 ≡ 메뉴(약 37px)가 들어가면 두 줄로 넘어감 (영어는 850px 무렵까지)
+   → 이 폭에서만 투어·공유를 아이콘만 (이름은 마우스를 올리면 — title·aria-label). 880px 부터는 글자 그대로 */
+@media (min-width: 768px) and (max-width: 879px) {
+  .surface-map .tour-btn span, .surface-map .share-btn span { display: none; }
 }
 .selected-detail { width: 210px; max-width: 210px; text-align: left; }
 .campus-label { position: relative; }
@@ -664,7 +673,7 @@ button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit;
 .map-tabs { margin: 10px 0 8px; }
 .map-tabs button { font-size: 12px; padding: 6px 0; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
 .map-tabs .tab-count { font-size: 10.5px; font-weight: 700; color: #5d7a6d; background: #e3efe8; border-radius: 999px; padding: 0 6px; }
-.map-sidebar .upcoming, .map-sidebar .changelog { padding: 2px 0 8px; }
+.map-sidebar .upcoming { padding: 2px 0 8px; }
 
 /* AI 가동 전망 카드: 회사 목표 기준(미래) — 타임라인의 노란 빗금 구간과 같은 색 계열 */
 .kpi.tone-future .kpi-value { color: #8a6a00; }

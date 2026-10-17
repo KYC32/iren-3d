@@ -67,6 +67,7 @@ export default {
   regions: { na: 'N. America', eu: 'Europe', asia: 'Asia' },
   upcoming: { tab: 'Upcoming', hint: 'Click to jump to that date and site', empty: 'Nothing scheduled' },
   changelog: { tab: 'Changelog', hint: 'Every data change is logged here', empty: 'No entries', full: 'Full change history (GitHub)' },
+  menu: { open: 'Menu', title: 'Menu', close: 'Close' }, // top bar ≡ menu drawer (AppMenu)
   basis: { reported: 'reported', target: 'company target', estimate: 'estimate' },
   contracts: { title: 'Customer contracts', toggle: 'Contract links', undisclosed: 'sites not disclosed', years: 'yrs' },
   timeline: { play: 'Play', pause: 'Pause', asOf: 'As of', future: 'Company targets', today: 'Back to as-of', label: 'Date' },
