@@ -70,6 +70,7 @@
 | `src/map/HqMarker.jsx` (새), `src/map/GeoMap.jsx` | 지도 위 본사 카드, '본사' 단추 이동 | 4 |
 | `src/data/statementRows.js` (새) | 칸 목록 행 만들기(거르기·정렬·다시 언급) — 순수 함수 | 5 |
 | `src/ui/StatementsPanel.jsx` (새), `src/ui/statements.css` (새), `src/App.jsx` | 경영진 발언 칸 (지연 로딩) | 5 |
+| `src/ui/AppMenu.jsx`, `src/ui/appMenu.css` | ≡ 메뉴 맨 위 '경영진 발언' 바로가기 | 5 |
 | `src/i18n/ko.js`, `src/i18n/en.js` | `hq` 문자열 묶음 | 4·5 |
 | `data/statements.json` (새), `public/people/*.jpg` (새) | 실제 사람·발언·약속·사진 | 6 |
 | `README.md`, `data/changelog.json` | 설명·갱신 기록 | 7 |
@@ -318,6 +319,7 @@ git commit -m "feat(statements): 발언 데이터 스키마·내용 규칙, 빌�
 - Produces:
   - `Company.hq?: { city_ko: string, city_en: string, address: string, lat: number, lng: number, source: Url }` (strict) — 화면은 `data.companies[0].hq`로 읽는다
   - 저장소: `hqOpen: boolean`, `openHq(): void`, `closeHq(): void`
+  - `showHq(): void` — 어느 화면(주가·뉴스 페이지, 3D)에서든 지도로 돌아와 본사로 이동하고 칸을 엶 = `setPage(null)` 다음 `setMapRegion('HQ')`. ≡ 메뉴 바로가기(Task 5)가 씀
   - 해시: `parseHash('#hq=1').hq === true`, `buildHash({ hq: true })`
   - `REGION_NAMES.HQ = ['본사','HQ']` (맨 끝)
   - `hqLngLat(hq): [lng, lat]` — `[mapLongitude(hq.lng), hq.lat]`
@@ -350,6 +352,10 @@ describe('본사 칸', () => {
     '%s 하면 본사 칸이 닫힘', (_, act) => { state().setRaw(raw); state().openHq(); act(state()); expect(state().hqOpen).toBe(false) })
   it("setMapRegion('HQ') 는 본사 칸을 엶", () => { state().setRaw(raw); state().setMapRegion('HQ'); expect(state()).toMatchObject({ hqOpen: true, mapRegion: { country: 'HQ' } }) })
   it('#hq=1 로 들어오면 데이터가 온 뒤 칸이 열림', () => { window.location.hash = '#hq=1'; state().setRaw(raw); expect(state().hqOpen).toBe(true) })
+  it('showHq: 주가 페이지에서도 지도로 돌아와 본사 칸', () => {
+    state().setRaw(raw); state().setPage('stock'); state().showHq()
+    expect(state()).toMatchObject({ page: null, hqOpen: true, surface: 'map', mapRegion: { country: 'HQ' } })
+  })
 })
 // mapData.test.js — const raw = buildInfra() (scripts/build-data.mjs), sites = raw.sites, research = raw.research, hq = raw.companies[0].hq (Step 1 값)
 it('REGION_NAMES 끝에 본사', () => expect(Object.entries(REGION_NAMES).at(-1)).toEqual(['HQ', ['본사', 'HQ']]))
@@ -377,6 +383,7 @@ it('Company.hq 는 정해진 칸만', () => {
   - **해시:** `hashState.js`에 `hq`를 넣는다 (맨 위 설명 주석에도 한 줄).
   - **저장소 상태:** `useAppStore.js`
     - `hqOpen: initial.hq === true && !initial.site`
+    - `showHq`: `get().setPage(null)` 다음 `get().setMapRegion('HQ')` (순서 중요: `setPage`가 칸을 닫으므로 먼저)
     - `openHq`: `set({ hqOpen: true, surface: 'map', view: 'globe', selectedSiteId: null, sheetOpen: false, hoverId: null, selectedBuildingId: null, buildingFly: null, selectedZoneKey: null })` 다음 `syncHash()`
     - `closeHq`: `set({ hqOpen: false })` 다음 `syncHash()`
   - **다른 동작과 맞추기:**
@@ -480,10 +487,10 @@ git commit -m "feat(statements): 지도 위 시드니 본사 카드 — CEO 사�
   - `src/data/statementRows.js` (+ `src/data/statementRows.test.js`)
   - `src/ui/StatementsPanel.jsx`, `src/ui/statements.css`
 - 샘플 자료는 Task 2의 `src/data/fixtures/statements.sample.json`을 쓴다.
-- Modify: `src/App.jsx`, `src/i18n/ko.js`, `src/i18n/en.js`
+- Modify: `src/App.jsx`, `src/i18n/ko.js`, `src/i18n/en.js`, `src/ui/AppMenu.jsx`, `src/ui/appMenu.css`
 
 **Interfaces:**
-- Consumes: Task 1 `verdictOf`·`scoreboard`·`fmtAmount`·`evidenceLabel`. Task 3 `hqOpen`·`closeHq`. Task 4 `loadStatements`·`peekStatements`·`initialsOf`
+- Consumes: Task 1 `verdictOf`·`scoreboard`·`fmtAmount`·`evidenceLabel`. Task 3 `hqOpen`·`closeHq`·`showHq`. Task 4 `loadStatements`·`peekStatements`·`initialsOf`
 - Produces:
   - `statementRows(file, filter: 'all'|'promises'|'x'|'call'|'interview'): Row[]`
   - `Row = { id, date, person, channel, kind, url, at?, summary_ko, summary_en, quote?, promise?: PromiseRec, verdict?: Verdict, repeatOf?: string /* 같은 약속을 처음 말한 날 */, beforeSince: boolean }`
@@ -548,6 +555,10 @@ it('판정은 checkedAt 기준으로 붙음', () => {
        - 원문 링크 (`at`이 있으면 ` · {at}`)
     5. 안내 문구
   - **데이터를 못 받으면:** `loadStatements()`가 null이면 칸에 `loadError`만 보여 준다.
+  - **≡ 메뉴 바로가기 (사용자 결정 2026-10-21 "메뉴에 넣자"):** `AppMenu.jsx`의 머리(`app-menu-head`) 바로 아래, 갱신 기록 위에 단추 하나를 둔다.
+    - 모양: lucide `Building2` + 굵은 글씨 `hq.menuEntry` '경영진 발언' + 작은 글씨 `hq.menuSub` '공동 CEO 발언 · 약속 지켜졌나'
+    - 누르면 `onClose()` 다음 `useAppStore.getState().showHq()`
+    - 스타일은 `appMenu.css`에 `.app-menu-link` (서랍 폭 가득, 아래 경계선, hover 연한 배경)
   - **CSS:** `statements.css`는 칸 파일에서만 import한다 (첫 화면 CSS에 안 들어가게). 판정 색은 CSS 변수 `--v-kept` 등 다섯 개로 둔다.
 
 - [ ] **Step 6: 확인** — `npx vitest run` 전부 PASS, `npm run build` 세 예산 ✅ (HTML UI가 120을 넘으면 칸·CSS가 첫 화면에 섞인 것이니 import를 다시 본다).
@@ -559,12 +570,13 @@ it('판정은 checkedAt 기준으로 붙음', () => {
     - 390×844: 아래 시트로 열리고 닫힘
     - 영어 전환 후 한국어가 남지 않음
     - 샘플 파일을 지운 상태에서 `#hq=1` → `loadError` 문구, 콘솔 오류 없음
+    - `#page=stock`에서 ≡ → '경영진 발언' → 지도로 돌아와 시드니로 이동하고 칸이 열림, 서랍은 닫힘
 
 - [ ] **Step 7: 커밋** — 임시 복사본은 지우고 올린다
 
 ```bash
-git add src/data/statementRows.js src/data/statementRows.test.js src/data/fixtures/statements.sample.json src/ui/StatementsPanel.jsx src/ui/statements.css src/App.jsx src/i18n/ko.js src/i18n/en.js
-git commit -m "feat(statements): 경영진 발언 칸 — 약속 성적표·거르기·판정 배지·목표 줄임·철회 (지연 로딩)"
+git add src/data/statementRows.js src/data/statementRows.test.js src/ui/StatementsPanel.jsx src/ui/statements.css src/App.jsx src/i18n/ko.js src/i18n/en.js src/ui/AppMenu.jsx src/ui/appMenu.css
+git commit -m "feat(statements): 경영진 발언 칸 — 약속 성적표·거르기·판정 배지·목표 줄임·철회 (지연 로딩), ≡ 메뉴 바로가기"
 ```
 
 ---
