@@ -1,6 +1,7 @@
 // 회사 발표 지표 스키마: "이상/약" 표기, 범위(최소~최대), 보여 줄 자리(KPI 줄 / 계약 탭)
 import { describe, it, expect } from 'vitest'
-import { ReportedMetric } from './schema.js'
+import { readFileSync } from 'node:fs'
+import { ReportedMetric, Company } from './schema.js'
 
 const base = { key: 'prepay', value: 45, unit: '%', label_ko: '선급금', label_en: 'Prepayments', as_of: '2026-08', source: 'https://example.com/pr' }
 
@@ -14,5 +15,16 @@ describe('ReportedMetric', () => {
   it('정해지지 않은 표기·자리는 거부', () => {
     expect(ReportedMetric.safeParse({ ...base, qualifier: 'maybe' }).success).toBe(false)
     expect(ReportedMetric.safeParse({ ...base, show: 'footer' }).success).toBe(false)
+  })
+})
+
+// 회사 본사 위치 (지도 위 본사 카드) — 정해진 칸만 받음
+describe('Company.hq', () => {
+  const iren = JSON.parse(readFileSync(new URL('../../data/companies.json', import.meta.url), 'utf8')).companies.find((c) => c.id === 'iren')
+  const { hq: _ignored, ...company } = iren // 지금 데이터의 hq 는 빼고 시험값을 넣어 봄
+  it('Company.hq 는 정해진 칸만', () => {
+    const hq = { city_ko: '시드니', city_en: 'Sydney', address: 'x', lat: -33.87, lng: 151.21, source: 'https://www.sec.gov/x' }
+    expect(Company.safeParse({ ...company, hq }).success).toBe(true)
+    expect(Company.safeParse({ ...company, hq: { ...hq, phone: '1' } }).success).toBe(false)
   })
 })

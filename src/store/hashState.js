@@ -8,6 +8,7 @@
 //   sky   : 3D 캠퍼스 하늘 (day 낮 | dusk 노을 | night 밤) — 기본인 지금(live, 부지 현지 시각)은 생략
 //   page  : 지도 대신 보여 줄 페이지 (portfolio 사업 현황 | stock 주가 | news 뉴스) — 지도는 생략
 //   at    : 주가 차트에서 강조할 날짜 (YYYY-MM-DD, page=stock 일 때만)
+//   hq    : 1 이면 지도에서 본사(경영진 발언) 칸이 열린 채로 — 캠퍼스(site)·페이지(page)가 있으면 생략
 // 옛 링크(#site=childress)도 그대로 동작합니다.
 // =============================================================
 
@@ -36,16 +37,18 @@ export function parseHash(hash) {
   const sky = q.get('sky')
   if (['day', 'dusk', 'night', 'live'].includes(sky)) out.sky = sky
   for (const key of ['building','zone']) { const v=q.get(key); if (v && /^[a-z0-9-]+$/.test(v)) out[key]=v }
+  if (q.get('hq') === '1') out.hq = true // 본사(경영진 발언) 칸
   return out
 }
 
 // 기본값과 같은 항목은 생략해 주소를 짧게 유지
-export function buildHash({ site = null, date = null, companies = [], color = 'status', surface = 'map', tab = 'overview', building = null, zone = null, sky = 'live', page = null, at = null } = {}) {
+export function buildHash({ site = null, date = null, companies = [], color = 'status', surface = 'map', tab = 'overview', building = null, zone = null, sky = 'live', page = null, at = null, hq = false } = {}) {
   const q = new URLSearchParams()
   if (page) q.set('page', page)              // 맨 앞: 공유 링크에서 "무슨 페이지인지"가 먼저 보이게
   if (page === 'stock' && at) q.set('at', at)
   if (date) q.set('date', date)
   if (site) q.set('site', site)
+  if (hq && !site && !page) q.set('hq', '1') // 본사 칸은 캠퍼스·페이지가 없을 때만 (한 화면에 하나)
   if (companies.length) q.set('c', [...companies].join(','))
   if (color && color !== 'status') q.set('color', color)
   if (site && surface === '3d') q.set('surface', surface)

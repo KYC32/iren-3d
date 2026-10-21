@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { buildInfra } from '../../scripts/build-data.mjs'
-import { boundsFor, MAP_HOME_CENTER, siteFeatures } from './mapData.js'
+import { boundsFor, MAP_HOME_CENTER, siteFeatures, REGION_NAMES, hqLngLat, regionBounds, mapLongitude } from './mapData.js'
 import { locationFor } from '../data/research.js'
 
 const raw = buildInfra()
@@ -35,5 +35,21 @@ describe('America-centered map bounds', () => {
     const sites = [179, -179].map((lng, i) => ({ ...raw.sites[0], id: `sample-${i}`, coord: { lat: 10, lng } }))
     expect(boundsFor(sites, { locations: [] }, { centerLng: MAP_HOME_CENTER[0] })).toEqual([[-181, 10], [-179, 10]])
     expect(boundsFor([], raw.research, { centerLng: MAP_HOME_CENTER[0] })).toBeNull()
+  })
+})
+
+// 본사(시드니) — '본사' 지역 단추와 지도 위 본사 카드 자리
+describe('본사 자리', () => {
+  const sites = raw.sites, research = raw.research, hq = raw.companies[0].hq
+  it('REGION_NAMES 끝에 본사', () => expect(Object.entries(REGION_NAMES).at(-1)).toEqual(['HQ', ['본사', 'HQ']]))
+  it('hqLngLat: 시드니는 이 지도에서 북미 왼쪽(번디와 같은 쪽)', () => {
+    const [lng] = hqLngLat(hq); expect(lng).toBe(mapLongitude(hq.lng)); expect(lng).toBeLessThan(MAP_HOME_CENTER[0])
+  })
+  it("regionBounds: 'AU'·'ALL' 은 본사를 품고, 'HQ' 는 null, 'US' 는 본사 없이", () => {
+    const au = regionBounds('AU', sites, research, hq)
+    expect(au[1][0]).toBeGreaterThanOrEqual(hqLngLat(hq)[0]); expect(au[0][1]).toBeLessThanOrEqual(hq.lat)
+    expect(regionBounds('ALL', sites, research, hq)[0][1]).toBeLessThanOrEqual(hq.lat)
+    expect(regionBounds('HQ', sites, research, hq)).toBeNull()
+    expect(regionBounds('US', sites, research, hq)).toEqual(boundsFor(sites.filter((s) => s.country === 'US'), research, { centerLng: MAP_HOME_CENTER[0] }))
   })
 })

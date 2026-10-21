@@ -76,6 +76,8 @@ export const useAppStore = create((set, get) => ({
   // 모바일: 순위·사이트 패널을 바텀시트로 열었는지
   sheetOpen: false,
   mapListCollapsed: false,
+  // 지도에서 본사(경영진 발언) 칸이 열려 있나 — 캠퍼스 칸과 같은 자리라 캠퍼스를 고르면 닫힘 (주소 #hq=1)
+  hqOpen: initial.hq === true && !initial.site,
 
   // ----- 액션 -----
   // 원본(infra.json)을 받으면 시작 날짜를 정하고 화면용 데이터를 만듦
@@ -94,6 +96,7 @@ export const useAppStore = create((set, get) => ({
       selectedZoneKey: customerZones(data.sites.find((s)=>s.id===id) ?? {buildings:[]},data.companies).some((z)=>z.key===h.zone) ? h.zone : null,
       activeCompanies: new Set((h.companies ?? []).filter((id) => raw.companies.some((c) => c.id === id))),
       colorMode: h.color ?? 'status', skyMode: h.sky ?? 'live', page: h.page ?? null, stockAt: h.at ?? null,
+      hqOpen: !id && !!h.hq, // #hq=1 로 들어온 경우 (캠퍼스 주소가 있으면 캠퍼스가 먼저)
     })
     get().syncHash()
   },
@@ -129,7 +132,7 @@ export const useAppStore = create((set, get) => ({
       date: st.month != null && st.month !== st.asOfMonth ? monthKey(st.month) : null,
       companies: [...st.activeCompanies],
       color: st.colorMode, surface: st.surface, tab: st.detailTab, building: st.selectedBuildingId, zone: st.selectedZoneKey,
-      sky: st.skyMode, page: st.page, at: st.stockAt,
+      sky: st.skyMode, page: st.page, at: st.stockAt, hq: st.hqOpen,
     })
     window.history.replaceState(null, '', hash || window.location.pathname + window.location.search)
   },
@@ -149,7 +152,7 @@ export const useAppStore = create((set, get) => ({
     })
     // 주소(해시)로 이동할 땐 카메라 전환 애니메이션 없이 바로 그 화면으로 (pending: null)
     set({ surface: id ? h.surface ?? 'map' : 'map', detailTab: h.tab ?? 'overview', selectedSiteId: id, view: id ? 'site' : 'globe', pending: null,
-      campusPanelCollapsed: false,
+      campusPanelCollapsed: false, hqOpen: !id && !!h.hq,
       selectedBuildingId: next.data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? h.building : null,
       buildingFly: next.data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? { id: h.building, seq: (get().buildingFly?.seq ?? 0) + 1 } : null,
       selectedZoneKey: customerZones(next.data.sites.find((s)=>s.id===id) ?? {buildings:[]},next.data.companies).some((z)=>z.key===h.zone) ? h.zone : null })
@@ -162,7 +165,7 @@ export const useAppStore = create((set, get) => ({
     if (!get().data?.sites.some((site) => site.id === id)) return
     set({ surface: '3d', view: 'site', selectedSiteId: id, detailTab: 'overview',
       selectedBuildingId: null, selectedZoneKey: null, buildingFly: null, hoverId: null,
-      pending: null, transitioning: false, sheetOpen: false, campusPanelCollapsed: false })
+      pending: null, transitioning: false, sheetOpen: false, campusPanelCollapsed: false, hqOpen: false })
     get().syncHash()
   },
   setDetailTab: (detailTab) => { set({ detailTab }); get().syncHash() },
@@ -172,11 +175,27 @@ export const useAppStore = create((set, get) => ({
     if (!get().data?.sites.some(site=>site.id===id)) return
     set({surface:'map',view:'site',selectedSiteId:id,detailTab:'overview',sheetOpen:false,
       selectedBuildingId:null,selectedZoneKey:null,buildingFly:null,hoverId:null,
-      pending:null,transitioning:false,mapCamera:null,mapFocusSeq:get().mapFocusSeq+1,campusPanelCollapsed:false})
+      pending:null,transitioning:false,mapCamera:null,mapFocusSeq:get().mapFocusSeq+1,campusPanelCollapsed:false,hqOpen:false})
     get().syncHash()
   },
   setMapCamera: (mapCamera) => set({ mapCamera }),
-  setMapRegion: (country) => { get().goGlobe(); set({ mapRegion: { country, seq: get().mapRegion.seq + 1 }, sheetOpen: false }) },
+  // 지역 단추 (북미·전체·…·본사): '본사'(HQ)면 시드니로 가면서 경영진 발언 칸을 엶, 다른 지역이면 그 칸을 닫음
+  setMapRegion: (country) => {
+    get().goGlobe()
+    set({ mapRegion: { country, seq: get().mapRegion.seq + 1 }, sheetOpen: false, hqOpen: false })
+    if (country === 'HQ') get().openHq()
+    else get().syncHash()
+  },
+  // 본사(경영진 발언) 칸 열기: 캠퍼스 선택을 풀고 지도 화면으로 (칸은 캠퍼스 칸과 같은 자리)
+  openHq: () => {
+    set({ hqOpen: true, surface: 'map', view: 'globe', selectedSiteId: null, sheetOpen: false,
+      hoverId: null, selectedBuildingId: null, buildingFly: null, selectedZoneKey: null })
+    get().syncHash()
+  },
+  closeHq: () => { set({ hqOpen: false }); get().syncHash() },
+  // 어느 화면(주가·뉴스 페이지, 3D)에서든 지도로 돌아와 본사로 이동하고 칸을 엶 — ≡ 메뉴 '경영진 발언'
+  //   순서 중요: setPage 가 칸을 닫으므로 먼저 부르고, 그다음 '본사' 지역으로
+  showHq: () => { get().setPage(null); get().setMapRegion('HQ') },
   setLoadError: (err) => set({ loadError: err }),
   // src: '3d'(캔버스 속 물체) | 'dom'(라벨·목록 등 HTML, 기본값)
   setHover: (id, src = 'dom') => {
@@ -221,7 +240,7 @@ export const useAppStore = create((set, get) => ({
   //   fromTour = 투어가 연 페이지(사업 현황 전망 단계) → 투어를 끝내지 않음
   setPage: (page, at = null, { fromTour = false } = {}) => {
     if (get().tour && !fromTour) get().stopTour()
-    set({ page: page ?? null, stockAt: page === 'stock' ? at : null, sheetOpen: false, playing: false })
+    set({ page: page ?? null, stockAt: page === 'stock' ? at : null, sheetOpen: false, playing: false, hqOpen: false })
     get().syncHash()
   },
   // 자동 투어: 시작 → 단계 이동 → 끝. 끝낼 땐 날짜·하늘을 기본으로 되돌림 (투어가 바꿔 둔 값이 남지 않게)
@@ -247,7 +266,7 @@ export const useAppStore = create((set, get) => ({
 
   // 사이트 선택 → 캠퍼스 뷰로 (CameraRig 가 애니메이션 도중에 호출) (URL 해시도 갱신해 공유 가능하게)
   selectSite: (id) => {
-    set({ detailTab: 'overview', sheetOpen: false, selectedSiteId: id, view: id ? 'site' : 'globe', hoverId: null, selectedBuildingId: null, buildingFly: null, selectedZoneKey: null, campusPanelCollapsed: false })
+    set({ detailTab: 'overview', sheetOpen: false, selectedSiteId: id, view: id ? 'site' : 'globe', hoverId: null, selectedBuildingId: null, buildingFly: null, selectedZoneKey: null, campusPanelCollapsed: false, hqOpen: false })
     get().syncHash()
   },
   goGlobe: () => {

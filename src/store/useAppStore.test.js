@@ -297,3 +297,22 @@ describe('주가·뉴스 페이지', () => {
     expect(state().tour).toBeNull()
   })
 })
+
+// 본사(경영진 발언) 칸 — 지도에서 시드니 본사 카드·'본사' 단추·≡ 메뉴로 열고, 캠퍼스·페이지·다른 지역으로 가면 닫힘
+describe('본사 칸', () => {
+  it('openHq: 캠퍼스 선택을 풀고 지도에서 칸을 엶 + 주소 #hq=1', () => {
+    state().setRaw(raw); state().selectSite('childress'); state().openHq()
+    expect(state()).toMatchObject({ hqOpen: true, view: 'globe', selectedSiteId: null, surface: 'map' })
+    expect(window.history.replaceState).toHaveBeenLastCalledWith(null, '', '#hq=1')
+  })
+  it.each([['selectSite', (s) => s.selectSite('childress')], ['focusSiteOnMap', (s) => s.focusSiteOnMap('childress')],
+    ['enterSite3D', (s) => s.enterSite3D('childress')], ['setPage', (s) => s.setPage('stock')], ['closeHq', (s) => s.closeHq()],
+    ["다른 지역 단추 setMapRegion('US')", (s) => s.setMapRegion('US')]])(
+    '%s 하면 본사 칸이 닫힘', (_, act) => { state().setRaw(raw); state().openHq(); act(state()); expect(state().hqOpen).toBe(false) })
+  it("setMapRegion('HQ') 는 본사 칸을 엶", () => { state().setRaw(raw); state().setMapRegion('HQ'); expect(state()).toMatchObject({ hqOpen: true, mapRegion: { country: 'HQ' } }) })
+  it('#hq=1 로 들어오면 데이터가 온 뒤 칸이 열림', () => { window.location.hash = '#hq=1'; state().setRaw(raw); expect(state().hqOpen).toBe(true) })
+  it('showHq: 주가 페이지에서도 지도로 돌아와 본사 칸', () => {
+    state().setRaw(raw); state().setPage('stock'); state().showHq()
+    expect(state()).toMatchObject({ page: null, hqOpen: true, surface: 'map', mapRegion: { country: 'HQ' } })
+  })
+})

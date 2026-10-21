@@ -89,6 +89,11 @@ export const Company = z.object({
   ticker: z.object({ symbol: z.string(), exchange: z.string() }).strict().optional(), // 비상장은 생략
   color: Hex,               // 회사색 모드의 핀 색 (파스텔, 상태색과 겹치지 않게)
   hq_country: Iso2,
+  // 본사 위치 (지도 위 본사 카드·'본사' 지역 단추) — 주소는 SEC 공시(10-K 표지) 그대로, 좌표는 그 주소의 지도 위치
+  hq: z.object({
+    city_ko: z.string(), city_en: z.string(), address: z.string(),
+    lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180), source: Url,
+  }).strict().optional(),
   summary_ko: z.string(),
   summary_en: z.string(),
   metrics: z.array(ReportedMetric).default([]),

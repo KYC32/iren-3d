@@ -64,3 +64,13 @@ describe('페이지 (page · at)', () => {
     expect(buildHash({ page: 'news', at: '2025-11-03' })).toBe('#page=news')
   })
 })
+
+// 본사(경영진 발언) 칸: #hq=1 — 캠퍼스·페이지 주소가 있으면 그쪽이 먼저 (한 화면에 하나만)
+describe('본사 칸 주소', () => {
+  it('hq=1 → hq', () => { expect(parseHash('#hq=1')).toEqual({ hq: true }); expect(parseHash('#hq=0')).toEqual({}) })
+  it('hq 는 캠퍼스·페이지가 없을 때만 주소에', () => {
+    expect(buildHash({ hq: true })).toBe('#hq=1')
+    expect(buildHash({ hq: true, site: 'childress' })).toBe('#site=childress')
+    expect(buildHash({ hq: true, page: 'stock' })).toBe('#page=stock')
+  })
+})
