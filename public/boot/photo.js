@@ -9,7 +9,8 @@
 //       랙 = 트레이를 다 꺼낸 사진, GPU = 냉각판·뚜껑을 걷어 낸 기판 사진 (그림도 확대하면 그렇게 보여 줌)
 //   · 움직임 줄이기 설정: 영상 없이 다 연 모습의 정지 사진
 //   · 영상을 못 틀면(자동 재생 막힘·코덱 없음·네트워크 오류) 그림으로 돌아감
-// 자원 (이 파일과 같은 폴더): rack|gpu .av1.mp4 · .h264.mp4, rack-open.avif, gpu-open.avif, gpu-board.avif
+// 자원 (이 파일과 같은 폴더): rack|gpu .av1.mp4 · .h264.mp4 (가로 1280), rack-960|gpu-960 … (휴대폰용 가로 960),
+//   rack-open.avif, gpu-open.avif, gpu-board.avif
 // 그림 코드(scripts/anatomy/rack/build.mjs 의 LIVE)가 window.__rackView 로 고리를 내 줌
 // =============================================================
 (() => {
@@ -74,7 +75,10 @@
   }
 
   // 둘러보기 영상 하나: 고른 코덱 먼저, 못 틀면 다른 쪽. 소리 없음·반복·화면 안에서 재생 (자동 재생 조건)
-  function movie(fig) {
+  //   칸이 화면에서 실제 1000 화소 이하(휴대폰·저해상도 화면)면 가로 960 판 — 받는 양이 약 절반, 그 크기에선 차이가 안 보임
+  function movie(p) {
+    const small = p.st.clientWidth * (window.devicePixelRatio || 1) <= 1000;
+    const fig = small ? p.fig + "-960" : p.fig;
     const v = document.createElement("video");
     v.muted = v.defaultMuted = true;
     v.loop = v.playsInline = true;
@@ -127,7 +131,7 @@
         p.base = picture();
         p.base.src = url(OPEN[p.fig]);
       } else {
-        p.base = movie(p.fig);
+        p.base = movie(p);
       }
       p.near = picture("rk-near");
       p.near.addEventListener("load", () => { p.nearOk = true; });

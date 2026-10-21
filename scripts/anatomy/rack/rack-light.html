@@ -605,12 +605,16 @@ const warm=()=>{const c=clock;for(let i=0;i<TOUR*30;i++)advance(1/30,false);cloc
 window.__rackView={stages:[stage,stage2],zoom:[Z1,Z2],size:[[D.W,D.H],[D2.W,D2.H]],still,TOUR,phase:()=>clock%TOUR,
   seek:(t)=>{let c=Math.floor(clock/TOUR)*TOUR+t;if(c-clock>TOUR/2&&c>=TOUR)c-=TOUR;else if(clock-c>TOUR/2)c+=TOUR;clock=c;warm();draw();},   // 지금 시계에 가장 가까운 같은 시각 (음수는 안 됨)
   pace:(f)=>{pace=f;},hook:(f)=>{hook=f;run();},quiet:(q)=>{quiet=q;draw();}};
-// 그림 | 사진 전환 (사진 코드·영상은 고를 때만 받음, 고른 것은 기억)
+// 그림 | 사진 전환 (사진 코드·영상은 사진일 때만 받음, 고른 것은 기억)
 const views=[...document.querySelectorAll(".rk-view button")];
 const view=(photo,save)=>{for(const b of views)b.setAttribute("aria-pressed",String((b.dataset.view==="photo")===photo));
   if(save)try{localStorage.setItem("rk-view",photo?"photo":"draw");}catch(e){}
   if(window.__rackPhoto)window.__rackPhoto(photo);
   else if(photo&&!document.querySelector("script[data-rk-photo]")){const s=document.createElement("script");s.src="/boot/photo.js";s.setAttribute("data-rk-photo","");document.head.appendChild(s);}};
 for(const b of views)b.addEventListener("click",()=>view(b.dataset.view==="photo",true));
-try{if(views.length&&localStorage.getItem("rk-view")==="photo")view(true,false);}catch(e){}
+// 처음 보기: 고른 적이 있으면 그대로, 없으면 사진 — 움직임 줄이기·데이터 절약·아주 느린 연결(2G)이면 그림
+//   영상이 재생될 때까지는 그림이 보이다가 겹쳐 바뀜 (그림과 사진이 같은 자리라 그림이 사진으로 바뀌는 것처럼, 빈 화면 없음)
+let saved=null;try{saved=localStorage.getItem("rk-view");}catch(e){}
+const net=navigator.connection, lite=still.matches||!!(net&&(net.saveData||/2g$/.test(net.effectiveType||"")));
+if(views.length&&(saved==="photo"||(!saved&&!lite)))view(true,false);
 </script></body></html>
