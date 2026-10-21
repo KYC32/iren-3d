@@ -58,6 +58,20 @@ export function flowDots(lines, spacing) {
   return dots
 }
 
+// 확대 보기 창의 랙 나누기: 카메라에서 가까운 순서로 near(m) 안의 랙을 최대 maxHi 대까지 정밀 틀(hi), 나머지는 멀리용 틀(lo)
+//   slots = [[x, y, z, 회전], …] (y = 랙 바닥, 거리는 랙 가운데 높이 +1.2 m 로 잼) → { hi: [자리 번호…], lo: [자리 번호…] }
+export function splitByDistance(slots, cam, near, maxHi) {
+  const order = slots
+    .map((s, i) => [(s[0] - cam[0]) ** 2 + (s[1] + 1.2 - cam[1]) ** 2 + (s[2] - cam[2]) ** 2, i])
+    .sort((a, b) => a[0] - b[0])
+  const hi = [], lo = []
+  for (const [d2, i] of order) (d2 <= near * near && hi.length < maxHi ? hi : lo).push(i)
+  return { hi, lo }
+}
+
+// 랙 자리 번호 → 사람이 읽는 위치 (줄 번호·줄 안 순서, 1부터). 줄마다 perRow 대씩 차례로 들어 있음
+export const rackPlace = (slot, perRow) => ({ row: Math.floor(slot / perRow) + 1, pos: (slot % perRow) + 1 })
+
 // 모형 안의 JSON 글(extras)을 안전하게 읽기 — 없거나 깨졌으면 기본값
 export function readJson(text, fallback) {
   try {

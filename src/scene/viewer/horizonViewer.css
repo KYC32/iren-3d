@@ -1,0 +1,45 @@
+/* =============================================================
+   horizonViewer.css — Horizon 3D 모형 확대 보기 창 (HorizonViewer.jsx 와 함께 나중에 불러옴)
+   색: IREN 남색(#0B344F)·초록(#71DA80). 강조는 색 칸 대신 입체 — 단추 막대는 떠 있는(양각) 흰 판, 고른 단추는 눌린(음각) 남색
+   ============================================================= */
+.hz-viewer { position: relative; flex: 1; min-height: 0; background: #e7edf3; overflow: hidden; }
+.hz-viewer canvas { display: block; touch-action: none; }   /* 손가락 돌리기·확대는 카메라 조작이 받음 */
+
+/* 받는 중·실패 안내 (가운데 글) */
+.hz-viewer-wait { position: absolute; inset: 0; display: grid; place-items: center; color: #4a5672; font-size: 13px; pointer-events: none; }
+
+/* 아래 단추 막대: 시점 5개 | 지붕 · 이름표 */
+.hz-viewer-bar { position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); z-index: 10; display: flex; align-items: center; gap: 2px; max-width: calc(100% - 24px); overflow-x: auto; padding: 4px; background: #ffffffee; border: 1px solid #d5dee6; border-radius: 12px; box-shadow: 0 6px 18px #1b2a4a26, inset 0 1px 0 #fff; scrollbar-width: none; }
+.hz-viewer-bar button { display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: #34405e; font: 600 12px/1 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; white-space: nowrap; cursor: pointer; }
+.hz-viewer-bar button:hover { background: #eef1f6; }
+.hz-viewer-bar button[aria-pressed="true"] { background: #0b344f; color: #fff; box-shadow: inset 0 1px 3px #00000059; }
+.hz-viewer-bar button:focus-visible { outline: 2px solid #2ea88a; outline-offset: 1px; }
+.hz-viewer-sep { flex: none; width: 1px; height: 20px; margin: 0 4px; background: #d5dee6; }
+
+/* 고른 부품 카드 (왼쪽 위) */
+.hz-viewer-card { position: absolute; top: 12px; left: 12px; z-index: 10; width: min(300px, calc(100% - 24px)); padding: 10px 12px 12px; background: #fff; border: 1px solid #d5dee6; border-radius: 12px; box-shadow: 0 8px 24px #1b2a4a2e; font-size: 12px; color: #34405e; }
+.hz-viewer-card h3 { margin: 0 26px 2px 0; font-size: 14px; color: #0b344f; word-break: keep-all; }
+.hz-viewer-card p { margin: 0 0 8px; line-height: 1.55; word-break: keep-all; }
+.hz-viewer-sub { margin-bottom: 6px; font-size: 11.5px; color: #6b7690; }
+.hz-viewer-basis { padding-top: 6px; border-top: 1px solid #eef1f6; font-size: 11px; line-height: 1.45; color: #6b7690; word-break: keep-all; }
+.hz-viewer-x { position: absolute; top: 6px; right: 6px; display: grid; place-items: center; width: 26px; height: 26px; border: 0; border-radius: 7px; background: transparent; color: #4a5672; cursor: pointer; }
+.hz-viewer-x:hover { background: #eef1f6; }
+
+/* 흐름 범례 + 그림 표현 안내 (오른쪽 위) */
+.hz-viewer-legend { position: absolute; top: 12px; right: 12px; z-index: 9; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 4px 10px; max-width: min(320px, 50%); padding: 6px 10px; background: #ffffffe6; border: 1px solid #d5dee6; border-radius: 10px; font-size: 11.5px; color: #34405e; cursor: help; }
+.hz-viewer-legend span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.hz-viewer-legend i { width: 9px; height: 9px; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
+.hz-viewer-legend small { flex-basis: 100%; text-align: right; font-size: 10.5px; color: #6b7690; }
+
+/* 부품 이름표 (3D 위 알약 — 누르면 카드) */
+.hz-viewer-label { pointer-events: auto; padding: 2px 9px; border: 1px solid #c9d6e6; border-radius: 999px; background: #ffffffe8; color: #0b344f; font: 600 11px/1.5 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; white-space: nowrap; cursor: pointer; box-shadow: 0 2px 6px #1b2a4a1f; }
+.hz-viewer-label:hover { background: #0b344f; color: #fff; border-color: #0b344f; }
+
+/* 휴대폰: 카드는 아래쪽, 단추는 아이콘만, 범례는 한 줄로 작게 */
+@media (max-width: 640px) {
+  .hz-viewer-card { top: auto; bottom: 60px; left: 8px; width: calc(100% - 16px); }
+  .hz-viewer-bar button { padding: 0 9px; }
+  .hz-viewer-bar button span { display: none; }
+  .hz-viewer-legend { top: 8px; right: 8px; max-width: calc(100% - 16px); }
+  .hz-viewer-legend small { display: none; }
+}

@@ -1,5 +1,28 @@
 import { describe, it, expect } from 'vitest'
-import { isGzip, isGlb, fitScale, cumulative, pointAlong, flowDots, readJson } from './horizonHall.js'
+import { isGzip, isGlb, fitScale, cumulative, pointAlong, flowDots, readJson, splitByDistance, rackPlace } from './horizonHall.js'
+
+describe('horizonHall — 확대 보기 창의 랙 나누기', () => {
+  // 랙 4대가 x 축으로 10 m 간격 (바닥 y = 0.3)
+  const slots = [0, 10, 20, 30].map((x) => [x, 0.3, 0, 0])
+  it('카메라에서 가까운 순서로 near 안의 랙만 정밀 틀', () => {
+    expect(splitByDistance(slots, [0, 1.5, 0], 15, 10)).toEqual({ hi: [0, 1], lo: [2, 3] })
+  })
+  it('가까워도 maxHi 대를 넘으면 멀리용 틀로', () => {
+    expect(splitByDistance(slots, [12, 1.5, 0], 100, 2)).toEqual({ hi: [1, 2], lo: [0, 3] })
+  })
+  it('모든 랙이 hi 나 lo 중 한쪽에 정확히 한 번', () => {
+    const { hi, lo } = splitByDistance(slots, [5, 1.5, 3], 12, 3)
+    expect([...hi, ...lo].sort()).toEqual([0, 1, 2, 3])
+  })
+})
+
+describe('horizonHall — 랙 위치 이름', () => {
+  it('29대씩 줄을 지어 들어 있으면 30번째 자리는 2줄 1번째', () => {
+    expect(rackPlace(0, 29)).toEqual({ row: 1, pos: 1 })
+    expect(rackPlace(29, 29)).toEqual({ row: 2, pos: 1 })
+    expect(rackPlace(347, 29)).toEqual({ row: 12, pos: 29 })
+  })
+})
 
 describe('horizonHall — 파일 종류 알아보기', () => {
   it('gzip 과 GLB 머리글을 구분한다', () => {

@@ -6,7 +6,7 @@
 import { Suspense, lazy } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { PerformanceMonitor } from '@react-three/drei'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 const GlobeView = lazy(() => import('./GlobeView.jsx'))
 import { SINGLE_COMPANY } from '../config.js'
@@ -32,12 +32,20 @@ export default function Scene({ record = false }) {
   const background = campusLandscape(site?.id)?.background ?? campusAppearance(site?.id)?.background ?? BG
   const shadowSpan = campus ? campusSide * 1.15 : 110
   const boardMode = Boolean(SINGLE_COMPANY) && !record
+  // Horizon 3D 확대 창(그림 대화상자의 3D 탭)이 떠 있는 동안은 뒤 캠퍼스를 그리지 않음 → WebGL 화면 두 개가 동시에 돌지 않게
+  //   창(viewer/HorizonViewer.jsx)이 열리고 닫힐 때 보내는 'iren:viewer3d' 이벤트를 들음
+  const [paused, setPaused] = useState(false)
+  useEffect(() => {
+    const onViewer = (e) => setPaused(Boolean(e.detail))
+    window.addEventListener('iren:viewer3d', onViewer)
+    return () => window.removeEventListener('iren:viewer3d', onViewer)
+  }, [])
 
   return (<>
     <Canvas
       shadows="percentage"
       // 녹화 모드: 자동 렌더를 끄고(never) RecordDirector 가 한 프레임씩 직접 그림
-      frameloop={record ? 'never' : 'always'}
+      frameloop={record || paused ? 'never' : 'always'}
       dpr={record ? 1 : [1, dpr]}
       camera={{ fov: 30, near: 0.5, far: 3000, position: [200, 150, 200] }}
       gl={{ antialias: true }}

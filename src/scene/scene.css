@@ -16,5 +16,9 @@
 .bld-label .bld-figure { display: inline-flex; align-items: center; gap: 5px; margin-top: 5px; border: 0; border-radius: 999px; padding: 4px 10px 4px 8px; background: #16213a; color: #fff; font: 600 11px/1.3 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer; pointer-events: auto; white-space: nowrap; }
 .bld-label .bld-figure:hover { background: #24365c; }
 /* Horizon 3D 모형을 열었을 때의 안내 (배치·대수는 그림 표현) — 마우스를 올리면 근거 전체(title) */
-.hz-note { width: max-content; max-width: 220px; white-space: normal; background: #ffffffeb; border: 1px solid #c9d6e6; border-radius: 8px; padding: 3px 8px; font: 500 10.5px/1.4 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; color: #4a5672; box-shadow: 0 2px 8px #1b2a4a1a; pointer-events: auto; cursor: help; }
+.hz-note { display: grid; justify-items: start; gap: 4px; width: max-content; max-width: 220px; white-space: normal; background: #ffffffeb; border: 1px solid #c9d6e6; border-radius: 8px; padding: 4px 8px 6px; font: 500 10.5px/1.4 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; color: #4a5672; box-shadow: 0 2px 8px #1b2a4a1a; pointer-events: auto; cursor: help; }
+/* 확대 보기 창 여는 단추 (그림 단추와 같은 남색 알약) */
+.hz-note-zoom { display: inline-flex; align-items: center; gap: 4px; border: 0; border-radius: 999px; padding: 3px 9px 3px 7px; background: #16213a; color: #fff; font: 600 10.5px/1.3 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; cursor: pointer; }
+.hz-note-zoom:hover { background: #24365c; }
+.hz-note-zoom:focus-visible { outline: 2px solid #2ea88a; outline-offset: 2px; }
 

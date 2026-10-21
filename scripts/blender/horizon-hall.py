@@ -239,10 +239,79 @@ def empty(name, parent, loc=(0, 0, 0), **props):
     return link(ob, parent, **props)
 
 
-# 웹이 읽는 정보: part(부품 이름) · show(always 늘 / closed 닫혔을 때 / open 속을 열었을 때 / template 틀)
-#   basis = 무엇이 회사 자료이고 무엇이 그림 표현인지
-def info(part, ko, en, show, basis, count=None):
-    d = {"part": part, "label_ko": ko, "label_en": en, "show": show, "basis": basis}
+# 웹이 읽는 정보 (GLB extras → three.js userData)
+#   part 부품 이름 · show(always 늘 / closed 닫혔을 때 / open 속을 열었을 때 / template 틀) · count 대수
+#   label_* 이름 · role_* 하는 일 · basis_* 무엇이 회사 자료이고 무엇이 그림 표현인지 (한국어 ko / 영어 en)
+#   → 확대 보기 창(HorizonViewer)에서 부품을 누르면 이 글이 카드로 뜸
+TEXT = {
+    "pad": ("부지", "Site pad",
+            "건물과 설비가 놓인 콘크리트 부지", "Concrete pad under the building and equipment",
+            "그림 표현", "Illustrative"),
+    "shell": ("건물", "Building",
+              "단열 금속 패널 건물. 확대 창의 '지붕' 단추로 지붕을 덮거나 걷을 수 있음",
+              "Insulated metal-panel building. The roof button shows or lifts the roof",
+              "그림 표현: 크기·모양 (회사 미공개)", "Illustrative: size and shape not disclosed"),
+    "status": ("상태 띠", "Status band",
+               "가동·시운전 같은 건물 상태 색 (캠퍼스 화면과 같은 색)", "Building status color, as on the campus view",
+               "사이트 표시", "Site marker"),
+    "dry_cooler": ("건식 냉각기", "Dry coolers",
+                   "데워진 냉각수를 바깥 공기로 식힘. 팬이 핀 코일 사이로 공기를 위로 뽑아냄 — 물을 증발시키지 않아 물을 거의 안 씀",
+                   "Cool the warm water with outside air; fans pull air up through finned coils — no evaporation, so little water use",
+                   "회사 확인: 설비 종류 (6-K 2025-01) · 그림 표현: 대수·배치",
+                   "Company: equipment type (6-K, Jan 2025) · Illustrative: count and layout"),
+    "chiller": ("칠러", "Chillers",
+                "더운 날 건식 냉각기만으로 물이 덜 식으면 압축기로 더 식혀 거듦",
+                "On hot days, compressors help when the dry coolers alone can't cool the water enough",
+                "회사 확인: 설비 종류 (6-K 2025-01) · 그림 표현: 대수·배치",
+                "Company: equipment type (6-K, Jan 2025) · Illustrative: count and layout"),
+    "pump": ("냉각수 펌프", "Pumps",
+             "1차 냉각수를 냉각 설비와 건물 사이로 돌림 (1대는 예비)",
+             "Circulate the facility water between the cooling plant and the hall (one spare)",
+             "그림 표현", "Illustrative"),
+    "generator": ("디젤 발전기", "Diesel generators",
+                  "전력망이 끊기면 켜져 전기를 대신 공급 — 켜지는 몇 초 동안은 UPS 배터리가 버팀",
+                  "Start when the grid fails and carry the load; UPS batteries bridge the seconds while they start",
+                  "회사 확인: 설비 종류 (6-K 2025-01) · 그림 표현: 대수·배치",
+                  "Company: equipment type (6-K, Jan 2025) · Illustrative: count and layout"),
+    "transformer": ("중압 변압기", "MV transformers",
+                    "변전소에서 온 중압 전기를 건물에서 쓰는 낮은 전압으로 낮춤 (A·B 두 갈래)",
+                    "Step medium-voltage power from the substation down to building voltage (A and B paths)",
+                    "회사 확인: 2대 (2025-06 회사 영상) · 그림 표현: 배치",
+                    "Company: two units (June 2025 company video) · Illustrative: layout"),
+    "pipes_primary": ("1차 냉각수 배관", "Primary water loop",
+                      "시설 냉각수: 찬물(파랑 점)은 CDU 로, 데워진 물(빨강 점)은 건식 냉각기·칠러로",
+                      "Facility water: cold (blue dots) to the CDUs, warm (red dots) back to the dry coolers and chillers",
+                      "회사 영상: 건물 옆 굵은 보온 배관 · 그림 표현: 경로",
+                      "Company video: thick insulated pipes along the building · Illustrative: routing"),
+    "electrical": ("전기실 (배전반·UPS·배터리)", "Electrical room (switchgear, UPS, batteries)",
+                   "배전반이 전기를 나누고 UPS·배터리가 정전 순간을 메움. A·B 두 갈래라 한쪽을 정비해도 GPU 는 계속 돎 (Tier III 수준 동시 유지보수)",
+                   "Switchgear distributes power; UPS batteries ride through outages. Two paths (A/B) let one be serviced while GPUs keep running (Tier III-level concurrent maintainability)",
+                   "회사 확인: UPS (6-K 2025-01)·동시 유지보수 (2025-11 자료) · 그림 표현: 대수·배치",
+                   "Company: UPS (6-K, Jan 2025) and concurrent maintainability (Nov 2025) · Illustrative: count and layout"),
+    "cdu": ("냉각수 분배기 (CDU)", "Coolant distribution units (CDU)",
+            "랙을 도는 깨끗한 2차 냉각수와 시설 1차 냉각수 사이에서 열을 넘겨주는 열교환기·펌프. 줄마다 2대 가동 + 1대 대기",
+            "Heat exchangers and pumps between the clean rack loop and the facility water. Per row: two running, one standby",
+            "회사 확인: CDU (6-K 2025-01) · 그림 표현: 줄마다 3대",
+            "Company: CDUs (6-K, Jan 2025) · Illustrative: three per row"),
+    "overhead": ("천장 배관·버스웨이·광케이블", "Overhead pipes, busways, fiber",
+                 "파랑 = 랙으로 가는 찬물, 빨강 = 데워져 돌아오는 물, 회색 버스웨이 = 랙 전원(A·B), 노란 트레이 = GPU 끼리 잇는 광케이블",
+                 "Blue = cold water to the racks, red = warm return, grey busways = rack power (A/B), yellow tray = fiber linking the GPUs",
+                 "회사 영상: 노란 광케이블·구리 냉각판 · 그림 표현: 경로",
+                 "Company video: yellow fiber and copper cold plates · Illustrative: routing"),
+    "racks": ("GB300 NVL72 랙", "GB300 NVL72 racks",
+              "랙 1대 = GPU 72개(한 NVLink 도메인), 약 130~200 kW. 칩 위 구리 냉각판으로 물이 직접 지나가 열을 가져감",
+              "One rack = 72 GPUs (one NVLink domain), about 130–200 kW. Water runs through copper cold plates right on the chips",
+              "회사 확인: GB300 NVL72 (Dell 공급)·랙 130~200 kW · 그림 표현: 줄 배치 · 사이트 가정: 348대",
+              "Company: GB300 NVL72 (supplied by Dell), 130–200 kW racks · Illustrative: row layout · Site assumption: 348 racks"),
+    "rack_template": ("랙 틀", "Rack template", "랙 348대를 찍어 그리는 틀", "Template stamped at every rack slot",
+                      "그림 표현", "Illustrative"),
+}
+
+
+def info(part, show, count=None, text=None):
+    """부품 정보 묶음 — 글은 TEXT[text 또는 part] 에서"""
+    lk, le, rk, re_, bk, be = TEXT[text or part]
+    d = {"part": part, "show": show, "label_ko": lk, "label_en": le, "role_ko": rk, "role_en": re_, "basis_ko": bk, "basis_en": be}
     if count is not None:
         d["count"] = count
     return d
@@ -382,7 +451,7 @@ def build():
     prev = bpy.data.collections.new("HZ_preview")       # 미리보기용 (땅·빛·카메라·랙 배치) — 내보내지 않음
     scene.collection.children.link(prev)
 
-    root = empty("Horizon_hall", col, model="horizon-hall", version=1,
+    root = empty("Horizon_hall", col, model="horizon-hall", version=2,
                  lot_m=json.dumps([LOT_X * 2, LOT_Y * 2]), building_m=json.dumps([BX1 - BX0, BY1 - BY0, H + FL]),
                  it_mw=50, gross_mw=75, rack_kw="130-200", racks=ROWS * PER_ROW,
                  note_ko="회사 자료: IT 50 MW·전체 75 MW, GB300 NVL72, 칠러·건식 냉각기·CDU·UPS·디젤 발전기·중압 변압기 2대. "
@@ -395,7 +464,7 @@ def build():
     # 부지 콘크리트판
     b = Builder("HZ_pad")
     b.box(M['pad'], 0, 0, -0.05, LOT_X * 2, LOT_Y * 2, 0.05)
-    b.finish(root, **info("pad", "부지", "Site pad", "always", "illustrative"))
+    b.finish(root, **info("pad", "always"))
 
     # 건물: 늘 보이는 부분 (바닥판·뒤쪽 두 벽·앞쪽 두 벽의 아랫단·칸막이 아랫부분)
     b = Builder("HZ_shell")
@@ -407,7 +476,7 @@ def build():
     b.box(M['slab'], BX1 - T / 2, cy_b, FL, T, ly_b, LOW)
     b.box(M['wall'], EX, cy_b, FL, 0.2, ly_b - 2 * T, 3.0)
     b.box(M['bollard'], 0, BY0 + T + 0.35, FL + 0.011, lx_b - 2 * T - 0.4, 0.08, 0.004)   # 노란 안전선 (CDU 앞)
-    b.finish(root, **info("shell", "건물", "Building", "always", "illustrative"))
+    b.finish(root, **info("shell", "always"))
 
     # 건물: 닫혔을 때만 (지붕·앞쪽 벽 윗부분·벽 골·남색 띠·지붕 공조기·반입문)
     b = Builder("HZ_roof")
@@ -430,45 +499,41 @@ def build():
         b.box(M['unit'], ax, 32, FL + H + 0.25, 4, 2.4, 1.6)
         for dx in (-1, 1):
             fan(b, ax + dx, 32, FL + H + 1.85, 0.6)
-    b.finish(root, **info("roof", "지붕·벽", "Roof and walls", "closed", "illustrative"))
+    b.finish(root, **info("roof", "closed", text="shell"))
 
     # 상태색 띠: 닫혔을 땐 지붕 난간 위, 열었을 땐 잘린 벽 위 (웹이 HZ_status 재질 색을 상태색으로 바꿈)
     b = Builder("HZ_status_roof")
     for (cx, cy, sx, sy) in [(0, BY0 + 0.15, lx_b, 0.32), (BX1 - 0.15, cy_b, 0.32, ly_b)]:
         b.box(M['status'], cx, cy, FL + H + 0.85, sx, sy, 0.08)
-    b.finish(root, **info("status", "상태 띠", "Status band", "closed", "illustrative"))
+    b.finish(root, **info("status", "closed"))
     b = Builder("HZ_status_walls")
     for (cx, cy, sx, sy, z) in [(0, BY0 + T / 2, lx_b, T + 0.02, FL + LOW), (BX1 - T / 2, cy_b, T + 0.02, ly_b, FL + LOW),
                                 (0, BY1 - T / 2, lx_b, T + 0.02, FL + H), (BX0 + T / 2, cy_b, T + 0.02, ly_b, FL + H)]:
         b.box(M['status'], cx, cy, z, sx, sy, 0.08)
-    b.finish(root, **info("status", "상태 띠", "Status band", "open", "illustrative"))
+    b.finish(root, **info("status", "open"))
 
     # ----- 마당 설비 (부품마다 물체 하나 — 웹에서 눌러 강조하거나 다른 프로젝트에서 골라 쓰기 쉽게) -----
     b = Builder("HZ_dry_coolers")
     for cx in DC_COLS:
         for cy in DC_ROWS:
             dry_cooler(b, cx, cy)
-    b.finish(root, **info("dry_cooler", "건식 냉각기", "Dry coolers", "always",
-                          "회사 확인: 설비 종류 (6-K 2025-01) · 그림 표현: 대수·배치", len(DC_COLS) * len(DC_ROWS)))
+    b.finish(root, **info("dry_cooler", "always", len(DC_COLS) * len(DC_ROWS)))
     b = Builder("HZ_chillers")
     for cx in CHILLER_X:
         chiller(b, cx, -17.0)
-    b.finish(root, **info("chiller", "칠러", "Chillers", "always",
-                          "회사 확인: 설비 종류 (6-K 2025-01) · 그림 표현: 대수·배치", len(CHILLER_X)))
+    b.finish(root, **info("chiller", "always", len(CHILLER_X)))
     b = Builder("HZ_pumps")
     for cx in CHILLER_X:
         pump_skid(b, cx, -21.5)
-    b.finish(root, **info("pump", "냉각수 펌프", "Pumps", "always", "그림 표현", len(CHILLER_X)))
+    b.finish(root, **info("pump", "always", len(CHILLER_X)))
     b = Builder("HZ_generators")
     for i in range(GEN_COUNT):
         generator(b, -27.5 + i * 5.0, -38.0)
-    b.finish(root, **info("generator", "디젤 발전기", "Diesel generators", "always",
-                          "회사 확인: 설비 종류 (6-K 2025-01) · 그림 표현: 대수·배치", GEN_COUNT))
+    b.finish(root, **info("generator", "always", GEN_COUNT))
     b = Builder("HZ_transformers")
     for cx in XFMR_X:
         transformer(b, cx, XFMR_Y)
-    b.finish(root, **info("transformer", "중압 변압기", "MV transformers", "always",
-                          "회사 확인: 2대 (2025-06 회사 영상) · 그림 표현: 배치", len(XFMR_X)))
+    b.finish(root, **info("transformer", "always", len(XFMR_X)))
 
     # 1차 배관 (보온 알루미늄): 본관 2개 + 받침 + 줄마다 가지관 (벽을 지나 CDU 로) + 세로관
     b = Builder("HZ_pipes_primary")
@@ -489,8 +554,7 @@ def build():
     for ry in DC_ROWS:
         b.cyl(M['insul'], (29.2, ry, P_RET_Z), (DC_COLS[-1] + 6.5, ry, P_RET_Z), 0.16, 10, cap0=False)
     b.cyl(M['insul'], (CHILLER_X[0] - 2.0, -21.5, P_SUP_Z), (28.4, -21.5, P_SUP_Z), 0.22, 12)
-    b.finish(root, **info("pipes_primary", "1차 냉각수 배관", "Primary water loop", "always",
-                          "회사 영상: 건물 옆 굵은 보온 배관 · 그림 표현: 경로"))
+    b.finish(root, **info("pipes_primary", "always"))
 
     # ----- 홀 속 (열었을 때) -----
     b = Builder("HZ_electrical")
@@ -508,8 +572,7 @@ def build():
     b.box(M['busway'], (-25.4 + trunk_x1) / 2, 42.0, FL + 4.2, trunk_x1 + 25.4, 0.4, 0.3)
     for (rx, face) in ROW_LIST:   # 본선 → 줄 버스웨이로 내려오는 짧은 덕트
         b.box(M['busway'], rx, 41.4, FL + BUS_Z, 0.3, 0.4, 4.2 - BUS_Z)
-    b.finish(root, **info("electrical", "전기실 (배전반·UPS·배터리)", "Electrical room (switchgear, UPS, batteries)", "open",
-                          "회사 확인: UPS (6-K 2025-01) · 그림 표현: 대수·배치"))
+    b.finish(root, **info("electrical", "open"))
 
     b = Builder("HZ_cdus")
     for (rx, face) in ROW_LIST:
@@ -522,8 +585,7 @@ def build():
             b.box(M['green'] if k < CDU_PER_ROW - 1 else M['steel'], front_x + face * 0.012, cy + 0.25, FL + 1.85, 0.02, 0.08, 0.08)
             b.cyl(M['supply'], (sup_x, cy - 0.15, FL + 2.3), (sup_x, cy - 0.15, FL + SUP_Z), 0.06, 8, cap0=False)
             b.cyl(M['return'], (ret_x, cy + 0.15, FL + 2.3), (ret_x, cy + 0.15, FL + RET_Z), 0.06, 8, cap0=False)
-    b.finish(root, **info("cdu", "냉각수 분배기 (CDU)", "Coolant distribution units (CDU)", "open",
-                          "회사 확인: CDU (6-K 2025-01) · 그림 표현: 줄마다 3대(2대 가동 + 1대 대기)", len(ROW_LIST) * CDU_PER_ROW))
+    b.finish(root, **info("cdu", "open", len(ROW_LIST) * CDU_PER_ROW))
 
     b = Builder("HZ_overhead")
     for (rx, face) in ROW_LIST:
@@ -534,20 +596,18 @@ def build():
         for tx in (-0.2, 0.2):                                                                   # 버스웨이 A·B
             b.box(M['busway'], rx + tx, (CDU_Y0 + 41.6) / 2, FL + BUS_Z, 0.14, 41.6 - CDU_Y0, 0.12)
         b.box(M['fiber'], front_x - face * 0.15, (RACK_Y0 + Y_END) / 2, FL + FIB_Z, 0.3, Y_END - RACK_Y0, 0.08)   # 광케이블 트레이
-    b.finish(root, **info("overhead", "천장 배관·버스웨이·광케이블", "Overhead pipes, busways, fiber", "open",
-                          "회사 영상: 노란 광케이블·구리 냉각판 · 그림 표현: 경로"))
+    b.finish(root, **info("overhead", "open"))
 
     # ----- 랙: 자리 목록 + 틀 2개 -----
     slots = rack_slots()
     to_gltf = lambda x, y, z: [round(x, 3), round(z, 3), round(-y, 3)]   # Blender (x,y,z) → GLB (x,y,z)
-    empty("HZ_racks", root, **info("racks", "GB300 NVL72 랙", "GB300 NVL72 racks", "open",
-                                    "회사 확인: GB300 NVL72 (Dell 공급) · 그림 표현: 줄 배치 · 사이트 가정: 348대", len(slots)),
+    empty("HZ_racks", root, **info("racks", "open", len(slots)),
           slots=json.dumps([to_gltf(x, y, z) + [math.pi if f < 0 else 0.0] for (x, y, z, f) in slots]))
     tpl = empty("HZ_templates", root, loc=(0, 0, TEMPLATE_Z), show="template")
     for name, fn in (("HZ_rack_lo", rack_lo), ("HZ_rack_hi", rack_hi)):
         b = Builder(name)
         fn(b)
-        b.finish(tpl, **info("rack_template", "랙 틀", "Rack template", "template", "그림 표현"))
+        b.finish(tpl, **info("rack_template", "template"))
 
     # ----- 흐름 경로 (웹이 이 선을 따라 점을 흘림) -----
     flows = {"power": [], "supply": [], "return": []}
