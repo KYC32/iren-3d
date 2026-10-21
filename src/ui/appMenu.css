@@ -17,6 +17,12 @@
 .app-menu-head button { display: inline-grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 9px; background: transparent; color: var(--text); cursor: pointer; }
 .app-menu-head button:hover { background: #eef2fb; }
 
+/* 맨 위 바로가기 한 줄 (경영진 발언 — 지도 시드니 본사 칸으로): 서랍 폭 가득, 아래 경계선 */
+.app-menu-link { display: flex; align-items: center; gap: 10px; width: 100%; padding: 12px 18px; border: 0; border-bottom: 1px solid var(--panel-border); background: transparent; color: #0b344f; text-align: left; cursor: pointer; font: inherit; }
+.app-menu-link:hover, .app-menu-link:focus-visible { background: #f1f8f3; outline: none; }
+.app-menu-link b { display: block; font-size: 13px; }
+.app-menu-link small { display: block; margin-top: 1px; font-size: 11px; color: #5a6b78; }
+
 /* 메뉴 칸 하나 (지금은 갱신 기록) — 남는 높이를 다 쓰고, 목록만 스크롤 */
 .app-menu-section { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 10px 10px 12px; }
 .app-menu-section h3 { display: flex; align-items: center; gap: 6px; margin: 2px 6px 2px; font-size: 13px; font-weight: 700; color: #16213a; }

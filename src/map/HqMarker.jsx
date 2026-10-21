@@ -12,7 +12,7 @@ import { createPortal } from 'react-dom'
 import { Marker } from 'maplibre-gl'
 import { Building2 } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore.js'
-import { useT } from '../i18n/useT.js'
+import { hqText } from '../i18n/hq.js' // 본사·경영진 발언 문구 (첫 화면 사전과 따로)
 import { hqLngLat } from './mapData.js'
 import { loadStatements, peekStatements } from '../data/loadStatements.js'
 import { recentCount } from '../data/promises.js'
@@ -22,7 +22,7 @@ import { initialsOf } from '../data/format.js'
 const today = () => new Date().toISOString().slice(0, 10)
 
 export default function HqMarker({ map, hq, lang, open }) {
-  const t = useT(), ko = lang === 'ko'
+  const ko = lang === 'ko', h = hqText[ko ? 'ko' : 'en']
   const [element] = useState(() => { const el = document.createElement('div'); el.className = 'campus-map-marker'; return el })
   const [file, setFile] = useState(peekStatements) // 이미 받은 자료가 있으면 바로 씀
 
@@ -52,12 +52,12 @@ export default function HqMarker({ map, hq, lang, open }) {
   const city = ko ? hq.city_ko : hq.city_en
   return createPortal(
     <button className={`map-campus-card is-hq${open ? ' is-selected' : ''}`} style={{ '--marker-color': '#0b344f' }}
-      aria-pressed={open} aria-label={t.hq.open} title={t.hq.open}
+      aria-pressed={open} aria-label={h.open} title={h.open}
       onClick={(e) => { e.stopPropagation(); useAppStore.getState().openHq() }}>
       <span className="map-marker-icon"><Building2 size={16} aria-hidden="true" /></span>
-      <span className="map-marker-copy"><b>{t.hq.title}</b><span>{t.hq.sub.replace('{city}', city).replace('{n}', people.length)}</span></span>
+      <span className="map-marker-copy"><b>{h.title}</b><span>{h.sub.replace('{city}', city).replace('{n}', people.length)}</span></span>
       <span className="hq-faces" aria-hidden="true">{people.map((p, i) => <Face key={p?.id ?? i} person={p} />)}</span>
-      {count > 0 && <span className="hq-new">{t.hq.newCount.replace('{n}', count)}</span>}
+      {count > 0 && <span className="hq-new">{h.newCount.replace('{n}', count)}</span>}
       <span className="map-marker-stem" />
     </button>, element)
 }

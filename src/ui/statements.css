@@ -1,0 +1,69 @@
+/* =============================================================
+   statements.css — "경영진 발언" 칸 (StatementsPanel.jsx 와 함께 처음 열 때 불러옴)
+   겉 상자 자리·휴대폰 아래 시트는 캠퍼스 칸 규칙(.site-panel.campus-panel, global.css)을 그대로 씀
+   색: IREN 남색 #0B344F · 초록 #71DA80, 판정 색은 아래 변수 다섯 개
+   ============================================================= */
+.statements-panel {
+  --v-kept: #71da80;       /* 지켜짐 */
+  --v-late-kept: #b9d97a;  /* 늦게 지켜짐 */
+  --v-late: #e8b04a;       /* 늦어짐 */
+  --v-withdrawn: #c4645a;  /* 철회 */
+  --v-pending: #c3ccd3;    /* 기한 전 */
+  color: #16213a;
+}
+.statements-panel .st-status { margin: 12px 0; font-size: 12.5px; color: #4b5b68; }
+
+/* 1) 사람 */
+.st-people { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-top: 4px; }
+.st-person { display: flex; align-items: center; gap: 8px; }
+.st-person b { display: block; font-size: 12.5px; color: #0b344f; }
+.st-person small { display: block; font-size: 10.5px; color: #5a6b78; }
+.st-face { display: grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; background: #c9d2d9; object-fit: cover; box-shadow: 0 1px 4px rgba(11, 52, 79, .2); font: 700 11px/1 ui-sans-serif, system-ui, sans-serif; font-style: normal; color: #fff; }
+.st-face.is-small { width: 24px; height: 24px; font-size: 9px; }
+.st-face.is-initials { background: #0b344f; }
+.st-photo-src { margin: 6px 0 0; font-size: 10.5px; }
+.st-photo-src a { display: inline-flex; align-items: center; gap: 2px; color: #3a6a9a; text-decoration: none; }
+.st-photo-src a:hover { text-decoration: underline; }
+
+/* 2) 성적표 */
+.st-score { margin-top: 12px; padding: 10px 0; border-top: 1px solid #e6ebef; border-bottom: 1px solid #e6ebef; }
+.st-score-top { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
+.st-score-top span { color: #1d7a45; font-weight: 650; }
+.st-bar { display: flex; gap: 2px; height: 9px; margin-top: 7px; border-radius: 5px; overflow: hidden; background: #eef1f4; }
+.st-bar i { display: block; height: 100%; }
+.st-legend { display: flex; flex-wrap: wrap; gap: 3px 10px; margin-top: 6px; font-size: 10.5px; color: #4b5b68; }
+.st-legend span::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 4px; border-radius: 2px; vertical-align: -1px; background: var(--c); }
+.st-checked { display: block; margin-top: 5px; font-size: 10.5px; color: #6b7a86; }
+/* 판정 색: 막대 칸·범례 점·배지가 같은 변수 */
+.v-kept { --c: var(--v-kept); } .v-late-kept { --c: var(--v-late-kept); } .v-late { --c: var(--v-late); }
+.v-withdrawn { --c: var(--v-withdrawn); } .v-pending { --c: var(--v-pending); }
+.st-bar i { background: var(--c); }
+
+/* 3) 거르기 단추 */
+.st-chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 10px 0 4px; }
+.st-chips button { border: 1px solid #d5dde3; background: #fff; color: #4b5b68; border-radius: 999px; padding: 3px 10px; font-size: 11.5px; cursor: pointer; }
+.st-chips button[aria-pressed="true"] { background: #0b344f; border-color: #0b344f; color: #fff; }
+
+/* 4) 목록 */
+.st-list { list-style: none; margin: 0; padding: 0; }
+.st-row { display: flex; gap: 9px; padding: 10px 0; border-bottom: 1px solid #f0f3f5; }
+.st-row-body { flex: 1; min-width: 0; }
+.st-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 10.5px; color: #5a6b78; }
+.st-x { font-size: 11px; font-weight: 800; color: #0b344f; }
+.st-summary { margin: 3px 0 4px; font-size: 12.5px; line-height: 1.45; }
+.st-quote { display: block; margin: 0 0 5px; font-size: 11.5px; color: #4b5b68; font-style: italic; }
+.st-verdict-top { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+.st-verdict-top small { font-size: 10.5px; color: #4b5b68; }
+.st-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 6px; font-size: 10.5px; font-weight: 650; color: #16213a; background: color-mix(in srgb, var(--c) 35%, #fff); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 70%, #fff); }
+.st-badge.v-withdrawn { color: #7a2a22; }
+.st-badge em { font-style: normal; font-size: 10px; font-weight: 700; color: #8a5a00; background: #fdf0d6; border-radius: 4px; padding: 0 5px; }
+.st-note { margin: 4px 0 0; font-size: 10.5px; color: #8a5a00; }
+.st-note s { color: #a08a63; }
+.st-opinion { display: block; font-size: 10.5px; color: #8a98a3; } /* 한 줄 차지 — 바로 뒤 "원문" 링크가 붙어 보이지 않게 */
+.st-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.st-tags small { font-size: 10px; color: #5a6b78; background: #eef1f4; border-radius: 4px; padding: 1px 6px; }
+.st-src { display: inline-flex; align-items: center; gap: 2px; margin-top: 5px; font-size: 10.5px; color: #3a6a9a; text-decoration: none; }
+.st-src:hover { text-decoration: underline; }
+
+/* 5) 안내 */
+.st-disclaimer { margin: 10px 0 2px; font-size: 10px; line-height: 1.5; color: #6b7a86; }

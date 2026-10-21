@@ -68,8 +68,6 @@ export default {
   upcoming: { tab: '일정', hint: '누르면 그 시점·사이트로 이동합니다', empty: '예정된 일정이 없습니다' },
   changelog: { tab: '갱신 기록', hint: '데이터가 바뀔 때마다 남기는 기록', empty: '기록 없음', full: '전체 변경 내역 (GitHub)' },
   menu: { open: '메뉴', title: '메뉴', close: '닫기' }, // 상단 바 ≡ 메뉴 서랍 (AppMenu)
-  // 지도 위 시드니 본사 카드 (HqMarker) — {city}·{n} 은 코드가 채움
-  hq: { title: 'IREN 본사', sub: '{city} · 공동 CEO {n}명', newCount: '발언 {n}', open: '경영진 발언 보기' },
   basis: { reported: '발표', target: '회사 목표', estimate: '추정' },
   contracts: { title: '고객 계약', toggle: '계약 연결선', undisclosed: '배치 사이트 미공개', years: '년' },
   timeline: { play: '재생', pause: '정지', asOf: '기준일', future: '회사 발표 목표 기준', today: '기준일로', label: '날짜' },

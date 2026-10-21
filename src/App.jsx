@@ -28,6 +28,8 @@ const TourPlayer = lazy(() => import('./ui/TourPlayer.jsx'))
 const PortfolioPage = lazy(() => import('./pages/PortfolioPage.jsx'))
 const StockPage = lazy(() => import('./pages/StockPage.jsx'))
 const NewsPage = lazy(() => import('./pages/NewsPage.jsx'))
+// 경영진 발언 칸 (지도 본사 카드·'본사' 단추·≡ 메뉴) — 처음 열 때 불러옴
+const StatementsPanel = lazy(() => import('./ui/StatementsPanel.jsx'))
 
 export default function App() {
   const t = useT()
@@ -43,6 +45,7 @@ export default function App() {
     st.clearPending()
   },[surface,pending])
   const view = useAppStore((s) => s.view)
+  const hqOpen = useAppStore((s) => s.hqOpen) // 본사(경영진 발언) 칸
   const transitioning = useAppStore((s) => s.transitioning)
   const lang = useAppStore((s) => s.lang)
   const dragMode = useAppStore((s) => s.campusDragMode)
@@ -109,6 +112,8 @@ export default function App() {
           {data && surface === 'map' && <MapSidebar />}
           <div className="spacer" />
           {data && view === 'site' && <CampusPanel />}
+          {/* 본사 칸은 캠퍼스 칸과 같은 자리 — 캠퍼스를 고르면 닫힘 (useAppStore.hqOpen) */}
+          {data && surface === 'map' && hqOpen && view !== 'site' && <Suspense fallback={null}><StatementsPanel /></Suspense>}
         </div>}
         {!page && <div className="bottom">
           {/* 범례·타임라인은 한 번에 나타나도록 같은 Suspense 로 묶음. 지도 화면엔 타임라인 없음 (현황 페이지·3D 에 있음) */}

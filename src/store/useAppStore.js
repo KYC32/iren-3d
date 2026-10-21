@@ -97,6 +97,8 @@ export const useAppStore = create((set, get) => ({
       activeCompanies: new Set((h.companies ?? []).filter((id) => raw.companies.some((c) => c.id === id))),
       colorMode: h.color ?? 'status', skyMode: h.sky ?? 'live', page: h.page ?? null, stockAt: h.at ?? null,
       hqOpen: !id && !!h.hq, // #hq=1 로 들어온 경우 (캠퍼스 주소가 있으면 캠퍼스가 먼저)
+      // 그때는 지역 단추도 '본사'로 — 지도는 시드니로 가는데 '북미'가 눌려 보이지 않게 (GeoMap 이 첫 지역으로 본사 처리)
+      ...(!id && h.hq ? { mapRegion: { country: 'HQ', seq: get().mapRegion.seq } } : {}),
     })
     get().syncHash()
   },
@@ -153,6 +155,8 @@ export const useAppStore = create((set, get) => ({
     // 주소(해시)로 이동할 땐 카메라 전환 애니메이션 없이 바로 그 화면으로 (pending: null)
     set({ surface: id ? h.surface ?? 'map' : 'map', detailTab: h.tab ?? 'overview', selectedSiteId: id, view: id ? 'site' : 'globe', pending: null,
       campusPanelCollapsed: false, hqOpen: !id && !!h.hq,
+      // 본사 칸 주소로 바뀌면 지도도 시드니로 (지역을 '본사'로 바꾸면 GeoMap 이 날아감)
+      ...(!id && h.hq && get().mapRegion.country !== 'HQ' ? { mapRegion: { country: 'HQ', seq: get().mapRegion.seq + 1 } } : {}),
       selectedBuildingId: next.data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? h.building : null,
       buildingFly: next.data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? { id: h.building, seq: (get().buildingFly?.seq ?? 0) + 1 } : null,
       selectedZoneKey: customerZones(next.data.sites.find((s)=>s.id===id) ?? {buildings:[]},next.data.companies).some((z)=>z.key===h.zone) ? h.zone : null })

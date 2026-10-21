@@ -311,6 +311,13 @@ describe('본사 칸', () => {
     '%s 하면 본사 칸이 닫힘', (_, act) => { state().setRaw(raw); state().openHq(); act(state()); expect(state().hqOpen).toBe(false) })
   it("setMapRegion('HQ') 는 본사 칸을 엶", () => { state().setRaw(raw); state().setMapRegion('HQ'); expect(state()).toMatchObject({ hqOpen: true, mapRegion: { country: 'HQ' } }) })
   it('#hq=1 로 들어오면 데이터가 온 뒤 칸이 열림', () => { window.location.hash = '#hq=1'; state().setRaw(raw); expect(state().hqOpen).toBe(true) })
+  it('#hq=1 로 들어오면 지역 단추도 본사 (지도는 시드니인데 북미가 눌려 보이지 않게)', () => {
+    window.location.hash = '#hq=1'; state().setRaw(raw); expect(state().mapRegion.country).toBe('HQ')
+  })
+  it('앱이 켜진 뒤 주소가 #hq=1 로 바뀌어도(뒤로 가기·붙여넣기) 본사 칸 + 본사 지역', () => {
+    state().setRaw(raw); state().applyHash('#hq=1')
+    expect(state()).toMatchObject({ hqOpen: true, mapRegion: { country: 'HQ' } })
+  })
   it('showHq: 주가 페이지에서도 지도로 돌아와 본사 칸', () => {
     state().setRaw(raw); state().setPage('stock'); state().showHq()
     expect(state()).toMatchObject({ page: null, hqOpen: true, surface: 'map', mapRegion: { country: 'HQ' } })
