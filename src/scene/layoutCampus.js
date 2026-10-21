@@ -23,6 +23,10 @@ const MARGIN = 2
 const SUBSTATION_COL = 7
 const ROAD_DEPTH = 3
 const HEIGHT = { datahall_liquid: 2.4, datahall_air: 1.9, miner_hall: 1.1, lot: 0.05 }
+// 실제 모양 3D 모형(GLB)이 있는 건물: 설명 그림(figure)이 같은 건물은 같은 모형으로 그림
+//   'horizon-hall' = 차일드레스 Horizon 1~4 → scripts/blender/horizon-hall.py 가 만든 모형 (buildings/HorizonHall.jsx)
+//   모형 하나가 건물 1동 = 블록 1칸이라, 여러 칸을 차지하는 건물에는 쓰지 않음 (칸마다 건물 전체가 반복돼 보이므로)
+export const MODEL_OF_FIGURE = { 'horizon-hall': 'horizon-hall' }
 
 // -------------------------------------------------------------
 // 아직 용도가 발표되지 않은 전력을 "빈 부지(점선)" 몇 칸으로 그릴지
@@ -80,7 +84,8 @@ export function layoutCampus(site, { defaultKind = 'datahall_air' } = {}) {
   for (const { b } of ordered) {
     const n = blocksFor(b, blockMw)
     const kind = b.kind ?? defaultKind
-    for (let i = 0; i < n; i++) items.push({ key: `${b.id}#${i}`, buildingId: b.id, kind, isAnchor: i === 0, index: i, count: n })
+    const model = n === 1 ? MODEL_OF_FIGURE[b.figure] ?? null : null
+    for (let i = 0; i < n; i++) items.push({ key: `${b.id}#${i}`, buildingId: b.id, kind, isAnchor: i === 0, index: i, count: n, model })
   }
   const remainingMw = remainingOf(site)
   const lotCount = ghostLotCount(remainingMw, blockMw)

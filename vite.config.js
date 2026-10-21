@@ -31,7 +31,8 @@ export default defineConfig({
         codeSplitting: {
           groups: [
             { name: 'three-core', test: /node_modules[\\/]three[\\/]build[\\/]three\.core\.js$/, priority: 2 },
-            { name: 'three-renderer', test: /node_modules[\\/]three[\\/]/, priority: 1 },
+            // three/examples(GLTFLoader 등)는 빼서, 쓰는 화면을 지연 로딩할 때 함께 받게 (첫 3D 지도 예산에 안 들어가게)
+            { name: 'three-renderer', test: /node_modules[\\/]three[\\/](?!examples[\\/])/, priority: 1 },
           ],
         },
       },

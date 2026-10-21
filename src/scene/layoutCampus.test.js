@@ -31,6 +31,21 @@ describe('작은 부지의 블록 1칸 크기', () => {
   })
 })
 
+describe('실제 모양 3D 모형 (GLB)', () => {
+  it('차일드레스 Horizon 1~4 는 horizon-hall 모형, 그림이 없는 Horizon 5 는 모형 없음', () => {
+    const L = layoutCampus(site('childress'))
+    const modelOf = (id) => L.blocks.find((b) => b.buildingId === id)?.model
+    for (const id of ['horizon-1', 'horizon-2', 'horizon-3', 'horizon-4']) expect(modelOf(id)).toBe('horizon-hall')
+    expect(modelOf('horizon-5')).toBe(null)
+  })
+  it('여러 칸을 차지하는 건물에는 모형을 쓰지 않음 (칸마다 건물 전체가 반복돼 보이므로)', () => {
+    const big = { power: [{ secured_mw: 300 }], buildings: [{ id: 'big', figure: 'horizon-hall', gross_mw: 300, phases: [{ status: 'planned', from: '2026-01' }] }] }
+    const blocks = layoutCampus(big).blocks.filter((b) => b.buildingId === 'big')
+    expect(blocks.length).toBeGreaterThan(1)
+    expect(blocks.every((b) => b.model === null)).toBe(true)
+  })
+})
+
 describe('변전소 통전 목표 (3D 라벨)', () => {
   it('확인 기록 화면에서도 통전 전 변전소는 회사 목표 날짜를 가짐', () => {
     const v = viewInfra(infra, asOf).sites.find((s) => s.id === 'bundey')

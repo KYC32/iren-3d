@@ -9,8 +9,9 @@
 // 타임라인에서 상태가 바뀌면(계획 → 건설 → 가동) 바닥에서 솟아오르는 짧은 애니메이션을 보여 줍니다.
 // 밤·노을(하늘 모드)에는 가동 중인 건물만 창문 불이 켜지고 바닥에 불빛이 번집니다 (nightLights.js).
 // 완성된 데이터홀을 선택하면 지붕을 걷어 낸 단면으로 바뀌고 추정 GPU 랙이 줄지어 솟아오릅니다 (HallInterior).
+// 실제 모양 3D 모형(GLB)이 있는 건물(block.model — 차일드레스 Horizon 1~4)은 상자 대신 그 모형으로 그립니다 (HorizonHall).
 // =============================================================
-import { useLayoutEffect, useMemo, useRef } from 'react'
+import { Component, Suspense, lazy, useLayoutEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox, Line } from '@react-three/drei'
 import { styleOf, PENDING_COLOR } from '../../data/statusStyle.js'
@@ -18,6 +19,9 @@ import { PhotoMiningHall } from './PhotoReferencedCampus.jsx'
 import { useReducedMotion } from '../useReducedMotion.js'
 import { nightMaterials } from '../nightLights.js'
 import HallInterior from './HallInterior.jsx'
+
+// Horizon 3D 모형 + GLTFLoader·meshopt 해제기: 그 건물을 처음 그릴 때만 받음 (첫 3D 지도 예산에 안 들어감)
+const HorizonHall = lazy(() => import('./HorizonHall.jsx'))
 
 const BODY = '#eef1f5'      // 건물 외벽 (밝은 흰색)
 const CONCRETE = '#d9dde8'  // 슬래브
@@ -101,8 +105,8 @@ export default function Block({ block, appearance, hovered, selected, dimmed, ra
       )}
       <group ref={growRef}>
       {photoSheds && <PhotoMiningHall w={w} d={d} h={h} appearance={appearance} status={status} nightMaterial={windowMat}/>}
-      {!photoSheds && live && <FinishedHall w={w} d={d} h={h} kind={kind} status={status} appearance={appearance} spinning nightMaterial={windowMat} racks={open ? racks : 0} />}
-      {mode === 'commissioning' && <FinishedHall w={w} d={d} h={h} kind={kind} status={status} appearance={appearance} beacon nightMaterial={windowMat} racks={open ? racks : 0} />}
+      {!photoSheds && live && <Hall model={block.model} w={w} d={d} h={h} kind={kind} status={status} appearance={appearance} spinning nightMaterial={windowMat} racks={open ? racks : 0} />}
+      {mode === 'commissioning' && <Hall model={block.model} w={w} d={d} h={h} kind={kind} status={status} appearance={appearance} beacon nightMaterial={windowMat} racks={open ? racks : 0} />}
       {mode === 'under_construction' && <ConstructionHall w={w} d={d} h={h} progress={block.progress} />}
       {mode === 'planned' && <GhostFootprint w={w} d={d} h={kind === 'lot' ? 0.05 : h} solidish={kind !== 'lot'} />}
       {!photoSheds && mode === 'decommissioning' && <MinerHall w={w} d={d} h={h} nightMaterial={windowMat} />}
@@ -112,7 +116,34 @@ export default function Block({ block, appearance, hovered, selected, dimmed, ra
   )
 }
 
-// ---------- 완성된 데이터홀 ----------
+// ---------- 완성된 데이터홀: 3D 모형이 있으면 모형, 받는 동안·못 받으면 아래 상자 ----------
+function Hall({ model, ...props }) {
+  if (model !== 'horizon-hall') return <FinishedHall {...props} />
+  const box = <FinishedHall {...props} />
+  return (
+    <ModelBoundary fallback={box}>
+      <Suspense fallback={box}>
+        <HorizonHall {...props} />
+      </Suspense>
+    </ModelBoundary>
+  )
+}
+
+// 모형 파일을 못 받으면(네트워크·gzip 을 못 푸는 오래된 브라우저) 화면을 깨뜨리지 않고 상자로 그림
+class ModelBoundary extends Component {
+  state = { failed: false }
+  static getDerivedStateFromError() {
+    return { failed: true }
+  }
+  componentDidCatch(error) {
+    console.warn('[3D] Horizon 모형을 불러오지 못해 상자로 그립니다:', error)
+  }
+  render() {
+    return this.state.failed ? this.props.fallback : this.props.children
+  }
+}
+
+// ---------- 완성된 데이터홀 (상자) ----------
 function FinishedHall({ w, d, h, kind, status, spinning, beacon, appearance, nightMaterial, racks = 0 }) {
   const open = racks > 0 // 지붕을 걷어 낸 단면 + 랙
   const st = styleOf(status)
