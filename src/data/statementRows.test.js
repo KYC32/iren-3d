@@ -21,6 +21,14 @@ it('발언이 하나도 없는 채널의 단추는 숨김 (누르면 빈 목록�
   expect(visibleFilters(noX)).toEqual(['all', 'promises', 'call', 'interview', 'release'])
   expect(visibleFilters({ ...file, statements: [] })).toEqual(['all'])
 })
+it('한 문장에 약속이 둘이라 같은 인용이 두 줄이면 인용은 첫 줄에만 (둘째 줄은 같은 문장 표시)', () => {
+  const s = file.statements.find((x) => x.quote && x.promise)
+  const twin = { ...s, id: `${s.id}-twin`, promise: file.promises.find((p) => p.id !== s.promise).id }
+  const rows = statementRows({ ...file, statements: [...file.statements, twin] }, 'all').filter((r) => r.url === s.url && r.date === s.date)
+  expect(rows).toHaveLength(2)
+  expect(rows.filter((r) => r.quote)).toHaveLength(1)
+  expect(rows.find((r) => !r.quote).sameQuote).toBe(true)
+})
 it('같은 약속의 뒤 발언은 repeatOf = 처음 날짜, 처음 발언에는 없음', () => {
   const rows = statementRows(file, 'all').filter((r) => r.promise?.id === 'p-sample-repeat')
   const first = rows.at(-1), later = rows[0]

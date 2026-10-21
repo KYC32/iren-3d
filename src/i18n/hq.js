@@ -16,7 +16,7 @@ export const hqText = {
     promisesCount: '기한을 밝힌 약속 {n}건', keptOnTime: '기한 안에 지켜짐 {a}/{b}', checkedAt: '{date} 확인 기준',
     status: { kept: '지켜짐', 'late-kept': '늦게 지켜짐', late: '늦어짐', withdrawn: '철회', pending: '기한 전' },
     reducedTag: '목표 줄임', reducedInLegend: '그중 목표 줄임 {n}', opinion: '약속 아님 (의견)',
-    repeat: '다시 언급 · 처음 {date}', beforeSince: '처음 약속 (시작일 전)',
+    repeat: '다시 언급 · 처음 {date}', beforeSince: '처음 약속 (시작일 전)', sameQuote: '위와 같은 문장 (약속이 하나 더 들어 있음)',
     chips: { all: '전체', promises: '약속만', x: 'X', call: '실적 발표', interview: '인터뷰', release: '보도자료' },
     // 판정 옆 근거 한 줄 ({ym} = YYYY-MM)
     detail: {
@@ -34,7 +34,7 @@ export const hqText = {
     promisesCount: '{n} promises with a deadline', keptOnTime: 'Kept on time {a}/{b}', checkedAt: 'As checked on {date}',
     status: { kept: 'Kept', 'late-kept': 'Kept late', late: 'Late', withdrawn: 'Withdrawn', pending: 'Not yet due' },
     reducedTag: 'Target cut', reducedInLegend: 'incl. {n} with target cut', opinion: 'Not a promise (opinion)',
-    repeat: 'Repeated · first said {date}', beforeSince: 'First promised (before start date)',
+    repeat: 'Repeated · first said {date}', beforeSince: 'First promised (before start date)', sameQuote: 'Same sentence as above (it holds another promise)',
     chips: { all: 'All', promises: 'Promises', x: 'X', call: 'Earnings calls', interview: 'Interviews', release: 'Press releases' },
     detail: {
       kept: 'Confirmed {ym} in a {ev}', lateKept: 'Due {due} → confirmed {ym}', late: 'Past due, not yet confirmed', progress: 'progress {done} / {of}',

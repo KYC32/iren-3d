@@ -117,6 +117,7 @@ function Row({ r, person, lang, h }) {
         <div className="st-meta">{channel}{r.channel !== 'x' && <span>{h.chips[r.channel]}</span>}<span>·</span><span>{person?.name}</span><span>·</span><time dateTime={r.date}>{r.date}</time></div>
         <p className="st-summary">{ko ? r.summary_ko : r.summary_en}</p>
         {r.quote && <q className="st-quote">{r.quote}</q>}
+        {r.sameQuote && <small className="st-same">{h.sameQuote}</small>}
         {r.verdict ? <Verdict r={r} lang={lang} h={h} /> : <span className="st-opinion">{h.opinion}</span>}
         {(r.repeatOf || r.beforeSince) && <div className="st-tags">
           {r.repeatOf && <small>{fill(h.repeat, { date: r.repeatOf })}</small>}

@@ -26,7 +26,7 @@ export function statementRows(file, filter = 'all') {
   for (const s of file.statements) if (s.promise && (!firstSaid.has(s.promise) || s.date < firstSaid.get(s.promise))) firstSaid.set(s.promise, s.date)
 
   const keep = (s) => filter === 'all' || (filter === 'promises' ? !!s.promise : s.channel === filter)
-  return file.statements.filter(keep).map((s) => {
+  const rows = file.statements.filter(keep).map((s) => {
     const promise = s.promise ? promises.get(s.promise) : undefined
     const row = { ...s, beforeSince: s.date < file.since }
     if (promise) {
@@ -37,4 +37,12 @@ export function statementRows(file, filter = 'all') {
     }
     return row
   }).sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : a.id.localeCompare(b.id)))
+  // 한 문장에 약속이 둘이면 같은 인용이 두 줄 → 인용은 처음 보이는 줄에만, 나머지는 sameQuote 표시 ("위와 같은 문장")
+  const shown = new Set()
+  for (const r of rows) {
+    if (!r.quote) continue
+    const key = `${r.person}|${r.url}|${r.quote}`
+    if (shown.has(key)) { delete r.quote; r.sameQuote = true } else shown.add(key)
+  }
+  return rows
 }

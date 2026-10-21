@@ -17,3 +17,9 @@ it('loadStatements 는 한 번만 받음', async () => {
   const m = await import('./loadStatements.js'); await m.loadStatements(); await m.loadStatements()
   expect(f).toHaveBeenCalledTimes(1); expect(m.peekStatements()).toEqual({ checkedAt: '2026-10-21' })
 })
+it('실패한 뒤 다시 부르면 다시 받음 (칸을 닫았다 열면 재시도)', async () => {
+  const f = vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValue({ ok: true, json: async () => ({ checkedAt: '2026-10-21' }) }); vi.stubGlobal('fetch', f)
+  const m = await import('./loadStatements.js')
+  expect(await m.loadStatements()).toBeNull()
+  expect(await m.loadStatements()).toEqual({ checkedAt: '2026-10-21' }); expect(f).toHaveBeenCalledTimes(2)
+})
