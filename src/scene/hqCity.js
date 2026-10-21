@@ -6,6 +6,7 @@
 //   카메라는 (+x, +z) 쪽 위에서 내려다봄 → 모퉁이와 본사 정면이 보이고, 뒤(−x·−z)의 높은 빌딩이 배경이 됨
 // 이웃 건물·나무·차는 "도심 모퉁이"임을 보여 주는 꾸밈 — 실제 건물 배치가 아님 (화면 카드에 '단순화한 모형'이라 밝힘)
 // 규칙 (테스트): 서로·본사·도로와 안 겹침 / 카메라와 본사 사이의 건물은 낮게(5층을 가리지 않게) / 나무·가로등은 인도 위
+//   돌려서 다른 쪽에서 볼 때 가리는 건물은 맨 아래 occludersOf 가 골라 HqCity.jsx 가 흐리게 그림
 // =============================================================
 import { TOWER_W, TOWER_D, PLOT } from './hqTower.js'
 
@@ -94,4 +95,51 @@ export function hqCityLayout(plot = PLOT) {
       { x: ROAD_AT + 0.8, z: 12.0, along: 'z', color: '#9aa5b1' },
     ],
   }
+}
+
+// ── 돌려 볼 때 본사를 가리는 이웃 건물 고르기 (HqCity.jsx 가 그 건물을 흐리게 그림) ──────────────
+// 기본 구도는 위 배치 규칙이 지키지만, 카메라를 뒤로 돌리면 뒤쪽 높은 빌딩이 본사 5층을 가림
+//   → 본사 벽의 과녁 점에서 카메라까지 선을 긋고, 그 선이 지나가는 건물 = 가리는 건물
+const BLOCK_TOP = 0.12 // 블록 바닥 높이 (빌딩·본사가 이 위에 섬 — HqCity.jsx·HqView.jsx 와 같음)
+
+// 본사 네 벽의 과녁 점: 높이는 IREN 층 가운데 · 건물 중간 · 옥상 바로 아래, 가로는 모서리에서 조금 안쪽 세 곳
+//   로비 높이는 빼서 낮은 상가가 로비만 가릴 땐 흐리게 하지 않음. n = 벽이 바라보는 방향 (카메라 쪽 벽만 셀 때 씀)
+export function towerTargets(T) {
+  const irenMid = BLOCK_TOP + (T.iren ? T.iren.y + T.iren.h / 2 : T.height * 0.3)
+  const ys = [irenMid, BLOCK_TOP + T.height * 0.55, BLOCK_TOP + T.roof.y - 0.3]
+  const hw = TOWER_W / 2, hd = TOWER_D / 2, s3 = [-0.7, 0, 0.7]
+  const faces = [
+    { n: [1, 0, 0], at: (s, y) => [hw + 0.01, y, s * hd] },
+    { n: [-1, 0, 0], at: (s, y) => [-hw - 0.01, y, s * hd] },
+    { n: [0, 0, 1], at: (s, y) => [s * hw, y, hd + 0.01] },
+    { n: [0, 0, -1], at: (s, y) => [s * hw, y, -hd - 0.01] },
+  ]
+  return faces.flatMap((f) => ys.flatMap((y) => s3.map((s) => ({ p: f.at(s, y), n: f.n }))))
+}
+
+// 선분 a→b 가 상자를 지나면 들어가는 지점 t(0~1), 안 지나면 Infinity (축마다 들어가고 나가는 t 를 좁혀 가는 방법)
+function segmentHitsBox(a, b, box) {
+  let t0 = 0, t1 = 1
+  const lo = [box.x0, box.y0, box.z0], hi = [box.x1, box.y1, box.z1]
+  for (let k = 0; k < 3; k++) {
+    const d = b[k] - a[k]
+    if (Math.abs(d) < 1e-9) { if (a[k] < lo[k] || a[k] > hi[k]) return Infinity; continue }
+    let ta = (lo[k] - a[k]) / d, tb = (hi[k] - a[k]) / d
+    if (ta > tb) [ta, tb] = [tb, ta]
+    t0 = Math.max(t0, ta); t1 = Math.min(t1, tb)
+    if (t0 > t1) return Infinity
+  }
+  return t0
+}
+
+// cam = 카메라 위치 [x, y, z] → 본사를 가리는 건물 번호 목록 (buildings 순서)
+export function occludersOf(cam, buildings, targets) {
+  // 카메라 쪽을 바라보는 벽의 점만 (반대쪽 벽은 본사 자신에 가려 어차피 안 보임)
+  const seen = targets.filter((t) => (cam[0] - t.p[0]) * t.n[0] + (cam[2] - t.p[2]) * t.n[2] > 0)
+  const out = []
+  buildings.forEach((b, i) => {
+    const box = { x0: b.x - b.w / 2, x1: b.x + b.w / 2, y0: 0, y1: BLOCK_TOP + b.h, z0: b.z - b.d / 2, z1: b.z + b.d / 2 }
+    if (seen.some((t) => segmentHitsBox(t.p, cam, box) <= 1)) out.push(i)
+  })
+  return out
 }

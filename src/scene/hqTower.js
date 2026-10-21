@@ -14,16 +14,27 @@ const ROOF_H = 0.8              // 옥상 기계실
 export const PLOT = 34          // 바닥 판 한 변 (건물 + 둘레 도로·인도·이웃 건물 — HqCity.jsx)
 
 // 카메라(cx, cz — 건물 가운데 기준 위치)에서 본 건물의 화면 왼쪽·오른쪽 끝 모서리 [x, z]
-//   화면 오른쪽 방향 = 바라보는 방향 × 위 = (-fz, fx) → 네 모서리를 그 방향에 내린 값이 가장 작은 게 왼쪽, 큰 게 오른쪽
-//   본사 화면의 CEO 배지(왼쪽)·말풍선(오른쪽)을 카메라를 돌려도 건물 가장자리에 붙이려고 씀
+//   화면 오른쪽 방향 = 바라보는 방향 × 위 = (-fz, fx) → 모서리를 그 방향에 내린 값이 가장 작은 게 왼쪽, 큰 게 오른쪽
+//   보이는 벽(카메라 쪽을 MIN_FACING 넘게 바라보는 벽)의 모서리만 셈 — 거의 정면일 때 실처럼 얇게 보이는
+//   옆벽의 뒤 모서리를 고르면, 그 모서리는 멀어서 화면에서 더 위에 찍혀 5층 표시가 초록 띠보다 위에 뜸
+//   본사 화면의 'IREN · 5층' 표시(왼쪽)를 카메라를 돌려도 건물 가장자리에 붙이려고 씀
+const MIN_FACING = 0.26 // 약 15° — 이보다 비스듬한 벽은 '안 보이는 벽'으로 침
 export function sideCorners(cx, cz) {
   const len = Math.hypot(cx, cz) || 1
   const fx = -cx / len, fz = -cz / len           // 카메라가 바라보는 방향 (건물 쪽)
   const rx = -fz, rz = fx                         // 화면 오른쪽 방향
-  const corners = [[-TOWER_W / 2, -TOWER_D / 2], [TOWER_W / 2, -TOWER_D / 2], [TOWER_W / 2, TOWER_D / 2], [-TOWER_W / 2, TOWER_D / 2]]
+  const hw = TOWER_W / 2, hd = TOWER_D / 2
+  // 네 벽: 바깥쪽 방향 n 과 양 끝 모서리
+  const faces = [
+    { n: [1, 0], c: [[hw, -hd], [hw, hd]] }, { n: [-1, 0], c: [[-hw, -hd], [-hw, hd]] },
+    { n: [0, 1], c: [[-hw, hd], [hw, hd]] }, { n: [0, -1], c: [[-hw, -hd], [hw, -hd]] },
+  ]
+  // 벽이 카메라를 바라보는 정도 = n · (카메라 쪽 방향 = −f). 바로 위에서 볼 땐 모두 0 → 네 벽 모두로
+  const shown = faces.filter((f) => -(f.n[0] * fx + f.n[1] * fz) > MIN_FACING)
+  const corners = (shown.length ? shown : faces).flatMap((f) => f.c)
   const along = (c) => c[0] * rx + c[1] * rz
   const sorted = [...corners].sort((a, b) => along(a) - along(b))
-  return { left: sorted[0], right: sorted[3] }
+  return { left: sorted[0], right: sorted.at(-1) }
 }
 
 // 카메라가 빌딩을 맞출 때 비워 둘 화면 자리(px): 위 = 옥상 위 CEO 카드, 오른쪽 = 그 옆 말풍선, 왼쪽 = 5층 'IREN' 표시

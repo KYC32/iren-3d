@@ -1,7 +1,7 @@
 // 본사 3D 화면의 동네 배치 (hqCity.js) — 겹침 없음 · 본사 5층을 가리지 않음 · 가로수·가로등은 인도 위
 import { describe, it, expect } from 'vitest'
-import { hqCityLayout, ROAD_W } from './hqCity.js'
-import { TOWER_W, TOWER_D, PLOT } from './hqTower.js'
+import { hqCityLayout, ROAD_W, occludersOf, towerTargets } from './hqCity.js'
+import { TOWER_W, TOWER_D, PLOT, hqTower } from './hqTower.js'
 
 const L = hqCityLayout()
 const box = (b) => ({ x0: b.x - b.w / 2, x1: b.x + b.w / 2, z0: b.z - b.d / 2, z1: b.z + b.d / 2 })
@@ -79,5 +79,42 @@ describe('가로수 · 가로등 · 자동차', () => {
   it('횡단보도는 두 도로가 만나는 모퉁이 가까이', () => {
     expect(L.crossings.length).toBeGreaterThanOrEqual(2)
     for (const c of L.crossings) expect(Math.hypot(c.x - L.corner.x, c.z - L.corner.z)).toBeLessThan(ROAD_W * 2)
+  })
+})
+
+// 돌려 볼 때 본사(특히 5층)를 가리는 이웃 건물은 흐리게 — 그 건물을 고르는 계산
+describe('본사를 가리는 이웃 건물', () => {
+  const T = hqTower({ floors: 20, level: 5 })
+  const targets = towerTargets(T)
+  // 카메라 위치: 본사 화면 기본 구도와 같은 높이 각도(campusFrameBox 의 [1, 1.05, 1])로, (dx, dz) 쪽에서 거리 60
+  const camAt = (dx, dz, dist = 60) => {
+    const l = Math.hypot(dx, 1.05, dz), cy = (T.box.y0 + T.box.y1) / 2
+    return [dx / l * dist, cy + 1.05 / l * dist, dz / l * dist]
+  }
+  const at = (x, z) => L.buildings.findIndex((b) => b.x === x && b.z === z)
+
+  it('기본 구도(앞 오른쪽 위)에서는 가리는 건물이 없음 — 배치가 처음 화면을 지킴', () => {
+    expect(occludersOf(camAt(1, 1), L.buildings, targets)).toEqual([])
+  })
+  it('뒤에서 보면 본사 뒤쪽의 높은 빌딩이 5층을 가림', () => {
+    expect(occludersOf(camAt(-1, -1), L.buildings, targets)).toContain(at(-8.8, -9.6))
+  })
+  it('시선에서 옆으로 비켜 있는 건물은 고르지 않음', () => {
+    expect(occludersOf(camAt(-1, -1), L.buildings, targets)).not.toContain(at(13.0, -0.6))
+  })
+  it('로비 높이만 가리는 낮은 건물은 그대로, 5층을 가리는 높은 건물만 고름', () => {
+    const low = { x: 7, z: 7, w: 3, d: 3, h: 0.9 }, tall = { x: 7, z: 7, w: 3, d: 3, h: 9 }
+    expect(occludersOf(camAt(1, 1), [low], targets)).toEqual([])
+    expect(occludersOf(camAt(1, 1), [tall], targets)).toEqual([0])
+  })
+  it('과녁 점은 5층(IREN) 높이부터 옥상 아래까지, 카메라 쪽 벽만 셈', () => {
+    const irenMid = 0.12 + T.iren.y + T.iren.h / 2
+    for (const t of targets) {
+      expect(t.p[1]).toBeGreaterThanOrEqual(irenMid - 1e-9)
+      expect(t.p[1]).toBeLessThanOrEqual(0.12 + T.roof.y)
+    }
+    // 뒤 벽 앞에만 있는 건물(카메라 반대쪽)은 앞에서 볼 때 고르지 않음
+    const behind = { x: 0, z: -7, w: 4, d: 3, h: 30 }
+    expect(occludersOf(camAt(1, 1), [behind], targets)).toEqual([])
   })
 })

@@ -5,6 +5,7 @@
 // 모양 계산은 hqTower.js (층수·IREN 층 = data/companies.json 의 hq.building), 카메라는 CameraRig 가 같은 상자로 맞춤
 // 빌딩: 로비 · 아래층 · IREN 층(초록 유리) · 위층을 창문 그림(facade.js) 상자로 — 밤엔 창문에 불이 켜짐
 // 동네: HqCity.jsx (도로 · 인도 · 이웃 빌딩 · 가로수 · 가로등 · 자동차 — 꾸밈일 뿐 실제 배치가 아님)
+//   돌려 볼 때 본사를 가리는 이웃 빌딩은 흐려짐 (과녁 점 = hqCity.towerTargets)
 // 빌딩에 붙는 것 (3D 위치에 붙은 HTML — 그림 조각은 ui/HqParts.jsx):
 //   옥상 위: CEO 카드(큰 사진 · 이름 · 약속 성적표) + 그 옆 최근 발언 말풍선 (휴대폰은 말풍선을 화면 아래로 — HqDock)
 //   IREN 층: 'IREN · 5층' 표시 (카메라에서 본 빌딩 왼쪽 끝 모서리 — hqTower.sideCorners, 돌려도 빌딩을 가리지 않게)
@@ -16,6 +17,7 @@ import { AdditiveBlending, MeshBasicMaterial, MeshStandardMaterial } from 'three
 import { useAppStore } from '../store/useAppStore.js'
 import { hqTower, sideCorners, TOWER_W, TOWER_D, PLOT } from './hqTower.js'
 import { facadeMaterial } from './facade.js'
+import { towerTargets } from './hqCity.js'
 import HqCity from './HqCity.jsx'
 import Html from './SafeHtml.jsx'
 import { SKY } from './nightLights.js'
@@ -28,6 +30,7 @@ export default function HqView() {
   const hq = useAppStore((s) => s.data?.companies?.[0]?.hq)
   const b = hq?.building ?? { floors: 20, level: 5 } // 자료가 없으면 기본 모양 (그림은 그려지게)
   const T = useMemo(() => hqTower(b), [b.floors, b.level])
+  const targets = useMemo(() => towerTargets(T), [T]) // 돌려 볼 때 본사를 가리는 이웃 빌딩을 고르는 과녁 점
   // 밤에 불이 켜지는 벽 재질 목록 (빌딩·이웃 빌딩) — 아래 useFrame 이 한꺼번에 밝기를 바꿈
   const nightList = useMemo(() => [], [])
   useFrame(() => {
@@ -42,7 +45,7 @@ export default function HqView() {
         <circleGeometry args={[PLOT * 3, 48]} />
         <shadowMaterial transparent opacity={0.2} />
       </mesh>
-      <HqCity nightList={nightList} />
+      <HqCity nightList={nightList} targets={targets} />
       <Tower T={T} nightList={nightList} />
       <HqOverlays T={T} hq={hq} level={b.level} />
     </group>

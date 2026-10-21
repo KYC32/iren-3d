@@ -4,13 +4,14 @@
 // -------------------------------------------------------------
 // 배치는 hqCity.js (순수 계산 · 테스트), 창문 그림은 facade.js
 // 밤: 빌딩 창문은 HqView 가 nightList 로 한꺼번에, 가로등·불빛 웅덩이는 여기서 SKY.lights 로 매 프레임
+// 돌려 볼 때 본사를 가리는 이웃 빌딩은 흐리게 (hqCity.occludersOf 가 고르고, useGhosts 가 투명도를 부드럽게)
 // 꾸밈일 뿐 실제 배치가 아님 — 카드에 '건물은 단순화한 모형'이라 밝힘
 // =============================================================
 import { useLayoutEffect, useMemo, useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import { AdditiveBlending, CanvasTexture, Color, MeshBasicMaterial, MeshStandardMaterial, Object3D } from 'three'
-import { hqCityLayout, ROAD_W, ROAD_AT } from './hqCity.js'
+import { hqCityLayout, occludersOf, ROAD_W, ROAD_AT } from './hqCity.js'
 import { facadeMaterial } from './facade.js'
 import { PLOT } from './hqTower.js'
 import { SKY } from './nightLights.js'
@@ -18,8 +19,12 @@ import { SKY } from './nightLights.js'
 const C = { ground: '#cfcbbf', block: '#dedad0', grass: '#a6c98f', road: '#737d8b', walk: '#ebe7dd', kerb: '#cfcabe', mark: '#f4f2ea', roof: '#c7cdd5', trunk: '#7a5d45', lampPole: '#3d4a57' }
 const LEAVES = ['#6f9e5e', '#5f8f52', '#7fae68', '#86b56f']
 
-export default function HqCity({ nightList }) {
+// targets = 본사 벽의 과녁 점 (hqCity.towerTargets — 가리는 빌딩을 고를 때 씀)
+export default function HqCity({ nightList, targets }) {
   const L = useMemo(() => hqCityLayout(), [])
+  // 이웃 빌딩마다 재질 한 벌 (흐리게 할 때 그 빌딩만 투명도를 바꾸려고 따로 만듦)
+  const mats = useMemo(() => L.buildings.map((b, i) => neighborMats(b, i, nightList)), [L, nightList])
+  useGhosts(L.buildings, mats, targets)
   const half = PLOT / 2
   const r0 = ROAD_AT - ROAD_W / 2, r1 = ROAD_AT + ROAD_W / 2
   return (
@@ -47,7 +52,7 @@ export default function HqCity({ nightList }) {
       ))}
       <Markings half={half} r0={r0} r1={r1} crossings={L.crossings} />
       {/* 이웃 빌딩 */}
-      {L.buildings.map((b, i) => <Neighbor key={i} b={b} i={i} nightList={nightList} />)}
+      {L.buildings.map((b, i) => <Neighbor key={i} b={b} m={mats[i]} />)}
       {/* 공원 잔디 (카메라 쪽 두 블록) + 공원 나무 */}
       {L.parks.map((k, i) => (
         <mesh key={`p${i}`} position={[(k.x0 + k.x1) / 2, 0.135, (k.z0 + k.z1) / 2]} receiveShadow>
@@ -101,28 +106,64 @@ function Boxes({ items, color, castShadow = false }) {
   )
 }
 
-// 이웃 빌딩 한 채: 네 벽 = 창문 그림(모양별), 지붕 = 회색 + 옥상 기계실 하나
-function Neighbor({ b, i, nightList }) {
-  const mats = useMemo(() => {
-    const roof = new MeshStandardMaterial({ color: C.roof, roughness: 0.85 })
-    const oy = (i * 0.37) % 1 // 빌딩마다 다른 창이 켜지게 그림 시작 위치를 비킴
-    const sideX = facadeMaterial(b.style, b.d, b.h, nightList, { oy }) // ±x 벽 (폭 = d)
-    const sideZ = facadeMaterial(b.style, b.w, b.h, nightList, { oy: (oy + 0.5) % 1 }) // ±z 벽 (폭 = w)
-    return [sideX, sideX, roof, roof, sideZ, sideZ] // 상자 면 순서: +x, −x, +y, −y, +z, −z
-  }, [b, i, nightList])
+// 이웃 빌딩 한 채의 재질: 네 벽 = 창문 그림(모양별), 지붕 = 회색, 옥상 기계실
+//   all = 흐리게 할 때 한꺼번에 투명도를 바꿀 재질 목록
+function neighborMats(b, i, nightList) {
+  const roof = new MeshStandardMaterial({ color: C.roof, roughness: 0.85 })
+  const plant = new MeshStandardMaterial({ color: '#b7bec8', roughness: 0.8 })
+  const oy = (i * 0.37) % 1 // 빌딩마다 다른 창이 켜지게 그림 시작 위치를 비킴
+  const sideX = facadeMaterial(b.style, b.d, b.h, nightList, { oy }) // ±x 벽 (폭 = d)
+  const sideZ = facadeMaterial(b.style, b.w, b.h, nightList, { oy: (oy + 0.5) % 1 }) // ±z 벽 (폭 = w)
+  // 상자 면 순서: +x, −x, +y, −y, +z, −z
+  return { box: [sideX, sideX, roof, roof, sideZ, sideZ], plant, all: [sideX, sideZ, roof, plant] }
+}
+
+// 이웃 빌딩 한 채: 창문 그림 상자 + 옥상 기계실 하나
+function Neighbor({ b, m }) {
   return (
     <group position={[b.x, 0, b.z]}>
-      <mesh position={[0, b.h / 2 + 0.12, 0]} material={mats} castShadow receiveShadow>
+      <mesh position={[0, b.h / 2 + 0.12, 0]} material={m.box} castShadow receiveShadow>
         <boxGeometry args={[b.w, b.h, b.d]} />
       </mesh>
       {b.h > 3 && (
-        <mesh position={[b.w * 0.12, b.h + 0.12 + 0.28, -b.d * 0.1]} castShadow>
+        <mesh position={[b.w * 0.12, b.h + 0.12 + 0.28, -b.d * 0.1]} material={m.plant} castShadow>
           <boxGeometry args={[b.w * 0.36, 0.56, b.d * 0.3]} />
-          <meshStandardMaterial color="#b7bec8" roughness={0.8} />
         </mesh>
       )}
     </group>
   )
+}
+
+const GHOST = 0.2 // 본사를 가릴 때 이웃 빌딩의 불투명도 (0 = 안 보임 · 1 = 그대로)
+
+// 카메라가 움직일 때만 가리는 빌딩을 다시 고르고(hqCity.occludersOf), 투명도는 매 프레임 부드럽게 따라감
+function useGhosts(buildings, mats, targets) {
+  const camera = useThree((s) => s.camera)
+  const state = useRef({ key: '', targets: null, goal: buildings.map(() => 1), now: buildings.map(() => 1) })
+  useFrame((_, dt) => {
+    const S = state.current, p = camera.position
+    const key = `${p.x.toFixed(1)}|${p.y.toFixed(1)}|${p.z.toFixed(1)}` // 0.1 단위로 움직였을 때만 다시 계산
+    if (targets && (key !== S.key || targets !== S.targets)) {
+      S.key = key; S.targets = targets
+      const hit = new Set(occludersOf([p.x, p.y, p.z], buildings, targets))
+      S.goal = buildings.map((_, i) => (hit.has(i) ? GHOST : 1))
+    }
+    const k = 1 - Math.exp(-Math.min(dt, 0.1) * 9) // 약 0.3초면 거의 다 바뀜
+    S.now.forEach((v, i) => {
+      const g = S.goal[i]
+      if (v === g) return
+      const next = Math.abs(g - v) < 0.01 ? g : v + (g - v) * k
+      S.now[i] = next
+      for (const m of mats[i].all) setOpacity(m, next)
+    })
+  })
+}
+
+// 재질 투명도 바꾸기: 1 이면 보통(불투명)으로, 1 보다 작으면 투명으로 그림 (그 둘 사이를 오갈 때만 셰이더를 다시 고름)
+function setOpacity(m, v) {
+  const see = v < 0.995
+  if (m.transparent !== see) { m.transparent = see; m.depthWrite = !see; m.needsUpdate = true }
+  m.opacity = v
 }
 
 // 가로수: 줄기 + 잎(각진 공) — InstancedMesh 두 개, 잎 색은 조금씩 다르게

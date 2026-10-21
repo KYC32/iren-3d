@@ -36,6 +36,15 @@ it('sideCorners: 카메라가 반대쪽(-x,-z)으로 돌면 좌우가 바뀜', (
 it('sideCorners: 카메라가 (-x,+z) 쪽이면 왼쪽 = (-x,-z), 오른쪽 = (+x,+z)', () => {
   expect(sideCorners(-30, 30)).toEqual({ left: [-TOWER_W / 2, -TOWER_D / 2], right: [TOWER_W / 2, TOWER_D / 2] })
 })
+it('sideCorners: 거의 정면(−z 벽을 마주 봄)이면 얇게만 보이는 옆벽의 뒤 모서리 말고 정면 벽의 두 모서리', () => {
+  // 카메라가 −z 쪽에서 조금 +x 로 비킴 → +x 벽은 실처럼 얇게 보임. 그 벽의 뒤 모서리(+x,+z)를 고르면 5층 표시가 띠보다 위에 뜸
+  expect(sideCorners(6, -60)).toEqual({ left: [TOWER_W / 2, -TOWER_D / 2], right: [-TOWER_W / 2, -TOWER_D / 2] })
+})
+it('sideCorners: 바로 위에서 내려다봐도(카메라 x·z = 0) 모서리를 돌려줌', () => {
+  const c = sideCorners(0, 0)
+  expect(c.left).toHaveLength(2)
+  expect(c.right).toHaveLength(2)
+})
 
 // 카메라가 빌딩을 맞출 때 비워 둘 화면 자리(px) — 옥상 위 CEO 카드(위), 그 옆 말풍선(오른쪽), 5층 표시(왼쪽) (hq.css 폭과 같은 값)
 it('hqLabelRoom: 넓은 화면은 위 230 · 오른쪽 말풍선 320+40 · 왼쪽 5층 표시 200', () => {
