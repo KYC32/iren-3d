@@ -1,19 +1,25 @@
 // =============================================================
-// HqView — 본사 3D 화면: 시드니 55 Market Street 사무 빌딩 (단순화한 모형) + IREN 층(Level 5) 표시
+// HqView — 본사 3D 화면: 시드니 55 Market Street 사무 빌딩 (단순화한 모형) + IREN 층(Level 5)
 // -------------------------------------------------------------
 // 지도에서 본사 카드를 누르면 (useAppStore.enterHq3D → view 'hq') Scene 이 이것을 그림
 // 모양 계산은 hqTower.js (층수·IREN 층 = data/companies.json 의 hq.building), 카메라는 CameraRig 가 같은 상자로 맞춤
-// 오른쪽 칸(CEO·경영진 발언)은 App 이 StatementsPanel 로 그림
+// 빌딩에 붙는 세 가지 (3D 위치에 붙은 HTML — 카메라를 돌려도 따라감, 그림 조각은 ui/HqParts.jsx):
+//   왼쪽  : 'IREN · 5층' 표시 + 두 공동 CEO 배지 → 누르면 그 사람 발언 카드
+//   오른쪽: 최근 발언 말풍선 (7초마다 다음 발언, 마우스를 올리면 멈춤) → 누르면 전체 카드
+//   옥상  : 약속 성적표 간판 → 누르면 약속만 모은 카드
+//   왼쪽·오른쪽은 카메라에서 본 빌딩의 양 끝 모서리 (hqTower.sideCorners) — 돌려도 빌딩을 가리지 않게
+//   휴대폰(767px 이하)은 빌딩 옆 자리가 없어 배지·말풍선을 화면 아래(ui/HqDock.jsx)로 — 여기선 간판만 (hq.css 가 숨김)
+// 카드(가운데 대화상자)는 App 이 그림 (useAppStore.hqCard → ui/StatementsCard.jsx)
 // 이웃 건물·도로는 "도심 모퉁이 건물"임을 보여 주는 배경일 뿐 실제 배치가 아님 → 회색 상자로만
 // =============================================================
-import { useMemo, useRef } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useMemo, useRef, useState } from 'react'
+import { useFrame, useThree } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import { useAppStore } from '../store/useAppStore.js'
-import { hqTower, TOWER_W, TOWER_D, PLOT } from './hqTower.js'
-import { CampusLabel, CampusLabelLayout } from './CampusLabel.jsx'
+import { hqTower, sideCorners, TOWER_W, TOWER_D, PLOT } from './hqTower.js'
+import Html from './SafeHtml.jsx'
 import { SKY } from './nightLights.js'
-import { hqText } from '../i18n/hq.js'
+import { Badges, Bubble, Sign, useStatementsFile } from '../ui/HqParts.jsx' // 배지·말풍선·간판 (휴대폰 아래 묶음과 같은 조각)
 import './scene.css'
 
 const GLASS = '#a9bccd'      // 사무 층 유리 (파란 회색)
@@ -26,17 +32,12 @@ const ROAD = '#8997a9'
 const NEIGHBORS = [[-7.2, -1.2, 5, 6.5, 3.2], [-7.2, -7.4, 5, 4.6, 5.4], [-0.6, -7.4, 6.4, 4.6, 2.4], [6.2, -7.4, 4.6, 4.6, 4.2]]
 
 export default function HqView() {
-  const lang = useAppStore((s) => s.lang)
   const hq = useAppStore((s) => s.data?.companies?.[0]?.hq)
   const b = hq?.building ?? { floors: 20, level: 5 } // 자료가 없으면 기본 모양 (그림은 그려지게)
   const T = useMemo(() => hqTower(b), [b.floors, b.level])
-  const h = hqText[lang === 'ko' ? 'ko' : 'en']
-  const street = hq?.address?.split(',')[1]?.trim() ?? '' // 'Level 5, 55 Market Street, …' → '55 Market Street'
-  const fill = (s) => s.replace('{level}', b.level).replace('{floors}', b.floors)
 
   return (
     <group name="hq">
-      <CampusLabelLayout />
       {/* 넓은 바닥 + 그림자 받는 판 */}
       <SkyGround radius={PLOT * 3} />
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.31, 0]} receiveShadow>
@@ -89,17 +90,32 @@ export default function HqView() {
         <meshStandardMaterial color="#c3cad3" roughness={0.8} />
       </mesh>
 
-      {/* IREN 층 라벨 (오른쪽 앞 모서리 바깥) */}
-      {T.iren && (
-        <CampusLabel position={[TOWER_W / 2 + 0.3, T.iren.y + T.iren.h / 2, TOWER_D / 2 + 0.3]} priority={100}>
-          <div className="bld-label is-lot hq-floor-label">
-            <div className="row"><span className="dot" style={{ background: IREN_GREEN }} /><span className="name">{fill(h.towerFloor)}</span></div>
-            <div className="sub">{fill(h.towerSub).replace('{street}', street)}</div>
-          </div>
-        </CampusLabel>
-      )}
+      <HqOverlays T={T} hq={hq} level={b.level} />
     </group>
   )
+}
+
+// 빌딩에 붙는 배지·말풍선·간판 (발언 자료를 받은 뒤에 나타남)
+function HqOverlays({ T, hq, level }) {
+  const file = useStatementsFile()
+  // 카메라에서 본 빌딩의 왼쪽·오른쪽 끝 모서리 — 바뀔 때만 다시 그림 (매 프레임 확인은 값 비교뿐)
+  const camera = useThree((s) => s.camera)
+  const [corners, setCorners] = useState(() => sideCorners(camera.position.x, camera.position.z))
+  const cornerKey = useRef(`${corners.left}|${corners.right}`)
+  useFrame(() => {
+    const c = sideCorners(camera.position.x, camera.position.z)
+    const key = `${c.left}|${c.right}`
+    if (key !== cornerKey.current) { cornerKey.current = key; setCorners(c) }
+  })
+
+  if (!file || !T.iren) return null
+  const y = T.iren.y + T.iren.h / 2 // IREN 층 가운데 높이
+  const street = hq?.address?.split(',')[1]?.trim() ?? '' // 'Level 5, 55 Market Street, …' → '55 Market Street'
+  return <>
+    <Html position={[corners.left[0], y, corners.left[1]]} zIndexRange={[12, 0]}><Badges file={file} level={level} street={street} /></Html>
+    <Html position={[corners.right[0], y, corners.right[1]]} zIndexRange={[12, 0]}><Bubble file={file} /></Html>
+    <Html position={[0, T.height + 0.3, 0]} zIndexRange={[12, 0]}><Sign file={file} /></Html>
+  </>
 }
 
 // 넓은 바닥: 배경과 같은 색이라 지평선이 자연스럽게 사라짐. 밤·노을엔 SkyRig 가 바꾼 배경색(SKY.bg)을 따라감 (SiteView 와 같은 방식)

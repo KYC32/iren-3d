@@ -15,17 +15,19 @@ export const FILTERS = ['all', 'promises', 'x', 'call', 'interview', 'release']
 
 // 화면에 보일 거르기 단추: 발언이 하나도 없는 단추는 숨김 (예: X 계정을 확인 못 해 X 발언이 0건)
 //   '전체'는 늘 보임 — 목록이 비어도 단추 줄이 통째로 사라지지 않게
-export function visibleFilters(file) {
-  return FILTERS.filter((f) => f === 'all' || statementRows(file, f).length > 0)
+//   person: 사람별 카드면 그 사람 발언 기준
+export function visibleFilters(file, person = null) {
+  return FILTERS.filter((f) => f === 'all' || statementRows(file, f, person).length > 0)
 }
 
-export function statementRows(file, filter = 'all') {
+// person: 사람 id 를 주면 그 사람 발언만 (본사 3D 화면에서 CEO 배지를 눌렀을 때)
+export function statementRows(file, filter = 'all', person = null) {
   const promises = new Map(file.promises.map((p) => [p.id, p]))
   // 약속마다 가장 먼저 말한 날 (다시 언급 표시용)
   const firstSaid = new Map()
   for (const s of file.statements) if (s.promise && (!firstSaid.has(s.promise) || s.date < firstSaid.get(s.promise))) firstSaid.set(s.promise, s.date)
 
-  const keep = (s) => filter === 'all' || (filter === 'promises' ? !!s.promise : s.channel === filter)
+  const keep = (s) => (!person || s.person === person) && (filter === 'all' || (filter === 'promises' ? !!s.promise : s.channel === filter))
   const rows = file.statements.filter(keep).map((s) => {
     const promise = s.promise ? promises.get(s.promise) : undefined
     const row = { ...s, beforeSince: s.date < file.since }

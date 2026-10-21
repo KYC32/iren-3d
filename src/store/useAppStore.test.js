@@ -337,4 +337,13 @@ describe('본사 3D 화면', () => {
     state().setRaw(raw); state().enterHq3D(); state().setSkyMode('night')
     expect(window.history.replaceState).toHaveBeenLastCalledWith(null, '', '#hq=1&sky=night')
   })
+  // 말풍선·CEO 배지·옥상 간판을 누르면 가운데 카드 (사람별 · 약속만 · 전체)
+  it('openHqCard / closeHqCard: 카드 열고 닫기, 본사 화면에 다시 들어오면 닫힌 채', () => {
+    state().setRaw(raw); state().enterHq3D()
+    expect(state().hqCard).toBeNull()
+    state().openHqCard({ person: 'daniel-roberts' }); expect(state().hqCard).toEqual({ person: 'daniel-roberts' })
+    state().closeHqCard(); expect(state().hqCard).toBeNull()
+    state().openHqCard({ filter: 'promises' }); state().requestGlobe(); state().enterHq3D()
+    expect(state().hqCard).toBeNull()
+  })
 })

@@ -17,7 +17,7 @@ import { customerKey, zoneBounds } from '../data/customerZones.js'
 import { layoutCampus } from './layoutCampus.js'
 import { Box3, Vector3 } from 'three'
 import { SINGLE_COMPANY } from '../config.js'
-import { hqTower } from './hqTower.js'
+import { hqTower, hqLabelRoom } from './hqTower.js'
 
 // 3D 개요 화면은 지구본(다회사 모드 계보 · 영상 녹화 인트로).
 // 단일 회사(IREN) 모드에선 개요를 실제 지도(GeoMap)가 맡아서, 3D 는 캠퍼스 화면에만 쓰입니다.
@@ -52,9 +52,17 @@ const isCampusLike = (view) => view === 'site' || view === 'hq' // 캠퍼스처�
 function hqShape() {
   return hqTower(useAppStore.getState().data?.companies?.[0]?.hq?.building ?? { floors: 20, level: 5 })
 }
+// 본사 화면에서 빌딩이 들어갈 화면 영역: 넓은 화면은 양옆에 배지·말풍선 자리를 비우고, 휴대폰은 아래 묶음(.hq-dock) 위까지만
+function hqViewport(w, h) {
+  const rect = campusViewport(w, h)
+  const room = hqLabelRoom(w)
+  const dock = document.querySelector('.hq-dock')?.getBoundingClientRect()
+  return { ...rect, left: rect.left + room.left, right: rect.right - room.right,
+    bottom: w < 768 && dock?.height ? Math.min(rect.bottom, dock.top - 12) : rect.bottom }
+}
 function hqHome(T) {
   const w = window.innerWidth, h = window.innerHeight
-  const frame = campusFrameBox(T.box, w, h, campusViewport(w, h))
+  const frame = campusFrameBox(T.box, w, h, hqViewport(w, h))
   return [...frame.position, ...frame.target]
 }
 
@@ -65,7 +73,7 @@ function applyFocalOffset(c, view, side, transition) {
   // 지구본: 데스크톱에서는 왼쪽 사이트 목록을 피해 지구본을 오른쪽으로
   if (!isCampusLike(view)) return c.setFocalOffset(mobile ? 0 : -28, 0, 0, transition)
   const w = window.innerWidth, h = window.innerHeight
-  return c.setFocalOffset(...campusOffset(c.distance, w, h, campusViewport(w, h)), transition)
+  return c.setFocalOffset(...campusOffset(c.distance, w, h, view === 'hq' ? hqViewport(w, h) : campusViewport(w, h)), transition)
 }
 
 // 뷰별 카메라 제약
@@ -117,7 +125,7 @@ export default function CameraRig() {
     fittedContext.current=context
     const fit = () => {
       const st = useAppStore.getState(), c = ref.current
-      safeRect.current = campusViewport(size.width, size.height)
+      safeRect.current = st.view === 'hq' ? hqViewport(size.width, size.height) : campusViewport(size.width, size.height)
       // 본사 화면: 빌딩 전체가 칸을 뺀 화면에 들어오게 (사용자가 돌렸으면 그대로)
       if (st.view === 'hq') {
         if (!c || st.pending) return
@@ -286,7 +294,7 @@ export default function CameraRig() {
     const c = ref.current
     const st = useAppStore.getState()
     if (c && isCampusLike(st.view)) {
-      const rect = safeRect.current ?? campusViewport(size.width, size.height)
+      const rect = safeRect.current ?? (st.view === 'hq' ? hqViewport(size.width, size.height) : campusViewport(size.width, size.height))
       const off = campusOffset(c.distance, size.width, size.height, rect)
       // 값이 바뀔 때만 적용: 매 프레임 호출하면 카메라가 "계속 움직이는 중"으로 남아 쉬지 못함
       const prev = lastOffset.current

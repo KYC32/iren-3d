@@ -76,6 +76,8 @@ export const useAppStore = create((set, get) => ({
   // 모바일: 순위·사이트 패널을 바텀시트로 열었는지
   sheetOpen: false,
   mapListCollapsed: false,
+  // 본사 3D 화면의 가운데 카드: null | { person?: 사람 id, filter?: 'all'|'promises'|… } (말풍선·CEO 배지·옥상 간판을 누르면)
+  hqCard: null,
 
   // ----- 액션 -----
   // 원본(infra.json)을 받으면 시작 날짜를 정하고 화면용 데이터를 만듦
@@ -191,9 +193,11 @@ export const useAppStore = create((set, get) => ({
   enterHq3D: () => {
     set({ surface: '3d', view: 'hq', selectedSiteId: null, sheetOpen: false, hoverId: null, selectedBuildingId: null,
       buildingFly: null, selectedZoneKey: null, pending: null, transitioning: false, campusPanelCollapsed: false,
-      mapRegion: { country: 'HQ', seq: get().mapRegion.seq }, mapCamera: null })
+      mapRegion: { country: 'HQ', seq: get().mapRegion.seq }, mapCamera: null, hqCard: null })
     get().syncHash()
   },
+  openHqCard: (card) => set({ hqCard: card ?? {} }),
+  closeHqCard: () => set({ hqCard: null }),
   // 어느 화면(주가·뉴스 페이지, 다른 캠퍼스)에서든 본사 3D 화면으로 — ≡ 메뉴 '경영진 발언'
   showHq: () => { get().setPage(null); get().enterHq3D() },
   setLoadError: (err) => set({ loadError: err }),

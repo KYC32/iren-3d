@@ -9,13 +9,17 @@ export const hqText = {
   ko: {
     // 지도 위 시드니 본사 카드 (HqMarker)
     title: 'IREN 본사', sub: '{city} · 공동 CEO {n}명', newCount: '발언 {n}', open: '본사 건물 · 경영진 발언 보기 (3D)',
-    // 본사 3D 화면 (HqView 의 IREN 층 라벨 · 칸의 건물 설명 · 상단 바)
-    towerFloor: 'IREN · {level}층', towerSub: '{street} · {floors}층 빌딩',
+    // 본사 3D 화면 (빌딩 옆 'IREN · 5층' 표시 · 카드의 건물 설명)
+    towerFloor: 'IREN · {level}층',
     modelNote: '건물은 단순화한 모형 · {floors}층(건물 소유사 Mirvac) · IREN {level}층(10-K 주소)', buildingSource: '건물 자료',
+    // 3D 말풍선 · CEO 배지 · 옥상 간판 (HqView) — 누르면 가운데 카드 (StatementsCard)
+    badgeOpen: '{name}의 발언 보기', statementsN: '발언 {n}', bubbleAll: '전체 {n}건', bubbleOpen: '이 발언 자세히 (카드)',
+    prev: '이전 발언', next: '다음 발언', signOpen: '약속만 모아 보기',
+    personTitle: '{name}의 발언', noStatements: '2023-08-29 AI 전환 뒤 회사 보도자료·실적 발표 콜·X 에서 {name} 이름이 붙은 발언을 찾지 못했어요.',
     // ≡ 메뉴 바로가기 (AppMenu)
     menuEntry: '경영진 발언', menuSub: '공동 CEO 발언 · 약속 지켜졌나',
-    // 경영진 발언 칸 (StatementsPanel)
-    panelLabel: 'IREN / 본사 · {city}', panelTitle: '경영진 발언', close: '지도로 돌아가기', photoSource: '사진: IREN 홈페이지',
+    // 경영진 발언 카드 (StatementsCard)
+    panelLabel: 'IREN / 본사 · {city}', panelTitle: '경영진 발언', close: '닫기', photoSource: '사진: IREN 홈페이지',
     promisesCount: '기한을 밝힌 약속 {n}건', keptOnTime: '기한 안에 지켜짐 {a}/{b}', checkedAt: '{date} 확인 기준',
     status: { kept: '지켜짐', 'late-kept': '늦게 지켜짐', late: '늦어짐', withdrawn: '철회', pending: '기한 전' },
     reducedTag: '목표 줄임', reducedInLegend: '그중 목표 줄임 {n}', opinion: '약속 아님 (의견)',
@@ -32,10 +36,13 @@ export const hqText = {
   },
   en: {
     title: 'IREN HQ', sub: '{city} · {n} co-CEOs', newCount: '{n} new', open: 'See the HQ building and management statements (3D)',
-    towerFloor: 'IREN · Level {level}', towerSub: '{street} · {floors}-storey tower',
+    towerFloor: 'IREN · Level {level}',
     modelNote: 'Simplified model · {floors} storeys (building owner Mirvac) · IREN on Level {level} (10-K address)', buildingSource: 'Building data',
+    badgeOpen: 'See statements by {name}', statementsN: '{n} statements', bubbleAll: 'All {n}', bubbleOpen: 'Open this statement (card)',
+    prev: 'Previous statement', next: 'Next statement', signOpen: 'See promises only',
+    personTitle: 'Statements by {name}', noStatements: 'Since the 2023-08-29 AI pivot we found no statements attributed to {name} in company releases, earnings calls or on X.',
     menuEntry: 'Management statements', menuSub: 'What the co-CEOs said · promises kept?',
-    panelLabel: 'IREN / HQ · {city}', panelTitle: 'Management statements', close: 'Back to map', photoSource: 'Photos: IREN website',
+    panelLabel: 'IREN / HQ · {city}', panelTitle: 'Management statements', close: 'Close', photoSource: 'Photos: IREN website',
     promisesCount: '{n} promises with a deadline', keptOnTime: 'Kept on time {a}/{b}', checkedAt: 'As checked on {date}',
     status: { kept: 'Kept', 'late-kept': 'Kept late', late: 'Late', withdrawn: 'Withdrawn', pending: 'Not yet due' },
     reducedTag: 'Target cut', reducedInLegend: 'incl. {n} with target cut', opinion: 'Not a promise (opinion)',

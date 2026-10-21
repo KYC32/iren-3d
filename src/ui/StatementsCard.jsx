@@ -1,31 +1,33 @@
 // =============================================================
-// StatementsPanel — 본사 3D 화면의 오른쪽 칸 "경영진 발언" (지도 본사 카드·≡ 메뉴로 엶, 주소 #hq=1)
+// StatementsCard — 본사 3D 화면의 가운데 카드 "경영진 발언" (말풍선·CEO 배지·옥상 간판을 누르면 열림)
 // -------------------------------------------------------------
-// 위에서 아래로: 두 공동 CEO → 건물 설명(단순화한 모형) → 약속 성적표 → 거르기 단추 → 발언 목록 → 안내 문구
-// X 단추 = 지도로 돌아가기 (본사 화면에서 나감 — useAppStore.requestGlobe)
+// 열리는 모양 (useAppStore.hqCard):
+//   { }                    전체 — 두 공동 CEO → 건물 설명 → 약속 성적표 → 거르기 → 발언 목록 → 안내
+//   { filter: 'promises' } 옥상 간판 → 약속만
+//   { person: id }         CEO 배지 → 그 사람 발언만 (발언이 없으면 "찾지 못했어요")
 //   판정(지켜짐·늦게 지켜짐·늦어짐·철회·기한 전)은 손으로 적지 않고 promises.js 가 계산 (기준일 = 자료 확인일)
 //   목록 행은 statementRows.js 가 만들고 여기서는 그리기만
+// <dialog> + showModal(): Esc·바깥(어두운 뒷배경)을 누르면 닫히고, 닫으면 초점이 누른 곳으로 돌아감 (AppMenu 와 같은 방식)
 // 따로 불러옴(App 의 React.lazy): 이 파일·statements.css·발언 자료가 첫 화면 번들에 안 들어감
-// 겉 상자는 캠퍼스 칸과 같은 클래스(site-panel campus-panel) → 같은 자리, 휴대폰에서는 아래 시트
 // 설계: docs/superpowers/specs/2026-10-21-ceo-statements-design.md 5-2·6장
 // =============================================================
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { X, Mic, Newspaper, FileText, ArrowUpRight, CircleCheck, Clock, TriangleAlert, Ban } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore.js'
-import { hqText } from '../i18n/hq.js' // 본사·경영진 발언 문구 (첫 화면 사전과 따로 — 이 칸과 함께 불러옴)
+import { hqText } from '../i18n/hq.js' // 본사·경영진 발언 문구 (첫 화면 사전과 따로 — 이 카드와 함께 불러옴)
 import { loadStatements, peekStatements } from '../data/loadStatements.js'
 import { verdictOf, scoreboard, fmtAmount, evidenceLabel } from '../data/promises.js'
 import { statementRows, visibleFilters } from '../data/statementRows.js'
 import { initialsOf } from '../data/format.js'
 import './statements.css'
 
-const STATUSES = ['kept', 'late-kept', 'late', 'withdrawn', 'pending']  // 성적표 막대 순서
+export const STATUSES = ['kept', 'late-kept', 'late', 'withdrawn', 'pending']  // 성적표 막대 순서
 const STATUS_ICON = { kept: CircleCheck, 'late-kept': CircleCheck, late: TriangleAlert, withdrawn: Ban, pending: Clock }
 const ym = (day) => day.slice(0, 7) // 'YYYY-MM-DD' → 'YYYY-MM'
 // 문구 틀의 {이름} 자리를 값으로 채움 ('기한 안에 지켜짐 {a}/{b}' → '기한 안에 지켜짐 4/6')
-const fill = (text, vars) => Object.entries(vars).reduce((s, [k, v]) => s.replaceAll(`{${k}}`, v), text)
+export const fill = (text, vars) => Object.entries(vars).reduce((s, [k, v]) => s.replaceAll(`{${k}}`, v), text)
 // 확인일 표시: 한국어 '10월 21일', 영어 'Oct 21' — 올해가 아니면 연도도 (오래된 자료임을 알 수 있게)
-function fmtDay(day, lang) {
+export function fmtDay(day, lang) {
   const [y, m, d] = day.split('-').map(Number)
   const thisYear = y === new Date().getFullYear()
   if (lang === 'ko') return `${thisYear ? '' : `${y}년 `}${m}월 ${d}일`
@@ -33,9 +35,10 @@ function fmtDay(day, lang) {
   return `${mon} ${d}${thisYear ? '' : `, ${y}`}`
 }
 
-export default function StatementsPanel() {
+export default function StatementsCard() {
   const lang = useAppStore((s) => s.lang)
-  const requestGlobe = useAppStore((s) => s.requestGlobe) // X = 본사 화면을 나가 지도로
+  const card = useAppStore((s) => s.hqCard) ?? {}
+  const close = useAppStore((s) => s.closeHqCard)
   const building = useAppStore((s) => s.data?.companies?.[0]?.hq?.building)
   const city = useAppStore((s) => (lang === 'ko' ? s.data?.companies?.[0]?.hq?.city_ko : s.data?.companies?.[0]?.hq?.city_en) ?? '')
   const [file, setFile] = useState(peekStatements) // 이미 받은 자료가 있으면 바로
@@ -46,28 +49,39 @@ export default function StatementsPanel() {
     loadStatements().then((f) => { if (!alive) return; if (f) setFile(f); else setFailed(true) })
     return () => { alive = false }
   }, [file])
+  // 카드가 붙으면 바로 열고(showModal), 떨어질 땐 닫아서 초점이 누른 곳(말풍선·배지)으로 돌아가게
+  const dialog = useRef(null)
+  useEffect(() => {
+    const d = dialog.current
+    if (d && !d.open) d.showModal()
+    return () => { if (d?.open) d.close() }
+  }, [])
   const h = hqText[lang === 'ko' ? 'ko' : 'en']
+  const who = card.person ? file?.people.find((p) => p.id === card.person) : null
+  const title = who ? fill(h.personTitle, { name: who.name }) : h.panelTitle
   return (
-    <aside className="site-panel panel campus-panel statements-panel" aria-label={h.panelTitle}>
-      <div className="campus-heading">
-        <div className="campus-heading-title"><small>{fill(h.panelLabel, { city })}</small><h2>{h.panelTitle}</h2></div>
-        <div className="campus-heading-actions">
-          <button className="close-small" onClick={requestGlobe} aria-label={h.close} title={h.close}><X size={14} aria-hidden="true" /></button>
+    <dialog ref={dialog} className="statements-card statements-panel" aria-labelledby="st-card-title"
+      onCancel={close} onClose={close}
+      // 카드 바깥(어두운 뒷배경)을 누르면 닫힘: 안쪽 내용(.st-card-body)이 카드를 꽉 채우므로 눌린 대상이 dialog 자신이면 = 뒷배경
+      onClick={(e) => { if (e.target === e.currentTarget) close() }}>
+      <div className="st-card-body">
+        <div className="st-card-head">
+          <div><small>{fill(h.panelLabel, { city })}</small><h2 id="st-card-title">{title}</h2></div>
+          <button type="button" className="close-small" onClick={close} aria-label={h.close} title={h.close}><X size={14} aria-hidden="true" /></button>
         </div>
+        {file
+          ? <Body key={`${card.person ?? ''}:${card.filter ?? ''}`} file={file} lang={lang} h={h} building={building} person={card.person ?? null} initialFilter={card.filter ?? 'all'} />
+          : <p className="st-status" role="status">{failed ? h.loadError : h.loading}</p>}
       </div>
-      {/* 스크롤은 안쪽 상자가 맡음 (바깥 .campus-panel.site-panel 은 overflow:hidden — 캠퍼스 칸과 같은 구조) */}
-      <div className="campus-panel-body">
-        {file ? <Body file={file} lang={lang} h={h} building={building} /> : <p className="st-status" role="status">{failed ? h.loadError : h.loading}</p>}
-      </div>
-    </aside>
+    </dialog>
   )
 }
 
-function Body({ file, lang, h, building }) {
-  const [filter, setFilter] = useState('all')
+function Body({ file, lang, h, building, person, initialFilter }) {
+  const filters = useMemo(() => visibleFilters(file, person), [file, person]) // 발언이 없는 채널 단추는 숨김
+  const [filter, setFilter] = useState(filters.includes(initialFilter) ? initialFilter : 'all')
   const people = useMemo(() => Object.fromEntries(file.people.map((p) => [p.id, p])), [file])
-  const rows = useMemo(() => statementRows(file, filter), [file, filter])
-  const filters = useMemo(() => visibleFilters(file), [file]) // 발언이 없는 채널 단추는 숨김
+  const rows = useMemo(() => statementRows(file, filter, person), [file, filter, person])
   const sb = useMemo(() => scoreboard(file.promises, file.checkedAt), [file])
   // 판정별 '목표 줄임' 수 — 범례 "지켜짐 4 (그중 목표 줄임 1)"
   const reducedBy = useMemo(() => {
@@ -76,49 +90,69 @@ function Body({ file, lang, h, building }) {
     return out
   }, [file])
   const counts = { kept: sb.kept, 'late-kept': sb.lateKept, late: sb.late, withdrawn: sb.withdrawn, pending: sb.pending }
-  const sources = [...new Set(file.people.map((p) => p.photo_source))] // 사진 출처 (같은 페이지면 한 번만)
+  const shown = person ? file.people.filter((p) => p.id === person) : file.people // 사람별 카드면 그 사람만
+  const sources = [...new Set(shown.map((p) => p.photo_source))] // 사진 출처 (같은 페이지면 한 번만)
+  const noneYet = person && statementRows(file, 'all', person).length === 0
   return <>
-    {/* 1) 두 공동 CEO + 사진 출처 */}
+    {/* 1) 공동 CEO + 사진 출처 (+ 전체 카드면 3D 건물 설명) */}
     <div className="st-people">
-      {file.people.map((p) => <div key={p.id} className="st-person"><Face person={p} /><span><b>{p.name}</b><small>{lang === 'ko' ? p.title_ko : p.title_en}</small></span></div>)}
+      {shown.map((p) => <div key={p.id} className="st-person"><Face person={p} /><span><b>{p.name}</b><small>{lang === 'ko' ? p.title_ko : p.title_en}</small></span></div>)}
     </div>
     <p className="st-photo-src">{sources.map((u) => <a key={u} href={u} target="_blank" rel="noreferrer">{h.photoSource}<ArrowUpRight size={10} aria-hidden="true" /></a>)}</p>
-    {/* 왼쪽 3D 건물이 실제 모습이 아니라는 안내 + 층수 자료 */}
-    {building && <p className="st-model-note">{fill(h.modelNote, { floors: building.floors, level: building.level })} · <a href={building.source} target="_blank" rel="noreferrer">{h.buildingSource}<ArrowUpRight size={10} aria-hidden="true" /></a></p>}
+    {!person && building && <p className="st-model-note">{fill(h.modelNote, { floors: building.floors, level: building.level })} · <a href={building.source} target="_blank" rel="noreferrer">{h.buildingSource}<ArrowUpRight size={10} aria-hidden="true" /></a></p>}
 
-    {/* 2) 약속 성적표 */}
-    <section className="st-score" aria-label={fill(h.promisesCount, { n: sb.total })}>
+    {/* 2) 약속 성적표 (회사 전체 — 사람별 카드에선 뺌) */}
+    {!person && <section className="st-score" aria-label={fill(h.promisesCount, { n: sb.total })}>
       <div className="st-score-top"><b>{fill(h.promisesCount, { n: sb.total })}</b><span>{fill(h.keptOnTime, { a: sb.kept, b: sb.due })}</span></div>
-      <div className="st-bar" aria-hidden="true">{STATUSES.filter((k) => counts[k] > 0).map((k) => <i key={k} className={`v-${k}`} style={{ flex: counts[k] }} />)}</div>
+      <ScoreBar counts={counts} />
       <div className="st-legend">{STATUSES.map((k) => <span key={k} className={`v-${k}`}>{h.status[k]} {counts[k]}{reducedBy[k] ? ` (${fill(h.reducedInLegend, { n: reducedBy[k] })})` : ''}</span>)}</div>
       <small className="st-checked">{fill(h.checkedAt, { date: fmtDay(file.checkedAt, lang) })}</small>
-    </section>
+    </section>}
 
-    {/* 3) 거르기 단추 */}
-    <div className="st-chips" role="group" aria-label={h.panelTitle}>
-      {filters.map((f) => <button key={f} type="button" aria-pressed={filter === f} onClick={() => setFilter(f)}>{h.chips[f]}</button>)}
-    </div>
-
-    {/* 4) 발언 목록 */}
-    <ol className="st-list">{rows.map((r) => <Row key={r.id} r={r} person={people[r.person]} lang={lang} h={h} />)}</ol>
+    {noneYet ? (
+      // 발언을 하나도 못 찾은 사람 (예: Will Roberts) — 조사한 범위를 그대로 밝힘
+      <p className="st-empty">{fill(h.noStatements, { name: shown[0]?.name ?? '' })}</p>
+    ) : <>
+      {/* 3) 거르기 단추 */}
+      <div className="st-chips" role="group" aria-label={h.panelTitle}>
+        {filters.map((f) => <button key={f} type="button" aria-pressed={filter === f} onClick={() => setFilter(f)}>{h.chips[f]}</button>)}
+      </div>
+      {/* 4) 발언 목록 */}
+      <ol className="st-list">{rows.map((r) => <Row key={r.id} r={r} person={people[r.person]} lang={lang} h={h} />)}</ol>
+    </>}
 
     {/* 5) 안내 */}
     <p className="st-disclaimer">{h.disclaimer}</p>
   </>
 }
 
+// 판정 막대 (판정별 칸 넓이 = 개수) — 카드 성적표와 옥상 간판이 같이 씀
+export function ScoreBar({ counts }) {
+  return <div className="st-bar" aria-hidden="true">{STATUSES.filter((k) => counts[k] > 0).map((k) => <i key={k} className={`v-${k}`} style={{ flex: counts[k] }} />)}</div>
+}
+
+// 채널 표시: X = 굵은 글자 "X", 실적 발표 콜 = 마이크, 인터뷰 = 신문, 보도자료 = 문서 (X 는 이름까지 쓰면 "X X" 라 글자 하나만)
+export function ChannelMark({ channel, h }) {
+  const ChannelIcon = { call: Mic, interview: Newspaper, release: FileText }[channel]
+  return channel === 'x'
+    ? <b className="st-x" aria-hidden="true">X</b>
+    : <><ChannelIcon size={12} aria-hidden="true" /><span>{h.chips[channel]}</span></>
+}
+
+// 판정 배지 하나 (아이콘 + 판정 이름 + '목표 줄임') — 카드 판정과 말풍선이 같이 씀
+export function VerdictBadge({ v, h }) {
+  const Icon = STATUS_ICON[v.status]
+  return <span className={`st-badge v-${v.status}`}><Icon size={12} aria-hidden="true" />{h.status[v.status]}{v.reduced && <em>{h.reducedTag}</em>}</span>
+}
+
 // 발언 한 줄
 function Row({ r, person, lang, h }) {
   const ko = lang === 'ko'
-  // 채널 표시: X = 굵은 글자 "X", 실적 발표 콜 = 마이크, 인터뷰 = 신문, 보도자료 = 문서
-  const ChannelIcon = { call: Mic, interview: Newspaper, release: FileText }[r.channel]
-  const channel = r.channel === 'x' ? <b className="st-x" aria-hidden="true">X</b> : <ChannelIcon size={12} aria-hidden="true" />
   return (
     <li className="st-row">
       <Face person={person} small />
       <div className="st-row-body">
-        {/* X 는 굵은 글자 "X" 하나로 충분 (이름까지 쓰면 "X X"), 실적 발표·인터뷰는 아이콘 + 이름 */}
-        <div className="st-meta">{channel}{r.channel !== 'x' && <span>{h.chips[r.channel]}</span>}<span>·</span><span>{person?.name}</span><span>·</span><time dateTime={r.date}>{r.date}</time></div>
+        <div className="st-meta"><ChannelMark channel={r.channel} h={h} /><span>·</span><span>{person?.name}</span><span>·</span><time dateTime={r.date}>{r.date}</time></div>
         <p className="st-summary">{ko ? r.summary_ko : r.summary_en}</p>
         {r.quote && <q className="st-quote">{r.quote}</q>}
         {r.sameQuote && <small className="st-same">{h.sameQuote}</small>}
@@ -138,7 +172,6 @@ function Verdict({ r, lang, h }) {
   const v = r.verdict, p = r.promise, d = h.detail
   const ev = (url) => evidenceLabel(url, lang)
   const amount = (a) => fmtAmount(a, lang)
-  const Icon = STATUS_ICON[v.status]
   let detail
   if (v.status === 'kept') detail = fill(d.kept, { ym: ym(v.achieved), ev: ev(p.fulfilled.url) })
   else if (v.status === 'late-kept') detail = fill(d.lateKept, { due: ym(v.deadline), ym: ym(v.achieved) })
@@ -149,7 +182,7 @@ function Verdict({ r, lang, h }) {
   const lastPostponed = p.postponed?.at(-1)
   return <div className="st-verdict">
     <div className="st-verdict-top">
-      <span className={`st-badge v-${v.status}`}><Icon size={12} aria-hidden="true" />{h.status[v.status]}{v.reduced && <em>{h.reducedTag}</em>}</span>
+      <VerdictBadge v={v} h={h} />
       <small>{detail}</small>
     </div>
     {p.reduced && <p className="st-note">{d.reduced} <s>{amount(p.target)}</s> → {amount(p.reduced.amount)} {met ? d.reducedDone : d.reducedOnly} · {ev(p.reduced.url)}</p>}
@@ -159,7 +192,7 @@ function Verdict({ r, lang, h }) {
 }
 
 // 사진 동그라미: 사진을 못 받으면 이름 머리글자
-function Face({ person, small = false }) {
+export function Face({ person, small = false }) {
   const [broken, setBroken] = useState(false)
   const cls = `st-face${small ? ' is-small' : ''}`
   if (!person) return <i className={cls} />

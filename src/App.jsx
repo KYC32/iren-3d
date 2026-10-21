@@ -28,8 +28,10 @@ const TourPlayer = lazy(() => import('./ui/TourPlayer.jsx'))
 const PortfolioPage = lazy(() => import('./pages/PortfolioPage.jsx'))
 const StockPage = lazy(() => import('./pages/StockPage.jsx'))
 const NewsPage = lazy(() => import('./pages/NewsPage.jsx'))
-// 경영진 발언 칸 (본사 3D 화면의 오른쪽 칸 — 지도 본사 카드·≡ 메뉴·#hq=1) — 처음 열 때 불러옴
-const StatementsPanel = lazy(() => import('./ui/StatementsPanel.jsx'))
+// 경영진 발언 카드 (본사 3D 화면에서 말풍선·CEO 배지·옥상 간판을 누르면 가운데에 열림) — 처음 열 때 불러옴
+const StatementsCard = lazy(() => import('./ui/StatementsCard.jsx'))
+// 휴대폰 본사 화면: CEO 배지·말풍선을 화면 아래에 (넓은 화면에선 CSS 로 숨김 — 그땐 빌딩 옆 3D 위치에)
+const HqDock = lazy(() => import('./ui/HqDock.jsx'))
 
 export default function App() {
   const t = useT()
@@ -45,6 +47,7 @@ export default function App() {
     st.clearPending()
   },[surface,pending])
   const view = useAppStore((s) => s.view)
+  const hqCard = useAppStore((s) => s.hqCard) // 본사 화면의 가운데 카드
   const transitioning = useAppStore((s) => s.transitioning)
   const lang = useAppStore((s) => s.lang)
   const dragMode = useAppStore((s) => s.campusDragMode)
@@ -112,17 +115,17 @@ export default function App() {
           {data && surface === 'map' && <MapSidebar />}
           <div className="spacer" />
           {data && view === 'site' && <CampusPanel />}
-          {/* 본사 3D 화면의 오른쪽 칸: CEO · 약속 성적표 · 경영진 발언 (캠퍼스 칸과 같은 자리) */}
-          {data && view === 'hq' && <Suspense fallback={null}><StatementsPanel /></Suspense>}
         </div>}
         {!page && <div className="bottom">
           {/* 범례·타임라인은 한 번에 나타나도록 같은 Suspense 로 묶음. 지도 화면엔 타임라인 없음 (현황 페이지·3D 에 있음) */}
           {data && surface === '3d' && view !== 'hq' && <Suspense fallback={null}><Legend /><TimelineSlider /></Suspense>}
+          {data && view === 'hq' && <Suspense fallback={null}><HqDock /></Suspense>}
           {surface==='3d'?<Footer />:<div className="geographic-note">{lang==='ko'?'비공식 리서치 · 현황은 확인 기록, 목표는 전망':'Independent research · Reported status and targets are separate'}</div>}
         </div>}
       </div>
 
       {data && touring && <Suspense fallback={null}><TourPlayer /></Suspense>}
+      {data && view === 'hq' && hqCard && <Suspense fallback={null}><StatementsCard /></Suspense>}
       {!page && !data && !loadError && <div className="center-msg">{t.loading}</div>}
       {loadError && <pre className="center-msg error">{loadError}</pre>}
     </div>
