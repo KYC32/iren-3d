@@ -9,7 +9,7 @@
 // 설계: docs/superpowers/specs/2026-10-21-ceo-statements-design.md 5-2·6장
 // =============================================================
 import { useEffect, useMemo, useState } from 'react'
-import { X, Mic, Newspaper, ArrowUpRight, CircleCheck, Clock, TriangleAlert, Ban } from 'lucide-react'
+import { X, Mic, Newspaper, FileText, ArrowUpRight, CircleCheck, Clock, TriangleAlert, Ban } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore.js'
 import { hqText } from '../i18n/hq.js' // 본사·경영진 발언 문구 (첫 화면 사전과 따로 — 이 칸과 함께 불러옴)
 import { loadStatements, peekStatements } from '../data/loadStatements.js'
@@ -18,7 +18,7 @@ import { statementRows } from '../data/statementRows.js'
 import { initialsOf } from '../data/format.js'
 import './statements.css'
 
-const FILTERS = ['all', 'promises', 'x', 'call', 'interview']           // 거르기 단추 순서
+const FILTERS = ['all', 'promises', 'x', 'call', 'interview', 'release'] // 거르기 단추 순서 (release = 보도자료 속 CEO 인용)
 const STATUSES = ['kept', 'late-kept', 'late', 'withdrawn', 'pending']  // 성적표 막대 순서
 const STATUS_ICON = { kept: CircleCheck, 'late-kept': CircleCheck, late: TriangleAlert, withdrawn: Ban, pending: Clock }
 const ym = (day) => day.slice(0, 7) // 'YYYY-MM-DD' → 'YYYY-MM'
@@ -103,7 +103,9 @@ function Body({ file, lang, h }) {
 // 발언 한 줄
 function Row({ r, person, lang, h }) {
   const ko = lang === 'ko'
-  const channel = r.channel === 'x' ? <b className="st-x" aria-hidden="true">X</b> : r.channel === 'call' ? <Mic size={12} aria-hidden="true" /> : <Newspaper size={12} aria-hidden="true" />
+  // 채널 표시: X = 굵은 글자 "X", 실적 발표 콜 = 마이크, 인터뷰 = 신문, 보도자료 = 문서
+  const ChannelIcon = { call: Mic, interview: Newspaper, release: FileText }[r.channel]
+  const channel = r.channel === 'x' ? <b className="st-x" aria-hidden="true">X</b> : <ChannelIcon size={12} aria-hidden="true" />
   return (
     <li className="st-row">
       <Face person={person} small />

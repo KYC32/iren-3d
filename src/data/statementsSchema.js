@@ -4,7 +4,7 @@
 // 이 파일은 데이터 빌드(scripts)와 테스트에서만 씁니다 → 앱 첫 화면 번들에 들어가지 않음
 //
 // people     : 발언한 사람 (두 공동 CEO) — 사진은 IREN 홈페이지 사진, 출처(photo_source) 필수
-// statements : 발언 하나하나 — 채널(X · 실적 발표 · 인터뷰), 원문 주소, 한국어/영어 요약, 걸린 약속(promise)
+// statements : 발언 하나하나 — 채널(X · 실적 발표 콜 · 인터뷰 · 보도자료 속 CEO 인용), 원문 주소, 한국어/영어 요약, 걸린 약속(promise)
 //   원문 종류(kind): sec(SEC 녹취록) · company(회사 자료) · video(영상, 재생 시각 at 필수) · transcript(공개 녹취록) · x · article
 // promises   : 기한과 대상이 분명한 약속 — 판정은 promises.js 가 계산 (여기서는 근거가 맞는지만 검사)
 //   fulfilled(이룸) · reduced(회사가 목표를 줄임) · postponed(회사가 미룸) · withdrawn(철회) · progress(일부 이룸)
@@ -29,7 +29,7 @@ const Person = z.object({
 }).strict()
 
 const Statement = z.object({
-  id: Id, person: Id, date: Day, channel: z.enum(['x', 'call', 'interview']),
+  id: Id, person: Id, date: Day, channel: z.enum(['x', 'call', 'interview', 'release']), // release = 회사 보도자료 속 이름이 붙은 CEO 인용
   kind: z.enum(['sec', 'company', 'video', 'transcript', 'x', 'article']), url: Url,
   at: z.string().regex(/^(\d+:)?\d{1,2}:\d{2}$/).optional(), // 영상 재생 시각 (예: 12:34, 1:02:03)
   summary_ko: z.string(), summary_en: z.string(),

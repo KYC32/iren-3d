@@ -9,6 +9,10 @@ it("'약속만' 은 약속에 걸린 발언만, 'x' 는 X 만", () => {
   expect(statementRows(file, 'promises').every((r) => r.promise)).toBe(true)
   expect(statementRows(file, 'x').every((r) => r.channel === 'x')).toBe(true)
 })
+it("'release' 는 보도자료 속 인용만 (샘플에 하나 이상)", () => {
+  const rows = statementRows(file, 'release')
+  expect(rows.length).toBeGreaterThan(0); expect(rows.every((r) => r.channel === 'release')).toBe(true)
+})
 it('같은 약속의 뒤 발언은 repeatOf = 처음 날짜, 처음 발언에는 없음', () => {
   const rows = statementRows(file, 'all').filter((r) => r.promise?.id === 'p-sample-repeat')
   const first = rows.at(-1), later = rows[0]

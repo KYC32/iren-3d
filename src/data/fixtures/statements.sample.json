@@ -14,7 +14,8 @@
     { "id": "s-sample-5", "person": "person-a", "date": "2025-12-01", "channel": "interview", "kind": "article", "url": "https://example.com/sample-interview", "summary_ko": "(샘플) C 홀 300 MW 를 2026년 6월까지", "summary_en": "(sample) Hall C 300 MW by June 2026", "promise": "p-sample-late" },
     { "id": "s-sample-6", "person": "person-b", "date": "2026-02-12", "channel": "call", "kind": "company", "url": "https://iren.gcs-web.com/sample-deck", "summary_ko": "(샘플) D 공랭 홀을 2027년에 짓겠다", "summary_en": "(sample) Air-cooled hall D in 2027", "promise": "p-sample-withdrawn" },
     { "id": "s-sample-7", "person": "person-a", "date": "2026-10-14", "channel": "x", "kind": "x", "url": "https://x.com/sample_a/status/2", "summary_ko": "(샘플) AI 수요는 여전히 강하다는 의견", "summary_en": "(sample) Opinion that AI demand remains strong", "quote": "Sample quote in one sentence." },
-    { "id": "s-sample-8", "person": "person-b", "date": "2026-10-02", "channel": "interview", "kind": "video", "url": "https://www.youtube.com/watch?v=sample2", "at": "1:02:03", "summary_ko": "(샘플) 시장 상황에 대한 의견", "summary_en": "(sample) Opinion on market conditions" }
+    { "id": "s-sample-8", "person": "person-b", "date": "2026-10-02", "channel": "interview", "kind": "video", "url": "https://www.youtube.com/watch?v=sample2", "at": "1:02:03", "summary_ko": "(샘플) 시장 상황에 대한 의견", "summary_en": "(sample) Opinion on market conditions" },
+    { "id": "s-sample-9", "person": "person-a", "date": "2025-11-03", "channel": "release", "kind": "sec", "url": "https://www.sec.gov/Archives/edgar/data/sample/sample-ex99.htm", "summary_ko": "(샘플) 보도자료 속 인용 — A 캠퍼스 목표를 다시 말함", "summary_en": "(sample) Press release quote — repeats the Campus A target", "quote": "Sample press release quote.", "promise": "p-sample-kept" }
   ],
   "promises": [
     { "id": "p-sample-kept", "topic": "capacity", "title_ko": "(샘플) A 캠퍼스 약 1 GW", "title_en": "(sample) Campus A ~1 GW", "deadline": "2026-H1",

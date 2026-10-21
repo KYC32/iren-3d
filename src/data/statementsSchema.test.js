@@ -16,6 +16,11 @@ const sample = () => ({
 })
 
 it('화면용 샘플 자료도 통과', () => expect(validateStatements(fixture)).toEqual([]))
+// 회사 보도자료·실적 보도자료 속 공동 CEO 인용 (이름이 붙은 말) — 채널 'release'
+it("보도자료 속 CEO 인용은 channel 'release'", () => {
+  const f = sample(); f.statements[0].channel = 'release'
+  expect(validateStatements(f)).toEqual([])
+})
 it('올바른 파일은 통과', () => expect(validateStatements(sample())).toEqual([]))
 it.each([
   ['없는 사람', (f) => { f.statements[0].person = 'nobody' }, 'person'],

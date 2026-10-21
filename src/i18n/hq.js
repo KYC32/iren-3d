@@ -17,7 +17,7 @@ export const hqText = {
     status: { kept: '지켜짐', 'late-kept': '늦게 지켜짐', late: '늦어짐', withdrawn: '철회', pending: '기한 전' },
     reducedTag: '목표 줄임', reducedInLegend: '그중 목표 줄임 {n}', opinion: '약속 아님 (의견)',
     repeat: '다시 언급 · 처음 {date}', beforeSince: '처음 약속 (시작일 전)',
-    chips: { all: '전체', promises: '약속만', x: 'X', call: '실적 발표', interview: '인터뷰' },
+    chips: { all: '전체', promises: '약속만', x: 'X', call: '실적 발표', interview: '인터뷰', release: '보도자료' },
     // 판정 옆 근거 한 줄 ({ym} = YYYY-MM)
     detail: {
       kept: '{ym} {ev}로 확인', lateKept: '기한 {due} → {ym} 확인', late: '기한 지남, 아직 확인 안 됨', progress: '진행 {done} / {of}',
@@ -35,7 +35,7 @@ export const hqText = {
     status: { kept: 'Kept', 'late-kept': 'Kept late', late: 'Late', withdrawn: 'Withdrawn', pending: 'Not yet due' },
     reducedTag: 'Target cut', reducedInLegend: 'incl. {n} with target cut', opinion: 'Not a promise (opinion)',
     repeat: 'Repeated · first said {date}', beforeSince: 'First promised (before start date)',
-    chips: { all: 'All', promises: 'Promises', x: 'X', call: 'Earnings calls', interview: 'Interviews' },
+    chips: { all: 'All', promises: 'Promises', x: 'X', call: 'Earnings calls', interview: 'Interviews', release: 'Press releases' },
     detail: {
       kept: 'Confirmed {ym} in a {ev}', lateKept: 'Due {due} → confirmed {ym}', late: 'Past due, not yet confirmed', progress: 'progress {done} / {of}',
       pending: 'Due {due}', reduced: 'Original target', reducedDone: 'cut and met', reducedOnly: 'cut',
