@@ -1,60 +1,75 @@
 /* =============================================================
-   hq.css — 본사 3D 화면의 배지·말풍선·옥상 간판 (HqView.jsx 와 함께 불러옴)
+   hq.css — 본사 3D 화면의 CEO 카드 · 말풍선 · 'IREN · 5층' 표시 (ui/HqParts.jsx 와 함께 불러옴)
    drei Html 은 붙는 점(3D 위치)에 크기 0 상자를 두므로, 안쪽 요소를 absolute 로 그 점 옆에 놓음
-     배지 = 점의 왼쪽(오른쪽 끝이 점), 말풍선 = 점의 오른쪽(꼬리가 점), 간판 = 점의 위 가운데
-   색: IREN 남색 #0B344F · 초록 #71DA80 (사이트 공통)
+     옥상 위 묶음(.hq-top) = 점 위, CEO 카드 가운데가 점 · 5층 표시(.hq-floor) = 점의 왼쪽(오른쪽 끝이 점)
+   색: IREN 남색 #0B344F · 초록 #71DA80 + 양각(위 밝은 선·아래 그림자) — 사용자 취향 (파스텔 칸 대신)
+   폭은 scene/hqTower.js 의 hqLabelRoom 과 맞춤 (카메라가 이만큼 화면을 비워 둠)
    ============================================================= */
-.hq-badges, .hq-bubble, .hq-sign { pointer-events: auto; font-family: inherit; color: #16213a; }
+.hq-top, .hq-floor, .hq-bubble { pointer-events: auto; font-family: inherit; }
 
-/* 왼쪽: 'IREN · 5층' 표시 + CEO 배지 두 개 */
-.hq-badges { position: absolute; right: 16px; top: 0; transform: translateY(-50%); display: flex; flex-direction: column; gap: 6px; width: 228px; }
-.hq-tag { display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 9px; background: #0b344f; color: #fff; font-size: 11.5px; white-space: nowrap; box-shadow: 0 4px 12px rgba(11, 52, 79, .25); }
-.hq-tag .dot { width: 8px; height: 8px; border-radius: 50%; background: #71da80; box-shadow: 0 0 0 3px rgba(113, 218, 128, .3); flex-shrink: 0; }
-.hq-tag small { margin-left: auto; font-size: 10px; opacity: .75; }
-.hq-person { display: flex; align-items: center; gap: 8px; width: 100%; padding: 6px 9px; border: 1px solid #d5dee6; border-radius: 11px; background: rgba(255, 255, 255, .97); box-shadow: 0 4px 14px rgba(30, 45, 90, .14); cursor: pointer; text-align: left; font: inherit; color: inherit; }
-.hq-person:hover, .hq-person:focus-visible { outline: none; border-color: #71da80; box-shadow: 0 0 0 2px rgba(113, 218, 128, .45), 0 4px 14px rgba(30, 45, 90, .14); }
-.hq-person b { display: block; font-size: 12px; color: #0b344f; }
-.hq-person small { display: block; font-size: 10px; color: #5a6b78; white-space: nowrap; }
-.hq-person em { margin-left: auto; padding: 1px 6px; border-radius: 6px; background: #e5f5e9; color: #0b344f; font-style: normal; font-size: 10px; font-weight: 700; white-space: nowrap; }
-.hq-person em.is-zero { background: #eef1f4; color: #8a98a3; }
+/* 옥상 위 묶음: CEO 카드(가운데 = 옥상) + 오른쪽 말풍선 */
+.hq-top { --ceo-w: 212px; position: absolute; left: 0; bottom: 18px; display: flex; align-items: center; gap: 16px; transform: translateX(calc(var(--ceo-w) / -2)); }
 
-/* 오른쪽: 최근 발언 말풍선 (꼬리가 빌딩 쪽) */
-.hq-bubble { position: absolute; left: 18px; top: 0; transform: translateY(-50%); width: 280px; border: 1px solid #d5dee6; border-radius: 14px; background: #fff; box-shadow: 0 8px 24px rgba(30, 45, 90, .18); }
-.hq-bubble::before { content: ''; position: absolute; left: -7px; top: 50%; width: 12px; height: 12px; background: #fff; border-left: 1px solid #d5dee6; border-bottom: 1px solid #d5dee6; transform: translateY(-50%) rotate(45deg); }
-.hq-bubble-main { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 5px; width: 100%; padding: 10px 12px 7px; border: 0; border-radius: 14px 14px 0 0; background: transparent; text-align: left; cursor: pointer; font: inherit; color: inherit; }
-.hq-bubble-main:focus-visible { outline: 2px solid #71da80; outline-offset: -2px; }
-.hq-bubble-quote { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: 12.5px; line-height: 1.45; font-style: italic; color: #16213a; }
-.hq-bubble-sum { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 11px; line-height: 1.45; color: #4b5b68; }
-.hq-bubble-foot { display: flex; align-items: center; gap: 4px; padding: 5px 8px 8px; border-top: 1px solid #eef1f4; font-size: 10.5px; color: #5a6b78; }
-.hq-bubble-foot button { display: grid; place-items: center; width: 22px; height: 22px; padding: 0; border: 1px solid #d5dee6; border-radius: 7px; background: #fff; color: #0b344f; cursor: pointer; }
+/* CEO 카드: 남색 양각 판 · 큰 사진 · 초록 테두리 · 아래 꼭지(옥상을 가리킴) */
+.hq-ceo { position: relative; flex: 0 0 var(--ceo-w); width: var(--ceo-w); box-sizing: border-box; padding: 16px 14px 12px; border-radius: 20px;
+  background: linear-gradient(180deg, #154d73 0%, #0b344f 100%); color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 -3px 0 rgba(0, 0, 0, .28), 0 14px 34px rgba(6, 28, 44, .42), 0 2px 6px rgba(6, 28, 44, .3); }
+.hq-ceo.statements-panel { color: #fff; }
+.hq-ceo::after { content: ''; position: absolute; left: 50%; bottom: -8px; width: 16px; height: 16px; border-radius: 3px; background: #0b344f; transform: translateX(-50%) rotate(45deg); box-shadow: 4px 4px 8px rgba(6, 28, 44, .25); }
+.hq-ceo-person { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; font: inherit; }
+.hq-ceo-person:focus-visible { outline: 2px solid #71da80; outline-offset: 4px; border-radius: 12px; }
+.hq-ceo-photo .st-face { width: 88px; height: 88px; border: 3px solid #71da80; box-shadow: 0 0 0 5px rgba(113, 218, 128, .22), 0 8px 18px rgba(0, 0, 0, .4); }
+.hq-ceo-photo .st-face.is-initials { font-size: 26px; }
+.hq-ceo-person:hover .hq-ceo-photo .st-face { box-shadow: 0 0 0 7px rgba(113, 218, 128, .35), 0 8px 18px rgba(0, 0, 0, .4); }
+.hq-ceo-person b { margin-top: 9px; font-size: 16px; letter-spacing: -.01em; }
+.hq-ceo-person small { font-size: 11.5px; color: #b8d0de; }
+.hq-ceo-person em { margin-top: 6px; padding: 2px 10px; border-radius: 999px; background: #71da80; color: #0b344f; font-style: normal; font-size: 11px; font-weight: 800; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5); }
+.hq-ceo-score { display: block; width: 100%; margin-top: 12px; padding: 10px 2px 0; border: 0; border-top: 1px solid rgba(255, 255, 255, .16); background: none; color: #e4f6e8; cursor: pointer; font: inherit; font-size: 11.5px; font-weight: 650; text-align: center; }
+.hq-ceo-score .st-bar { height: 7px; margin-top: 7px; background: rgba(255, 255, 255, .16); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .35); }
+.hq-ceo-score:hover span, .hq-ceo-score:focus-visible span { color: #71da80; }
+.hq-ceo-score:focus-visible { outline: none; }
+
+/* 최근 발언 말풍선: 흰 바탕 · 남색 굵은 테두리 (낮·밤 모두 눈에 띄게) · 꼬리는 CEO 사진 쪽 */
+.hq-bubble { position: relative; width: 320px; border: 2px solid #0b344f; border-radius: 18px; background: #fff; color: #16213a; box-shadow: 0 12px 30px rgba(6, 28, 44, .3); }
+.hq-bubble::before { content: ''; position: absolute; left: -10px; top: 44%; width: 16px; height: 16px; background: #fff; border-left: 2px solid #0b344f; border-bottom: 2px solid #0b344f; transform: translateY(-50%) rotate(45deg); }
+.hq-bubble-main { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; width: 100%; padding: 13px 15px 9px; border: 0; border-radius: 18px 18px 0 0; background: transparent; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.hq-bubble-main:focus-visible { outline: 2px solid #71da80; outline-offset: -3px; }
+.hq-bubble-main .st-meta { font-size: 11px; }
+.hq-bubble-quote { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: 15px; line-height: 1.45; font-style: italic; font-weight: 600; color: #0b344f; }
+.hq-bubble-sum { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 12.5px; line-height: 1.5; color: #3e5060; }
+.hq-bubble-foot { display: flex; align-items: center; gap: 5px; padding: 7px 10px 10px; border-top: 1px solid #e6ebf0; font-size: 11px; color: #5a6b78; }
+.hq-bubble-foot button { display: grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 1px solid #c9d4de; border-radius: 8px; background: #fff; color: #0b344f; cursor: pointer; }
 .hq-bubble-foot button:hover { border-color: #0b344f; }
-.hq-bubble-foot .hq-all { width: auto; margin-left: auto; padding: 0 10px; border-color: #0b344f; background: #0b344f; color: #fff; font: 600 10.5px/22px inherit; }
+.hq-bubble-foot .hq-all { width: auto; margin-left: auto; padding: 0 12px; border-color: #0b344f; background: #0b344f; color: #fff; font: 700 11px/26px inherit; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2); }
 
-/* 옥상: 약속 성적표 간판 */
-.hq-sign { position: absolute; left: 0; bottom: 6px; transform: translateX(-50%); display: block; min-width: 190px; padding: 6px 11px 8px; border: 1px solid #d5dee6; border-radius: 10px; background: rgba(255, 255, 255, .97); box-shadow: 0 4px 14px rgba(30, 45, 90, .16); cursor: pointer; text-align: left; font: inherit; white-space: nowrap; }
-.hq-sign:hover, .hq-sign:focus-visible { outline: none; border-color: #71da80; }
-.hq-sign-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; font-size: 11px; }
-.hq-sign-top b { color: #0b344f; }
-.hq-sign-top span { color: #2c8a43; font-weight: 700; }
-.hq-sign .st-bar { height: 6px; margin-top: 5px; }
+/* 'IREN · 5층' 표시: 남색 알약 + 초록 점 + 오른쪽 꼭지(빌딩을 가리킴) */
+.hq-floor { position: absolute; right: 16px; top: 0; transform: translateY(-50%); display: flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: 999px; white-space: nowrap;
+  background: linear-gradient(180deg, #154d73, #0b344f); color: #fff; font-size: 12.5px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .2), 0 6px 16px rgba(6, 28, 44, .3); }
+.hq-floor::after { content: ''; position: absolute; right: -6px; top: 50%; width: 10px; height: 10px; background: #0b344f; transform: translateY(-50%) rotate(45deg); }
+.hq-floor .dot { width: 9px; height: 9px; border-radius: 50%; background: #71da80; box-shadow: 0 0 0 3px rgba(113, 218, 128, .3), 0 0 10px #71da80; }
+.hq-floor small { font-size: 10.5px; color: #b8d0de; }
 
-/* 태블릿(768~1023px): 배지·말풍선을 조금 좁게 — 폭은 hqTower.HQ_LABEL_W.mid 와 같게 (카메라가 이만큼 비워 둠) */
+/* 태블릿(768~1023px): 말풍선 조금 좁게 (hqLabelRoom 의 260 과 같게) */
 @media (min-width: 768px) and (max-width: 1023px) {
-  .hq-badges { width: 190px; }
-  .hq-tag small { display: none; }
-  .hq-bubble { width: 220px; }
+  .hq-top { --ceo-w: 196px; }
+  .hq-bubble { width: 260px; }
+  .hq-bubble-quote { font-size: 14px; }
+  .hq-floor small { display: none; }
 }
 
-/* 휴대폰(767px 이하) 아래 묶음 (ui/HqDock.jsx): CEO 배지 두 개 가로 + 말풍선 — 빌딩 옆 3D 배지·말풍선은 숨김 */
+/* 휴대폰(767px 이하): 옥상 위엔 CEO 카드만, 말풍선은 화면 아래 묶음(ui/HqDock.jsx) */
 .hq-dock { display: none; }
 @media (max-width: 767px) {
-  .hq-badges:not(.is-docked), .hq-bubble:not(.is-docked) { display: none; }
-  .hq-dock { display: flex; flex-direction: column; gap: 6px; margin: 0 8px 6px; pointer-events: auto; }
-  .hq-badges.is-docked { position: static; transform: none; width: auto; flex-direction: row; }
-  .hq-badges.is-docked .hq-person { flex: 1 1 0; min-width: 0; }
-  .hq-badges.is-docked .hq-person small { display: none; }
-  .hq-bubble.is-docked { position: static; transform: none; width: auto; }
+  .hq-top { --ceo-w: 176px; }
+  .hq-top .hq-bubble { display: none; }
+  .hq-ceo { padding: 12px 10px 10px; }
+  .hq-ceo-photo .st-face { width: 64px; height: 64px; }
+  .hq-ceo-person b { font-size: 14px; margin-top: 6px; }
+  .hq-ceo-person small { display: none; }
+  .hq-floor { padding: 5px 9px; font-size: 11px; }
+  .hq-floor small { display: none; }
+  .hq-dock { display: block; margin: 0 8px 6px; pointer-events: auto; }
+  .hq-bubble.is-docked { width: auto; }
   .hq-bubble.is-docked::before { display: none; }
-  .hq-bubble.is-docked .hq-bubble-quote { -webkit-line-clamp: 2; font-size: 12px; }
-  .hq-sign { min-width: 160px; }
+  .hq-bubble.is-docked .hq-bubble-quote { -webkit-line-clamp: 2; font-size: 13.5px; }
 }

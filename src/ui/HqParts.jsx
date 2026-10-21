@@ -1,9 +1,9 @@
 // =============================================================
-// HqParts — 본사 3D 화면의 CEO 배지 · 최근 발언 말풍선 · 약속 간판 (그림 조각)
+// HqParts — 본사 3D 화면의 CEO 카드 · 최근 발언 말풍선 · 'IREN · 5층' 표시 (그림 조각)
 // -------------------------------------------------------------
-// 같은 조각을 두 곳이 씀:
-//   넓은 화면(768px 이상): scene/HqView.jsx 가 빌딩 옆 3D 위치에 붙임 (배지 = 왼쪽, 말풍선 = 오른쪽, 간판 = 옥상)
-//   휴대폰(767px 이하) : ui/HqDock.jsx 가 화면 아래에 붙임 (배지 줄 + 말풍선) — 빌딩 옆엔 자리가 없어서
+// scene/HqView.jsx 가 3D 위치에 붙임: 옥상 위 = CEO 카드(큰 사진 · 이름 · 발언 수 · 약속 성적표) + 그 옆 말풍선,
+//   IREN 층 왼쪽 끝 = 'IREN · 5층' 표시 (2026-10-22 사용자 요청: 사진을 빌딩 위쪽에, 눈에 띄게)
+// 휴대폰(767px 이하): 말풍선은 빌딩 위에 자리가 없어 ui/HqDock.jsx 가 화면 아래에 붙임 (CSS 가 위쪽 말풍선을 숨김)
 // 누르면 가운데 카드 (useAppStore.openHqCard → ui/StatementsCard.jsx)
 // =============================================================
 import { useEffect, useMemo, useState } from 'react'
@@ -37,32 +37,49 @@ export function useHqText() {
   return { lang, h: hqText[lang === 'ko' ? 'ko' : 'en'] }
 }
 
-// 'IREN · 5층' 표시 + 공동 CEO 배지 (사진 · 이름 · 발언 수) → 누르면 그 사람 발언 카드
-//   발언이 있는 사람만 (speakers — 발언이 없는 공동 CEO 는 뺌, 2026-10-21 사용자 결정)
-//   docked: 휴대폰 아래 묶음 (표시 줄 없이 배지만 가로로)
-export function Badges({ file, level, street, docked = false }) {
+// 옥상 위 묶음: CEO 카드 + 그 옆 말풍선 (휴대폰은 CSS 가 말풍선을 숨기고 HqDock 이 아래에 그림)
+export function CeoTop({ file }) {
+  return <div className="hq-top"><CeoCard file={file} /><Bubble file={file} /></div>
+}
+
+// CEO 카드 (남색 바탕 · 큰 사진 · 초록 테두리): 발언이 있는 사람만 (speakers — 발언이 없는 공동 CEO 는 뺌)
+//   사람을 누르면 그 사람 발언 카드, 아래 성적표를 누르면 약속만 모은 카드
+export function CeoCard({ file }) {
   const { lang, h } = useHqText()
   const openCard = useAppStore((s) => s.openHqCard)
+  const sb = scoreboard(file.promises, file.checkedAt)
+  const counts = { kept: sb.kept, 'late-kept': sb.lateKept, late: sb.late, withdrawn: sb.withdrawn, pending: sb.pending }
   return (
-    <div className={docked ? 'hq-badges is-docked' : 'hq-badges'}>
-      {!docked && <div className="hq-tag"><span className="dot" aria-hidden="true" /><b>{fill(h.towerFloor, { level })}</b><small>{street}</small></div>}
+    <div className="hq-ceo statements-panel">
       {speakers(file).map((p) => {
         const n = file.statements.filter((s) => s.person === p.id).length
         return (
-          <button key={p.id} type="button" className="hq-person" onClick={() => openCard({ person: p.id })}
+          <button key={p.id} type="button" className="hq-ceo-person" onClick={() => openCard({ person: p.id })}
             aria-label={fill(h.badgeOpen, { name: p.name })} title={fill(h.badgeOpen, { name: p.name })}>
-            <Face person={p} />
-            <span><b>{p.name}</b><small>{lang === 'ko' ? p.title_ko : p.title_en}</small></span>
-            <em className={n ? '' : 'is-zero'}>{fill(h.statementsN, { n })}</em>
+            <span className="hq-ceo-photo"><Face person={p} /></span>
+            <b>{p.name}</b>
+            <small>{lang === 'ko' ? p.title_ko : p.title_en}</small>
+            <em>{fill(h.statementsN, { n })}</em>
           </button>
         )
       })}
+      <button type="button" className="hq-ceo-score" onClick={() => openCard({ filter: 'promises' })} title={h.signOpen}
+        aria-label={`${h.signOpen}: ${fill(h.scoreLine, { n: sb.total, a: sb.kept, b: sb.due })}`}>
+        <span>{fill(h.scoreLine, { n: sb.total, a: sb.kept, b: sb.due })}</span>
+        <ScoreBar counts={counts} />
+      </button>
     </div>
   )
 }
 
+// 'IREN · 5층' 표시 (IREN 층 왼쪽 끝 모서리에 붙음 — 오른쪽 끝이 빌딩)
+export function FloorTag({ level, street }) {
+  const { h } = useHqText()
+  return <div className="hq-floor"><span className="dot" aria-hidden="true" /><b>{fill(h.towerFloor, { level })}</b>{street && <small>{street}</small>}</div>
+}
+
 // 최근 발언 말풍선 — 7초마다 다음 발언 (마우스·초점이 있으면 멈춤, 움직임 줄이기면 자동으로 안 넘김)
-//   누르면 전체 카드, ‹ › 로 직접 넘김. docked: 휴대폰 아래 묶음 (꼬리 없음)
+//   누르면 전체 카드, ‹ › 로 직접 넘김. docked: 휴대폰 아래 묶음 (꼬리 없음) · 아니면 CEO 카드 옆 (꼬리가 사진 쪽)
 export function Bubble({ file, docked = false }) {
   const { lang, h } = useHqText()
   const ko = lang === 'ko'
@@ -97,20 +114,6 @@ export function Bubble({ file, docked = false }) {
         <button type="button" className="hq-all" onClick={() => openCard({})}>{fill(h.bubbleAll, { n: file.statements.length })}</button>
       </div>
     </div>
-  )
-}
-
-// 약속 성적표 간판 (약속 n건 · 기한 안에 지켜짐 a/b · 판정 막대) → 누르면 약속만 모은 카드
-export function Sign({ file }) {
-  const { h } = useHqText()
-  const openCard = useAppStore((s) => s.openHqCard)
-  const sb = scoreboard(file.promises, file.checkedAt)
-  const counts = { kept: sb.kept, 'late-kept': sb.lateKept, late: sb.late, withdrawn: sb.withdrawn, pending: sb.pending }
-  return (
-    <button type="button" className="hq-sign statements-panel" onClick={() => openCard({ filter: 'promises' })} title={h.signOpen} aria-label={`${h.signOpen}: ${fill(h.keptOnTime, { a: sb.kept, b: sb.due })}`}>
-      <span className="hq-sign-top"><b>{fill(h.promisesCount, { n: sb.total })}</b><span>{fill(h.keptOnTime, { a: sb.kept, b: sb.due })}</span></span>
-      <ScoreBar counts={counts} />
-    </button>
   )
 }
 

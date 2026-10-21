@@ -11,7 +11,7 @@ export const TOWER_D = 6        // 건물 세로 (z)
 export const FLOOR_H = 0.68     // 사무 층 높이 ≈ 3.7m
 const LOBBY_H = FLOOR_H * 1.6   // 지상층(로비)은 더 높게
 const ROOF_H = 0.8              // 옥상 기계실
-export const PLOT = 20          // 바닥 판 한 변 (건물 + 둘레 도로·이웃 건물)
+export const PLOT = 34          // 바닥 판 한 변 (건물 + 둘레 도로·인도·이웃 건물 — HqCity.jsx)
 
 // 카메라(cx, cz — 건물 가운데 기준 위치)에서 본 건물의 화면 왼쪽·오른쪽 끝 모서리 [x, z]
 //   화면 오른쪽 방향 = 바라보는 방향 × 위 = (-fz, fx) → 네 모서리를 그 방향에 내린 값이 가장 작은 게 왼쪽, 큰 게 오른쪽
@@ -26,13 +26,12 @@ export function sideCorners(cx, cz) {
   return { left: sorted[0], right: sorted[3] }
 }
 
-// 카메라가 빌딩을 맞출 때 양옆에 비워 둘 화면 폭(px): 왼쪽 = CEO 배지, 오른쪽 = 말풍선 (+ 꼬리·여백 틈)
-//   폭은 hq.css 와 같은 값 — 1024px 이상 228·280, 768~1023px 190·220, 767px 이하는 0 (배지·말풍선을 화면 아래에 붙임)
-export const HQ_LABEL_W = { wide: { badges: 228, bubble: 280 }, mid: { badges: 190, bubble: 220 } }
+// 카메라가 빌딩을 맞출 때 비워 둘 화면 자리(px): 위 = 옥상 위 CEO 카드, 오른쪽 = 그 옆 말풍선, 왼쪽 = 5층 'IREN' 표시
+//   값은 hq.css 의 폭과 맞춤 — 1024px 이상 말풍선 320, 768~1023px 260, 767px 이하는 말풍선을 화면 아래에 붙여 위 자리만
 export function hqLabelRoom(width) {
-  if (width < 768) return { left: 0, right: 0 }
-  const w = width >= 1024 ? HQ_LABEL_W.wide : HQ_LABEL_W.mid
-  return { left: w.badges + 40, right: w.bubble + 42 }
+  if (width < 768) return { top: 190, right: 0, left: 0 }
+  if (width < 1024) return { top: 220, right: 260 + 40, left: 180 }
+  return { top: 230, right: 320 + 40, left: 200 }
 }
 
 // floors: 건물 층수, level: 회사가 쓰는 층 → 층판 목록 · IREN 층 · 전체 높이 · 카메라 상자

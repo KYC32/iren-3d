@@ -37,11 +37,13 @@ it('sideCorners: 카메라가 (-x,+z) 쪽이면 왼쪽 = (-x,-z), 오른쪽 = (+
   expect(sideCorners(-30, 30)).toEqual({ left: [-TOWER_W / 2, -TOWER_D / 2], right: [TOWER_W / 2, TOWER_D / 2] })
 })
 
-// 카메라가 빌딩을 맞출 때 양옆에 비워 둘 화면 폭(px) — 배지(왼쪽)·말풍선(오른쪽) 폭 + 틈 (hq.css 의 폭과 같은 값)
-it('hqLabelRoom: 넓은 화면은 배지 228·말풍선 280 자리, 태블릿은 190·220, 휴대폰은 0 (아래에 붙임)', () => {
-  expect(hqLabelRoom(1440)).toEqual({ left: 228 + 40, right: 280 + 42 })
-  expect(hqLabelRoom(1024)).toEqual({ left: 228 + 40, right: 280 + 42 })
-  expect(hqLabelRoom(900)).toEqual({ left: 190 + 40, right: 220 + 42 })
-  expect(hqLabelRoom(768)).toEqual({ left: 190 + 40, right: 220 + 42 })
-  expect(hqLabelRoom(767)).toEqual({ left: 0, right: 0 })
+// 카메라가 빌딩을 맞출 때 비워 둘 화면 자리(px) — 옥상 위 CEO 카드(위), 그 옆 말풍선(오른쪽), 5층 표시(왼쪽) (hq.css 폭과 같은 값)
+it('hqLabelRoom: 넓은 화면은 위 230 · 오른쪽 말풍선 320+40 · 왼쪽 5층 표시 200', () => {
+  expect(hqLabelRoom(1440)).toEqual({ top: 230, right: 360, left: 200 })
+  expect(hqLabelRoom(1024)).toEqual({ top: 230, right: 360, left: 200 })
+})
+it('hqLabelRoom: 태블릿은 말풍선을 좁게 (260+40), 휴대폰은 위 CEO 카드 자리만 (말풍선은 화면 아래에 붙임)', () => {
+  expect(hqLabelRoom(900)).toEqual({ top: 220, right: 300, left: 180 })
+  expect(hqLabelRoom(768)).toEqual({ top: 220, right: 300, left: 180 })
+  expect(hqLabelRoom(767)).toEqual({ top: 190, right: 0, left: 0 })
 })

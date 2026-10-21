@@ -52,12 +52,14 @@ const isCampusLike = (view) => view === 'site' || view === 'hq' // 캠퍼스처�
 function hqShape() {
   return hqTower(useAppStore.getState().data?.companies?.[0]?.hq?.building ?? { floors: 20, level: 5 })
 }
-// 본사 화면에서 빌딩이 들어갈 화면 영역: 넓은 화면은 양옆에 배지·말풍선 자리를 비우고, 휴대폰은 아래 묶음(.hq-dock) 위까지만
+// 본사 화면에서 빌딩이 들어갈 화면 영역: 위 = 상단 바 아래 + 옥상 위 CEO 카드 자리, 양옆 = 말풍선·5층 표시 자리,
+//   아래 = 휴대폰이면 말풍선 묶음(.hq-dock) 위까지 (본사 화면엔 KPI 판이 없어 위는 상단 바에서 잼)
 function hqViewport(w, h) {
   const rect = campusViewport(w, h)
   const room = hqLabelRoom(w)
+  const bar = document.querySelector('.topbar')?.getBoundingClientRect()
   const dock = document.querySelector('.hq-dock')?.getBoundingClientRect()
-  return { ...rect, left: rect.left + room.left, right: rect.right - room.right,
+  return { ...rect, top: (bar?.bottom ?? 70) + 18 + room.top, left: rect.left + room.left, right: rect.right - room.right,
     bottom: w < 768 && dock?.height ? Math.min(rect.bottom, dock.top - 12) : rect.bottom }
 }
 function hqHome(T) {

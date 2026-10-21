@@ -12,9 +12,9 @@ export const hqText = {
     // 본사 3D 화면 (빌딩 옆 'IREN · 5층' 표시 · 카드의 건물 설명)
     towerFloor: 'IREN · {level}층',
     modelNote: '건물은 단순화한 모형 · {floors}층(건물 소유사 Mirvac) · IREN {level}층(10-K 주소)', buildingSource: '건물 자료',
-    // 3D 말풍선 · CEO 배지 · 옥상 간판 (HqView) — 누르면 가운데 카드 (StatementsCard)
+    // 옥상 위 CEO 카드 · 말풍선 (HqParts) — 누르면 가운데 카드 (StatementsCard)
     badgeOpen: '{name}의 발언 보기', statementsN: '발언 {n}', bubbleAll: '전체 {n}건', bubbleOpen: '이 발언 자세히 (카드)',
-    prev: '이전 발언', next: '다음 발언', signOpen: '약속만 모아 보기',
+    prev: '이전 발언', next: '다음 발언', signOpen: '약속만 모아 보기', scoreLine: '약속 {n}건 · 기한 안에 지켜짐 {a}/{b}',
     silentNote: '{names}: 2023-08-29 이후 이름이 붙은 발언을 찾지 못해 화면에서 뺐어요 (찾으면 다시 나타남)',
     personTitle: '{name}의 발언', noStatements: '2023-08-29 AI 전환 뒤 회사 보도자료·실적 발표 콜·X 에서 {name} 이름이 붙은 발언을 찾지 못했어요.',
     // ≡ 메뉴 바로가기 (AppMenu)
@@ -40,7 +40,7 @@ export const hqText = {
     towerFloor: 'IREN · Level {level}',
     modelNote: 'Simplified model · {floors} storeys (building owner Mirvac) · IREN on Level {level} (10-K address)', buildingSource: 'Building data',
     badgeOpen: 'See statements by {name}', statementsN: '{n} statements', bubbleAll: 'All {n}', bubbleOpen: 'Open this statement (card)',
-    prev: 'Previous statement', next: 'Next statement', signOpen: 'See promises only',
+    prev: 'Previous statement', next: 'Next statement', signOpen: 'See promises only', scoreLine: '{n} promises · kept on time {a}/{b}',
     silentNote: '{names}: no attributed statements found since 2023-08-29, so not shown (will reappear if found)',
     personTitle: 'Statements by {name}', noStatements: 'Since the 2023-08-29 AI pivot we found no statements attributed to {name} in company releases, earnings calls or on X.',
     menuEntry: 'Management statements', menuSub: 'What the co-CEOs said · promises kept?',
