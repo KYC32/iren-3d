@@ -10,6 +10,7 @@ import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from 
 import { validateResearch } from '../src/data/researchSchema.js'
 import { SourceDatesFile, HiringFile } from '../src/data/schema.js'
 import { validateObservations } from '../src/data/observationsSchema.js'
+import { validateStatements } from '../src/data/statementsSchema.js'
 import { validateShares } from '../src/data/sharesSchema.js'
 import { fileURLToPath } from 'node:url'
 
@@ -54,6 +55,18 @@ export function buildObservations(sites) {
   return file
 }
 
+// 경영진 발언·약속 장부 (data/statements.json) — infra.json 과 따로 둠:
+//   지도 본사 카드가 화면에 들어오거나 "경영진 발언" 칸이 열릴 때만 불러옴 (src/data/loadStatements.js)
+//   파일이 없으면 null (아직 자료를 넣기 전)
+export function buildStatements() {
+  const url = new URL('statements.json', DATA)
+  if (!existsSync(url)) return null
+  const file = JSON.parse(readFileSync(url, 'utf8'))
+  const errors = validateStatements(file)
+  if (errors.length) throw new Error(errors.join('\n'))
+  return file
+}
+
 // 직접 실행했을 때만 파일로 저장
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const infra = buildInfra()
@@ -73,5 +86,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   if (observations) {
     writeFileSync(new URL('../public/data/observations.json', import.meta.url), JSON.stringify(observations))
     console.log(`✅ observations.json — 설비 ${observations.facilities.length}건, 현장 관찰 ${observations.progress.length}건`)
+  }
+  const statements = buildStatements()
+  if (statements) {
+    writeFileSync(new URL('../public/data/statements.json', import.meta.url), JSON.stringify(statements))
+    console.log(`✅ statements.json — 사람 ${statements.people.length}명, 발언 ${statements.statements.length}건, 약속 ${statements.promises.length}건`)
   }
 }

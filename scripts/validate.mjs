@@ -8,6 +8,7 @@ import { validateResearch } from '../src/data/researchSchema.js'
 import { validateAll } from './lib/validate-core.mjs'
 import { StockFile, NewsFile } from '../src/data/feedSchema.js'
 import { validateObservations } from '../src/data/observationsSchema.js'
+import { validateStatements } from '../src/data/statementsSchema.js'
 import { validateShares } from '../src/data/sharesSchema.js'
 
 const DATA = new URL('../data/', import.meta.url)
@@ -33,6 +34,14 @@ if (infra && existsSync(researchUrl)) errors.push(...validateResearch(JSON.parse
 // 현장 관찰·설비 이중화 (data/observations.json): 스키마·사이트·건물·날짜 규칙
 const obsUrl = new URL('observations.json', DATA)
 if (infra && existsSync(obsUrl)) errors.push(...validateObservations(JSON.parse(readFileSync(obsUrl, 'utf8')), infra.sites))
+// 경영진 발언·약속 장부 (data/statements.json): 스키마·근거(회사 자료만)·날짜 규칙 + 연결한 건물 일정이 research.json 에 있는지
+const stmtUrl = new URL('statements.json', DATA)
+if (existsSync(stmtUrl)) {
+  const statements = JSON.parse(readFileSync(stmtUrl, 'utf8'))
+  errors.push(...validateStatements(statements))
+  const milestones = new Set(existsSync(researchUrl) ? (JSON.parse(readFileSync(researchUrl, 'utf8')).milestones ?? []).map((m) => m.id) : [])
+  for (const p of statements.promises ?? []) if (p.milestone && !milestones.has(p.milestone)) errors.push(`statements: 없는 일정 ${p.milestone} (약속 ${p.id})`)
+}
 // 발행 주식 수·희석 (data/shares.json)
 const sharesUrl = new URL('shares.json', DATA)
 if (existsSync(sharesUrl)) errors.push(...validateShares(JSON.parse(readFileSync(sharesUrl, 'utf8'))))

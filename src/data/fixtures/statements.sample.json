@@ -1,0 +1,35 @@
+{
+  "checkedAt": "2026-10-21",
+  "since": "2023-08-29",
+  "since_source": "https://www.sec.gov/Archives/edgar/data/sample/sample-6k.htm",
+  "people": [
+    { "id": "person-a", "name": "Sample Person A", "title_ko": "공동 창업자 · 공동 CEO (샘플)", "title_en": "Co-founder & Co-CEO (sample)", "photo": "/people/sample-a.jpg", "photo_source": "https://iren.com/sample-leadership", "x": "https://x.com/sample_a" },
+    { "id": "person-b", "name": "Sample Person B", "title_ko": "공동 창업자 · 공동 CEO (샘플)", "title_en": "Co-founder & Co-CEO (sample)", "photo": "/people/sample-b.jpg", "photo_source": "https://iren.com/sample-leadership" }
+  ],
+  "statements": [
+    { "id": "s-sample-1", "person": "person-a", "date": "2023-06-15", "channel": "call", "kind": "transcript", "url": "https://example.com/sample-transcript-2023", "summary_ko": "(샘플) 시작일 전에 처음 한 약속 — GPU 약 23,000개를 2026년 말까지", "summary_en": "(sample) First made before the start date — about 23,000 GPUs by end of 2026", "promise": "p-sample-repeat" },
+    { "id": "s-sample-2", "person": "person-b", "date": "2025-11-05", "channel": "call", "kind": "sec", "url": "https://www.sec.gov/Archives/edgar/data/sample/sample-call.htm", "summary_ko": "(샘플) 같은 약속을 다시 언급", "summary_en": "(sample) Repeats the same promise", "promise": "p-sample-repeat" },
+    { "id": "s-sample-3", "person": "person-a", "date": "2025-08-28", "channel": "call", "kind": "video", "url": "https://www.youtube.com/watch?v=sample1", "at": "12:34", "summary_ko": "(샘플) A 캠퍼스를 2026년 상반기까지 약 1 GW 로", "summary_en": "(sample) Campus A to about 1 GW by 1H 2026", "promise": "p-sample-kept" },
+    { "id": "s-sample-4", "person": "person-b", "date": "2025-09-10", "channel": "x", "kind": "x", "url": "https://x.com/sample_b/status/1", "summary_ko": "(샘플) B 변전소는 FY2026 3분기에 통전", "summary_en": "(sample) Substation B energised in Q3 FY2026", "promise": "p-sample-late-kept" },
+    { "id": "s-sample-5", "person": "person-a", "date": "2025-12-01", "channel": "interview", "kind": "article", "url": "https://example.com/sample-interview", "summary_ko": "(샘플) C 홀 300 MW 를 2026년 6월까지", "summary_en": "(sample) Hall C 300 MW by June 2026", "promise": "p-sample-late" },
+    { "id": "s-sample-6", "person": "person-b", "date": "2026-02-12", "channel": "call", "kind": "company", "url": "https://iren.gcs-web.com/sample-deck", "summary_ko": "(샘플) D 공랭 홀을 2027년에 짓겠다", "summary_en": "(sample) Air-cooled hall D in 2027", "promise": "p-sample-withdrawn" },
+    { "id": "s-sample-7", "person": "person-a", "date": "2026-10-14", "channel": "x", "kind": "x", "url": "https://x.com/sample_a/status/2", "summary_ko": "(샘플) AI 수요는 여전히 강하다는 의견", "summary_en": "(sample) Opinion that AI demand remains strong", "quote": "Sample quote in one sentence." },
+    { "id": "s-sample-8", "person": "person-b", "date": "2026-10-02", "channel": "interview", "kind": "video", "url": "https://www.youtube.com/watch?v=sample2", "at": "1:02:03", "summary_ko": "(샘플) 시장 상황에 대한 의견", "summary_en": "(sample) Opinion on market conditions" }
+  ],
+  "promises": [
+    { "id": "p-sample-kept", "topic": "capacity", "title_ko": "(샘플) A 캠퍼스 약 1 GW", "title_en": "(sample) Campus A ~1 GW", "deadline": "2026-H1",
+      "target": { "value": 1000, "unit": "MW", "qualifier": "about" },
+      "reduced": { "url": "https://www.globenewswire.com/sample-reduce", "published": "2026-02-10", "amount": { "value": 750, "unit": "MW", "qualifier": "exact" } },
+      "fulfilled": { "url": "https://www.globenewswire.com/sample-done", "published": "2026-05-07", "amount": { "value": 750, "unit": "MW", "qualifier": "exact" } } },
+    { "id": "p-sample-late-kept", "topic": "power", "title_ko": "(샘플) B 변전소 통전", "title_en": "(sample) Substation B energised", "deadline": "FY2026-Q3",
+      "fulfilled": { "url": "https://www.sec.gov/Archives/edgar/data/sample/sample-10q.htm", "published": "2026-08-27", "period": "FY2026-Q4" } },
+    { "id": "p-sample-late", "topic": "site", "title_ko": "(샘플) C 홀 300 MW", "title_en": "(sample) Hall C 300 MW", "deadline": "2026-06",
+      "target": { "value": 300, "unit": "MW", "qualifier": "exact" },
+      "postponed": [{ "to": "2027-H1", "url": "https://www.sec.gov/Archives/edgar/data/sample/sample-10k.htm", "published": "2026-08-27" }],
+      "progress": { "url": "https://www.sec.gov/Archives/edgar/data/sample/sample-10k.htm", "published": "2026-08-27", "amount": { "value": 100, "unit": "MW", "qualifier": "exact" } } },
+    { "id": "p-sample-withdrawn", "topic": "site", "title_ko": "(샘플) D 공랭 홀", "title_en": "(sample) Air-cooled hall D", "deadline": "2027",
+      "withdrawn": { "date": "2026-08-27", "url": "https://iren.gcs-web.com/sample-fy26-deck", "reason_ko": "(샘플) 액체냉각으로 바꿔 짓기로 함", "reason_en": "(sample) Switched to a liquid-cooled build" } },
+    { "id": "p-sample-repeat", "topic": "gpu", "title_ko": "(샘플) GPU 약 23,000개", "title_en": "(sample) About 23,000 GPUs", "deadline": "2026",
+      "target": { "value": 23000, "unit": "GPUs", "qualifier": "about" } }
+  ]
+}
