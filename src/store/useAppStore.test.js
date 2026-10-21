@@ -298,28 +298,43 @@ describe('주가·뉴스 페이지', () => {
   })
 })
 
-// 본사(경영진 발언) 칸 — 지도에서 시드니 본사 카드·'본사' 단추·≡ 메뉴로 열고, 캠퍼스·페이지·다른 지역으로 가면 닫힘
-describe('본사 칸', () => {
-  it('openHq: 캠퍼스 선택을 풀고 지도에서 칸을 엶 + 주소 #hq=1', () => {
-    state().setRaw(raw); state().selectSite('childress'); state().openHq()
-    expect(state()).toMatchObject({ hqOpen: true, view: 'globe', selectedSiteId: null, surface: 'map' })
+// 본사 3D 화면 — 지도의 시드니 본사 카드·≡ 메뉴·#hq=1 로 들어가 본사 건물과 경영진 발언을 봄 (2026-10-21 사용자 요청: 지도 옆 칸 대신)
+describe('본사 3D 화면', () => {
+  it('enterHq3D: 캠퍼스 선택을 풀고 3D 본사 화면 + 주소 #hq=1 (지역은 본사 → 지도로 돌아가면 시드니)', () => {
+    state().setRaw(raw); state().selectSite('childress'); state().enterHq3D()
+    expect(state()).toMatchObject({ view: 'hq', surface: '3d', selectedSiteId: null, mapRegion: { country: 'HQ' }, mapCamera: null })
     expect(window.history.replaceState).toHaveBeenLastCalledWith(null, '', '#hq=1')
   })
-  it.each([['selectSite', (s) => s.selectSite('childress')], ['focusSiteOnMap', (s) => s.focusSiteOnMap('childress')],
-    ['enterSite3D', (s) => s.enterSite3D('childress')], ['setPage', (s) => s.setPage('stock')], ['closeHq', (s) => s.closeHq()],
-    ["다른 지역 단추 setMapRegion('US')", (s) => s.setMapRegion('US')]])(
-    '%s 하면 본사 칸이 닫힘', (_, act) => { state().setRaw(raw); state().openHq(); act(state()); expect(state().hqOpen).toBe(false) })
-  it("setMapRegion('HQ') 는 본사 칸을 엶", () => { state().setRaw(raw); state().setMapRegion('HQ'); expect(state()).toMatchObject({ hqOpen: true, mapRegion: { country: 'HQ' } }) })
-  it('#hq=1 로 들어오면 데이터가 온 뒤 칸이 열림', () => { window.location.hash = '#hq=1'; state().setRaw(raw); expect(state().hqOpen).toBe(true) })
-  it('#hq=1 로 들어오면 지역 단추도 본사 (지도는 시드니인데 북미가 눌려 보이지 않게)', () => {
-    window.location.hash = '#hq=1'; state().setRaw(raw); expect(state().mapRegion.country).toBe('HQ')
+  it.each([['requestGlobe (뒤로 가기·칸 닫기)', (s) => s.requestGlobe()], ['enterSite3D', (s) => s.enterSite3D('childress')],
+    ['focusSiteOnMap', (s) => s.focusSiteOnMap('childress')], ["다른 지역 단추 setMapRegion('US')", (s) => s.setMapRegion('US')]])(
+    '%s 하면 본사 화면에서 나옴', (_, act) => { state().setRaw(raw); state().enterHq3D(); act(state()); expect(state().view).not.toBe('hq') })
+  it("requestGlobe 로 나오면 지도 화면 (주소에서 hq 도 빠짐)", () => {
+    state().setRaw(raw); state().enterHq3D(); state().requestGlobe()
+    expect(state()).toMatchObject({ view: 'globe', surface: 'map' })
+    expect(window.history.replaceState).toHaveBeenLastCalledWith(null, '', '/')
   })
-  it('앱이 켜진 뒤 주소가 #hq=1 로 바뀌어도(뒤로 가기·붙여넣기) 본사 칸 + 본사 지역', () => {
+  it("setMapRegion('HQ') 는 지도에서 시드니로만 (칸도 3D 도 열지 않음)", () => {
+    state().setRaw(raw); state().setMapRegion('HQ')
+    expect(state()).toMatchObject({ view: 'globe', surface: 'map', mapRegion: { country: 'HQ' } })
+  })
+  it('#hq=1 로 들어오면 데이터가 온 뒤 3D 본사 화면 + 지역은 본사', () => {
+    window.location.hash = '#hq=1'; state().setRaw(raw)
+    expect(state()).toMatchObject({ view: 'hq', surface: '3d', mapRegion: { country: 'HQ' } })
+  })
+  it('앱이 켜진 뒤 주소가 #hq=1 로 바뀌어도(뒤로 가기·붙여넣기) 3D 본사 화면', () => {
     state().setRaw(raw); state().applyHash('#hq=1')
-    expect(state()).toMatchObject({ hqOpen: true, mapRegion: { country: 'HQ' } })
+    expect(state()).toMatchObject({ view: 'hq', surface: '3d', mapRegion: { country: 'HQ' } })
   })
-  it('showHq: 주가 페이지에서도 지도로 돌아와 본사 칸', () => {
+  it('showHq: 주가 페이지에서도 3D 본사 화면으로 (≡ 메뉴 경영진 발언)', () => {
     state().setRaw(raw); state().setPage('stock'); state().showHq()
-    expect(state()).toMatchObject({ page: null, hqOpen: true, surface: 'map', mapRegion: { country: 'HQ' } })
+    expect(state()).toMatchObject({ page: null, view: 'hq', surface: '3d' })
+  })
+  it('본사 화면에서 페이지를 열어도 주소에 hq 가 남음 (페이지를 닫으면 본사로)', () => {
+    state().setRaw(raw); state().enterHq3D(); state().setPage('stock')
+    expect(window.history.replaceState).toHaveBeenLastCalledWith(null, '', '#page=stock&hq=1')
+  })
+  it('본사 화면에서 하늘을 바꾸면 주소에 sky', () => {
+    state().setRaw(raw); state().enterHq3D(); state().setSkyMode('night')
+    expect(window.history.replaceState).toHaveBeenLastCalledWith(null, '', '#hq=1&sky=night')
   })
 })

@@ -65,12 +65,13 @@ describe('페이지 (page · at)', () => {
   })
 })
 
-// 본사(경영진 발언) 칸: #hq=1 — 캠퍼스·페이지 주소가 있으면 그쪽이 먼저 (한 화면에 하나만)
-describe('본사 칸 주소', () => {
+// 본사 3D 화면: #hq=1 — 캠퍼스 주소가 있으면 캠퍼스가 먼저, 페이지와는 함께 (페이지를 닫으면 본사로)
+describe('본사 화면 주소', () => {
   it('hq=1 → hq', () => { expect(parseHash('#hq=1')).toEqual({ hq: true }); expect(parseHash('#hq=0')).toEqual({}) })
-  it('hq 는 캠퍼스·페이지가 없을 때만 주소에', () => {
+  it('hq 는 캠퍼스가 없을 때 주소에 (페이지와 함께도) · 본사 화면의 하늘도', () => {
     expect(buildHash({ hq: true })).toBe('#hq=1')
     expect(buildHash({ hq: true, site: 'childress' })).toBe('#site=childress')
-    expect(buildHash({ hq: true, page: 'stock' })).toBe('#page=stock')
+    expect(buildHash({ hq: true, page: 'stock' })).toBe('#page=stock&hq=1')
+    expect(buildHash({ hq: true, sky: 'night' })).toBe('#hq=1&sky=night')
   })
 })

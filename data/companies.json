@@ -17,7 +17,9 @@
         "address": "Level 5, 55 Market Street, Sydney NSW 2000, Australia",
         "lat": -33.8709,
         "lng": 151.2081,
-        "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm"
+        "tz": "Australia/Sydney",
+        "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm",
+        "building": { "floors": 20, "level": 5, "source": "https://www.mirvac.com/office-and-industrial/office/nsw/55-market-street" }
       },
       "summary_ko": "호주 시드니 본사. 비트코인 채굴에서 AI 클라우드로 전환 중이며 Microsoft·NVIDIA 등과 GPU 클라우드 계약을 맺었다.",
       "summary_en": "Sydney-based. Transitioning from bitcoin mining to AI cloud with GPU contracts from Microsoft, NVIDIA and others.",

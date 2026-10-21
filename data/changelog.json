@@ -4,6 +4,10 @@
       "date": "2026-10-21",
       "items": [
         {
+          "ko": "경영진 발언을 지도 옆 칸 대신 '본사 3D 화면'에서: 시드니 본사 카드(또는 ≡ 메뉴 '경영진 발언')를 누르면 55 Market Street 20층 빌딩(단순화한 모형, IREN 5층 초록 표시)이 3D 로 보이고 오른쪽 칸에서 두 공동 CEO 와 발언·약속 판정을 봄. 지도의 '본사' 단추는 시드니로 이동만, 칸의 X·뒤로 가기는 시드니 지도로",
+          "en": "Management statements now live in an 'HQ 3D view' instead of a map side panel: clicking the Sydney HQ card (or ≡ menu 'Management statements') shows 55 Market Street's 20-storey tower in 3D (simplified model, IREN's Level 5 in green) with the co-CEOs, statements and promise verdicts in the right panel. The map's 'HQ' button just flies to Sydney; the panel X and back arrow return to the Sydney map"
+        },
+        {
           "ko": "지도에 시드니 본사 카드와 경영진 발언·약속 장부 추가 (2023-08-29 AI 전환 뒤, 판정 5가지 · 회사 자료로 확인): 공동 CEO 발언 56건(보도자료·실적 발표 콜·Daniel Roberts X)과 기한을 밝힌 약속 25건, 지켜짐·늦게 지켜짐·늦어짐·철회·기한 전 판정과 원문 링크",
           "en": "Map gains a Sydney HQ card and a management statements & promise ledger (since the 2023-08-29 AI pivot, five verdicts, confirmed only by company materials): 56 co-CEO statements (press releases, earnings calls, Daniel Roberts on X) and 25 promises with deadlines, each with a kept / kept late / late / withdrawn / not yet due verdict and source links"
         }

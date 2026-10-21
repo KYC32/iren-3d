@@ -1,7 +1,8 @@
 // =============================================================
-// StatementsPanel — "경영진 발언" 칸 (지도 본사 카드·'본사' 지역 단추·≡ 메뉴로 엶, 주소 #hq=1)
+// StatementsPanel — 본사 3D 화면의 오른쪽 칸 "경영진 발언" (지도 본사 카드·≡ 메뉴로 엶, 주소 #hq=1)
 // -------------------------------------------------------------
-// 위에서 아래로: 두 공동 CEO → 약속 성적표 → 거르기 단추 → 발언 목록 → 안내 문구
+// 위에서 아래로: 두 공동 CEO → 건물 설명(단순화한 모형) → 약속 성적표 → 거르기 단추 → 발언 목록 → 안내 문구
+// X 단추 = 지도로 돌아가기 (본사 화면에서 나감 — useAppStore.requestGlobe)
 //   판정(지켜짐·늦게 지켜짐·늦어짐·철회·기한 전)은 손으로 적지 않고 promises.js 가 계산 (기준일 = 자료 확인일)
 //   목록 행은 statementRows.js 가 만들고 여기서는 그리기만
 // 따로 불러옴(App 의 React.lazy): 이 파일·statements.css·발언 자료가 첫 화면 번들에 안 들어감
@@ -34,7 +35,8 @@ function fmtDay(day, lang) {
 
 export default function StatementsPanel() {
   const lang = useAppStore((s) => s.lang)
-  const closeHq = useAppStore((s) => s.closeHq)
+  const requestGlobe = useAppStore((s) => s.requestGlobe) // X = 본사 화면을 나가 지도로
+  const building = useAppStore((s) => s.data?.companies?.[0]?.hq?.building)
   const city = useAppStore((s) => (lang === 'ko' ? s.data?.companies?.[0]?.hq?.city_ko : s.data?.companies?.[0]?.hq?.city_en) ?? '')
   const [file, setFile] = useState(peekStatements) // 이미 받은 자료가 있으면 바로
   const [failed, setFailed] = useState(false)
@@ -50,18 +52,18 @@ export default function StatementsPanel() {
       <div className="campus-heading">
         <div className="campus-heading-title"><small>{fill(h.panelLabel, { city })}</small><h2>{h.panelTitle}</h2></div>
         <div className="campus-heading-actions">
-          <button className="close-small" onClick={closeHq} aria-label={h.close} title={h.close}><X size={14} aria-hidden="true" /></button>
+          <button className="close-small" onClick={requestGlobe} aria-label={h.close} title={h.close}><X size={14} aria-hidden="true" /></button>
         </div>
       </div>
       {/* 스크롤은 안쪽 상자가 맡음 (바깥 .campus-panel.site-panel 은 overflow:hidden — 캠퍼스 칸과 같은 구조) */}
       <div className="campus-panel-body">
-        {file ? <Body file={file} lang={lang} h={h} /> : <p className="st-status" role="status">{failed ? h.loadError : h.loading}</p>}
+        {file ? <Body file={file} lang={lang} h={h} building={building} /> : <p className="st-status" role="status">{failed ? h.loadError : h.loading}</p>}
       </div>
     </aside>
   )
 }
 
-function Body({ file, lang, h }) {
+function Body({ file, lang, h, building }) {
   const [filter, setFilter] = useState('all')
   const people = useMemo(() => Object.fromEntries(file.people.map((p) => [p.id, p])), [file])
   const rows = useMemo(() => statementRows(file, filter), [file, filter])
@@ -81,6 +83,8 @@ function Body({ file, lang, h }) {
       {file.people.map((p) => <div key={p.id} className="st-person"><Face person={p} /><span><b>{p.name}</b><small>{lang === 'ko' ? p.title_ko : p.title_en}</small></span></div>)}
     </div>
     <p className="st-photo-src">{sources.map((u) => <a key={u} href={u} target="_blank" rel="noreferrer">{h.photoSource}<ArrowUpRight size={10} aria-hidden="true" /></a>)}</p>
+    {/* 왼쪽 3D 건물이 실제 모습이 아니라는 안내 + 층수 자료 */}
+    {building && <p className="st-model-note">{fill(h.modelNote, { floors: building.floors, level: building.level })} · <a href={building.source} target="_blank" rel="noreferrer">{h.buildingSource}<ArrowUpRight size={10} aria-hidden="true" /></a></p>}
 
     {/* 2) 약속 성적표 */}
     <section className="st-score" aria-label={fill(h.promisesCount, { n: sb.total })}>

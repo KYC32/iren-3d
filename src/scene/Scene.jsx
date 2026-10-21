@@ -12,6 +12,8 @@ const GlobeView = lazy(() => import('./GlobeView.jsx'))
 import { SINGLE_COMPANY } from '../config.js'
 // 캠퍼스·녹화 코드는 필요할 때만 불러옵니다 (첫 화면 로딩을 가볍게)
 const SiteView = lazy(() => import('./SiteView.jsx'))
+const HqView = lazy(() => import('./HqView.jsx')) // 시드니 본사 사무 빌딩 (view 'hq')
+import { PLOT as HQ_PLOT } from './hqTower.js'
 import { layoutCampus } from './layoutCampus.js'
 import CameraRig from './CameraRig.jsx'
 import SkyRig from './SkyRig.jsx'
@@ -25,10 +27,12 @@ const BG = '#eceffa' // 배경 = 안개 색 (지평선이 자연스럽게 사라
 export default function Scene({ record = false }) {
   const view = useAppStore((s) => s.view)
   const site = useAppStore(selectSelectedSite)
+  const hq = useAppStore((s) => s.data?.companies?.[0]?.hq) // 본사 화면의 하늘(해 위치)은 시드니 좌표로
   // 성능이 떨어지면 해상도(DPR)를 자동으로 낮춥니다
   const [dpr, setDpr] = useState(1.5)
-  const campusSide = useMemo(() => site ? layoutCampus(site._raw).side : 32, [site?._raw])
-  const campus = view === 'site'
+  const isHq = view === 'hq'
+  const campusSide = useMemo(() => isHq ? HQ_PLOT : site ? layoutCampus(site._raw).side : 32, [site?._raw, isHq])
+  const campus = view === 'site' || isHq // 캠퍼스·본사 화면은 하늘 모드 조명 (지구본은 고정 조명)
   const background = campusLandscape(site?.id)?.background ?? campusAppearance(site?.id)?.background ?? BG
   const shadowSpan = campus ? campusSide * 1.15 : 110
   const boardMode = Boolean(SINGLE_COMPANY) && !record
@@ -59,11 +63,11 @@ export default function Scene({ record = false }) {
     >
       {!record && <PerformanceMonitor onDecline={() => setDpr(1)} onIncline={() => setDpr(1.5)} />}
       <color attach="background" args={[background]} />
-      {view === 'site' && <fog attach="fog" args={[background, campusSide * 12, campusSide * 22]} />}
+      {campus && <fog attach="fog" args={[background, campusSide * 12, campusSide * 22]} />}
 
       {/* 조명: 캠퍼스는 하늘 모드(낮·노을·밤·지금)를 따르는 SkyRig, 지구본(영상 인트로)은 고정 조명 */}
       {campus ? (
-        <SkyRig side={campusSide} background={background} shadowSpan={shadowSpan} record={record} />
+        <SkyRig side={campusSide} background={background} shadowSpan={shadowSpan} record={record} lat={isHq ? hq?.lat : undefined} lng={isHq ? hq?.lng : undefined} />
       ) : (
         <>
           <ambientLight intensity={1.1} />
@@ -89,6 +93,7 @@ export default function Scene({ record = false }) {
         {/* 3D 개요(지구본)는 영상 녹화 인트로와 다회사 모드에서만 — 단일 회사 모드의 개요는 실제 지도(GeoMap)가 맡음 */}
         {(!SINGLE_COMPANY || record) && <GlobeView visible={view === 'globe'} />}
         {view === 'site' && site && <SiteView key={site.id} site={site} />}
+        {isHq && <HqView />}
       </Suspense>
       {record ? (
         <Suspense fallback={null}>

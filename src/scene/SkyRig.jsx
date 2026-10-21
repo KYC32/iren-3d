@@ -37,11 +37,12 @@ function mixColor(out, [d, g, n], golden, night) {
   return out.lerp(n, night)
 }
 
-export default function SkyRig({ side, background, shadowSpan, record = false }) {
+// lat·lng: 캠퍼스가 아닌 화면(본사)에서 해 위치를 계산할 좌표 — 없으면 고른 캠퍼스 좌표
+export default function SkyRig({ side, background, shadowSpan, record = false, lat: latAt, lng: lngAt }) {
   const mode = useAppStore((s) => (record ? 'day' : s.skyMode)) // 영상 녹화는 항상 낮 (결과가 매번 같도록)
   const month = useAppStore((s) => s.month)
   const site = useAppStore(selectSelectedSite)
-  const lat = site?.lat ?? 35, lng = site?.lng ?? -100
+  const lat = latAt ?? site?.lat ?? 35, lng = lngAt ?? site?.lng ?? -100
   const steady = useReducedMotion()
   const scene = useThree((s) => s.scene)
 

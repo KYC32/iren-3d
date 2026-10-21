@@ -8,11 +8,14 @@
 export const hqText = {
   ko: {
     // 지도 위 시드니 본사 카드 (HqMarker)
-    title: 'IREN 본사', sub: '{city} · 공동 CEO {n}명', newCount: '발언 {n}', open: '경영진 발언 보기',
+    title: 'IREN 본사', sub: '{city} · 공동 CEO {n}명', newCount: '발언 {n}', open: '본사 건물 · 경영진 발언 보기 (3D)',
+    // 본사 3D 화면 (HqView 의 IREN 층 라벨 · 칸의 건물 설명 · 상단 바)
+    towerFloor: 'IREN · {level}층', towerSub: '{street} · {floors}층 빌딩',
+    modelNote: '건물은 단순화한 모형 · {floors}층(건물 소유사 Mirvac) · IREN {level}층(10-K 주소)', buildingSource: '건물 자료',
     // ≡ 메뉴 바로가기 (AppMenu)
     menuEntry: '경영진 발언', menuSub: '공동 CEO 발언 · 약속 지켜졌나',
     // 경영진 발언 칸 (StatementsPanel)
-    panelLabel: 'IREN / 본사 · {city}', panelTitle: '경영진 발언', close: '닫기', photoSource: '사진: IREN 홈페이지',
+    panelLabel: 'IREN / 본사 · {city}', panelTitle: '경영진 발언', close: '지도로 돌아가기', photoSource: '사진: IREN 홈페이지',
     promisesCount: '기한을 밝힌 약속 {n}건', keptOnTime: '기한 안에 지켜짐 {a}/{b}', checkedAt: '{date} 확인 기준',
     status: { kept: '지켜짐', 'late-kept': '늦게 지켜짐', late: '늦어짐', withdrawn: '철회', pending: '기한 전' },
     reducedTag: '목표 줄임', reducedInLegend: '그중 목표 줄임 {n}', opinion: '약속 아님 (의견)',
@@ -28,9 +31,11 @@ export const hqText = {
     disclaimer: "요약은 이 사이트가 원문을 보고 정리한 것 · '지켜짐'은 회사 보도자료·SEC 공시로 확인됐을 때만 · 비공식 · 투자 조언 아님",
   },
   en: {
-    title: 'IREN HQ', sub: '{city} · {n} co-CEOs', newCount: '{n} new', open: 'See management statements',
+    title: 'IREN HQ', sub: '{city} · {n} co-CEOs', newCount: '{n} new', open: 'See the HQ building and management statements (3D)',
+    towerFloor: 'IREN · Level {level}', towerSub: '{street} · {floors}-storey tower',
+    modelNote: 'Simplified model · {floors} storeys (building owner Mirvac) · IREN on Level {level} (10-K address)', buildingSource: 'Building data',
     menuEntry: 'Management statements', menuSub: 'What the co-CEOs said · promises kept?',
-    panelLabel: 'IREN / HQ · {city}', panelTitle: 'Management statements', close: 'Close', photoSource: 'Photos: IREN website',
+    panelLabel: 'IREN / HQ · {city}', panelTitle: 'Management statements', close: 'Back to map', photoSource: 'Photos: IREN website',
     promisesCount: '{n} promises with a deadline', keptOnTime: 'Kept on time {a}/{b}', checkedAt: 'As checked on {date}',
     status: { kept: 'Kept', 'late-kept': 'Kept late', late: 'Late', withdrawn: 'Withdrawn', pending: 'Not yet due' },
     reducedTag: 'Target cut', reducedInLegend: 'incl. {n} with target cut', opinion: 'Not a promise (opinion)',

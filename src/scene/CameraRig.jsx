@@ -17,6 +17,7 @@ import { customerKey, zoneBounds } from '../data/customerZones.js'
 import { layoutCampus } from './layoutCampus.js'
 import { Box3, Vector3 } from 'three'
 import { SINGLE_COMPANY } from '../config.js'
+import { hqTower } from './hqTower.js'
 
 // 3D 개요 화면은 지구본(다회사 모드 계보 · 영상 녹화 인트로).
 // 단일 회사(IREN) 모드에선 개요를 실제 지도(GeoMap)가 맡아서, 3D 는 캠퍼스 화면에만 쓰입니다.
@@ -46,18 +47,30 @@ function campusHome(L) {
   return [...frame.position, ...frame.target]
 }
 
+// 본사 화면(view 'hq'): 사무 빌딩 모양(층수는 데이터)과 그 빌딩이 쓸 수 있는 화면을 채우는 시점
+const isCampusLike = (view) => view === 'site' || view === 'hq' // 캠퍼스처럼 돌려 보는 3D 화면
+function hqShape() {
+  return hqTower(useAppStore.getState().data?.companies?.[0]?.hq?.building ?? { floors: 20, level: 5 })
+}
+function hqHome(T) {
+  const w = window.innerWidth, h = window.innerHeight
+  const frame = campusFrameBox(T.box, w, h, campusViewport(w, h))
+  return [...frame.position, ...frame.target]
+}
+
 // 상세 패널이 화면 일부를 가리므로 캠퍼스를 보이는 영역 가운데로 밀어 줍니다.
 // focalOffset 은 "화면 기준" 평행이동이라 회전해도 패널 반대쪽에 머뭅니다.
 function applyFocalOffset(c, view, side, transition) {
   const mobile = window.innerWidth < 768
   // 지구본: 데스크톱에서는 왼쪽 사이트 목록을 피해 지구본을 오른쪽으로
-  if (view !== 'site') return c.setFocalOffset(mobile ? 0 : -28, 0, 0, transition)
+  if (!isCampusLike(view)) return c.setFocalOffset(mobile ? 0 : -28, 0, 0, transition)
   const w = window.innerWidth, h = window.innerHeight
   return c.setFocalOffset(...campusOffset(c.distance, w, h, campusViewport(w, h)), transition)
 }
 
 // 뷰별 카메라 제약
-function applyLimits(c, view, side = 30) {
+// top: 시점 중심이 올라갈 수 있는 높이 (본사 빌딩처럼 높은 건물은 그 가운데까지)
+function applyLimits(c, view, side = 30, top = side * 0.35) {
   // 보드판 제약을 풀어 줌 (캠퍼스·지구본 전환 시)
   c.minAzimuthAngle = -Infinity
   c.maxAzimuthAngle = Infinity
@@ -75,7 +88,7 @@ function applyLimits(c, view, side = 30) {
     c.minPolarAngle = 0.35 // 너무 위에서 수직으로 내려다보지 않게
     c.maxPolarAngle = 1.2  // 바닥 아래로 들어가지 않게
     // Keep the focus near the campus and its landscape, while allowing screen-space panning.
-    c.setBoundary(new Box3(new Vector3(-side, -side*.15, -side), new Vector3(side, side*.35, side)))
+    c.setBoundary(new Box3(new Vector3(-side, -side*.15, -side), new Vector3(side, top, side)))
     c.truckSpeed = 1.8
     c.dollySpeed = 0.8
   }
@@ -98,13 +111,21 @@ export default function CameraRig() {
 
   // Explicit navigation resets the view. Panel/date changes preserve the user's close-up.
   useEffect(() => {
-    if (view !== 'site') { fittedContext.current=null; return }
-    const context=`${siteId}:${zoneKey}:${homeSeq}`
+    if (!isCampusLike(view)) { fittedContext.current=null; return }
+    const context=`${view}:${siteId}:${zoneKey}:${homeSeq}`
     if (context!==fittedContext.current) manualView.current=false
     fittedContext.current=context
     const fit = () => {
       const st = useAppStore.getState(), c = ref.current
       safeRect.current = campusViewport(size.width, size.height)
+      // 본사 화면: 빌딩 전체가 칸을 뺀 화면에 들어오게 (사용자가 돌렸으면 그대로)
+      if (st.view === 'hq') {
+        if (!c || st.pending) return
+        const T = hqShape()
+        applyLimits(c, 'site', T.side, T.height)
+        if (!manualView.current) c.setLookAt(...hqHome(T), true)
+        return
+      }
       const site = selectSelectedSite(st)
       if (!c || !site || st.pending) return
       const L = layoutCampus(site._raw)
@@ -133,7 +154,12 @@ export default function CameraRig() {
     if (!c) return
     const st = useAppStore.getState()
     const site = selectSelectedSite(st)
-    if (st.view === 'site' && site) {
+    if (st.view === 'hq') {
+      const T = hqShape()
+      applyLimits(c, 'site', T.side, T.height)
+      c.setLookAt(...hqHome(T), false)
+      applyFocalOffset(c, 'hq', T.side, false)
+    } else if (st.view === 'site' && site) {
       const L = layoutCampus(site._raw)
       applyLimits(c, 'site', L.side)
       c.setLookAt(...campusHome(L), false)
@@ -147,7 +173,7 @@ export default function CameraRig() {
     // 사용자가 직접 조작하면 자동 회전을 잠시 멈춥니다
     const onStart = () => {
       lastInteract.current = performance.now()
-      if (useAppStore.getState().view==='site') manualView.current=true
+      if (isCampusLike(useAppStore.getState().view)) manualView.current=true
     }
     c.addEventListener('controlstart', onStart)
     // Wheel events emit control without controlstart; zoom-only inspection must also persist.
@@ -259,7 +285,7 @@ export default function CameraRig() {
   useFrame((_, delta) => {
     const c = ref.current
     const st = useAppStore.getState()
-    if (c && st.view === 'site') {
+    if (c && isCampusLike(st.view)) {
       const rect = safeRect.current ?? campusViewport(size.width, size.height)
       const off = campusOffset(c.distance, size.width, size.height, rect)
       // 값이 바뀔 때만 적용: 매 프레임 호출하면 카메라가 "계속 움직이는 중"으로 남아 쉬지 못함
@@ -280,7 +306,7 @@ export default function CameraRig() {
 
   const inputs=useMemo(()=>{
     const A=CameraControlsImpl.ACTION
-    const pan=view==='site' && dragMode==='pan'
+    const pan=isCampusLike(view) && dragMode==='pan'
     return {
       mouseButtons:{left:pan?A.TRUCK:A.ROTATE,right:A.TRUCK,middle:A.DOLLY,wheel:A.DOLLY},
       touches:{one:pan?A.TOUCH_TRUCK:A.TOUCH_ROTATE,two:A.TOUCH_DOLLY_TRUCK,three:A.TOUCH_TRUCK},

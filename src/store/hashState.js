@@ -8,7 +8,7 @@
 //   sky   : 3D 캠퍼스 하늘 (day 낮 | dusk 노을 | night 밤) — 기본인 지금(live, 부지 현지 시각)은 생략
 //   page  : 지도 대신 보여 줄 페이지 (portfolio 사업 현황 | stock 주가 | news 뉴스) — 지도는 생략
 //   at    : 주가 차트에서 강조할 날짜 (YYYY-MM-DD, page=stock 일 때만)
-//   hq    : 1 이면 지도에서 본사(경영진 발언) 칸이 열린 채로 — 캠퍼스(site)·페이지(page)가 있으면 생략
+//   hq    : 1 이면 시드니 본사 3D 화면(본사 건물 + CEO·경영진 발언) — 캠퍼스(site)가 있으면 생략, 페이지와는 함께
 // 옛 링크(#site=childress)도 그대로 동작합니다.
 // =============================================================
 
@@ -37,7 +37,7 @@ export function parseHash(hash) {
   const sky = q.get('sky')
   if (['day', 'dusk', 'night', 'live'].includes(sky)) out.sky = sky
   for (const key of ['building','zone']) { const v=q.get(key); if (v && /^[a-z0-9-]+$/.test(v)) out[key]=v }
-  if (q.get('hq') === '1') out.hq = true // 본사(경영진 발언) 칸
+  if (q.get('hq') === '1') out.hq = true // 본사 3D 화면
   return out
 }
 
@@ -48,14 +48,14 @@ export function buildHash({ site = null, date = null, companies = [], color = 's
   if (page === 'stock' && at) q.set('at', at)
   if (date) q.set('date', date)
   if (site) q.set('site', site)
-  if (hq && !site && !page) q.set('hq', '1') // 본사 칸은 캠퍼스·페이지가 없을 때만 (한 화면에 하나)
+  if (hq && !site) q.set('hq', '1') // 본사 화면 — 캠퍼스가 있으면 캠퍼스가 먼저 (페이지를 닫으면 본사로 돌아오게 페이지와는 함께)
   if (companies.length) q.set('c', [...companies].join(','))
   if (color && color !== 'status') q.set('color', color)
   if (site && surface === '3d') q.set('surface', surface)
   if (site && tab !== 'overview') q.set('tab', tab)
   if (site && building) q.set('building',building)
   if (site && zone) q.set('zone',zone)
-  if (site && surface === '3d' && sky && sky !== 'live') q.set('sky', sky) // 기본(지금)은 생략
+  if (((site && surface === '3d') || (hq && !site)) && sky && sky !== 'live') q.set('sky', sky) // 3D 캠퍼스·본사 화면의 하늘 (기본 '지금'은 생략)
   const s = q.toString().replace(/%2C/g, ',')
   return s ? `#${s}` : ''
 }

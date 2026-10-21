@@ -93,6 +93,10 @@ export const Company = z.object({
   hq: z.object({
     city_ko: z.string(), city_en: z.string(), address: z.string(),
     lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180), source: Url,
+    tz: z.string().optional(), // 시간대 (본사 3D 화면 하늘 '지금'의 현지 시각, 예 Australia/Sydney)
+    // 본사 3D 화면의 건물 (단순화한 모형): 층수 = 건물 소유사 자료, level = 회사가 쓰는 층(위 주소의 Level), 출처 = 층수 자료
+    building: z.object({ floors: z.number().int().positive(), level: z.number().int().nonnegative(), source: Url }).strict()
+      .refine((b) => b.level < b.floors, '쓰는 층(level)이 건물 층수(floors) 안이어야 함').optional(),
   }).strict().optional(),
   summary_ko: z.string(),
   summary_en: z.string(),

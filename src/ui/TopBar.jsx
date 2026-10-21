@@ -24,14 +24,17 @@ export default function TopBar() {
   const page = useAppStore((s) => s.page)
   const setPage = useAppStore((s) => s.setPage)
   const inMap = !page // 지도·3D 화면일 때만 보이는 버튼들
+  const isHq = view === 'hq' // 시드니 본사 3D 화면 (본사 건물 + 경영진 발언)
+  const hq = data?.companies?.[0]?.hq
+  const campusLike = surface === '3d' && ((view === 'site' && site) || (isHq && hq)) // 돌려 보는 3D 화면 (하늘·회전·전체 보기 버튼)
 
   return (
     <header className="topbar panel">
       <div className="brand">
         {page ? (
           <span className="brand-icon">{page === 'portfolio' ? <LayoutDashboard size={18} /> : page === 'stock' ? <ChartLine size={18} /> : <Newspaper size={18} />}</span>
-        ) : view === 'site' ? (
-          <button className="icon-btn" onClick={requestGlobe} aria-label={lang==='ko'?'캠퍼스 목록으로':'Back to campuses'} title={lang==='ko'?'캠퍼스 목록으로':'Back to campuses'}>
+        ) : view === 'site' || isHq ? (
+          <button className="icon-btn" onClick={requestGlobe} aria-label={isHq ? (lang==='ko'?'지도로 돌아가기':'Back to map') : (lang==='ko'?'캠퍼스 목록으로':'Back to campuses')} title={isHq ? (lang==='ko'?'지도로 돌아가기':'Back to map') : (lang==='ko'?'캠퍼스 목록으로':'Back to campuses')}>
             <ArrowLeft size={18} />
           </button>
         ) : (
@@ -39,10 +42,10 @@ export default function TopBar() {
         )}
         <div>
           <div className="title">
-            {page ? t.nav[`${page}Title`] : view === 'site' && site ? pickName(site, lang) : (lang==='ko'?'IREN 현장 리서치':'IREN Field Research')}
+            {page ? t.nav[`${page}Title`] : view === 'site' && site ? pickName(site, lang) : isHq ? (lang==='ko'?'IREN 본사':'IREN HQ') : (lang==='ko'?'IREN 현장 리서치':'IREN Field Research')}
           </div>
           <div className="subtitle">
-            {page ? <>{t.nav[`${page}Sub`]}{page === 'portfolio' && data && <> · {t.asOf} {data.as_of}</>}</> : <>{view === 'site' && site ? `${site.region} · ${site.grid_operator}` : t.subtitle}{data && <> · {t.asOf} {data.as_of}</>}</>}
+            {page ? <>{t.nav[`${page}Sub`]}{page === 'portfolio' && data && <> · {t.asOf} {data.as_of}</>}</> : isHq && hq ? <>{lang==='ko'?`${hq.city_ko} · 공동 CEO · 경영진 발언`:`${hq.city_en} · Co-CEOs · Management statements`}</> : <>{view === 'site' && site ? `${site.region} · ${site.grid_operator}` : t.subtitle}{data && <> · {t.asOf} {data.as_of}</>}</>}
           </div>
         </div>
       </div>
@@ -53,14 +56,15 @@ export default function TopBar() {
         ))}
       </nav>
       <div className="top-actions">
-      {inMap && view === 'site' && surface==='3d' && site && <SkyControl t={t} site={site} />}
-      {inMap && view === 'site' && surface==='3d' && <div className="camera-mode" role="group" aria-label={t.campus.controls}>
+      {/* 하늘: 캠퍼스는 그 부지, 본사는 시드니의 현지 시각 */}
+      {inMap && campusLike && <SkyControl t={t} site={isHq ? { tz: hq.tz, lng: hq.lng } : site} hint={!isHq} />}
+      {inMap && campusLike && <div className="camera-mode" role="group" aria-label={t.campus.controls}>
         <button aria-pressed={dragMode==='rotate'} aria-label={t.campus.rotateLabel} title={t.campus.rotateLabel} onClick={()=>setDragMode('rotate')}><Rotate3D size={15}/><span>{t.campus.rotate}</span></button>
         <button aria-pressed={dragMode==='pan'} aria-label={t.campus.panLabel} title={t.campus.panLabel} onClick={()=>setDragMode('pan')}><Move size={15}/><span>{t.campus.pan}</span></button>
       </div>}
       {/* 전체 보기: 아이콘만 (이름은 마우스를 올리면 — title·aria-label). ≡ 메뉴가 들어갈 자리를 위해 글자를 뺌
           (1200~1440px 3D 상단 바는 버튼이 꽉 차서, 글자가 있으면 제목이 두 줄로 접혔음) */}
-      {inMap && view === 'site' && surface==='3d' && <button className="lang-btn home-btn" onClick={() => useAppStore.getState().requestCampusHome()} aria-label={t.campus.home} title={t.campus.home}>
+      {inMap && campusLike && <button className="lang-btn home-btn" onClick={() => useAppStore.getState().requestCampusHome()} aria-label={t.campus.home} title={t.campus.home}>
         <Maximize2 size={15} aria-hidden="true" />
       </button>}
       {inMap && surface === 'map' && (
@@ -73,7 +77,7 @@ export default function TopBar() {
       {inMap && data && <button className="lang-btn tour-btn" onClick={() => useAppStore.getState().startTour()} aria-label={t.tour.startTitle} title={t.tour.startTitle}>
         <Compass size={15} aria-hidden="true" /><span>{t.tour.start}</span>
       </button>}
-      <ShareButton lang={lang} title={view === 'site' && site ? pickName(site, lang) : 'IREN'} />
+      <ShareButton lang={lang} title={view === 'site' && site ? pickName(site, lang) : isHq ? 'IREN HQ' : 'IREN'} />
       <button className="lang-btn" onClick={toggleLang} aria-label="language">
         <Languages size={15} /> {t.langToggle}
       </button>
@@ -100,9 +104,9 @@ function MenuButton({ t }) {
 }
 
 // 하늘 모드 버튼: 낮 / 노을 / 밤 / 지금(그 부지의 현지 시각)
-//   밤·노을로 바꾸면 "불 켜진 건물 = 가동 중"이라는 읽는 법을 5초 동안 말풍선으로 알려 줌
+//   밤·노을로 바꾸면 "불 켜진 건물 = 가동 중"이라는 읽는 법을 5초 동안 말풍선으로 알려 줌 (hint=false 면 안 띄움 — 본사 화면)
 const SKY_ITEMS = [['day', Sun], ['dusk', Sunset], ['night', Moon], ['live', Clock]]
-function SkyControl({ t, site }) {
+function SkyControl({ t, site, hint: withHint = true }) {
   const mode = useAppStore((s) => s.skyMode)
   const setMode = useAppStore((s) => s.setSkyMode)
   const now = useNow(20000) // 현지 시각 표시는 20초마다 갱신
@@ -113,8 +117,8 @@ function SkyControl({ t, site }) {
   const pick = (m) => {
     setMode(m)
     clearTimeout(timer.current)
-    setHint(m !== 'day')
-    if (m !== 'day') timer.current = setTimeout(() => setHint(false), 5000)
+    setHint(withHint && m !== 'day')
+    if (withHint && m !== 'day') timer.current = setTimeout(() => setHint(false), 5000)
   }
   // 좁은 화면용: 버튼 하나를 누를 때마다 낮 → 노을 → 밤 → 지금 순서로 바뀜 (상단 바가 화면 밖으로 넘치지 않게)
   const idx = SKY_ITEMS.findIndex(([m]) => m === mode)

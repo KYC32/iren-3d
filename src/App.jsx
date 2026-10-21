@@ -16,9 +16,9 @@ import CampusPanel from './ui/CampusPanel.jsx'
 import MapSidebar, { RegionControls } from './ui/MapSidebar.jsx'
 const loadGeoMap = () => import('./map/GeoMap.jsx')
 const GeoMap = lazy(loadGeoMap)
-// 첫 화면이 실제 지도면(주소에 surface=3d 가 없으면) 지도 코드(약 280KB)를 앱 시작과 동시에 받기 시작.
+// 첫 화면이 실제 지도면(주소에 surface=3d·hq=1 이 없으면) 지도 코드(약 280KB)를 앱 시작과 동시에 받기 시작.
 // 예전엔 데이터(infra.json)를 받고 화면을 그린 "다음"에야 받기 시작해, 느린 휴대폰에선 그만큼 지도가 늦게 떴음
-if (typeof window !== 'undefined' && !/surface=3d/.test(window.location.hash)) loadGeoMap()
+if (typeof window !== 'undefined' && !/surface=3d|(^|[#&])hq=1/.test(window.location.hash)) loadGeoMap()
 import Footer from './ui/Footer.jsx'
 import { RECORD } from './record/recordMode.js'
 import { useSkyDark } from './ui/useSkyDark.js'
@@ -28,7 +28,7 @@ const TourPlayer = lazy(() => import('./ui/TourPlayer.jsx'))
 const PortfolioPage = lazy(() => import('./pages/PortfolioPage.jsx'))
 const StockPage = lazy(() => import('./pages/StockPage.jsx'))
 const NewsPage = lazy(() => import('./pages/NewsPage.jsx'))
-// 경영진 발언 칸 (지도 본사 카드·'본사' 단추·≡ 메뉴) — 처음 열 때 불러옴
+// 경영진 발언 칸 (본사 3D 화면의 오른쪽 칸 — 지도 본사 카드·≡ 메뉴·#hq=1) — 처음 열 때 불러옴
 const StatementsPanel = lazy(() => import('./ui/StatementsPanel.jsx'))
 
 export default function App() {
@@ -45,7 +45,6 @@ export default function App() {
     st.clearPending()
   },[surface,pending])
   const view = useAppStore((s) => s.view)
-  const hqOpen = useAppStore((s) => s.hqOpen) // 본사(경영진 발언) 칸
   const transitioning = useAppStore((s) => s.transitioning)
   const lang = useAppStore((s) => s.lang)
   const dragMode = useAppStore((s) => s.campusDragMode)
@@ -106,18 +105,19 @@ export default function App() {
         {/* 주가·뉴스 페이지: 지도 위를 덮는 스크롤 영역 (지도는 그대로 두어 돌아올 때 다시 그리지 않음) */}
         {page && <Suspense fallback={<div className="page-scroll panel"><div className="page-loading">{t.loading}</div></div>}>{page === 'portfolio' ? <PortfolioPage /> : page === 'stock' ? <StockPage /> : <NewsPage />}</Suspense>}
         {/* KPI 판은 3D 화면에만 (지도 화면의 포트폴리오 사업 현황은 "현황" 페이지로 옮김) */}
-        {!page && data && surface === '3d' && <Suspense fallback={null}><KpiBar /></Suspense>}
+        {/* 본사 화면엔 KPI 판·범례·타임라인 없음 (캠퍼스 시설 숫자라 본사 건물과 상관없음) */}
+        {!page && data && surface === '3d' && view !== 'hq' && <Suspense fallback={null}><KpiBar /></Suspense>}
         {!page && data && surface==='map' && <RegionControls/>}
         {!page && <div className="middle">
           {data && surface === 'map' && <MapSidebar />}
           <div className="spacer" />
           {data && view === 'site' && <CampusPanel />}
-          {/* 본사 칸은 캠퍼스 칸과 같은 자리 — 캠퍼스를 고르면 닫힘 (useAppStore.hqOpen) */}
-          {data && surface === 'map' && hqOpen && view !== 'site' && <Suspense fallback={null}><StatementsPanel /></Suspense>}
+          {/* 본사 3D 화면의 오른쪽 칸: CEO · 약속 성적표 · 경영진 발언 (캠퍼스 칸과 같은 자리) */}
+          {data && view === 'hq' && <Suspense fallback={null}><StatementsPanel /></Suspense>}
         </div>}
         {!page && <div className="bottom">
           {/* 범례·타임라인은 한 번에 나타나도록 같은 Suspense 로 묶음. 지도 화면엔 타임라인 없음 (현황 페이지·3D 에 있음) */}
-          {data && surface === '3d' && <Suspense fallback={null}><Legend /><TimelineSlider /></Suspense>}
+          {data && surface === '3d' && view !== 'hq' && <Suspense fallback={null}><Legend /><TimelineSlider /></Suspense>}
           {surface==='3d'?<Footer />:<div className="geographic-note">{lang==='ko'?'비공식 리서치 · 현황은 확인 기록, 목표는 전망':'Independent research · Reported status and targets are separate'}</div>}
         </div>}
       </div>
