@@ -1,6 +1,9 @@
 // 회사 발표 지표를 화면 글자로 바꾸는 규칙 (KPI 줄·계약 탭이 함께 씀)
 import { describe, it, expect } from 'vitest'
-import { fmtMetric, energizeLabel } from './format.js'
+import { fmtMetric, energizeLabel, initialsOf } from './format.js'
+
+// 사진을 못 받을 때 동그라미에 대신 보이는 이름 머리글자 (지도 본사 카드·경영진 발언 칸)
+it.each([['Daniel Roberts', 'DR'], ['Will', 'W'], ['  ', '']])('initialsOf(%s) = %s', (n, w) => expect(initialsOf(n)).toBe(w))
 
 // 변전소 통전 표시: "통전 2028" 처럼 날짜만 붙으면 이미 통전된 것처럼 읽혀서, 상태를 문구로 밝힘
 describe('통전 표시 (energizeLabel)', () => {

@@ -588,6 +588,14 @@ button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit;
 .map-marker-action{display:flex;flex-direction:column;align-items:center;gap:2px;margin-left:3px;color:#96ada2}.map-marker-action small{font-size:7px;letter-spacing:.03em}.is-selected .map-marker-action{color:#0b344f}
 .map-marker-stem{position:absolute;top:100%;left:50%;height:12px;width:1.5px;background:#0b344f}.map-marker-stem:after{content:'';position:absolute;bottom:-3px;left:-3px;width:7px;height:7px;border-radius:50%;background:var(--marker-color);border:2px solid white;box-shadow:0 1px 4px #34513e30}
 .map-campus-card.is-cluster .map-marker-icon{color:#0b344f}.map-campus-card.is-cluster.is-selected .map-marker-icon{background:#e9f8ec}
+/* 시드니 본사 카드 (src/map/HqMarker.jsx): 캠퍼스 카드 모양 + CEO 사진 동그라미(겹침) + 새 발언 배지 */
+.map-campus-card.is-hq .hq-faces{display:flex;margin-left:2px}
+.map-campus-card.is-hq .hq-face{display:grid;place-items:center;width:26px;height:26px;border-radius:50%;border:2px solid #fff;background:#c9d2d9;object-fit:cover;box-shadow:0 1px 4px #0b344f33;font:700 10px/1 ui-sans-serif,system-ui,sans-serif;font-style:normal;color:#fff;flex-shrink:0}
+.map-campus-card.is-hq .hq-face+.hq-face{margin-left:-8px}
+.map-campus-card.is-hq .hq-face.is-initials{background:#0b344f}
+.map-campus-card.is-hq .hq-new{margin-left:4px;font-size:10px;font-weight:700;color:#0b344f;background:#71da80;border-radius:999px;padding:2px 7px;white-space:nowrap}
+/* 휴대폰: 캠퍼스 카드는 190px 로 줄이지만, 본사 카드는 사진·배지가 있어 그러면 사진이 글자를 가림 → 제 폭대로 */
+@media(max-width:767px){.map-campus-card.is-hq{max-width:none}}
 .map-group{border:1px solid #d6e3da;box-shadow:0 15px 50px #17332925;border-radius:15px;background:#fffffff8;min-width:240px;max-height:55vh;overflow:auto}.map-group>b{font-size:13px;color:#36594a}.map-group>button:not(.close-small){border-radius:9px;border-color:#e2ebe5;background:#f7faf7;color:#345748;font-size:12px;padding:12px}.map-group>button:not(.close-small):hover{background:#eaf3ec;border-color:#98b8a5}
 @media(max-width:767px){.map-campus-card{padding:8px;gap:6px;max-width:190px}.map-marker-copy>b{font-size:11px}.map-marker-icon{width:24px;height:26px}.map-marker-copy>span{font-size:8px}}
 

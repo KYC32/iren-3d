@@ -6,8 +6,9 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 maplibregl.setWorkerUrl(workerUrl)
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { locationFor } from '../data/research.js'
-import { siteFeatures, boundsFor, MAP_HOME_CENTER, MAP_WORLD_BOUNDS, mapLongitude, minimumMapZoom } from './mapData.js'
+import { siteFeatures, MAP_HOME_CENTER, MAP_WORLD_BOUNDS, mapLongitude, minimumMapZoom, regionBounds, hqLngLat } from './mapData.js'
 import CampusMarkers from './CampusMarkers.jsx'
+import HqMarker from './HqMarker.jsx' // 시드니 본사 카드 (CEO 사진·새 발언 수, 누르면 경영진 발언 칸)
 import { applyBasemapLabels } from './basemapStyle.js'
 import { campusPanelLayout } from '../ui/panelLayout.js'
 
@@ -16,6 +17,7 @@ export default function GeoMap() {
   const [loaded,setLoaded] = useState(false), [error,setError] = useState(false), [group,setGroup] = useState(null)
   const data = useAppStore(s=>s.data), site = useAppStore(selectSelectedSite)
   const region = useAppStore(s=>s.mapRegion), lang = useAppStore(s=>s.lang)
+  const hqOpen = useAppStore(s=>s.hqOpen), hq = data?.companies?.[0]?.hq // 본사 위치 (data/companies.json — 10-K 주소)
   const focusSeq=useAppStore(s=>s.mapFocusSeq), initialFocusSeq=useRef(focusSeq)
   const panelCollapsed=useAppStore(s=>s.campusPanelCollapsed)
   const previousLayout=useRef({collapsed:panelCollapsed,siteId:site?.id,focusSeq})
@@ -91,16 +93,25 @@ export default function GeoMap() {
     firstRegion.current=false
     // A saved map or a campus deep link takes precedence over the initial overview.
     if(initialRegion&&(restoredCamera.current||site))return
-    const selected=data.sites.filter(s=>region.country==='ALL'||(region.country==='NA'?['US','CA'].includes(s.country):s.country===region.country))
-    const bounds=boundsFor(selected,data.raw.research,{centerLng:MAP_HOME_CENTER[0]})
+    // 본사: '본사' 단추(또는 #hq=1 공유 링크로 처음 들어옴) → 시드니 본사로 날아감 (범위가 아니라 한 점)
+    const country=initialRegion&&useAppStore.getState().hqOpen?'HQ':region.country
+    const still=initialRegion||window.matchMedia('(prefers-reduced-motion: reduce)').matches // 처음 화면·움직임 줄이기 = 바로 이동
+    if(country==='HQ'){
+      if(hq)mapRef.current.flyTo({center:hqLngLat(hq),zoom:9,padding:padding(),duration:still?0:900})
+      setGroup(null)
+      return
+    }
+    // 그 밖의 지역: 캠퍼스 범위 ('호주'·'전체'는 본사도 함께 — mapData.regionBounds)
+    const bounds=regionBounds(country,data.sites,data.raw.research,hq)
     const fitPadding=padding()
-    if(region.country==='ALL'&&window.innerWidth>=768){fitPadding.left+=80;fitPadding.right+=80}
-    if(bounds)mapRef.current.fitBounds(bounds,{padding:fitPadding,maxZoom:6,duration:initialRegion||window.matchMedia('(prefers-reduced-motion: reduce)').matches?0:700})
+    if(country==='ALL'&&window.innerWidth>=768){fitPadding.left+=80;fitPadding.right+=80}
+    if(bounds)mapRef.current.fitBounds(bounds,{padding:fitPadding,maxZoom:6,duration:still?0:700})
     setGroup(null)
   },[loaded,region])
   return <div className="geo-map">
     <div className="geo-map-canvas" ref={container} role="region" aria-label={lang==='ko'?'실제 지리 지도':'Geographic map'} />
     {loaded && mapRef.current && <CampusMarkers map={mapRef.current} data={data} lang={lang} selectedId={site?.id} onGroup={setGroup}/> }
+    {loaded && mapRef.current && hq && <HqMarker map={mapRef.current} hq={hq} lang={lang} open={hqOpen}/>}
     {error && <div className="map-error" role="status">{lang==='ko'?'지도를 불러오지 못했습니다. 캠퍼스 목록과 상세 정보는 계속 사용할 수 있습니다.':'Map unavailable. Campus list and details remain available.'}</div>}
     {!loaded&&!error&&<div className="map-loading">{lang==='ko'?'실제 지도 불러오는 중…':'Loading map…'}</div>}
     {group&&<div className="map-group panel"><button className="close-small" onClick={()=>setGroup(null)} aria-label={lang==='ko'?'닫기':'Close'}><X size={14} aria-hidden="true"/></button><b>{lang==='ko'?'이 지역의 캠퍼스':'Campuses in this area'}</b>{group.map(s=><button key={s.id} onClick={()=>{useAppStore.getState().enterSite3D(s.id);setGroup(null)}}>{lang==='ko'?s.name_ko:s.name}</button>)}</div>}

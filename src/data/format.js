@@ -5,6 +5,11 @@ export function fmtMw(mw, digits = 1) {
   return `${Math.round(mw).toLocaleString()} MW`
 }
 
+// 이름 머리글자 (사진을 못 받을 때 동그라미에 대신): 'Daniel Roberts' → 'DR', 'Will' → 'W' (최대 2글자)
+export function initialsOf(name) {
+  return String(name ?? '').trim().split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join('')
+}
+
 // 통전 전 변전소 표시: "통전 목표 2028" / 목표도 모르면 "통전 전"
 //   (예전엔 "통전 2028" 이나 날짜 없이 "통전"만 나와 이미 통전된 것처럼 읽혔음)
 export function energizeLabel(sub, t) {
