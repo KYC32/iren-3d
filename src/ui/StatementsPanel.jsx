@@ -53,7 +53,10 @@ export default function StatementsPanel() {
           <button className="close-small" onClick={closeHq} aria-label={h.close} title={h.close}><X size={14} aria-hidden="true" /></button>
         </div>
       </div>
-      {file ? <Body file={file} lang={lang} h={h} /> : <p className="st-status" role="status">{failed ? h.loadError : h.loading}</p>}
+      {/* 스크롤은 안쪽 상자가 맡음 (바깥 .campus-panel.site-panel 은 overflow:hidden — 캠퍼스 칸과 같은 구조) */}
+      <div className="campus-panel-body">
+        {file ? <Body file={file} lang={lang} h={h} /> : <p className="st-status" role="status">{failed ? h.loadError : h.loading}</p>}
+      </div>
     </aside>
   )
 }
