@@ -127,6 +127,20 @@ npm run build      # validate → 빌드 (dist/)
 - `.github/workflows/refresh.yml` 이 하루 두 번 — 다음 날 아침(화~토 11:30 UTC, 전날 종가: Nasdaq 일봉 표는 장 마감 뒤 몇 시간이 지나야 그날 행이 올라옴)과 장 마감 직후(월~금 22:30 UTC, 그날 공시·언론) — 세 스크립트(주가·뉴스·주식 수)를 돌려 바뀐 파일을 커밋 → Vercel 자동 배포. 이어서 `scripts/check-asof.mjs` 가 사이트 숫자의 기준일(as_of) 뒤에 나온 회사 공시(내부자 거래 제외)를 찾아 `public/data/asof-check.json` 에 적고(현황 페이지가 "기준일 뒤 회사 공시 n건 — 아직 반영 전" 안내, 뉴스 페이지는 그 줄에 "기준일 뒤 · 미반영" 표시), GitHub 이슈(표 "기준일 갱신") 하나를 열거나 고쳐 씀 — 기준일을 옮기면 다음 갱신 때 저절로 닫힘. 시험: `node scripts/check-asof.mjs --dry --as-of=2026-08-01`. 소스가 막히면 기존 파일 유지(사이트는 정상). 수동 실행: GitHub Actions → refresh-data → Run workflow
 - 차트의 사건 마커는 이 레포의 타임라인 데이터(회사 발표 기준)이며 주가 인과를 뜻하지 않습니다. 투자 조언이 아닙니다.
 
+## 경영진 발언 · 약속 장부 (시드니 본사)
+
+지도의 '본사' 단추, 시드니 본사 카드, ≡ 메뉴 '경영진 발언' 으로 엽니다 (`#hq=1`). 두 공동 CEO(Daniel · Will Roberts)가 2023-08-29 AI 전환 뒤 한 말 중 기한과 대상이 분명한 AI·데이터센터 약속을 원문 링크와 함께 보여 주고, 약속마다 판정을 붙입니다.
+
+- 자료: `data/statements.json` (people · statements · promises) → 빌드가 `src/data/statementsSchema.js` 로 검사해 `public/data/statements.json`. 사진은 `public/people/<id>.jpg` (IREN 팀 페이지 사진을 160px 로, `photo_source` 로 출처 표시)
+- 판정은 손으로 적지 않고 `src/data/promises.js` 의 `verdictOf` 가 기준일(`checkedAt`)로 계산: 지켜짐 · 늦게 지켜짐 · 늦어짐 · 철회 · 기한 전. 기한 = 기간의 끝(FY 는 7월 시작), '약'·'최대'는 95% 이상, 회사가 미뤄도 원래 기한으로, 목표를 줄였으면 줄인 목표로 판정(원래 목표도 표시). 이룸·줄임·미룸·철회 근거는 회사 자료(sec.gov · iren.com · iren.gcs-web.com · globenewswire.com)만
+- 발언 채널: 보도자료 속 CEO 인용 · 실적 발표 콜(SEC 녹취록 → 공개 녹취록·영상) · X(Daniel Roberts @danroberts0101, 날짜는 미국 동부) · 인터뷰. 의견은 최근 90일에서 눈에 띄는 것만
+
+**발언 자료 갱신 방법** (실적 발표 뒤, 또는 요청 시)
+1. 새 보도자료·콜·X 글에서 공동 CEO 의 약속(기한 + 대상)을 찾아 `data/statements.json` 에 발언을 더하고, 같은 약속이면 같은 `promise` id 를 겁니다 (목표를 올린 건 새 약속)
+2. 기존 약속마다 회사 자료로 `fulfilled`·`reduced`·`postponed`·`withdrawn`·`progress` 를 붙이고 `checkedAt` 을 확인한 날로 바꿉니다
+3. `npm run data && npm run validate` (오류 0) → 판정이 바뀐 약속을 사람이 확인하고 `data/changelog.json` 에 한 줄
+- 처음 자료의 조사·판단 기록: `docs/superpowers/specs/2026-10-21-ceo-statements/review.md`
+
 ## 영상 만들기 (X·쇼츠용)
 
 같은 스토리보드로 16:9(1920×1080)와 9:16(1080×1920) 영상을 자동으로 만듭니다.
