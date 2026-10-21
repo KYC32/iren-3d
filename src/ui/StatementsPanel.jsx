@@ -14,11 +14,10 @@ import { useAppStore } from '../store/useAppStore.js'
 import { hqText } from '../i18n/hq.js' // 본사·경영진 발언 문구 (첫 화면 사전과 따로 — 이 칸과 함께 불러옴)
 import { loadStatements, peekStatements } from '../data/loadStatements.js'
 import { verdictOf, scoreboard, fmtAmount, evidenceLabel } from '../data/promises.js'
-import { statementRows } from '../data/statementRows.js'
+import { statementRows, visibleFilters } from '../data/statementRows.js'
 import { initialsOf } from '../data/format.js'
 import './statements.css'
 
-const FILTERS = ['all', 'promises', 'x', 'call', 'interview', 'release'] // 거르기 단추 순서 (release = 보도자료 속 CEO 인용)
 const STATUSES = ['kept', 'late-kept', 'late', 'withdrawn', 'pending']  // 성적표 막대 순서
 const STATUS_ICON = { kept: CircleCheck, 'late-kept': CircleCheck, late: TriangleAlert, withdrawn: Ban, pending: Clock }
 const ym = (day) => day.slice(0, 7) // 'YYYY-MM-DD' → 'YYYY-MM'
@@ -63,6 +62,7 @@ function Body({ file, lang, h }) {
   const [filter, setFilter] = useState('all')
   const people = useMemo(() => Object.fromEntries(file.people.map((p) => [p.id, p])), [file])
   const rows = useMemo(() => statementRows(file, filter), [file, filter])
+  const filters = useMemo(() => visibleFilters(file), [file]) // 발언이 없는 채널 단추는 숨김
   const sb = useMemo(() => scoreboard(file.promises, file.checkedAt), [file])
   // 판정별 '목표 줄임' 수 — 범례 "지켜짐 4 (그중 목표 줄임 1)"
   const reducedBy = useMemo(() => {
@@ -89,7 +89,7 @@ function Body({ file, lang, h }) {
 
     {/* 3) 거르기 단추 */}
     <div className="st-chips" role="group" aria-label={h.panelTitle}>
-      {FILTERS.map((f) => <button key={f} type="button" aria-pressed={filter === f} onClick={() => setFilter(f)}>{h.chips[f]}</button>)}
+      {filters.map((f) => <button key={f} type="button" aria-pressed={filter === f} onClick={() => setFilter(f)}>{h.chips[f]}</button>)}
     </div>
 
     {/* 4) 발언 목록 */}
