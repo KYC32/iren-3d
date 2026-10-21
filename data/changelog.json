@@ -1,6 +1,15 @@
 {
   "entries": [
     {
+      "date": "2026-10-22",
+      "items": [
+        {
+          "ko": "스위트워터 1 그림을 NVIDIA GTC Berlin 2026 기조연설(10/21) 기준으로 고침: 'Vera Rubin 45 °C 물 → 칠러 불필요' 근거를 CES 보도 대신 NVIDIA 공식 보도자료·기조연설(30:05)로 바꾸고 '알맞은 기후에서'라는 조건과 '가장 더운 때 기계식 냉각을 보탤지는 지역 기후가 정함'을 건식 냉각기·온도계·더운 오후 장면·그림 아래 설명에 적음(바깥 40 °C 이상 = 보조 냉각이 필요할 수 있는 구간). 홀 전기는 DSX POD 의 800 V 직류 방식을 따라 '정류기 → 800 V 직류 배전반 → 800 V 버스웨이'로 다시 그림(회사가 밝히지 않은 그림 표현 · 480 V 교류 설계도 있음 · '회사 확인' 보기에선 하양). 스위트워터가 NVIDIA DSX 대표 배치가 될 것이라는 회사·NVIDIA 공동 발표(2026-05)도 근거에 넣음",
+          "en": "Sweetwater 1 figure updated to NVIDIA's GTC Berlin 2026 keynote (Oct 21): the 'Vera Rubin 45 °C water → no chillers' basis now cites NVIDIA's official release and the keynote (30:05) instead of CES coverage, and the dry cooler, thermometer, hot-afternoon scene and caption carry its conditions — 'in suitable climates', and local climate decides whether mechanical cooling is added in the hottest periods (above 40 °C outside, top-up cooling may be needed). The hall electrics are redrawn the DSX POD way: rectifiers → 800 V DC switchboard → 800 V busway (drawn, not disclosed by the company; 480 V AC designs exist too; white in the company-confirmed view). The May 2026 IREN–NVIDIA release naming Sweetwater a flagship DSX deployment is added to the basis"
+        }
+      ]
+    },
+    {
       "date": "2026-10-21",
       "items": [
         {

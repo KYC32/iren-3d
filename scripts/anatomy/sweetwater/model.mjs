@@ -9,8 +9,13 @@
 //   · 스위트워터 1·2 = 2 GW 허브 (ERCOT Batch Zero 'Base Load' 조건부 편입, 2026-09-08)
 // 회사 사진 (iren.com 스위트워터 갤러리): 넓은 자갈 마당의 개방형 변전소 — 철골 가대·관형 모선·지지 애자·
 //   차단기 칸·대형 변압기 여러 대·흰 제어동·피뢰 기둥, 주변 풍력 발전기
-// NVIDIA (CES 2026 기조연설, 보도): Vera Rubin 은 45 °C 물로 식힘 → "칠러가 필요 없음"
-// 홀 안 설계(냉각 설비·대수·배치)는 회사가 밝히지 않음 → 위 사양을 바탕으로 한 그림 표현 (그림 아래에 적음)
+// 회사·NVIDIA 공동 발표 (2026-05-08): 스위트워터 2 GW 캠퍼스가 "NVIDIA DSX 구조의 대표 배치"가 될 것으로 기대
+// NVIDIA (GTC Berlin 2026 보도자료·기조연설, 2026-10-21): Vera Rubin 은 닫힌 순환 액체냉각, 냉각수 최대 45 °C
+//   → "알맞은 기후에서" 바깥 건식 냉각기가 물을 증발시키지 않고 열을 버림 (2 GW 면 냉각탑보다 하루 물 5,400만 L 절약)
+//   → 단 "가장 더운 때 기계식 냉각을 보탤지는 그 지역 기후가 정함" (보도자료) → 그림의 온도계 빨간 띠
+// NVIDIA DSX POD (같은 날): 랙에 800 V 직류 ("standard input 800 VDC", 기술 블로그 · 기조연설 30:42)
+//   → 그림의 홀 전기 = 정류기(34.5 kV 교류 → 800 V 직류) → 800 V 버스웨이 (추정 — 480 V 교류로 짓는 Vera Rubin 설계도 있음)
+// 홀 안 설계(전기 방식·냉각 설비·대수·배치)는 회사가 밝히지 않음 → 위 사양을 바탕으로 한 그림 표현 (그림 아래에 적음)
 // =============================================================
 
 export const SOURCES = {
@@ -19,8 +24,18 @@ export const SOURCES = {
   call: "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm",         // 예정대로 통전 · IT 200 MW · Vera Rubin · 뼈대 (2026-05 콜)
   batch: "https://www.globenewswire.com/news-release/2026/09/08/3357498/0/en/iren-s-2gw-sweetwater-hub-included-as-base-load-in-ercot-batch-zero.html", // 300 MW · 2027 Q4
   site: "https://iren.com/data-centers/sweetwater",                                                       // 사진 · 1,400 MW · 1,700 에이커
-  nvidia: "https://www.datacenterdynamics.com/en/news/vera-rubin-hot-water-cooling-reveal-triggers-hvac-share-drop", // 45 °C · 칠러 불필요 (보도)
+  dsx: "https://iren.gcs-web.com/news-releases/news-release-details/nvidia-and-iren-announce-strategic-partnership-accelerate", // 스위트워터 = DSX 대표 배치 (회사·NVIDIA 공동, 2026-05-08)
+  nvidia: "https://nvidianews.nvidia.com/news/european-ecosystem-builds-worlds-most-efficient-ai-factories-with-nvidia-dsx", // 45 °C · 닫힌 순환 · 건식 냉각기 · 5,400만 L · 지역 기후 (보도자료, 2026-10-21)
+  keynote: "https://youtu.be/PvFjbPYEOZI?t=1805",                                                      // GTC Berlin 2026 기조연설 30:05 "DSX rethinks cooling" ~ "in suitable climates" ~ 5,400만 L
+  // 홀 전기 800 V 직류 (그림 표현의 근거): DSX POD = Vera Rubin NVL72 7대를 공장에서 조립·시험한 컨테이너, 800 V 직류 입력
+  pod: "https://nvidianews.nvidia.com/news/nvidia-introduces-dsx-pod-ai-factories-to-accelerate-europes-infrastructure-deployment", // DSX POD (보도자료, 2026-10-21)
+  podBlog: "https://developer.nvidia.com/blog/achieve-productive-ai-capacity-faster-and-more-predictably-with-nvidia-dsx-pod/",    // "standard input 800 VDC power design" (NVIDIA 기술 블로그, 2026-10-21)
+  keynotePod: "https://youtu.be/PvFjbPYEOZI?t=1842",                                                   // 기조연설 30:42 DSX Pod: 랙 7대 · 컨테이너 · "800 volts DC connects to the racks"
+  ac480: "https://blog.se.com/datacenter/2026/05/08/nvidia-and-schneider-electric-get-in-sync-at-nvidia-gtc-2026-to-deliver-vera-rubin-ai-factories/", // 슈나이더 Vera Rubin NVL72 검증 설계 = 480 V 교류 (제3자 — 다른 방식도 있다는 근거로만)
 };
+
+// NVIDIA DSX 보도자료의 물 계산: 냉각탑(물을 증발시켜 식힘) 대신 건식 냉각기 → 2 GW 규모면 하루 물 5,400만 L 를 아낌 (18만 가구 하루 사용량)
+export const DSX = { gw: 2, litersPerDay: 54e6 };
 
 export const SITE = {
   mw: 1400,            // 스위트워터 1 계통 연결 (gross)
@@ -33,12 +48,18 @@ export const SITE = {
   acres: 1700,
 };
 
+// 홀 안 전압: 정류기가 34.5 kV 교류를 800 V 직류로 바꿔 버스웨이로 (NVIDIA DSX POD 방식 · 회사는 밝히지 않음 → 그림 표현)
+export const DC_V = 800;
+
 // 3상 선전류 (A) = 전력 ÷ (√3 × 선간전압) — 첫 단계 300 MW 를 보낼 때
 export const lineAmps = (mw, kv) => (mw * 1e6) / (Math.sqrt(3) * kv * 1000);
+// 직류 전류 (A) = 전력 ÷ 전압 — 랙이 쓰는 IT 전력만 직류로 감
+export const dcAmps = (mw, v) => (mw * 1e6) / v;
 export const AMPS = {
   hv: lineAmps(SITE.phase1Gross, SITE.hvKv),   // ≈ 502 A
   mv: lineAmps(SITE.phase1Gross, SITE.mvKv),   // ≈ 1,255 A
   dv: lineAmps(SITE.phase1Gross, SITE.dvKv),   // ≈ 5,020 A (여러 피더로 나눔)
+  dc: dcAmps(SITE.phase1It, DC_V),             // = 250,000 A (IT 200 MW 를 800 V 로 → 랙 줄마다 여러 갈래로 나눔)
 };
 // 첫 단계가 변전소 용량에서 차지하는 몫
 export const SHARE = SITE.phase1Gross / SITE.mw;   // ≈ 0.21
@@ -47,6 +68,8 @@ export const SHARE = SITE.phase1Gross / SITE.mw;   // ≈ 0.21
 // 건식 냉각기는 바깥 공기로만 식히므로 물을 "바깥 기온 + 접근 온도차"까지만 내림
 //   (접근 온도차 = 냉각기 + CDU 열교환기에서 잃는 온도를 합친 설계 값, 여기선 5 °C 가정)
 // Vera Rubin 이 받는 물은 45 °C → 바깥이 40 °C 까지는 건식 냉각기만으로 됨. Horizon(GB300)은 더 찬물이 필요해 더운 날 칠러가 보탬
+// NVIDIA 도 조건을 닮: "알맞은 기후에서" 건식 냉각기만으로 되고, 가장 더운 때 기계식 냉각을 보탤지는 지역 기후가 정함
+//   → 바깥이 NO_CHILLER_MAX 를 넘는 한낮(온도계 빨간 띠)엔 보조 냉각이 필요할 수 있음 (그림엔 칠러를 그리지 않음)
 export const WATER = { supply: 45, approach: 5, cp: 4.18, dT: 10 };
 export const coolest = (outdoor) => outdoor + WATER.approach;     // 건식 냉각기가 만들 수 있는 가장 찬물
 export const NO_CHILLER_MAX = WATER.supply - WATER.approach;       // 이 기온까지는 칠러 없이 45 °C 물 (= 40 °C)

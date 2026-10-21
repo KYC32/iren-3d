@@ -3,7 +3,7 @@
 // -------------------------------------------------------------
 // "물건이 곧 설명": 전기가 내려오는 계단을 그대로 세움
 //   ERCOT 345 kV 송전선 → 인입 가대·애자 → 단로기 → 차단기 → 345 kV 모선 → 대형 변압기(345 → 138 kV) 2대 + 비워 둔 자리
-//   → 138 kV 케이블(도랑) → 1차 변압기(138 → 34.5 kV) → 34.5 kV 케이블 → 홀: 34.5 kV 배전반 → 홀 변압기 → 버스웨이
+//   → 138 kV 케이블(도랑) → 1차 변압기(138 → 34.5 kV) → 34.5 kV 케이블 → 홀: 34.5 kV 배전반 → 정류기(→ 800 V 직류) → 직류 배전반 → 800 V 버스웨이
 //   → Vera Rubin 랙 (45 °C 물) → CDU → 벽 밖 배관 → 건식 냉각기만 (칠러 없음) → 펌프 → 다시 CDU
 // 둘러보기: 부품을 차례로 짚은 뒤 ① 더운 오후 39 °C 에도 칠러 없이 ② 비워 둔 자리에 다음 단계가 붙는 모습(흐린 그림)
 // 숫자·출처·시간표는 model.mjs (회사 자료 + NVIDIA 공개 발언). 홀 안 설계는 미공개 → 그림 표현
@@ -21,7 +21,7 @@ import * as G from "../kit/lathe.mjs";
 import * as A from "../kit/audit.mjs";
 import { workshop, auditAll } from "../rack/shop.mjs";
 import { figureTools, r1 } from "../shared/tools.mjs";
-import { SITE, AMPS, SHARE, WATER, TEMP, SOURCES, NO_CHILLER_MAX, coolest, tourPlan, stateAt } from "./model.mjs";
+import { SITE, AMPS, SHARE, WATER, TEMP, SOURCES, DSX, DC_V, NO_CHILLER_MAX, coolest, tourPlan, stateAt } from "./model.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..", "..");
@@ -361,28 +361,49 @@ function hallShell() {
 }
 hallShell();
 
-// 홀 전기: 34.5 kV 배전반 3칸 → 홀 변압기(건식) → 저압 배전반 2칸 → 버스웨이
+// 홀 전기: 34.5 kV 배전반 3칸 → 정류기 2칸(34.5 kV 교류 → 800 V 직류) → 800 V 직류 배전반 2칸 → 800 V 버스웨이
+//   NVIDIA DSX POD 의 800 V 직류 방식을 따라 그림 (회사는 홀 전기 방식을 밝히지 않음 → '회사 확인' 보기에선 하얗게)
+//   (교류로 지었다면 홀 변압기(34.5 kV → 저압 교류) · 저압 배전반이 설 자리)
 function hallPower() {
-  const z0 = HALL.floor, sy = -63, sd = 10, Y = sy + sd;
+  const z0 = HALL.floor, sy = -63, sd = 10, Y = sy + sd, H = 15;
+  const CY = -60;                                                 // 위로 잇는 케이블이 지나는 y (윗면 뒤쪽 · 앞쪽엔 정류기 팬)
   for (let i = 0; i < 3; i++) {
     const x = 201 + i * 6;
-    W.box(`mvsg${i}`, { x: x + 0.05, y: sy, w: 5.9, d: sd, r: 0.15 }, z0, 15, { cls: "pw-grey", tone: "mid", steps: 1, info: "mvsg", stamp: "mvsg",
-      inner: L(frontSeams(Y, [], z0, z0 + 15) + frontRules(Y, x + 0.6, x + 5.4, [z0 + 7.2]), { tone: "lo" }) });
+    W.box(`mvsg${i}`, { x: x + 0.05, y: sy, w: 5.9, d: sd, r: 0.15 }, z0, H, { cls: "pw-grey", tone: "mid", steps: 1, info: "mvsg", stamp: "mvsg",
+      inner: L(frontSeams(Y, [], z0, z0 + H) + frontRules(Y, x + 0.6, x + 5.4, [z0 + 7.2]), { tone: "lo" }) });
     W.box(`mvsg${i}.relay`, { x: x + 1.2, y: Y, w: 2.4, d: 0.25, r: 0.05 }, z0 + 10.4, 2, { cls: "hz-screen", tone: "mid", steps: 1, info: "mvsg", stamp: "mvsg-relay" });
     W.box(`mvsg${i}.handle`, { x: x + 4.2, y: Y, w: 0.5, d: 0.4, r: 0.05 }, z0 + 3.4, 1.8, { cls: "pw-steel", tone: "mid", steps: 1, info: "mvsg", stamp: "mvsg-handle" });
   }
-  W.box("hallxf", { x: 222, y: -64, w: 12, d: 12, r: 0.2 }, z0, 13, { cls: "sw-house", tone: "mid", steps: 1, info: "hallxf",
-    inner: L(frontSlots(-52, 223.5, 232.5, z0 + 2, 6, 1.6, 0.6), { tone: "lo" }) + L(rightSlots(234, -62.5, -53.5, z0 + 2, 6, 1.6, 0.6), { tone: "lo" }) });
+  // 정류기 2칸: 몸통 · 앞문(아래쪽 흡기 루버) · 상태 화면 · 손잡이 · 윗면 배기 팬 (반도체 변환기의 열을 위로 빼냄)
+  for (let i = 0; i < 2; i++) {
+    const x = 222 + i * 6, fx = x + 3, fy = Y - 3.2, ftop = z0 + H + 0.5;   // 팬 가운데 (윗면 앞쪽) · 팬 윗면 높이
+    W.box(`rect${i}`, { x: x + 0.05, y: sy, w: 5.9, d: sd, r: 0.15 }, z0, H, { cls: "hz-unit", tone: "mid", steps: 1, info: "rect", stamp: "rect" });
+    W.box(`rect${i}.door`, { x: x + 0.45, y: Y, w: 5.1, d: 0.15, r: 0.03 }, z0 + 0.6, H - 1.2, { cls: "hz-unit", tone: "mid", steps: 1, info: "rect", stamp: "rect-door",
+      inner: L(frontSlots(Y + 0.15, x + 1.2, x + 4.8, z0 + 1.4, 6, 1.0, 0.4), { tone: "lo" }) });
+    W.box(`rect${i}.screen`, { x: x + 1.2, y: Y + 0.15, w: 2.2, d: 0.15, r: 0.04 }, z0 + 10.6, 1.6, { cls: "hz-screen", tone: "mid", steps: 1, info: "rect", stamp: "rect-screen" });
+    W.box(`rect${i}.handle`, { x: x + 4.3, y: Y + 0.15, w: 0.5, d: 0.4, r: 0.05 }, z0 + 6.6, 1.8, { cls: "pw-steel", tone: "mid", steps: 1, info: "rect", stamp: "rect-handle" });
+    // 팬: 테두리 통 + 고리 2 + 날개 4 (멈춘 그림 · 날개 끝이 두 고리에 닿음) + 축
+    const rings = [1.5, 0.55].map((r) => k.planOutline({ x: fx - r, y: fy - r, w: r * 2, d: r * 2, r }, ftop, P, 6)).join("");
+    const spokes = [0, 1, 2, 3].map((q) => { const a = q * Math.PI / 2 + Math.PI / 4; return seg([fx + Math.cos(a) * 0.55, fy + Math.sin(a) * 0.55, ftop], [fx + Math.cos(a) * 1.5, fy + Math.sin(a) * 1.5, ftop]); }).join("");
+    W.cyl(`rect${i}.fan`, fx, fy, 1.8, z0 + H, 0.5, { cls: "hz-unit", tone: "mid", info: "rect", stamp: "rect-fan", extra: L(rings + spokes, { tone: "lo" }) + Dt([at([fx, fy, ftop])], { size: 0.3, tone: "mid" }) });
+  }
+  // 800 V 직류 배전반 2칸: 위 칸 = 직류 차단기 3개 (두 극을 한 몸에) · 아래 칸 = 계기 창
   for (let i = 0; i < 2; i++) {
     const x = 237 + i * 6;
-    W.box(`lvsb${i}`, { x: x + 0.05, y: sy, w: 5.9, d: sd, r: 0.15 }, z0, 15, { cls: "pw-grey", tone: "mid", steps: 1, info: "lvsb", stamp: "lvsb",
+    W.box(`dcsb${i}`, { x: x + 0.05, y: sy, w: 5.9, d: sd, r: 0.15 }, z0, H, { cls: "pw-grey", tone: "mid", steps: 1, info: "dcsb", stamp: "dcsb",
       inner: L(frontRules(Y, x + 0.6, x + 5.4, [z0 + 7.2]), { tone: "lo" }) });
-    for (let r = 0; r < 2; r++) for (let c = 0; c < 2; c++) W.box(`lvsb${i}.brk${r}${c}`, { x: x + 1.2 + c * 2.2, y: Y, w: 1.1, d: 0.35, r: 0.08 }, z0 + 9.5 + r * 2, 0.7, { cls: "pw-dark", tone: "mid", steps: 1, info: "lvsb", stamp: "lvsb-brk" });
+    for (let c = 0; c < 3; c++) W.box(`dcsb${i}.brk${c}`, { x: x + 1.05 + c * 1.45, y: Y, w: 0.9, d: 0.35, r: 0.08 }, z0 + 9.0, 2.8, { cls: "pw-dark", tone: "mid", steps: 1, info: "dcsb", stamp: "dcsb-brk" });
+    W.box(`dcsb${i}.meter`, { x: x + 1.2, y: Y, w: 2.4, d: 0.25, r: 0.05 }, z0 + 4.0, 1.6, { cls: "hz-screen", tone: "mid", steps: 1, info: "dcsb", stamp: "dcsb-meter" });
   }
-  // 위로 잇는 굵은 케이블: 배전반 → 변압기 → 저압 배전반, 저압 배전반 → 버스웨이
-  cable("mv.in", [[216, -58, z0 + 15], [216, -58, z0 + 17], [225, -58, z0 + 17], [225, -58, z0 + 13]], 0.35, { flow: "pw", info: "mvsg", bend: 1.1, maxLength: 6 });
-  cable("lv.in", [[231, -58, z0 + 13], [231, -58, z0 + 17], [240, -58, z0 + 17], [240, -58, z0 + 15]], 0.35, { flow: "pw", info: "lvsb", bend: 1.1, maxLength: 6 });
-  cable("lv.out", [[246, BUSW.y, z0 + 15], [246, BUSW.y, BUSW.z]], 0.35, { flow: "pw", info: "busway", fillet: false, maxLength: 6 });
+  // 위로 잇는 굵은 케이블: 배전반 → 정류기 A (34.5 kV 교류), 정류기 B → 직류 배전반 (800 V 직류), 직류 배전반 → 버스웨이
+  //   케이블은 윗면의 글랜드(케이블 인입 판)로 들어감 → 끝이 부품 위에 앉음
+  const GL = 0.3, gz = z0 + H + GL, run = gz + 2;                 // 글랜드 두께 · 케이블 끝 높이 · 위로 지나는 높이 (세운 토막 2 → 꺾임이 화면에서 접히지 않음)
+  for (const [gx, info] of [[216, "mvsg"], [225, "rect"], [231, "rect"], [238.8, "dcsb"]])
+    W.box(`hp.gland${gx}`, { x: gx - 0.55, y: CY - 0.55, w: 1.1, d: 1.1, r: 0.1 }, z0 + H, GL, { cls: "pw-dark", tone: "mid", steps: 1, info, stamp: "hp-gland" });
+  cable("mv.in", [[216, CY, gz], [216, CY, run], [225, CY, run], [225, CY, gz]], 0.35, { flow: "pw", info: "mvsg", bend: 1.1, maxLength: 6 });
+  cable("dc.in", [[231, CY, gz], [231, CY, run], [238.8, CY, run], [238.8, CY, gz]], 0.35, { flow: "pw", info: "dcsb", bend: 1.1, maxLength: 6 });
+  W.box("hp.glandOut", { x: 246 - 0.55, y: BUSW.y - 0.55, w: 1.1, d: 1.1, r: 0.1 }, z0 + H, GL, { cls: "pw-dark", tone: "mid", steps: 1, info: "dcsb", stamp: "hp-gland" });
+  cable("dc.out", [[246, BUSW.y, gz], [246, BUSW.y, BUSW.z]], 0.35, { flow: "pw", info: "busway", fillet: false, maxLength: 6 });
   // 버스웨이 (조각마다 흐름 점선)
   const pxPerX = Math.hypot(...[0, 1].map((i) => at([1, BUSW.y, BUSW.z])[i] - at([0, BUSW.y, BUSW.z])[i]));
   const joints = [BUSW.x0, 268, BUSW.x1];
@@ -393,7 +414,7 @@ function hallPower() {
       extra: `<path class="pw-flow" data-flow="pw" style="--d0:${r1((a - BUSW.x0) * pxPerX)}px" d="${pathOf3([[a, Yb, BUSW.z + BUSW.h / 2], [b, Yb, BUSW.z + BUSW.h / 2]])}"/>` });
   }
   W.box("busw.joint", { x: 267.6, y: BUSW.y - BUSW.w / 2 - 0.12, w: 0.8, d: BUSW.w + 0.24, r: 0.06 }, BUSW.z - 0.12, BUSW.h + 0.24, { cls: "hz-bus", tone: "mid", steps: 1, info: "busway", owner: "busw" });
-  W.box("busw.post", { x: 244.4, y: BUSW.y - 0.3, w: 0.6, d: 0.6, r: 0.05 }, z0 + 15, BUSW.z - z0 - 15, { cls: "pw-steel", tone: "mid", steps: 1, info: "busway" });   // 저압 배전반 위 짧은 받침
+  W.box("busw.post", { x: 244.4, y: BUSW.y - 0.3, w: 0.6, d: 0.6, r: 0.05 }, z0 + 15, BUSW.z - z0 - 15, { cls: "pw-steel", tone: "mid", steps: 1, info: "busway" });   // 직류 배전반 위 짧은 받침
 }
 hallPower();
 
@@ -579,7 +600,7 @@ thermometer();
 //   neutral   = 모형 받침·도로 (어느 쪽도 아님)
 const ZONE = {
   confirmed: ["line", "gantry", "string", "ds", "breaker", "bus345", "xfmr", "xfmr-rad", "xfmr-hv", "xfmr-lv", "xfmr-cons", "head", "cable138", "primary", "primary-mv", "cable34", "control", "mast", "yard", "fence"],
-  drawn: ["hall", "wall", "mvsg", "hallxf", "lvsb", "busway", "tapoff", "rack", "manifold", "busbar", "rack-post", "hose", "tcs", "tcs-riser", "cdu", "cdu-open", "cdu-hx", "cdu-pump", "branch", "yard-sup", "yard-ret", "drycooler", "dc-fan", "dc-panel", "pumps", "thermo", "pad", "future", "spare"],
+  drawn: ["hall", "wall", "mvsg", "rect", "dcsb", "busway", "tapoff", "rack", "manifold", "busbar", "rack-post", "hose", "tcs", "tcs-riser", "cdu", "cdu-open", "cdu-hx", "cdu-pump", "branch", "yard-sup", "yard-ret", "drycooler", "dc-fan", "dc-panel", "pumps", "thermo", "pad", "future", "spare"],
   neutral: ["base", "road"],
 };
 const zoneOf = (key) => (ZONE.confirmed.includes(key) ? "confirmed" : ZONE.drawn.includes(key) ? "drawn" : ZONE.neutral.includes(key) ? "neutral" : null);
@@ -603,7 +624,7 @@ const PART_STOPS = [
   { key: "primary", p: [TP.x + 13, TP.y + TP.d + 2, TP.z0 + 6], z: 2.6 },
   { key: "cable34", p: [TR2.x + 4.5, TR2.y + 7, TR2.pit + 1], z: 3.0 },
   { key: "mvsg", p: [210, -53, HALL.floor + 10], z: 2.8 },
-  { key: "hallxf", p: [228, -52, HALL.floor + 8], z: 2.8 },
+  { key: "rect", p: [228, -53, HALL.floor + 8], z: 2.8 },
   { key: "tapoff", p: [RACK0 + 3 * RACK_W + 0.95, BUSW.y, BUSW.z - 0.7], z: 3.4 },
   { key: "rack", p: [RACK0 + 6 * RACK_W, REAR, HALL.floor + 7], z: 2.8 },
   { key: "manifold", p: [RACK0 + 9 * RACK_W + 2.55, REAR + 0.4, 9], z: 3.6 },
@@ -656,11 +677,11 @@ const INFO = {
   mast: ["피뢰 기둥 · 벼락을 먼저 받아 설비를 지킴", "Lightning mast · takes the strike before the equipment does"],
   hall: ["1단계 홀 (지붕을 뗌) · 회사: IT 200 MW 액체냉각 데이터센터 건설 중 · 홀 안 배치는 밝히지 않음 → 그림 표현", "Phase 1 hall (roof off) · company: 200 MW IT of liquid-cooled data centers under construction · interior not disclosed → illustrative"],
   wall: ["홀 벽 · 허물어 안을 보여 줌 (빗금 = 잘린 면)", "Hall wall · broken away to show inside (hatching = cut)"],
-  mvsg: ["34.5 kV 배전반 · 땅속 케이블을 받아 홀 변압기로 나눠 보냄 · 위 창 = 보호 계전기", "34.5 kV switchgear · takes the underground cables and feeds the hall transformers · upper windows = protection relays"],
-  hallxf: ["홀 변압기 (34.5 kV → 저압) · 공기로 식히는 건식 (모양은 예시)", "Hall transformer (34.5 kV → low voltage) · dry-type, air-cooled (illustrative)"],
-  lvsb: ["저압 배전반 · 차단기로 버스웨이에 전원을 나눔", "Low-voltage switchboard · breakers feed the busway"],
-  busway: ["버스웨이 · 랙 위를 지나는 전원 통로 (모양은 예시)", "Busway · the power run over the racks (illustrative)"],
-  tapoff: ["탭오프 · 버스웨이에서 랙 하나로 전원을 내림", "Tap-off · drops power from the busway into one rack"],
+  mvsg: ["34.5 kV 배전반 · 땅속 케이블을 받아 정류기로 나눠 보냄 · 위 창 = 보호 계전기", "34.5 kV switchgear · takes the underground cables and feeds the rectifiers · upper windows = protection relays"],
+  rect: [`정류기 (34.5 kV 교류 → ${DC_V} V 직류) · 위 팬 = 반도체 변환기의 열을 빼냄 · NVIDIA DSX POD 는 랙에 ${DC_V} V 직류를 넣음 ('표준 입력 800 VDC') → 그 방식을 따라 그림 · 회사는 홀 전기 방식을 밝히지 않음 — 480 V 교류로 짓는 Vera Rubin 설계도 있음 (모양·대수는 그림 표현)`, `Rectifiers (34.5 kV AC → ${DC_V} V DC) · the top fans carry the power electronics' heat away · NVIDIA's DSX POD feeds ${DC_V} V DC to its racks ('standard input 800 VDC'), so the hall is drawn that way · the company hasn't said how the hall is powered — Vera Rubin designs on 480 V AC exist too (shape and count illustrative)`],
+  dcsb: [`${DC_V} V 직류 배전반 · 직류 차단기로 버스웨이마다 나눠 보냄 · 아래 창 = 전압·전류 계기 (모양은 예시)`, `${DC_V} V DC switchboard · DC breakers feed each busway · lower window = voltage and current meter (illustrative)`],
+  busway: [`${DC_V} V 직류 버스웨이 · 랙 위를 지나는 전원 통로 · IT ${SITE.phase1It} MW ÷ ${DC_V} V = 모두 합쳐 ${fmt(AMPS.dc)} A → 랙 줄마다 여러 갈래로 나눔 (모양은 예시)`, `${DC_V} V DC busway · the power run over the racks · ${SITE.phase1It} MW of IT at ${DC_V} V is ${fmt(AMPS.dc)} A in total, split over many runs row by row (illustrative)`],
+  tapoff: [`탭오프 · 버스웨이에서 랙 하나로 ${DC_V} V 직류를 내림`, `Tap-off · drops ${DC_V} V DC from the busway into one rack`],
   rack: ["Vera Rubin 랙 (뒷면) · 회사: 'NVIDIA Vera Rubin 같은 차세대 칩 구조를 위해 설계' · 랙 수·랙 전력은 밝히지 않음 (모양은 그림 표현)", "Vera Rubin rack (rear) · company: 'designed for next generation chip architectures, including the NVIDIA Vera Rubin' · rack count and power not disclosed (shape illustrative)"],
   manifold: [`랙 매니폴드 · 파랑 = 공급, 빨강 = 회수 · 칩 냉각판마다 물을 나눠 줌 · 들어가는 물이 ${WATER.supply} °C 로 따뜻해도 됨 (NVIDIA)`, `Rack manifolds · blue = supply, red = return · feed every cold plate · the water going in can be as warm as ${WATER.supply} °C (NVIDIA)`],
   busbar: ["직류 버스바 · 랙 안 전원 막대 · 트레이마다 꽂혀 전원을 받음", "DC busbar · the rack's power spine · every tray plugs into it"],
@@ -675,16 +696,16 @@ const INFO = {
   branch: ["가지관 · CDU 마다 1차 공급·회수 · 벽 위를 지나 CDU 로 (벽은 허물어 보여 줌)", "Branches · each CDU's facility supply and return, over the wall (cut away)"],
   "yard-ret": ["1차 회수 배관 (데워진 물) · CDU 에서 건식 냉각기로", "Facility return (warmed) · CDUs to the dry cooler"],
   "yard-sup": ["1차 공급 배관 (식힌 물) · 건식 냉각기에서 펌프를 거쳐 CDU 로 · 칠러를 거치지 않음", "Facility supply (cooled) · dry cooler → pumps → CDUs · no chiller in the loop"],
-  drycooler: [`건식 냉각기 · 바깥 공기로만 식힘 · 물을 증발시키지 않음 · 물은 바깥 기온 + 약 ${WATER.approach} °C 까지 식음 (가정) → 바깥 ${NO_CHILLER_MAX} °C 까지는 이것만으로 ${WATER.supply} °C 물 · 칠러 없음 (냉각 설비 구성은 밝히지 않음)`, `Dry cooler · outside air only · evaporates no water · cools the water to about ${WATER.approach} °C above the outdoor temperature (assumption) → ${WATER.supply} °C water on its own up to ${NO_CHILLER_MAX} °C outside · no chiller (cooling plant not disclosed)`],
+  drycooler: [`건식 냉각기 · 큰 라디에이터처럼 바깥 공기로만 식힘 · 물을 증발시키지 않음 (NVIDIA: 냉각탑 대신 쓰면 ${DSX.gw} GW 규모에서 하루 물 ${fmt(DSX.litersPerDay / 1e4)}만 L 절약) · 물은 바깥 기온 + 약 ${WATER.approach} °C 까지 식음 (가정) → 바깥 ${NO_CHILLER_MAX} °C 까지는 이것만으로 ${WATER.supply} °C 물 · NVIDIA: '알맞은 기후에서' — 가장 더운 때 기계식 냉각을 보탤지는 지역 기후가 정함 · 칠러는 그리지 않음 (냉각 설비 구성은 밝히지 않음)`, `Dry cooler · like a big radiator, outside air only · evaporates no water (NVIDIA: used instead of cooling towers it saves ${DSX.litersPerDay / 1e6} million liters a day at ${DSX.gw} GW scale) · cools the water to about ${WATER.approach} °C above the outdoor temperature (assumption) → ${WATER.supply} °C water on its own up to ${NO_CHILLER_MAX} °C outside · NVIDIA: 'in suitable climates' — local climate decides whether mechanical cooling is added in the hottest periods · no chiller drawn (cooling plant not disclosed)`],
   "dc-fan": ["냉각기 팬 · 더울수록 빨리 돌아 공기를 더 많이 보냄", "Cooler fans · spin faster the hotter it gets"],
   "dc-panel": ["냉각기 제어반 · 바깥 기온계가 붙어 있음", "Cooler control panel · with the outdoor thermometer"],
   pumps: ["1차 냉각수 펌프 2대 (1대 예비) · 식힌 물을 벽 쪽 공급 배관으로 CDU 에 보냄 → 냉각수 고리가 닫힘 · 초록 등 = 가동", "Facility water pumps (one spare) · send the cooled water back along the supply main to the CDUs, closing the loop · green lamp = running"],
-  thermo: [`바깥 기온 (예시) · 빨간 띠 = ${NO_CHILLER_MAX} °C 이상: 여기부터는 바깥 공기만으로 ${WATER.supply} °C 물을 못 만듦 (가정) · 서텍사스 무더운 여름 오후 예시 ${TEMP.hot} °C`, `Outdoor temperature (example) · red band = ${NO_CHILLER_MAX} °C and up, where outside air alone can no longer make ${WATER.supply} °C water (assumption) · a hot West Texas summer afternoon, ${TEMP.hot} °C in this example`],
+  thermo: [`바깥 기온 (예시) · 빨간 띠 = ${NO_CHILLER_MAX} °C 이상: 여기부터는 바깥 공기만으로 ${WATER.supply} °C 물을 못 만듦 (온도차 ${WATER.approach} °C 가정) → 이런 한낮엔 기계식 냉각을 보태야 할 수 있음 (NVIDIA: '알맞은 기후에서', 가장 더운 때는 지역 기후가 정함) · 서텍사스 무더운 여름 오후 예시 ${TEMP.hot} °C`, `Outdoor temperature (example) · red band = ${NO_CHILLER_MAX} °C and up, where outside air alone can no longer make ${WATER.supply} °C water (assuming a ${WATER.approach} °C approach) → such afternoons may need added mechanical cooling (NVIDIA: 'in suitable climates'; local climate decides for the hottest periods) · a hot West Texas summer afternoon, ${TEMP.hot} °C in this example`],
 };
 const PHASE_TEXT = {
   normal: [`평소 · 건식 냉각기만으로 냉각, 칠러 없음 · 랙에 들어가는 물은 ${WATER.supply} °C 까지 따뜻해도 됨 (NVIDIA: Vera Rubin)`, `Normal · dry coolers alone, no chillers · the water going into the racks can be as warm as ${WATER.supply} °C (NVIDIA: Vera Rubin)`],
   warm: ["기온이 오름 · 냉각기 팬이 빨라짐", "Heating up · the cooler fans speed up"],
-  hot: [`더운 오후 ${TEMP.hot} °C · 그래도 물은 약 ${coolest(TEMP.hot)} °C 까지 식음 → ${WATER.supply} °C 아래라 칠러가 필요 없음 (Horizon 은 이때 칠러가 보탬)`, `Hot afternoon, ${TEMP.hot} °C · the water still cools to about ${coolest(TEMP.hot)} °C → below ${WATER.supply} °C, so no chiller is needed (at Horizon the chiller tops up here)`],
+  hot: [`더운 오후 ${TEMP.hot} °C · 그래도 물은 약 ${coolest(TEMP.hot)} °C 까지 식음 → ${WATER.supply} °C 아래라 칠러가 필요 없음 · NVIDIA 조건은 '알맞은 기후에서' — 바깥 ${NO_CHILLER_MAX} °C 이상인 한낮엔 기계식 냉각을 보태야 할 수 있음 (Horizon 은 이때 칠러가 보탬)`, `Hot afternoon, ${TEMP.hot} °C · the water still cools to about ${coolest(TEMP.hot)} °C → below ${WATER.supply} °C, so no chiller is needed · NVIDIA's condition is 'in suitable climates' — above ${NO_CHILLER_MAX} °C outside, mechanical cooling may have to be added (at Horizon the chiller tops up here)`],
   evening: ["저녁 · 기온이 내려가 팬이 느려짐", "Evening · the air cools and the fans slow"],
   grow: ["다음 단계 · 비워 둔 자리에 대형 변압기, 앞마당 패드에 1차 변압기가 들어섬 · 흐린 그림 = 예시 (시기·규모는 밝히지 않음)", "Next phase · a large transformer fills the empty bay and primary transformers go on the front-yard pads · faint drawing = example (timing and size not disclosed)"],
   grown: [`첫 단계 ${SITE.phase1Gross} MW = 변전소 ${fmt(SITE.mw)} MW 의 약 ${PCT}% · 회사: '첫 단계가 다음 단계를 더 빨리 붙이는 뼈대' · 스위트워터 1·2 = ${SITE.hubMw / 1000} GW 허브`, `Phase 1's ${SITE.phase1Gross} MW = about ${PCT}% of the ${fmt(SITE.mw)} MW substation · company: 'the first phase creates the backbone for faster subsequent phases' · Sweetwater 1 + 2 = a ${SITE.hubMw / 1000} GW hub`],
@@ -694,6 +715,10 @@ const PHASE_TEXT = {
 PHASE_TEXT.confirmed = ["회사 확인 보기 · 색 = 회사 공시·사진으로 확인한 변전소 설비 · 하양 = 회사가 밝히지 않아 그린 홀 안·냉각 설비·다음 단계 자리",
   "Company-confirmed view · colour = substation gear confirmed by filings and photos · white = hall interior, cooling plant and next-phase bays the company hasn't disclosed (drawn)"];
 for (const [phase, text] of Object.entries(PHASE_TEXT)) INFO[`ph-${phase}`] = text;
+// 숫자와 단위가 줄바꿈으로 갈라지지 않게 (40 °C · 800 V · 5,400만 L …) 사이 빈칸을 줄바꿈 없는 빈칸으로
+//   부팅 그림(rack/build.mjs)과 같은 규칙에 °C 와 '만' 을 더함 · 말풍선·아래 줄·그림 아래 설명 모두
+const nb = (s) => s.replace(/(\d만?) (?=[A-Za-z%°])/g, "$1 ");
+for (const o of [INFO, PHASE_TEXT]) for (const key of Object.keys(o)) o[key] = o[key].map(nb);
 // 구역이 정해지지 않은 설명 키가 있으면 빌드를 멈춤 (새 부품을 넣을 때 ZONE 에 같이 적을 것)
 const unzoned = Object.keys(INFO).filter((key) => !key.startsWith("ph-") && !zoneOf(key));
 if (unzoned.length) throw new Error(`'회사 확인' 보기 구역(ZONE)이 정해지지 않은 설명 키: ${unzoned.join(", ")}`);
@@ -749,24 +774,24 @@ function page(ko) {
     ? [["sw-k-solid", "색 = 회사 공시·사진으로 확인한 변전소 설비"], ["sw-k-white", "하양 = 회사가 밝히지 않아 그린 부분"]]
     : [["sw-k-solid", "colour = substation gear confirmed by filings and photos"], ["sw-k-white", "white = drawn, not disclosed by the company"]];
   const captionConf = ko
-    ? `회사 확인 보기: 색이 있는 부분은 회사 공시·사진으로 종류를 확인한 설비입니다 — 345 kV 송전선, 인입 가대·단로기·차단기·관형 모선, 대형 변압기(345/138 kV), 1차 변압기(138/34.5 kV), 제어동·피뢰 기둥·자갈 마당(${a(SOURCES.plant, "2025-01 공시")}, ${a(SOURCES.site, "회사 사진")}). 대수·간격·케이블 길은 그림입니다. 하얀 부분은 회사가 밝히지 않은 것입니다 — 홀 안 전기·랙·CDU·천장 배관과 벽 밖 배관·건식 냉각기·펌프는 NVIDIA 가 공개한 Vera Rubin 사양(45 °C 물, ${a(SOURCES.nvidia, "보도")})과 일반적인 액체냉각 설계로 그렸고, 비워 둔 자리·앞마당 패드는 '첫 단계가 다음 단계를 더 빨리 붙이는 뼈대'라는 회사 설명(${a(SOURCES.call, "FY26 3분기 실적 발표")})을 보여 주는 예시입니다. 홀이 있다는 것(IT ${SITE.phase1It} MW 액체냉각 데이터센터 건설 중)은 회사가 밝혔고, 안의 모습만 그림입니다. 부품을 가리키면 말풍선 맨 위에 '회사 확인' 또는 '그림 표현'이 나옵니다. 비공식 · 투자 조언 아님.`
-    : `Company-confirmed view: the coloured parts are equipment types confirmed by company filings and photos — the 345 kV line, dead-end gantry, disconnects, breakers and tubular bus, large transformers (345/138 kV), the primary transformer (138/34.5 kV), control building, lightning masts and gravel yard (${a(SOURCES.plant, "Jan 2025 filing")}, ${a(SOURCES.site, "company photos")}); counts, spacing and cable routes are drawn. The white parts are not disclosed — the hall's electrics, racks, CDUs and overhead loop, and the outside pipework, dry cooler and pumps are drawn from NVIDIA's public Vera Rubin spec (45 °C water, ${a(SOURCES.nvidia, "as reported")}) and common liquid-cooling design, and the empty bay and front-yard pads illustrate the company's point that 'the first phase creates the backbone for faster subsequent phases' (${a(SOURCES.call, "Q3 FY26 results call")}). That the hall exists (${SITE.phase1It} MW IT of liquid-cooled data centers under construction) is disclosed; only its insides are drawn. Point at a part and the tip starts with 'Company-confirmed' or 'Drawn'. Unofficial · not investment advice.`;
+    ? `회사 확인 보기: 색이 있는 부분은 회사 공시·사진으로 종류를 확인한 설비입니다 — 345 kV 송전선, 인입 가대·단로기·차단기·관형 모선, 대형 변압기(345/138 kV), 1차 변압기(138/34.5 kV), 제어동·피뢰 기둥·자갈 마당(${a(SOURCES.plant, "2025-01 공시")}, ${a(SOURCES.site, "회사 사진")}). 대수·간격·케이블 길은 그림입니다. 하얀 부분은 회사가 밝히지 않은 것입니다 — 홀 안 전기(${DC_V} V 직류)·랙·CDU·천장 배관과 벽 밖 배관·건식 냉각기·펌프는 NVIDIA 가 공개한 Vera Rubin·DSX 사양(냉각수 최대 ${WATER.supply} °C·건식 냉각기, ${a(SOURCES.nvidia, "GTC Berlin 2026 보도자료")} · ${DC_V} V 직류, ${a(SOURCES.podBlog, "DSX POD")})과 일반적인 액체냉각 설계로 그렸고, 비워 둔 자리·앞마당 패드는 '첫 단계가 다음 단계를 더 빨리 붙이는 뼈대'라는 회사 설명(${a(SOURCES.call, "FY26 3분기 실적 발표")})을 보여 주는 예시입니다. 홀이 있다는 것(IT ${SITE.phase1It} MW 액체냉각 데이터센터 건설 중)은 회사가 밝혔고, 안의 모습만 그림입니다. 부품을 가리키면 말풍선 맨 위에 '회사 확인' 또는 '그림 표현'이 나옵니다. 비공식 · 투자 조언 아님.`
+    : `Company-confirmed view: the coloured parts are equipment types confirmed by company filings and photos — the 345 kV line, dead-end gantry, disconnects, breakers and tubular bus, large transformers (345/138 kV), the primary transformer (138/34.5 kV), control building, lightning masts and gravel yard (${a(SOURCES.plant, "Jan 2025 filing")}, ${a(SOURCES.site, "company photos")}); counts, spacing and cable routes are drawn. The white parts are not disclosed — the hall's electrics (${DC_V} V DC), racks, CDUs and overhead loop, and the outside pipework, dry cooler and pumps are drawn from NVIDIA's public Vera Rubin and DSX specs (coolant up to ${WATER.supply} °C, dry coolers, ${a(SOURCES.nvidia, "GTC Berlin 2026 release")}; ${DC_V} V DC, ${a(SOURCES.podBlog, "DSX POD")}) and common liquid-cooling design, and the empty bay and front-yard pads illustrate the company's point that 'the first phase creates the backbone for faster subsequent phases' (${a(SOURCES.call, "Q3 FY26 results call")}). That the hall exists (${SITE.phase1It} MW IT of liquid-cooled data centers under construction) is disclosed; only its insides are drawn. Point at a part and the tip starts with 'Company-confirmed' or 'Drawn'. Unofficial · not investment advice.`;
   const viewBtn = (v, icon, label) => `<button type="button" data-view-btn="${v}" aria-pressed="${v === "all"}">${icon}<span>${label}</span></button>`;
   const caption = ko
-    ? `IREN 발표 기준: 스위트워터 1 = 계통 연결 ${fmt(SITE.mw)} MW, 대형 변전소(345 kV/138 kV)와 1차 변전소(138 kV/34.5 kV)(${a(SOURCES.plant, "2025-01 공시")}) · 고압 변전소 2026-05-01 예정대로 통전(${a(SOURCES.energized, "보도자료")}), IT ${SITE.phase1It} MW 액체냉각 데이터센터 첫 단계 건설 중, 'NVIDIA Vera Rubin 같은 차세대 칩 구조를 위해 설계', '첫 단계가 다음 단계를 더 빨리 붙이는 뼈대'(${a(SOURCES.call, "FY26 3분기 실적 발표")}) · 첫 단계 ${SITE.phase1Gross} MW·2027년 4분기 목표, 스위트워터 1·2 = ${SITE.hubMw / 1000} GW 허브(ERCOT Batch Zero)(${a(SOURCES.batch, "2026-09 발표")}) · 마당 모습(${a(SOURCES.site, "회사 사진")}). NVIDIA: Vera Rubin 은 ${WATER.supply} °C 물로 식혀 칠러가 필요 없음(CES 2026, ${a(SOURCES.nvidia, "보도")}). 홀 안 설계·냉각 설비 구성·대수·랙 사양은 회사가 밝히지 않아 위 사양을 바탕으로 한 그림 표현이고, 냉각기·CDU 온도차 ${WATER.approach} °C 와 기온은 가정입니다. 변전소 설비는 실제보다 작게, 거리는 크게 줄였습니다. 비공식 · 투자 조언 아님.`
-    : `Per IREN: Sweetwater 1 = ${fmt(SITE.mw)} MW of grid connection, a bulk substation (345 kV/138 kV) and primary substations (138 kV/34.5 kV) (${a(SOURCES.plant, "Jan 2025 filing")}); the high-voltage substation was energized on schedule on 2026-05-01 (${a(SOURCES.energized, "release")}) and the initial ${SITE.phase1It} MW IT phase of liquid-cooled data centers is under construction, 'designed for next generation chip architectures, including the NVIDIA Vera Rubin', sequenced so that 'the first phase creates the backbone for faster subsequent phases' (${a(SOURCES.call, "Q3 FY26 results call")}); phase 1 = ${SITE.phase1Gross} MW targeted for Q4 2027, and Sweetwater 1 + 2 form a ${SITE.hubMw / 1000} GW hub (ERCOT Batch Zero) (${a(SOURCES.batch, "Sep 2026 release")}); yard as in the ${a(SOURCES.site, "company photos")}. NVIDIA: Vera Rubin is cooled with ${WATER.supply} °C water, so no chillers are needed (CES 2026, ${a(SOURCES.nvidia, "as reported")}). The hall layout, cooling plant, unit counts and rack specs are not disclosed, so they are drawn from those specs; the ${WATER.approach} °C cooler + CDU approach and the temperatures are assumptions. Substation equipment is drawn smaller than life and distances heavily shortened. Unofficial · not investment advice.`;
+    ? `IREN 발표 기준: 스위트워터 1 = 계통 연결 ${fmt(SITE.mw)} MW, 대형 변전소(345 kV/138 kV)와 1차 변전소(138 kV/34.5 kV)(${a(SOURCES.plant, "2025-01 공시")}) · 고압 변전소 2026-05-01 예정대로 통전(${a(SOURCES.energized, "보도자료")}), IT ${SITE.phase1It} MW 액체냉각 데이터센터 첫 단계 건설 중, 'NVIDIA Vera Rubin 같은 차세대 칩 구조를 위해 설계', '첫 단계가 다음 단계를 더 빨리 붙이는 뼈대'(${a(SOURCES.call, "FY26 3분기 실적 발표")}) · 첫 단계 ${SITE.phase1Gross} MW·2027년 4분기 목표, 스위트워터 1·2 = ${SITE.hubMw / 1000} GW 허브(ERCOT Batch Zero)(${a(SOURCES.batch, "2026-09 발표")}) · 마당 모습(${a(SOURCES.site, "회사 사진")}) · 스위트워터 캠퍼스가 NVIDIA DSX 구조의 대표 배치가 될 것으로 기대(${a(SOURCES.dsx, "2026-05 NVIDIA 공동 발표")}). NVIDIA: Vera Rubin 은 닫힌 순환 액체냉각에 냉각수 최대 ${WATER.supply} °C · 알맞은 기후에서는 바깥 건식 냉각기가 물을 증발시키지 않고 열을 버림(${DSX.gw} GW 규모에서 냉각탑보다 하루 물 ${fmt(DSX.litersPerDay / 1e4)}만 L 절약) · 가장 더운 때 기계식 냉각을 보탤지는 지역 기후가 정함(${a(SOURCES.nvidia, "GTC Berlin 2026 보도자료")}, ${a(SOURCES.keynote, "기조연설 30:05")}). 홀 전기는 NVIDIA DSX POD(${a(SOURCES.pod, "2026-10-21 발표")})가 랙에 넣는 ${DC_V} V 직류 방식(${a(SOURCES.podBlog, "기술 블로그")}, ${a(SOURCES.keynotePod, "기조연설 30:42")})을 따라 정류기 → ${DC_V} V 버스웨이로 그렸지만, 480 V 교류로 짓는 Vera Rubin 설계도 있어(${a(SOURCES.ac480, "슈나이더 일렉트릭")}) 추정입니다. 홀 안 설계·냉각 설비 구성·대수·랙 사양은 회사가 밝히지 않아 위 사양을 바탕으로 한 그림 표현이고, 냉각기·CDU 온도차 ${WATER.approach} °C(→ 바깥 ${NO_CHILLER_MAX} °C 까지 칠러 없이)와 기온은 가정입니다. 변전소 설비는 실제보다 작게, 거리는 크게 줄였습니다. 비공식 · 투자 조언 아님.`
+    : `Per IREN: Sweetwater 1 = ${fmt(SITE.mw)} MW of grid connection, a bulk substation (345 kV/138 kV) and primary substations (138 kV/34.5 kV) (${a(SOURCES.plant, "Jan 2025 filing")}); the high-voltage substation was energized on schedule on 2026-05-01 (${a(SOURCES.energized, "release")}) and the initial ${SITE.phase1It} MW IT phase of liquid-cooled data centers is under construction, 'designed for next generation chip architectures, including the NVIDIA Vera Rubin', sequenced so that 'the first phase creates the backbone for faster subsequent phases' (${a(SOURCES.call, "Q3 FY26 results call")}); phase 1 = ${SITE.phase1Gross} MW targeted for Q4 2027, and Sweetwater 1 + 2 form a ${SITE.hubMw / 1000} GW hub (ERCOT Batch Zero) (${a(SOURCES.batch, "Sep 2026 release")}); yard as in the ${a(SOURCES.site, "company photos")}; the companies expect the Sweetwater campus to serve as a flagship deployment for NVIDIA's DSX architecture (${a(SOURCES.dsx, "May 2026 joint release with NVIDIA")}). NVIDIA: Vera Rubin uses closed-loop liquid cooling with coolant up to ${WATER.supply} °C; in suitable climates, outdoor dry coolers reject the heat without evaporating water (${DSX.litersPerDay / 1e6} million liters a day saved at ${DSX.gw} GW versus cooling towers), and local climate decides whether supplemental mechanical cooling is needed in the hottest periods (${a(SOURCES.nvidia, "GTC Berlin 2026 release")}, ${a(SOURCES.keynote, "keynote 30:05")}). The hall electrics follow the ${DC_V} V DC that NVIDIA's DSX POD (${a(SOURCES.pod, "announced 2026-10-21")}) feeds to its racks (${a(SOURCES.podBlog, "technical blog")}, ${a(SOURCES.keynotePod, "keynote 30:42")}), drawn as rectifiers and an ${DC_V} V busway, but Vera Rubin designs on 480 V AC exist too (${a(SOURCES.ac480, "Schneider Electric")}), so this is an estimate. The hall layout, cooling plant, unit counts and rack specs are not disclosed, so they are drawn from those specs; the ${WATER.approach} °C cooler + CDU approach (→ no chiller up to ${NO_CHILLER_MAX} °C outside) and the temperatures are assumptions. Substation equipment is drawn smaller than life and distances heavily shortened. Unofficial · not investment advice.`;
   return `<!doctype html><html lang="${ko ? "ko" : "en"}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title}</title><style>${k.ISO_CSS}${CSS}</style></head>
 <body class="iso pw-body" data-theme="light"><main class="pw-page">
 <div class="rk-fig pw-fig sw-fig" data-view="all">
-  <div class="rk-head"><h2>${title} <small class="sw-only-all">${sub}</small><small class="sw-only-conf">${subConf}</small></h2>
+  <div class="rk-head"><h2>${title} <small class="sw-only-all">${nb(sub)}</small><small class="sw-only-conf">${nb(subConf)}</small></h2>
     <div class="pw-view" role="group" aria-label="${ko ? "보기" : "View"}">${viewBtn("all", ICON_LAYERS, ko ? "전체" : "All")}${viewBtn("confirmed", ICON_CHECK, ko ? "회사 확인" : "Company-confirmed")}</div>
     <button class="rk-zoom" type="button" data-zoom="sw" data-call aria-pressed="false">${zt.in}</button></div>
   <div class="rk-stage hz-stage sw-stage" data-fig="sweetwater" tabindex="0" role="group" aria-label="${zt.aria[0]}">${svg.replace(/ role="img" aria-label="[^"]*"/, ' aria-hidden="true"')}<span class="rk-aim" aria-hidden="true"></span><div class="rk-tip"><b></b><span></span></div></div>
   <div class="rk-read" data-readout="sweetwater">${PHASE_TEXT.normal[ko ? 0 : 1]}</div>
   <div class="pw-legend sw-only-all">${keys.map(([c, t]) => `<span><i class="${c}"></i>${t}</span>`).join("")}</div>
   <div class="pw-legend sw-only-conf">${keysConf.map(([c, t]) => `<span><i class="${c}"></i>${t}</span>`).join("")}</div>
-  <p class="pw-caption sw-only-all">${caption}</p>
-  <p class="pw-caption sw-only-conf">${captionConf}</p>
+  <p class="pw-caption sw-only-all">${nb(caption)}</p>
+  <p class="pw-caption sw-only-conf">${nb(captionConf)}</p>
 </div></main>
 <script>(function(){${fill(LIVE, { DATA: JSON.stringify(DATA), KO: ko ? "true" : "false", INFO: JSON.stringify(INFO), CONFINFO: JSON.stringify(CONF_INFO), PHASE: JSON.stringify(PHASE_TEXT), ZOOM: JSON.stringify(zt), STATE: stateAt.toString() })}})();</script>
 </body></html>`;
