@@ -269,6 +269,17 @@ function plateLayer() {
   return W3;
 }
 
+// ---------- Blender 사진 모드용 배치 (build.mjs 가 scripts/blender/boot-layout.json 으로 씀) ----------
+// 그림과 같은 숫자·같은 투영으로 3D 장면을 세워 찍으면 사진이 그림과 픽셀 단위로 겹침 → 말풍선·부품 찾기를 그대로 씀
+//   fixed() 안에 직접 적힌 작은 부품 숫자(전원부 줄·콘덴서 줄 등)는 scripts/blender/boot-photos.py 에 같은 값으로 옮겨 둠
+export const LAYOUT = {
+  W, H, proj: P, k: k.cameraOf(P).k, plateLift: PLATE_LIFT, lidMove: LID_MOVE,
+  BENCH, BENCH_Z, FOOT, PZ, PT, FT, MT, ST, IT, DT, LT, PLATE_H, PTOP,
+  BOARD, FRAME_OUT, FRAME_IN, MOD, SUB, INTP, DIES, HBM, LID, PLATE, SCREWS,
+  LINES: LINES.map(({ x, y, reach, name, cap, elbow, start, corner, socket }) => ({ x, y, reach, name, cap, elbow, start, corner, socket })),
+  DIR, EZ, RB, RR, RBARB, RF, RH, FERRULE, MB, SOCK, SK, PLUG, HOSE_END, BLOCKS: BLOCKS.map((b) => ({ name: b.line.name, ...b.plan })),
+};
+
 export function gpuFigure() {
   const LABEL = `${GPU.name} GPU in its socket on a black GB300 board: two silicon dies and ${GPU.hbm} HBM3e stacks (${GPU.hbmGb} GB) under a nickel lid and a copper liquid cold plate whose black hoses plug into a manifold through quick disconnects with blue supply and red return rings. The plate and then the lid lift to show the layers; the dies warm with load.`;
   const back = fixed(), lid = lidLayer(), plate = plateLayer();

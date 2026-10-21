@@ -13,14 +13,14 @@
 //   → src/boot/rack.html                    (index.html 에 끼워 넣는 조각: 스타일 + 무대 + 스크립트)
 // 단위: 1 = 5 mm.  x = 랙 가로, y = 깊이(+y 가 보는 쪽 = 앞면), z = 위.
 // =============================================================
-import { writeFileSync, readFileSync } from "node:fs";
+import { writeFileSync, readFileSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import * as k from "../kit/iso-kit.mjs";
 import * as G from "../kit/lathe.mjs";
 import * as A from "../kit/audit.mjs";
 import { glCamera } from "../kit/gl.mjs";
-import { gpuFigure, GPU } from "./gpu.mjs";
+import { gpuFigure, GPU, LAYOUT as GPU_LAYOUT } from "./gpu.mjs";
 import { workshop, auditAll } from "./shop.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -351,28 +351,44 @@ const CSS = `
 /* 트레이 확대: 트레이·앞판 층(평소엔 포인터를 통과시킴)의 칠해진 곳도 부품 찾기에 걸리게 */
 .rk-stage[data-fig=rack][data-zoom]>svg.rk-layer>g{pointer-events:visiblePainted}
 /* 키보드로 둘러볼 때 가리키는 곳을 보여 주는 조준 원 */
-.rk-aim{position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border:1.5px solid var(--anatomy-strong);border-radius:50%;box-shadow:0 0 0 2px var(--anatomy-card);pointer-events:none;opacity:0;transition:opacity .25s,left .6s ease,top .6s ease}
+.rk-aim{position:absolute;left:50%;top:50%;width:12px;height:12px;margin:-6px 0 0 -6px;border:1.5px solid #0B344F;border-radius:50%;box-shadow:0 0 0 2px #fff;pointer-events:none;opacity:0;transition:opacity .25s,left .6s ease,top .6s ease}
 .rk-stage[data-aim] .rk-aim{opacity:1}
-/* 둘러보기가 짚는 부품: 더 큰 청록 원이 숨쉬듯 (바로 옆 말풍선이 이 부품 설명) */
-.rk-stage[data-aim=auto] .rk-aim{width:30px;height:30px;margin:-15px 0 0 -15px;border:2px solid #2ea88a;box-shadow:0 0 0 2px rgba(255,255,255,.75),inset 0 0 0 1px rgba(255,255,255,.6);animation:rk-aim 1.6s ease-in-out infinite}
-@keyframes rk-aim{50%{transform:scale(1.18)}}
-/* 짚는 곳 바로 옆 설명 말풍선 (눈을 그림 아래 줄까지 옮기지 않게). 자리·방향(data-side)은 움직임 코드가 정함 */
-.rk-tip{position:absolute;left:0;top:0;z-index:1;width:max-content;max-width:min(260px,56%);padding:7px 11px 8px;border-radius:10px;background:rgba(255,255,255,.97);color:#16213a;box-shadow:0 6px 18px rgba(22,33,58,.2),0 0 0 1.5px #2ea88a;font:500 13px/1.42 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;pointer-events:none;opacity:0;transition:opacity .25s}
-.rk-tip b{display:block;font-size:14px;font-weight:700;margin-bottom:1px}
-.rk-tip span{display:block;color:#3c4760;text-wrap:pretty}   /* 마지막 줄에 한 낱말만 남지 않게 */
-.rk-tip b,.rk-tip span{word-break:keep-all;overflow-wrap:anywhere}   /* 한국어를 낱말 중간에서 끊지 않음 */
+/* 둘러보기가 짚는 부품: IREN 초록 점 + 남색 테 + 흰 테, 바깥 고리가 숨쉬듯 (지시선 말풍선이 이 점에서 나감) */
+.rk-stage[data-aim=auto] .rk-aim{border:0;background:#71DA80;box-shadow:0 0 0 2px #0B344F,0 0 0 4px #fff}
+.rk-stage[data-aim=auto] .rk-aim::after{content:"";position:absolute;inset:-9px;border-radius:50%;background:rgba(113,218,128,.3);animation:rk-aim 1.6s ease-in-out infinite;z-index:-1}
+@keyframes rk-aim{50%{transform:scale(1.3);opacity:.45}}
+/* 지시선 말풍선 (도면식): 짚는 점 → 45° 꺾인 남색 선(흰 테) → 선반(밑줄) 위에 이름, 아래에 설명
+   말풍선 칸이 없어 사진·그림을 덜 가리고, 문장마다 흰 띠 한 칸(도면의 흰 따냄)이라 어두운 사진 위에서도 또렷함
+   이 상자는 짚는 점에 놓인 크기 0 상자: ::before = 사선, ::after = 선반. 자리(data-side)·폭(--w·--mw)·꺾임(--d)은 움직임 코드가 정함 */
+.rk-tip{position:absolute;left:0;top:0;z-index:1;width:0;height:0;--d:24px;--w:120px;--mw:240px;pointer-events:none;opacity:0;transition:opacity .25s}
 .rk-tip[data-on]{opacity:1}
-.rk-tip[data-glide]{transition:opacity .25s,left .6s ease,top .6s ease}   /* 짚는 원과 같은 속도로 함께 옮겨 감 */
-/* 말풍선과 짚는 곳을 잇는 짧은 청록 선 (--lead = 선이 붙는 자리) */
-.rk-tip::before{content:"";position:absolute;background:#2ea88a}
-.rk-tip[data-side=right]::before,.rk-tip[data-side=left]::before{top:var(--lead,50%);width:11px;height:2px;margin-top:-1px}
-.rk-tip[data-side=right]::before{right:100%}
-.rk-tip[data-side=left]::before{left:100%}
-.rk-tip[data-side=top]::before,.rk-tip[data-side=bottom]::before{left:var(--lead,50%);width:2px;height:11px;margin-left:-1px}
-.rk-tip[data-side=top]::before{top:100%}
-.rk-tip[data-side=bottom]::before{bottom:100%}
-@media (max-width:767px){.rk-tip{max-width:min(230px,68%);padding:6px 9px 7px;font-size:12px}.rk-tip b{font-size:13px}}
-@media (prefers-reduced-motion:reduce){.rk-aim,.rk-tip[data-glide]{transition:opacity .25s}}
+.rk-tip[data-glide]{transition:opacity .25s,left .6s ease,top .6s ease}   /* 짚는 점과 같은 속도로 함께 옮겨 감 */
+.rk-tip::before,.rk-tip::after{content:"";position:absolute;height:1.8px;margin-top:-.9px;border-radius:1px;background:#0B344F;box-shadow:0 0 0 1.4px rgba(255,255,255,.95)}
+.rk-tip::before{left:0;top:0;width:calc(var(--d) * 1.4142);transform-origin:0 50%}
+.rk-tip[data-side=ru]::before{transform:rotate(-45deg)}
+.rk-tip[data-side=lu]::before{transform:rotate(-135deg)}
+.rk-tip[data-side=rd]::before{transform:rotate(45deg)}
+.rk-tip[data-side=ld]::before{transform:rotate(135deg)}
+.rk-tip::after{width:var(--w)}
+.rk-tip[data-side^=r]::after{left:var(--d)}
+.rk-tip[data-side^=l]::after{right:var(--d)}
+.rk-tip[data-side$=u]::after{top:calc(-1 * var(--d))}
+.rk-tip[data-side$=d]::after{top:var(--d)}
+.rk-tip b,.rk-tip span{position:absolute;width:max-content;max-width:var(--mw);word-break:keep-all;overflow-wrap:anywhere}   /* 한국어를 낱말 중간에서 끊지 않음 */
+.rk-tip b{font:800 14px/1.3 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#0B344F;letter-spacing:-.01em}
+.rk-tip span{font:600 12.5px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:#22324a}
+.rk-tip i{display:block;width:fit-content;box-sizing:content-box;font-style:normal;padding:1px 6px;border-radius:3px;background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);text-wrap:balance}   /* 문장 하나 = 띠 한 칸 (줄이 바뀌어도, 줄 길이는 고르게) */
+.rk-tip span i+i{margin-top:2px}
+/* 자리: 오른쪽(r)·왼쪽(l) × 위(u)·아래(d) — 이름은 선반 위, 설명은 선반 아래, 왼쪽 자리는 띠를 선 쪽(오른쪽)에 붙임 */
+.rk-tip[data-side^=r] b,.rk-tip[data-side^=r] span{left:calc(var(--d) + 3px)}
+.rk-tip[data-side^=l] b,.rk-tip[data-side^=l] span{right:calc(var(--d) + 3px)}
+.rk-tip[data-side^=l] i{margin-left:auto;text-align:right}
+.rk-tip[data-side$=u] b{bottom:calc(var(--d) + 3px)}
+.rk-tip[data-side$=u] span{top:calc(4px - var(--d))}
+.rk-tip[data-side$=d] b{bottom:calc(3px - var(--d))}
+.rk-tip[data-side$=d] span{top:calc(var(--d) + 4px)}
+@media (max-width:767px){.rk-tip b{font-size:13px}.rk-tip span{font-size:11.5px}}
+@media (prefers-reduced-motion:reduce){.rk-aim,.rk-tip[data-glide]{transition:opacity .25s}.rk-stage[data-aim=auto] .rk-aim::after{animation:none}}
 /* 색 토큰 세트: 그룹마다 kit 토큰을 바꿔 칠함 (모든 색이 토큰 → 선·면·명암 규칙은 그대로) */
 .rk-metal{--anatomy-paper:#2f343b;--anatomy-face:#373d45;--anatomy-top:#4a515b;--anatomy-shade-0:#22262c;--anatomy-shade-1:#282c33;--anatomy-shade-2:#2e333a;--anatomy-shade-3:#353a42;--anatomy-lit-top:#5b6470;--anatomy-lit-shade:#3d434c;--anatomy-hi:#e3e8ee;--anatomy-mid:#9aa3ae;--anatomy-lo:#6f7884;--anatomy-faint:#525a65;--anatomy-lit:#ffffff;--anatomy-dot:#c9d1da}
 .rk-cavity{--anatomy-paper:#16191d;--anatomy-face:#1b1e23;--anatomy-top:#22262c;--anatomy-shade-0:#101215;--anatomy-shade-1:#14161a;--anatomy-shade-2:#181b1f;--anatomy-shade-3:#1d2025;--anatomy-lo:#3a4049;--anatomy-faint:#2b3037;--anatomy-mid:#59616c;--anatomy-hi:#9aa3ae}
@@ -421,14 +437,20 @@ const CSS = `
 .rk-icon{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 /* 그림 아래 수치 줄: 13.5px 일반 글꼴, 두 줄 자리를 미리 잡아 글이 바뀌어도 카드가 들썩이지 않음 */
 .rk-fig .rk-read{margin-top:4px;font:500 13.5px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--anatomy-text);min-height:2.9em}
-/* 칸이 좁아 말풍선을 못 띄울 때만: 부품 설명을 이 줄에 (진한 글자 + 이름 굵게 + 앞에 짚는 원과 같은 청록 원) */
+/* 칸이 좁아 말풍선을 못 띄울 때만: 부품 설명을 이 줄에 (진한 글자 + 이름 굵게 + 앞에 짚는 점과 같은 초록 점) */
 .rk-fig .rk-read[data-cap]{color:var(--anatomy-strong)}
 .rk-fig .rk-read b{font-weight:700}
-.rk-fig .rk-read[data-cap]::before{content:"";display:inline-block;width:9px;height:9px;margin-right:7px;border:2px solid #2ea88a;border-radius:50%;vertical-align:-1px}
+.rk-fig .rk-read[data-cap]::before{content:"";display:inline-block;width:8px;height:8px;margin:0 8px 0 2px;border-radius:50%;background:#71DA80;box-shadow:0 0 0 2px #0B344F;vertical-align:0}
 @media (max-width:767px){.rk-pair{grid-template-columns:1fr}.rk-ui .rk-hint{display:none}}   /* 좁은 화면: 안내 줄은 위 문구와 같은 내용이라 숨김 (지도 보기 단추가 한 줄에) */
 .rk-ui b{color:var(--anatomy-strong);font-weight:600}
 .rk-ui .rk-go{margin-left:auto;white-space:nowrap;flex:none;border:1px solid var(--anatomy-muted);background:var(--anatomy-face);color:var(--anatomy-strong);border-radius:999px;padding:6px 12px;font:inherit;cursor:pointer}
 .rk-ui .rk-go[disabled]{opacity:.55;cursor:default}
+/* 그림 | 사진 전환: 음각 홈 + 고른 쪽 양각 */
+.rk-view{display:inline-flex;flex:none;padding:2px;border-radius:999px;background:#e8ebf2;box-shadow:inset 0 1px 2px rgba(22,33,58,.18)}
+.rk-view button{display:inline-flex;align-items:center;gap:5px;border:0;border-radius:999px;padding:4px 11px 4px 9px;background:none;color:#5b6581;font:600 12px/1.2 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;cursor:pointer}
+.rk-view button[aria-pressed=true]{background:#fff;color:#16213a;box-shadow:0 1px 3px rgba(22,33,58,.22),0 0 0 1px rgba(22,33,58,.06)}
+.rk-view button:focus-visible{outline:2px solid #2ea88a;outline-offset:1px}
+.rk-view .rk-icon{width:14px;height:14px}
 `;
 
 // 열 잉크 셰이더 (라이트 테마, 종이 위 잉크): GPU 네 개 윗면에 부하만큼 데워진 색, 냉각판 다리 쪽으로 식어 감
@@ -527,6 +549,11 @@ const INFO = {
 // 확대 단추 (lucide zoom-in / zoom-out 아이콘, 인라인 SVG)
 const ICON_IN = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="11" x2="11" y1="8" y2="14"/><line x1="8" x2="14" y1="11" y2="11"/></svg>';
 const ICON_OUT = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></svg>';
+// 그림 | 사진 전환 (lucide pen-tool · camera). 사진 = Blender 로 찍은 3D 렌더 영상 (scripts/blender/boot-photos.py)
+//   부팅 화면에만 둠. 사진 쪽 코드·영상은 처음 고를 때만 받음 → 첫 화면 크기는 단추 두 개만큼만 늘어남
+const ICON_DRAW = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M15.707 21.293a1 1 0 0 1-1.414 0l-1.586-1.586a1 1 0 0 1 0-1.414l5.586-5.586a1 1 0 0 1 1.414 0l1.586 1.586a1 1 0 0 1 0 1.414z"/><path d="m18 13-1.375-6.874a1 1 0 0 0-.746-.776L3.235 2.028a1 1 0 0 0-1.207 1.207L5.35 15.879a1 1 0 0 0 .776.746L13 18"/><path d="m2.3 2.3 7.286 7.286"/><circle cx="11" cy="11" r="2"/></svg>';
+const ICON_PHOTO = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M13.997 4a2 2 0 0 1 1.76 1.05l.486.9A2 2 0 0 0 18.003 7H20a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1.997a2 2 0 0 0 1.759-1.048l.489-.904A2 2 0 0 1 10.004 4z"/><circle cx="12" cy="13" r="3"/></svg>';
+const VIEW_TOGGLE = `<div class="rk-view" role="group" aria-label="보기 방식"><button type="button" data-view="draw" aria-pressed="true">${ICON_DRAW}<span>그림</span></button><button type="button" data-view="photo" aria-pressed="false" title="3D 렌더 영상 · 약 __MB__ MB">${ICON_PHOTO}<span>사진</span></button></div>`;
 const zoomLabel = (ko, on, what) => (on ? ICON_OUT : ICON_IN) + `<span>${on ? (ko ? "전체 보기" : "Full view") : what}</span>`;
 const zoomText = (ko) => ({
   rack: {
@@ -556,6 +583,7 @@ const layer2=glLayer({canvas:stage2.querySelector("canvas.rk-gl"),fragment:${JSO
 if(layer)stage.setAttribute("data-gl","");if(layer2)stage2.setAttribute("data-gl","");
 const R=D.rack, G=D2.gpu, perTrayKw=R.kw/R.computeTrays;
 let lastLv="",pull=0,target=0,lift=0,liftTarget=0,load={x:0,v:0},first={x:0,v:0},clock=0,time=0,last=0,frame=0,visible=true,touring=!still.matches;
+let pace=null,hook=null,quiet=false;   // 사진 모드 고리 (public/boot/photo.js)
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const sm=(a,b,x)=>{const q=clamp((x-a)/(b-a),0,1);return q*q*(3-2*q);};
 // GPU 그림의 들림 0..1 → 냉각판 높이 mm (먼저 0~0.65) · 뚜껑 진행 0..1 (나중 0.35~1)
@@ -577,35 +605,43 @@ const say=(el,text,cap)=>{if(!el||el._t===text)return;el._t=text;
 // 보이는 범위(viewBox)를 좁혀 크게 보여 줌: SVG 라 확대해도 선명, 열 잉크도 같은 범위(uView·uOrigin)를 받아 따라옴
 // 돋보기 방식: 전체 그림에서 포인터가 가리키는 점이 확대 화면에서도 포인터 바로 아래에 옴 → 겨눈 부품이 달아나지 않음
 //   (포인터 비율 fx 일 때 보이는 범위의 왼쪽 = fx × (전체 폭 − 보이는 폭))
-// 부품의 이름·역할(data-info → INFO)은 짚는 곳 바로 옆 말풍선에: 둘러보기의 청록 원, 직접 확대 땐 포인터·탭·화살표 조준 원
+// 부품의 이름·역할(data-info → INFO)은 짚는 곳에서 나가는 지시선 말풍선에: 둘러보기의 초록 점, 직접 확대 땐 포인터·탭·화살표 조준 원
 function zoomer(st,{W,H,zoom,focus,btn,labels,hide,stops}){
   const svgs=[...st.querySelectorAll(":scope>svg")], aimEl=st.querySelector(".rk-aim");
   const tipEl=st.querySelector(".rk-tip"), tipB=tipEl&&tipEl.querySelector("b"), tipS=tipEl&&tipEl.querySelector("span");
   let tipKey="", tipText="", tipShown=false;   // tipShown = 말풍선을 띄웠나 (칸이 좁아 못 띄웠으면 설명은 그림 아래 줄로)
-  // 말풍선: 그림 칸 안 (fx, fy) 비율 자리 바로 옆에 설명 (이름은 굵게, 나머지는 " · " 마다 줄바꿈)
-  //   자리: 오른쪽 → 왼쪽 → 아래 → 위 중 칸 안에 들어가는 첫 곳 (손가락이면 가리지 않게 위쪽부터)
-  //   어디에도 안 들어가면(아주 작은 화면) 짚는 곳을 가리지 않게 띄우지 않음
-  //   glide = 짚는 원과 함께 부드럽게 옮겨 감 (둘러보기·화살표), 포인터는 바로 따라감
-  function tip(text,fx,fy,glide,touch){
+  // 지시선 말풍선: 그림 칸 안 (fx, fy) 비율 자리(짚는 점)에서 45° 로 꺾인 선 → 선반 위에 이름, 아래에 설명 (" · " 마다 문장 한 띠)
+  //   가로: 글이 다 들어가는 쪽 (오른쪽 먼저, 다음 왼쪽). 둘 다 모자라면 넓은 쪽 폭에 맞춰 줄바꿈 (좁은 휴대폰 칸)
+  //   세로: 위 먼저 (손가락·포인터에 안 가리게), 안 되면 아래. 어디에도 안 들어가면 띄우지 않음 → 설명은 그림 아래 줄로
+  //   glide = 짚는 점과 함께 부드럽게 옮겨 감 (둘러보기·화살표), 포인터는 바로 따라감
+  function tip(text,fx,fy,glide){
     if(!tipEl)return;
     const Ws=st.clientWidth,Hs=st.clientHeight,x=fx*Ws,y=fy*Hs;
-    const key=text?[text,x.toFixed(0),y.toFixed(0),Ws,Hs,touch?1:0].join("|"):"";
+    const key=text?[text,x.toFixed(0),y.toFixed(0),Ws,Hs].join("|"):"";
     if(key===tipKey)return;tipKey=key;
     if(!text){tipShown=false;tipEl.removeAttribute("data-on");return;}
-    if(text!==tipText){tipText=text;const parts=text.split(" · ");tipB.textContent=parts[0];
-      tipS.replaceChildren(...parts.slice(1).flatMap((p,i)=>i?[document.createElement("br"),p]:[p]));}
-    const w=tipEl.offsetWidth,h=tipEl.offsetHeight,G=touch?40:28,M=6;   // G = 짚는 곳에서 떨어진 거리, M = 칸 가장자리 여백
-    const fits={right:x+G+w<=Ws-M,left:x-G-w>=M,bottom:y+G+h<=Hs-M,top:y-G-h>=M};
-    const side=(touch?["top","right","left","bottom"]:["right","left","bottom","top"]).find((k)=>fits[k]);
-    tipShown=!!side;if(!side){tipEl.removeAttribute("data-on");return;}
-    const across=side==="right"||side==="left";
-    let left=side==="right"?x+G:side==="left"?x-G-w:x-w/2, top=across?y-h/2:side==="bottom"?y+G:y-G-h;
-    left=clamp(left,M,Math.max(M,Ws-w-M));top=clamp(top,M,Math.max(M,Hs-h-M));
-    const lead=across?clamp(y-top,10,h-10):clamp(x-left,12,w-12);   // 잇는 선이 짚는 곳 쪽에 붙게
+    // 문장 하나 = 흰 띠 한 칸. 숫자와 단위(10 TB/s·1.4 kW)는 줄바꿈에 갈라지지 않게 붙임
+    const line=(t)=>{const e=document.createElement("i");e.textContent=t.replace(/(\\d) (?=[A-Za-z%])/g,"$1\\u00a0");return e;};
+    if(text!==tipText){tipText=text;const parts=text.split(" · ");tipB.replaceChildren(line(parts[0]));tipS.replaceChildren(...parts.slice(1).map(line));}
+    const D=Ws<480?18:24,M=6,gap=D+3;   // D = 사선이 꺾이기까지 (가로·세로 같은 거리), gap = 짚는 점에서 글까지, M = 칸 가장자리 여백
+    const strips=[...tipEl.querySelectorAll("i")], wide=()=>Math.max(...strips.map((e)=>e.offsetWidth));   // 글 폭 = 가장 넓은 띠
+    // 띠를 실제 글줄 폭에 맞춤: 줄 길이를 고르게 나누면(balance) 상자는 최대 폭 그대로라 빈 띠가 남음 → 줄마다 재서 좁힘
+    const fit=(mw)=>{tipEl.style.setProperty("--mw",mw+"px");
+      for(const e of strips){e.style.width="";const r=document.createRange();r.selectNodeContents(e);const q=[...r.getClientRects()];
+        if(q.length>1)e.style.width=Math.ceil(Math.max(...q.map((c)=>c.width))+1)+"px";}};
+    fit(240);
+    const full=wide(), roomR=Ws-M-x-gap, roomL=x-gap-M;
+    const h=roomR>=full?"r":roomL>=full?"l":roomR>=roomL?"r":"l", room=h==="r"?roomR:roomL;
+    if(room<96){tipShown=false;tipEl.removeAttribute("data-on");return;}
+    if(room<full)fit(Math.floor(room));   // 좁으면 그 폭에 맞춰 줄바꿈
+    const w=wide(),hT=tipB.offsetHeight,hD=tipS.offsetHeight;
+    const v=y-D-3-hT>=M&&y-D+4+hD<=Hs-M?"u":y+D-3-hT>=M&&y+D+4+hD<=Hs-M?"d":"";
+    tipShown=!!v;if(!v){tipEl.removeAttribute("data-on");return;}
     const was=tipEl.hasAttribute("data-on");
     if(!was)tipEl.removeAttribute("data-glide");   // 처음 나타날 땐 그 자리에서 (전에 있던 곳에서 날아오지 않게)
-    tipEl.setAttribute("data-side",side);
-    tipEl.style.left=left.toFixed(0)+"px";tipEl.style.top=top.toFixed(0)+"px";tipEl.style.setProperty("--lead",lead.toFixed(0)+"px");
+    tipEl.setAttribute("data-side",h+v);
+    tipEl.style.setProperty("--d",D+"px");tipEl.style.setProperty("--w",(w+6)+"px");   // 선반 = 글 폭 + 조금
+    tipEl.style.left=x.toFixed(1)+"px";tipEl.style.top=y.toFixed(1)+"px";
     if(!was)void tipEl.offsetWidth;   // 자리를 먼저 확정한 뒤에 옮김 효과를 켬
     tipEl.toggleAttribute("data-glide",!!glide);tipEl.setAttribute("data-on","");
   }
@@ -630,9 +666,9 @@ function zoomer(st,{W,H,zoom,focus,btn,labels,hide,stops}){
     const shown=Z.on||Z.k>0;if(shown!==Z.shown){Z.shown=shown;st.toggleAttribute("data-zoom",shown);}   // 확대돼 있는 동안 칸 밖을 자름
     if(box!==Z.box){Z.box=box;Z.moved=true;for(const s of svgs)s.setAttribute("viewBox",box);if(hide)hide.style.opacity=String(1-sm(0,.6,Z.k));}
     if(Z.on&&Z.moved){if(Z.px!==null)Z.pick(Z.px,Z.py);else if(Z.keys){const b=st.getBoundingClientRect();Z.pick(b.left+Z.tfx*b.width,b.top+Z.tfy*b.height);}Z.moved=false;}
-    // 말풍선 (확대가 거의 다 된 뒤에만): 직접 확대 = 포인터·조준 원 옆, 둘러보기 = 짚는 청록 원 옆
-    if(Z.k>.6&&Z.on&&Z.info)tip(Z.info,Z.tfx,Z.tfy,Z.keys,Z.touch);
-    else if(Z.k>.6&&!Z.on&&Z.auto&&Z.stop&&Z.autoInfo)tip(Z.autoInfo,Z.stop.fx,Z.stop.fy,true,false);
+    // 말풍선 (확대가 거의 다 된 뒤에만): 직접 확대 = 포인터·조준 원에서, 둘러보기 = 짚는 초록 점에서
+    if(Z.k>.6&&Z.on&&Z.info)tip(Z.info,Z.tfx,Z.tfy,Z.keys);
+    else if(Z.k>.6&&!Z.on&&Z.auto&&Z.stop&&Z.autoInfo)tip(Z.autoInfo,Z.stop.fx,Z.stop.fy,true);
     else tip("");
     return r;};
   Z.set=(on)=>{
@@ -647,7 +683,7 @@ function zoomer(st,{W,H,zoom,focus,btn,labels,hide,stops}){
     const zf=calm?1:1-Math.exp(-dt/(Z.on?.12:.35));Z.fx+=(Z.tfx-Z.fx)*zf;Z.fy+=(Z.tfy-Z.fy)*zf;};                          // 돋보기 위치 (둘러보기는 천천히)
   // 확대 중 포인터: 돋보기 위치 + 그 아래 부품 (처리했으면 true)
   Z.pointer=(e)=>{if(!Z.on)return false;const b=st.getBoundingClientRect();
-    Z.tfx=clamp((e.clientX-b.left)/b.width,0,1);Z.tfy=clamp((e.clientY-b.top)/b.height,0,1);Z.touch=e.pointerType==="touch";
+    Z.tfx=clamp((e.clientX-b.left)/b.width,0,1);Z.tfy=clamp((e.clientY-b.top)/b.height,0,1);
     Z.px=e.clientX;Z.py=e.clientY;Z.keys=false;Z.moved=true;st.removeAttribute("data-aim");hold();return true;};
   // 마우스가 그림 밖으로 나가면 말풍선을 거둠 (손가락은 뗀 뒤에도 읽을 수 있게 그대로 둠)
   st.addEventListener("pointerleave",(e)=>{if(Z.on&&!Z.keys&&e.pointerType!=="touch"){Z.px=null;Z.info="";hold();}});
@@ -657,7 +693,7 @@ function zoomer(st,{W,H,zoom,focus,btn,labels,hide,stops}){
     if((e.key==="-"||e.key==="Escape")&&Z.on){e.preventDefault();Z.set(false);return true;}
     if(!Z.on)return false;
     let dx=0,dy=0;if(e.key==="ArrowLeft")dx=-.06;if(e.key==="ArrowRight")dx=.06;if(e.key==="ArrowUp")dy=-.06;if(e.key==="ArrowDown")dy=.06;
-    if(!dx&&!dy)return false;e.preventDefault();Z.tfx=clamp(Z.tfx+dx,0,1);Z.tfy=clamp(Z.tfy+dy,0,1);Z.px=null;Z.keys=true;Z.touch=false;Z.moved=true;
+    if(!dx&&!dy)return false;e.preventDefault();Z.tfx=clamp(Z.tfx+dx,0,1);Z.tfy=clamp(Z.tfy+dy,0,1);Z.px=null;Z.keys=true;Z.moved=true;
     aimAt(Z.tfx,Z.tfy,"");
     hold();return true;};
   if(btn)btn.addEventListener("click",()=>Z.set(!Z.on));
@@ -676,9 +712,9 @@ function draw(){
   const lv=load.x.toFixed(2);if(lv!==lastLv){lastLv=lv;if(!layer)stage.style.setProperty("--rk-load",lv);if(!layer2)stage2.style.setProperty("--rk-load",lv);} // WebGL 없을 때만 CSS 색으로
   const t=still.matches?0.8:time;
   const r1=Z1.apply(), r2=Z2.apply();   // 확대: 지금 보이는 범위 [x, y, 폭, 높이]
-  if(layer){(load.x>1e-3&&pull>.5)?layer.draw({uLoad:load.x,uPull:pull,uFirst:first.x,...zoomGl(r1,D.camera)},t):layer.clear();}
+  if(layer){(!quiet&&load.x>1e-3&&pull>.5)?layer.draw({uLoad:load.x,uPull:pull,uFirst:first.x,...zoomGl(r1,D.camera)},t):layer.clear();}
   // 다이는 뚜껑이 비켜난 뒤(또는 기판 확대 중)에만 보임
-  if(layer2){(load.x>1e-3&&(ld>.05||Z2.k>.5))?layer2.draw({uLoad:load.x,uFirst:first.x,...zoomGl(r2,D2.camera)},t):layer2.clear();}
+  if(layer2){(!quiet&&load.x>1e-3&&(ld>.05||Z2.k>.5))?layer2.draw({uLoad:load.x,uFirst:first.x,...zoomGl(r2,D2.camera)},t):layer2.clear();}
   const out=pull/D.stroke, pOut=Math.round(out*100), pPl=Math.round(pl/D2.plateMax*100);
   // 수치 줄: 트레이가 얼마나 나왔는지 / 냉각판이 얼마나 들렸는지 + 지금 부하의 전력 (KO 면 한국어)
   const trayText=KO?(out<.05?"트레이 "+D.tray+" · 장착됨":out<.98?"트레이 "+D.tray+" · "+pOut+"% 빠짐":"트레이 "+D.tray+" · 열림 · GPU "+R.gpuPerTray+" · CPU "+R.cpuPerTray)
@@ -690,9 +726,9 @@ function draw(){
   say(read1,c1||(Z1.on?ZT.hint:trayText+" · "+(perTrayKw*load.x).toFixed(1)+" kW"),!!c1);
   say(read2,c2||(Z2.on?ZT.hint:plateText+" · "+(G.kw*load.x).toFixed(2)+" kW"),!!c2);
 }
-function tick(now){
-  const dt=last?Math.min((now-last)/1000,1/30):1/60;last=now;time+=dt;const calm=still.matches;
-  // 그림은 저절로 움직임(14초 둘러보기, 마우스로 조작하지 않음). 확대해 보는 동안만 그 자리에서 멈췄다가, 끝나면 멈춘 곳부터 이어짐
+// 따라가는 값들을 dt 초만큼 (둘러보기 중이면 시계도). tick·warm 이 같이 씀
+function advance(dt,calm){
+  // 그림은 저절로 움직임(28초 둘러보기, 마우스로 조작하지 않음). 확대해 보는 동안만 그 자리에서 멈췄다가, 끝나면 멈춘 곳부터 이어짐
   const zoomed=Z1.on||Z2.on;touring=!calm&&!zoomed;
   let wantLoad=1;   // 확대 중·움직임 줄이기 설정에선 칩이 데워진 모습
   if(touring){clock+=dt;const t=tourAt(clock);target=t.pull;liftTarget=t.lift;wantLoad=t.load;Z1.tour(t.rz,t.rs);Z2.tour(t.gz,t.gs);}
@@ -701,8 +737,13 @@ function tick(now){
   pull=calm?target:pull+(target-pull)*(1-Math.exp(-dt/.6));if(Math.abs(target-pull)<.05)pull=target;
   lift=calm?liftTarget:lift+(liftTarget-lift)*(1-Math.exp(-dt/.6));if(Math.abs(liftTarget-lift)<.002)lift=liftTarget;
   Z1.step(dt,calm);Z2.step(dt,calm);
-  settle(load,wantLoad,dt,1.8,calm);settle(first,(layer||layer2)?1:0,dt,.6,calm);
-  draw();
+  settle(load,wantLoad,dt,1.8,calm);
+}
+function tick(now){
+  const dt=last?Math.min((now-last)/1000,1/30):1/60;last=now;time+=dt;const calm=still.matches;
+  // 사진 모드: 둘러보기 시계 = 영상 시간
+  advance(pace&&!calm&&!Z1.on&&!Z2.on?pace():dt,calm);settle(first,(layer||layer2)?1:0,dt,.6,calm);
+  draw();if(hook)hook();
   frame=visible?requestAnimationFrame(tick):0;
 }
 const run=()=>{if(!frame&&visible){last=0;frame=requestAnimationFrame(tick);}};
@@ -720,6 +761,20 @@ window.__rackStop=()=>{visible=false;if(frame)cancelAnimationFrame(frame);frame=
 // 검수용: 둘러보기의 t 초 장면으로 바로 이동 (따라가는 값들을 목표에 붙여서 그 순간을 그림)
 window.__rackSeek=(t)=>{clock=t;const s=tourAt(t);pull=target=s.pull;lift=liftTarget=s.lift;load.x=s.load;first.x=1;
   Z1.tour(s.rz,s.rs);Z2.tour(s.gz,s.gs);for(const Z of [Z1,Z2]){Z.k=Z.on||Z.auto?1:0;Z.fx=Z.tfx;Z.fy=Z.tfy;}draw();};
+// 사진 모드 고리: 영상이 시계를 이끌고(pace) 그림은 투명하게 남아 말풍선·부품 찾기를 맡음
+//   warm = 한 바퀴를 조용히 돌려 영상(두 번째 바퀴)과 같은 상태로 · seek = 영상 시각으로 (바퀴 수는 그대로)
+const warm=()=>{const c=clock;for(let i=0;i<TOUR*30;i++)advance(1/30,false);clock=c;};
+window.__rackView={stages:[stage,stage2],zoom:[Z1,Z2],size:[[D.W,D.H],[D2.W,D2.H]],still,TOUR,phase:()=>clock%TOUR,
+  seek:(t)=>{let c=Math.floor(clock/TOUR)*TOUR+t;if(c-clock>TOUR/2&&c>=TOUR)c-=TOUR;else if(clock-c>TOUR/2)c+=TOUR;clock=c;warm();draw();},   // 지금 시계에 가장 가까운 같은 시각 (음수는 안 됨)
+  pace:(f)=>{pace=f;},hook:(f)=>{hook=f;run();},quiet:(q)=>{quiet=q;draw();}};
+// 그림 | 사진 전환 (사진 코드·영상은 고를 때만 받음, 고른 것은 기억)
+const views=[...document.querySelectorAll(".rk-view button")];
+const view=(photo,save)=>{for(const b of views)b.setAttribute("aria-pressed",String((b.dataset.view==="photo")===photo));
+  if(save)try{localStorage.setItem("rk-view",photo?"photo":"draw");}catch(e){}
+  if(window.__rackPhoto)window.__rackPhoto(photo);
+  else if(photo&&!document.querySelector("script[data-rk-photo]")){const s=document.createElement("script");s.src="/boot/photo.js";s.setAttribute("data-rk-photo","");document.head.appendChild(s);}};
+for(const b of views)b.addEventListener("click",()=>view(b.dataset.view==="photo",true));
+try{if(views.length&&localStorage.getItem("rk-view")==="photo")view(true,false);}catch(e){}
 `;
 
 // 그림 칸 (ko = 한국어 부팅 화면용 / 아니면 영어 검수 페이지용). 설명은 칸(role=group)의 aria-label 한 곳에만 두고,
@@ -742,17 +797,37 @@ const liveScriptFor = (ko) => gl + "\n" + LIVE.replace("__DATA__", JSON.stringif
 // 검수용 독립 페이지 (영어)
 writeFileSync(join(HERE, "rack-light.html"), k.pageHtml({ title: `${RACK.name} rack + ${GPU.name}`, theme: "light", body: `<style>${CSS}</style><div class="iso-plate" style="padding:18px">${pairHtml(false)}</div>`, script: liveScriptFor(false), width: 1100 }));
 
+// 사진 모드에서 처음 받는 양 (AV1 영상 두 개, public/boot/) — 사진 단추 안내에 씀. 영상이 아직 없으면 어림값
+const PHOTO_MB = (() => {
+  try { return (["rack", "gpu"].reduce((s, f) => s + statSync(join(ROOT, "public", "boot", `${f}.av1.mp4`)).size, 0) / 1048576).toFixed(1); }
+  catch { return "2"; }
+})();
+
 // 앱에 끼워 넣는 조각 (index.html 의 <!-- rack --> 자리에)
 // 두 그림의 가로:세로 비율을 CSS 변수로 넘김 → index.html 이 화면 높이에 맞춰 그림 크기를 정할 때 씀 (숫자를 손으로 맞출 필요 없음)
 const ASPECT = `.rk-wrap{--rk-a1:${(WIDTH / HEIGHT).toFixed(3)};--rk-a2:${(G2.DATA.W / G2.DATA.H).toFixed(3)}}`;
 const fragment = `<style>${k.ISO_CSS}${CSS}${ASPECT}</style>
 <div class="iso rk-wrap" data-theme="light">
   ${pairHtml(true)}
-  <div class="rk-ui"><span class="rk-hint">저절로 둘러보며 부품을 확대합니다 · 확대 단추로 직접 살펴보기</span><button class="rk-go" type="button" data-boot-go>건너뛰기 →</button></div>
+  <div class="rk-ui">${VIEW_TOGGLE.replace("__MB__", PHOTO_MB)}<span class="rk-hint">저절로 둘러보며 부품을 확대합니다 · 확대 단추로 직접 살펴보기</span><button class="rk-go" type="button" data-boot-go>건너뛰기 →</button></div>
 </div>
 <script>(function(){${liveScriptFor(true)}})();</script>`;
 writeFileSync(join(ROOT, "src", "boot", "rack.html"), fragment);
 console.log(`wrote rack-light.html (${(readFileSync(join(HERE, "rack-light.html")).length / 1024).toFixed(0)} KB) and src/boot/rack.html (${(fragment.length / 1024).toFixed(0)} KB)`);
+
+// Blender 사진 모드용 배치 (scripts/blender/boot-photos.py 가 읽음): 그림과 같은 숫자·같은 투영으로 3D 장면을 세워
+// 찍으면 사진이 그림과 픽셀 단위로 겹침 → 사진 모드에서도 말풍선 자리·부품 찾기(투명하게 깐 그림)를 그대로 씀
+const LAYOUT = {
+  rack: {
+    W: WIDTH, H: HEIGHT, proj: P, k: k.cameraOf(P).k, U, w: W, d: D, X0, X1, Y0, Y1, POST, BASE_H, CAP_H, FOOT_H, TOP, height: H,
+    stack: stack.map(({ kind, z, h, index }) => ({ kind, z, h, index })), pulled: PULLED.index, pulledZ: PULLED.z, pulledH: PULLED.h,
+    STROKE, TRAY_D, FRONT_T, FRONT_X0, FRONT_W, TZ, TX0, TW, TY0, FLOOR_T, TOPZ, BZ, BT, GPU_H, GPUS, BAR, BAR_H, CPUS, NICS, HR, HZ_GPU, HZ_CPU,
+    zoom: DATA.zoom, focus: DATA.focus, stops: DATA.stops,
+  },
+  gpu: { ...GPU_LAYOUT, zoom: G2.DATA.zoom, focus: G2.DATA.focus, stops: G2.DATA.stops },
+  tour: 28,   // 아래 LIVE 의 TOUR 와 같은 값 (둘러보기 한 바퀴 초)
+};
+writeFileSync(join(ROOT, "scripts", "blender", "boot-layout.json"), JSON.stringify(LAYOUT));
 
 // 검사 (node build.mjs --audit): 각 층의 관통·끝점·지지·칠하는 순서
 auditAll({ "rack.tray": TRAY_SHOP, ...G2.shops });
