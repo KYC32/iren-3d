@@ -20,6 +20,13 @@ export function visibleFilters(file, person = null) {
   return FILTERS.filter((f) => f === 'all' || statementRows(file, f, person).length > 0)
 }
 
+// 화면에 보일 사람: 발언이 하나라도 있는 사람만 (자료 순서 그대로)
+//   2026-10-21 사용자 결정: 발언이 없는 공동 CEO(Will Roberts)는 화면에서 뺌 — 자료(people)엔 남겨 두어 발언이 생기면 저절로 나타남
+export function speakers(file) {
+  const ids = new Set(file.statements.map((s) => s.person))
+  return file.people.filter((p) => ids.has(p.id))
+}
+
 // person: 사람 id 를 주면 그 사람 발언만 (본사 3D 화면에서 CEO 배지를 눌렀을 때)
 export function statementRows(file, filter = 'all', person = null) {
   const promises = new Map(file.promises.map((p) => [p.id, p]))

@@ -12,7 +12,7 @@ import { useAppStore } from '../store/useAppStore.js'
 import { hqText } from '../i18n/hq.js'
 import { loadStatements, peekStatements } from '../data/loadStatements.js'
 import { scoreboard } from '../data/promises.js'
-import { statementRows } from '../data/statementRows.js'
+import { statementRows, speakers } from '../data/statementRows.js'
 import { Face, ChannelMark, VerdictBadge, ScoreBar, fill } from './StatementsCard.jsx' // 카드와 같은 그림 조각
 import '../scene/hq.css'
 
@@ -37,7 +37,8 @@ export function useHqText() {
   return { lang, h: hqText[lang === 'ko' ? 'ko' : 'en'] }
 }
 
-// 'IREN · 5층' 표시 + 두 공동 CEO 배지 (사진 · 이름 · 발언 수) → 누르면 그 사람 발언 카드
+// 'IREN · 5층' 표시 + 공동 CEO 배지 (사진 · 이름 · 발언 수) → 누르면 그 사람 발언 카드
+//   발언이 있는 사람만 (speakers — 발언이 없는 공동 CEO 는 뺌, 2026-10-21 사용자 결정)
 //   docked: 휴대폰 아래 묶음 (표시 줄 없이 배지만 가로로)
 export function Badges({ file, level, street, docked = false }) {
   const { lang, h } = useHqText()
@@ -45,7 +46,7 @@ export function Badges({ file, level, street, docked = false }) {
   return (
     <div className={docked ? 'hq-badges is-docked' : 'hq-badges'}>
       {!docked && <div className="hq-tag"><span className="dot" aria-hidden="true" /><b>{fill(h.towerFloor, { level })}</b><small>{street}</small></div>}
-      {file.people.map((p) => {
+      {speakers(file).map((p) => {
         const n = file.statements.filter((s) => s.person === p.id).length
         return (
           <button key={p.id} type="button" className="hq-person" onClick={() => openCard({ person: p.id })}

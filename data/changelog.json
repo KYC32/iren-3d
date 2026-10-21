@@ -4,6 +4,10 @@
       "date": "2026-10-21",
       "items": [
         {
+          "ko": "본사 화면·지도 본사 카드에서 발언이 없는 공동 CEO(Will Roberts)는 뺌 — 자료엔 남겨 두어 발언을 찾으면 다시 나타나고, 전체 카드에 이유를 한 줄로 밝힘. 지도 본사 카드 문구는 '시드니 · 경영진 발언 56건'으로. 지도 본사 카드가 발언 자료를 받지 못해 사진·최근 발언 수가 비어 있던 문제(펼친 경도로 화면 안인지 잘못 판단) 고침",
+          "en": "The co-CEO with no statements found (Will Roberts) is no longer shown in the HQ view or on the map's HQ card — he stays in the data and reappears if statements are found; the full card says why in one line. The map HQ card now reads 'Sydney · 56 management statements'. Fixed the map HQ card never loading statements (photos and recent count were empty) because its on-screen check used the unwrapped longitude"
+        },
+        {
           "ko": "경영진 발언을 지도 옆 칸 대신 '본사 3D 화면'에서: 시드니 본사 카드(또는 ≡ 메뉴 '경영진 발언')를 누르면 55 Market Street 20층 빌딩(단순화한 모형, IREN 5층 초록 표시)이 3D 로 보이고, 빌딩 옆에 두 공동 CEO 배지와 최근 발언 말풍선(7초마다 바뀜), 옥상에 약속 성적표 간판이 붙음 — 누르면 가운데 카드로 사람별·약속만·전체 발언과 판정. 휴대폰은 배지·말풍선을 화면 아래에. 지도의 '본사' 단추는 시드니로 이동만, 뒤로 가기는 시드니 지도로",
           "en": "Management statements now live in an 'HQ 3D view' instead of a map side panel: clicking the Sydney HQ card (or ≡ menu 'Management statements') shows 55 Market Street's 20-storey tower in 3D (simplified model, IREN's Level 5 in green) with co-CEO badges and a rotating speech bubble of recent statements beside it and a promise scorecard sign on the roof — each opens a centred card (per person, promises only, or all). On phones the badges and bubble dock at the bottom. The map's 'HQ' button just flies to Sydney; back returns to the Sydney map"
         },

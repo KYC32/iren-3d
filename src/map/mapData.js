@@ -11,6 +11,16 @@ export const minimumMapZoom = (width, height) => Math.max(0, Math.log2(Math.max(
 export const REGION_NAMES = { NA: ['북미','North America'], ALL: ['전체','All'], US: ['미국','US'], CA: ['캐나다','Canada'], AU: ['호주','Australia'], ES: ['스페인','Spain'], HQ: ['본사','HQ'] }
 // 지도 위 본사 카드 자리: 캠퍼스 마커와 같은 경도 펼침 → 시드니가 번디와 같은 쪽(북미 왼쪽)에 놓임
 export const hqLngLat = (hq) => [mapLongitude(hq.lng), hq.lat]
+// 지도 위 한 점이 화면 안에 있나 (가로 80px · 아래 100px 여유 — 카드가 화면 끝에 걸쳐도 보이는 셈)
+//   경도 ±360° 사본도 봄: 이 지도는 경도를 펼쳐 두지만(시드니 −208.8°) 지도 라이브러리는 비행 뒤 중심을 [−180,180] 으로 접어서,
+//   펼친 경도 하나만 화면 좌표로 바꾸면 360° 떨어진 엉뚱한 자리를 봄 (본사 카드가 발언 자료를 안 받던 원인)
+//   project: 지도의 [경도, 위도] → { x, y } (maplibre map.project)
+export function onScreenAnyCopy(project, [lng, lat], width, height) {
+  return [0, 360, -360].some((dx) => {
+    const p = project([lng + dx, lat])
+    return p.x > -80 && p.x < width + 80 && p.y > 0 && p.y < height + 100
+  })
+}
 export function siteFeatures(sites, research) {
   return { type: 'FeatureCollection', features: sites.map((s) => {
     const location = locationFor(s,research)

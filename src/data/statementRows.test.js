@@ -1,6 +1,6 @@
 // "경영진 발언" 칸 목록 행 만들기 (statementRows.js) — 거르기·최신순·다시 언급·시작일 전·판정
 import { it, expect } from 'vitest'
-import { statementRows, visibleFilters } from './statementRows.js'
+import { statementRows, visibleFilters, speakers } from './statementRows.js'
 import { verdictOf } from './promises.js'
 import file from './fixtures/statements.sample.json'
 
@@ -49,4 +49,12 @@ it('같은 약속의 뒤 발언은 repeatOf = 처음 날짜, 처음 발언에는
 it('시작일 전 발언은 beforeSince', () => expect(statementRows(file, 'all').filter((r) => r.date < file.since).every((r) => r.beforeSince)).toBe(true))
 it('판정은 checkedAt 기준으로 붙음', () => {
   const r = statementRows(file, 'promises')[0]; expect(r.verdict).toEqual(verdictOf(r.promise, file.checkedAt))
+})
+
+// 화면에 보일 사람: 발언이 하나라도 있는 사람만 (발언이 없는 공동 CEO 는 빼고, 생기면 저절로 다시 나타남)
+it('speakers: 발언이 있는 사람만, 자료 순서 그대로', () => {
+  expect(speakers(file).map((p) => p.id)).toEqual(['person-a', 'person-b'])
+  const quiet = { ...file, people: [...file.people, { ...file.people[0], id: 'person-c', name: 'Quiet Person' }] }
+  expect(speakers(quiet).map((p) => p.id)).toEqual(['person-a', 'person-b'])
+  expect(speakers({ ...file, statements: [] })).toEqual([])
 })

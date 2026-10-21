@@ -13,9 +13,10 @@ import { Marker } from 'maplibre-gl'
 import { Building2 } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore.js'
 import { hqText } from '../i18n/hq.js' // 본사·경영진 발언 문구 (첫 화면 사전과 따로)
-import { hqLngLat } from './mapData.js'
+import { hqLngLat, onScreenAnyCopy } from './mapData.js'
 import { loadStatements, peekStatements } from '../data/loadStatements.js'
 import { recentCount } from '../data/promises.js'
+import { speakers } from '../data/statementRows.js' // 발언이 있는 사람만 (발언이 없는 공동 CEO 는 뺌)
 import { initialsOf } from '../data/format.js'
 
 // 오늘 날짜 'YYYY-MM-DD' — "최근 30일 발언 수" 배지에 씀
@@ -36,10 +37,8 @@ export default function HqMarker({ map, hq, lang }) {
   useEffect(() => {
     if (file) return undefined
     let alive = true
-    const visible = () => {
-      const p = map.project(hqLngLat(hq)), c = map.getCanvas()
-      return p.x > -80 && p.x < c.clientWidth + 80 && p.y > 0 && p.y < c.clientHeight + 100 // CampusMarkers 와 같은 여유
-    }
+    // 화면 안인가: 경도 ±360° 사본까지 봄 (지도가 비행 뒤 중심 경도를 접으므로 — mapData.onScreenAnyCopy)
+    const visible = () => { const c = map.getCanvas(); return onScreenAnyCopy((ll) => map.project(ll), hqLngLat(hq), c.clientWidth, c.clientHeight) }
     const fetchNow = () => loadStatements().then((f) => { if (alive && f) setFile(f) })
     const check = () => { if (visible()) { map.off('moveend', check); fetchNow() } }
     map.on('moveend', check)
@@ -47,7 +46,7 @@ export default function HqMarker({ map, hq, lang }) {
     return () => { alive = false; map.off('moveend', check) }
   }, [map, hq, file])
 
-  const people = file?.people ?? [null, null] // 자료 전에는 빈 동그라미 두 개
+  const people = file ? speakers(file) : [null] // 발언이 있는 사람만 · 자료 전에는 빈 동그라미 하나
   const count = file ? recentCount(file.statements, today()) : 0
   const city = ko ? hq.city_ko : hq.city_en
   return createPortal(
@@ -55,7 +54,7 @@ export default function HqMarker({ map, hq, lang }) {
       aria-label={h.open} title={h.open}
       onClick={(e) => { e.stopPropagation(); useAppStore.getState().enterHq3D() }}>
       <span className="map-marker-icon"><Building2 size={16} aria-hidden="true" /></span>
-      <span className="map-marker-copy"><b>{h.title}</b><span>{h.sub.replace('{city}', city).replace('{n}', people.length)}</span></span>
+      <span className="map-marker-copy"><b>{h.title}</b><span>{file ? h.sub.replace('{city}', city).replace('{n}', file.statements.length) : city}</span></span>
       <span className="hq-faces" aria-hidden="true">{people.map((p, i) => <Face key={p?.id ?? i} person={p} />)}</span>
       {count > 0 && <span className="hq-new">{h.newCount.replace('{n}', count)}</span>}
       <span className="map-marker-stem" />

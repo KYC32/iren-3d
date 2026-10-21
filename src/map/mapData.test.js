@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { buildInfra } from '../../scripts/build-data.mjs'
-import { boundsFor, MAP_HOME_CENTER, siteFeatures, REGION_NAMES, hqLngLat, regionBounds, mapLongitude } from './mapData.js'
+import { boundsFor, MAP_HOME_CENTER, siteFeatures, REGION_NAMES, hqLngLat, regionBounds, mapLongitude, onScreenAnyCopy } from './mapData.js'
 import { locationFor } from '../data/research.js'
 
 const raw = buildInfra()
@@ -51,5 +51,19 @@ describe('본사 자리', () => {
     expect(regionBounds('ALL', sites, research, hq)[0][1]).toBeLessThanOrEqual(hq.lat)
     expect(regionBounds('HQ', sites, research, hq)).toBeNull()
     expect(regionBounds('US', sites, research, hq)).toEqual(boundsFor(sites.filter((s) => s.country === 'US'), research, { centerLng: MAP_HOME_CENTER[0] }))
+  })
+})
+
+// 지도는 경도를 펼쳐 두지만(시드니 = −208.8°) 지도 라이브러리는 비행 뒤 중심을 [−180,180] 으로 접음
+//   → 펼친 경도 하나만 화면 좌표로 바꾸면 360° 떨어진 엉뚱한 자리를 봐서 "화면 밖"이 됨 (본사 카드가 발언 자료를 안 받았음)
+describe('onScreenAnyCopy: 경도 ±360° 사본 중 하나라도 화면 안이면 보임', () => {
+  // 가짜 화면 좌표: 중심 경도 151.2 를 화면 가운데(720)에, 1° = 10px
+  const project = ([lng, lat]) => ({ x: 720 + (lng - 151.2) * 10, y: 450 - lat })
+  it('펼친 경도(−208.8)여도 +360 사본(151.2)이 화면 가운데면 보임', () => expect(onScreenAnyCopy(project, [-208.8, -33.87], 1440, 900)).toBe(true))
+  it('어느 사본도 화면 밖이면 안 보임', () => expect(onScreenAnyCopy(project, [-20, -33.87], 1440, 900)).toBe(false))
+  it('여유: 가로 80px · 아래 100px 바깥까지는 보이는 셈 (카드가 걸쳐 있음)', () => {
+    expect(onScreenAnyCopy(() => ({ x: -79, y: 10 }), [0, 0], 1440, 900)).toBe(true)
+    expect(onScreenAnyCopy(() => ({ x: 100, y: 999 }), [0, 0], 1440, 900)).toBe(true)
+    expect(onScreenAnyCopy(() => ({ x: 100, y: -1 }), [0, 0], 1440, 900)).toBe(false)
   })
 })

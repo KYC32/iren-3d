@@ -17,7 +17,7 @@ import { useAppStore } from '../store/useAppStore.js'
 import { hqText } from '../i18n/hq.js' // 본사·경영진 발언 문구 (첫 화면 사전과 따로 — 이 카드와 함께 불러옴)
 import { loadStatements, peekStatements } from '../data/loadStatements.js'
 import { verdictOf, scoreboard, fmtAmount, evidenceLabel } from '../data/promises.js'
-import { statementRows, visibleFilters } from '../data/statementRows.js'
+import { statementRows, visibleFilters, speakers } from '../data/statementRows.js'
 import { initialsOf } from '../data/format.js'
 import './statements.css'
 
@@ -90,7 +90,9 @@ function Body({ file, lang, h, building, person, initialFilter }) {
     return out
   }, [file])
   const counts = { kept: sb.kept, 'late-kept': sb.lateKept, late: sb.late, withdrawn: sb.withdrawn, pending: sb.pending }
-  const shown = person ? file.people.filter((p) => p.id === person) : file.people // 사람별 카드면 그 사람만
+  // 보일 사람: 사람별 카드면 그 사람, 전체 카드면 발언이 있는 사람만 (없는 사람은 아래 한 줄로 이유를 밝힘)
+  const shown = person ? file.people.filter((p) => p.id === person) : speakers(file)
+  const silent = person ? [] : file.people.filter((p) => !shown.includes(p))
   const sources = [...new Set(shown.map((p) => p.photo_source))] // 사진 출처 (같은 페이지면 한 번만)
   const noneYet = person && statementRows(file, 'all', person).length === 0
   return <>
@@ -99,6 +101,7 @@ function Body({ file, lang, h, building, person, initialFilter }) {
       {shown.map((p) => <div key={p.id} className="st-person"><Face person={p} /><span><b>{p.name}</b><small>{lang === 'ko' ? p.title_ko : p.title_en}</small></span></div>)}
     </div>
     <p className="st-photo-src">{sources.map((u) => <a key={u} href={u} target="_blank" rel="noreferrer">{h.photoSource}<ArrowUpRight size={10} aria-hidden="true" /></a>)}</p>
+    {silent.length > 0 && <p className="st-silent">{fill(h.silentNote, { names: silent.map((p) => p.name).join(', ') })}</p>}
     {!person && building && <p className="st-model-note">{fill(h.modelNote, { floors: building.floors, level: building.level })} · <a href={building.source} target="_blank" rel="noreferrer">{h.buildingSource}<ArrowUpRight size={10} aria-hidden="true" /></a></p>}
 
     {/* 2) 약속 성적표 (회사 전체 — 사람별 카드에선 뺌) */}
