@@ -1,0 +1,109 @@
+<style>
+  /* 시안 전용 스타일 (지도 위 본사 표시 세 가지) */
+  .hq-map { position: relative; width: 100%; align-self: stretch; height: 210px; border-radius: 10px; overflow: hidden; background: #dfe8ee; }
+  .hq-map svg.land { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .hq-city { position: absolute; left: 76%; top: 70%; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border-radius: 50%; background: #0B344F; box-shadow: 0 0 0 3px rgba(11,52,79,.18); }
+  .hq-city-name { position: absolute; left: 76%; top: 70%; transform: translate(8px, 4px); font-size: 10px; color: #4b5b68; }
+  .hq-stem { position: absolute; left: 76%; width: 1px; background: #7f93a3; }
+  /* 지도 캠퍼스 카드와 같은 양각 카드 */
+  .hq-card { position: absolute; display: flex; align-items: center; gap: 8px; padding: 6px 9px 6px 6px; border-radius: 11px; background: #f4fbf5; border: 1px solid #cfe9d4; box-shadow: 0 2px 0 #fff inset, 0 3px 10px rgba(11,52,79,.14); color: #0B344F; white-space: nowrap; }
+  .hq-icon { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: #e2f4e6; box-shadow: inset 0 1px 3px rgba(11,52,79,.22); color: #0B344F; }
+  .hq-icon svg { width: 16px; height: 16px; }
+  .hq-card b { display: block; font-size: 12px; }
+  .hq-card small { display: block; font-size: 10px; color: #5a6b78; }
+  .hq-avs { display: flex; margin-left: 4px; }
+  .hq-av { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; border: 2px solid #fff; background: #c9d2d9; color: #6d7d89; box-shadow: 0 1px 4px rgba(11,52,79,.2); }
+  .hq-av + .hq-av { margin-left: -8px; }
+  .hq-av svg { width: 14px; height: 14px; }
+  .hq-av.ini { background: #0B344F; color: #fff; font-size: 10px; font-weight: 700; letter-spacing: .02em; }
+  .hq-av.ini.g { background: #71DA80; color: #0B344F; }
+  .hq-count { margin-left: 6px; font-size: 10px; font-weight: 700; color: #0B344F; background: #71DA80; border-radius: 999px; padding: 2px 7px; }
+  /* 말풍선 */
+  .hq-bubble { position: absolute; max-width: 190px; padding: 7px 10px; border-radius: 10px; background: #fff; border: 1px solid #d5dde3; box-shadow: 0 4px 14px rgba(11,52,79,.16); font-size: 11px; color: #16213a; line-height: 1.4; }
+  .hq-bubble::after { content: ''; position: absolute; left: 70%; bottom: -6px; width: 10px; height: 10px; background: #fff; border-right: 1px solid #d5dde3; border-bottom: 1px solid #d5dde3; transform: rotate(45deg); }
+  .hq-bubble .meta { display: flex; align-items: center; gap: 4px; font-size: 9.5px; color: #5a6b78; margin-bottom: 2px; }
+  .hq-bubble .meta svg { width: 11px; height: 11px; }
+  .hq-faces { position: absolute; display: flex; gap: 6px; }
+  .hq-face { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 9.5px; color: #0B344F; font-weight: 600; }
+  .hq-face .hq-av { width: 34px; height: 34px; border-width: 2.5px; }
+  .hq-face .hq-av svg { width: 17px; height: 17px; }
+  .hq-sample { position: absolute; right: 8px; top: 7px; font-size: 9px; color: #7a8a96; background: rgba(255,255,255,.75); border-radius: 4px; padding: 1px 5px; }
+  .hq-note { margin-top: 14px; font-size: 13px; color: #4b5b68; }
+</style>
+
+<h2>본사와 CEO를 지도에 어떻게 띄울까요?</h2>
+<p class="subtitle">셋 다 시드니 본사 자리에 표시되고, 누르면 최근 발언 칸이 열려요. 다른 건 보이는 모습뿐이에요. 마음에 드는 걸 눌러 주세요 (섞어도 돼요).</p>
+
+<div class="cards">
+  <!-- A: 캠퍼스 카드와 같은 양각 카드 + 사진 -->
+  <div class="card" data-choice="a-card-photo" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="hq-map">
+        <svg class="land" viewBox="0 0 300 210" preserveAspectRatio="none" aria-hidden="true"><path d="M28,70 Q55,32 110,38 Q150,22 188,48 Q222,66 238,102 Q252,138 232,166 Q202,192 160,180 Q118,196 84,176 Q44,164 30,124 Z" fill="#f3f1ea" stroke="#d6d2c4" stroke-width="1.2"/></svg>
+        <span class="hq-sample">시안</span>
+        <div class="hq-stem" style="top:50%;height:20%"></div>
+        <div class="hq-card" style="left:6%;top:24%">
+          <span class="hq-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12h4"/><path d="M10 8h4"/><path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"/><path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/></svg></span>
+          <span><b>IREN 본사</b><small>시드니 · 공동 CEO 2명</small></span>
+          <span class="hq-avs">
+            <span class="hq-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+            <span class="hq-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+          </span>
+          <span class="hq-count">발언 3</span>
+        </div>
+        <span class="hq-city"></span><span class="hq-city-name">시드니</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A. 본사 카드 + 사진</h3>
+      <p>지금 지도의 캠퍼스 카드와 같은 모양에 CEO 사진 두 장과 새 발언 수. 지도가 깔끔하게 유지돼요.</p>
+    </div>
+  </div>
+
+  <!-- B: 사진 + 최신 발언 말풍선 -->
+  <div class="card" data-choice="b-bubble-photo" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="hq-map">
+        <svg class="land" viewBox="0 0 300 210" preserveAspectRatio="none" aria-hidden="true"><path d="M28,70 Q55,32 110,38 Q150,22 188,48 Q222,66 238,102 Q252,138 232,166 Q202,192 160,180 Q118,196 84,176 Q44,164 30,124 Z" fill="#f3f1ea" stroke="#d6d2c4" stroke-width="1.2"/></svg>
+        <span class="hq-sample">시안 · 예시 문구</span>
+        <div class="hq-bubble" style="left:30%;top:9%">
+          <div class="meta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 14a2 2 0 0 0 2-2V8h-2"/><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/><path d="M8 14a2 2 0 0 0 2-2V8H8"/></svg>가장 최근 · X</div>
+          (예시) 새 발언 한 줄 요약이 여기에 떠 있음
+        </div>
+        <div class="hq-faces" style="left:58%;top:44%">
+          <span class="hq-face"><span class="hq-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Daniel</span>
+          <span class="hq-face"><span class="hq-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Will</span>
+        </div>
+        <span class="hq-city"></span><span class="hq-city-name">시드니</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B. 사진 + 최신 발언 말풍선</h3>
+      <p>사진이 크게 보이고 가장 최근 발언 한 줄이 늘 떠 있어요. 눈에 잘 띄지만 지도가 조금 붐벼요.</p>
+    </div>
+  </div>
+
+  <!-- C: 카드 + 사진 대신 이니셜 -->
+  <div class="card" data-choice="c-card-initials" onclick="toggleSelect(this)">
+    <div class="card-image">
+      <div class="hq-map">
+        <svg class="land" viewBox="0 0 300 210" preserveAspectRatio="none" aria-hidden="true"><path d="M28,70 Q55,32 110,38 Q150,22 188,48 Q222,66 238,102 Q252,138 232,166 Q202,192 160,180 Q118,196 84,176 Q44,164 30,124 Z" fill="#f3f1ea" stroke="#d6d2c4" stroke-width="1.2"/></svg>
+        <span class="hq-sample">시안</span>
+        <div class="hq-stem" style="top:50%;height:20%"></div>
+        <div class="hq-card" style="left:6%;top:24%">
+          <span class="hq-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12h4"/><path d="M10 8h4"/><path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="M6 10H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-2"/><path d="M6 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16"/></svg></span>
+          <span><b>IREN 본사</b><small>시드니 · 공동 CEO 2명</small></span>
+          <span class="hq-avs"><span class="hq-av ini">DR</span><span class="hq-av ini g">WR</span></span>
+          <span class="hq-count">발언 3</span>
+        </div>
+        <span class="hq-city"></span><span class="hq-city-name">시드니</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C. 본사 카드 + 이니셜</h3>
+      <p>A와 같은데 사진 대신 이름 머리글자. 비공식 사이트가 회사 공식 페이지처럼 보일 걱정이 덜해요.</p>
+    </div>
+  </div>
+</div>
+
+<p class="hq-note">참고: 지도 첫 화면은 북미라 시드니가 화면 밖이에요. 그래서 위쪽 지역 단추 줄(북미·전체·미국…)에 '본사' 단추를 하나 더 두는 걸 같이 생각하고 있어요.</p>
