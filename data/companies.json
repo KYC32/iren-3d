@@ -113,6 +113,14 @@
       ],
       "events": [
         {
+          "date": "2026-10-21",
+          "kind": "other",
+          "title_ko": "NVIDIA 발표(GTC Berlin): DSX MaxLPS(전력 배분 소프트웨어)와 DSX OS 새 구성 요소를 검토하는 회사에 IREN 포함",
+          "title_en": "NVIDIA at GTC Berlin: IREN named among companies exploring DSX MaxLPS (power-allocation software) and new DSX OS components",
+          "basis": "reported",
+          "source": "https://nvidianews.nvidia.com/news/european-ecosystem-builds-worlds-most-efficient-ai-factories-with-nvidia-dsx"
+        },
+        {
           "date": "2026-11",
           "kind": "earnings",
           "title_ko": "Q1 FY27 실적 발표 (예상 · 회사 일정 미발표)",

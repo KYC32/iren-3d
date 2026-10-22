@@ -597,9 +597,15 @@
           "source": "https://www.globenewswire.com/news-release/2026/05/01/3286213/0/en/iren-announces-successful-energization-of-sweetwater-1.html"
         },
         {
+          "date": "2026-05-08",
+          "event": "NVIDIA 와 전략적 제휴 — 최대 5GW DSX 정렬 AI 인프라, 스위트워터 2GW 캠퍼스는 DSX 대표 배치로 기대 (NVIDIA 매수권: 주당 $70 · 최대 3,000만 주 · 5년)",
+          "event_en": "Strategic partnership with NVIDIA — up to 5GW of DSX-aligned AI infrastructure; the 2GW Sweetwater campus expected as a flagship DSX deployment (NVIDIA right to buy up to 30M shares at $70 · 5 yrs)",
+          "source": "https://iren.gcs-web.com/news-releases/news-release-details/nvidia-and-iren-announce-strategic-partnership-accelerate"
+        },
+        {
           "date": "2026-06-01",
-          "event": "NVIDIA DSX 정렬 AI 인프라로 Sweetwater 캠퍼스 추진",
-          "event_en": "Sweetwater campus to follow NVIDIA DSX-aligned AI infrastructure",
+          "event": "NVIDIA DSX 정렬 AI 인프라로 Sweetwater 캠퍼스 추진 · NVIDIA DSX OS 기술(Infrastructure Controller 등) 도입",
+          "event_en": "Sweetwater campus to follow NVIDIA DSX-aligned AI infrastructure · adopting NVIDIA DSX OS technologies (incl. Infrastructure Controller)",
           "source": "https://x.com/IREN_Ltd/status/2061376124102623451"
         },
         {
