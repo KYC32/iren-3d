@@ -14,6 +14,7 @@
 // 투명 배경은 그림 카드 색(#fbfbfa) 위에 얹어 굳힘 (영상은 투명을 담기 어려움)
 // 실행: node scripts/blender/boot-video.mjs <렌더 폴더> [출력 폴더 — 기본 public/boot, 시험할 때만 바꿈] [--only=big|small|still]
 //   --only 없으면 전부. big = 가로 1280 영상, small = 가로 960 영상, still = 정지 사진
+//   [--panel=rack|gpu] 영상을 한 칸만 (그 칸 프레임만 다시 렌더했을 때)
 // =============================================================
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, statSync } from "node:fs";
@@ -23,6 +24,8 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const ARGS = process.argv.slice(2).filter((a) => !a.startsWith("--"));
 const ONLY = (process.argv.find((a) => a.startsWith("--only=")) || "").slice(7);   // "" = 전부
+const PANEL = (process.argv.find((a) => a.startsWith("--panel=")) || "").slice(8);  // "" = 두 칸 모두
+const PANELS = PANEL ? [PANEL] : ["rack", "gpu"];
 const SRC = ARGS[0];
 const OUT = ARGS[1] || join(ROOT, "public", "boot");
 const CARD = "0xfbfbfa";   // 부팅 화면 그림 카드 배경색 (index.html 의 .boot-card)
@@ -94,6 +97,6 @@ function still(name) {
   console.log(`${name}: ${w}×${h} · ${kb(out)}`);
 }
 
-if (!ONLY || ONLY === "big") for (const panel of ["rack", "gpu"]) video(panel);
-if (!ONLY || ONLY === "small") for (const panel of ["rack", "gpu"]) video(panel, 960);
+if (!ONLY || ONLY === "big") for (const panel of PANELS) video(panel);
+if (!ONLY || ONLY === "small") for (const panel of PANELS) video(panel, 960);
 if (!ONLY || ONLY === "still") for (const name of ["rack-open", "gpu-open", "gpu-board"]) still(name);

@@ -36,6 +36,8 @@ AT = float(ARGS[5]) if len(ARGS) > 5 else 4.2      # at 모드: 찍을 둘러보
 #   BOOT_FROM=338  → 이 번호보다 앞 프레임은 이미 있는 파일을 그대로 씀 (frames·count 모드)
 #   BOOT_REST=4    → 한 장 렌더할 때마다 4초 쉼 (GPU 가 쉬는 동안 식음, 대신 오래 걸림)
 FROM = int(os.environ.get("BOOT_FROM", "0"))
+TO = int(os.environ.get("BOOT_TO", "100000"))      # BOOT_TO=143 → 이 번호까지만 (일부 구간만 다시 렌더·시험할 때)
+LIST = {int(n) for n in os.environ.get("BOOT_LIST", "").split(",") if n.strip()}   # BOOT_LIST=10,50 → 이 번호들만 렌더 (점검용)
 REST = float(os.environ.get("BOOT_REST", "0"))
 FPS = 24
 LAY = json.load(open(os.path.join(HERE, "boot-layout.json"), encoding="utf-8"))
@@ -803,7 +805,9 @@ def render_setup(res_x, samples):
     scene.cycles.transparent_max_bounces = 64   # 흐려지는 앞층(호스·플러그 겹겹)을 지나도 광선이 끊기지 않게
     scene.cycles.max_bounces, scene.cycles.diffuse_bounces, scene.cycles.glossy_bounces = 8, 3, 4   # 제품 사진엔 충분
     scene.cycles.caustics_reflective = scene.cycles.caustics_refractive = False   # 구리 반사가 위 판에 주황 얼룩을 만들지 않게
-    scene.render.use_persistent_data = True     # 프레임마다 장면을 처음부터 다시 올리지 않음 (빠름)
+    # 프레임 사이 데이터 유지(빠름)는 랙에만: GPU 장면은 기판 확대 때 앞층(냉각판·뚜껑)을 숨겼다(hide_render) 다시 보이는데,
+    # 데이터를 유지하면 숨긴 판의 그림자 같은 이전 상태가 남아 렌더 순서에 따라 밝기가 계단처럼 바뀜(깜빡임) → GPU 는 매 프레임 새로
+    scene.render.use_persistent_data = PANEL == 'rack'
     try:
         scene.cycles.denoising_use_gpu = True   # 잡음 제거도 GPU 로
     except AttributeError:
@@ -974,7 +978,7 @@ def main():
     if MODE == 'count':   # 렌더할 장 수만 셈 (장면은 안 씀)
         frames = simulate()
         keys = [visible_key(st) for st in frames]
-        unique = sum(1 for i, k in enumerate(keys) if i >= FROM and (i == 0 or k != keys[i - 1]))
+        unique = sum(1 for i, k in enumerate(keys) if FROM <= i <= TO and (i == 0 or k != keys[i - 1]))
         print(f"{PANEL}: {len(frames)} 프레임 중 렌더 {unique} 장" + (f" ({FROM}번부터)" if FROM else ""))
         return
     os.makedirs(OUT, exist_ok=True)
@@ -1013,9 +1017,19 @@ def main():
     for f, st in enumerate(frames):
         path = os.path.join(d, f"f{f:04d}.png")
         key = visible_key(st)
-        if f < FROM and os.path.exists(path):   # 이어 렌더: 이미 있는 앞쪽 프레임은 그대로 (다음 프레임 복사 판단에만 씀)
-            prev_key, prev_path = key, path
+        if LIST:   # 점검용: 고른 번호만 (복사 없이 그대로 렌더)
+            if f in LIST:
+                apply_state(rig, cam, st)
+                render_to(path)
+                rendered += 1
+                if REST:
+                    time.sleep(REST)
             continue
+        if f < FROM:   # 이어 렌더·구간 렌더: 앞쪽 프레임은 건너뜀 (있으면 다음 프레임 복사 판단에만 씀)
+            prev_key, prev_path = key, (path if os.path.exists(path) else None)
+            continue
+        if f > TO:
+            break
         if key == prev_key and prev_path:
             shutil.copyfile(prev_path, path)
         else:
