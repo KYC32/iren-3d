@@ -29,10 +29,18 @@ export function gpuLine(b, lang) {
   const basis = GPU_BASIS[g.basis] ? ` (${GPU_BASIS[g.basis][lang === 'ko' ? 'ko' : 'en']})` : ''
   return `GPU · ${g.model}${count}${basis}`
 }
-// 고르지 않아도 늘 보이는 이름표의 GPU 표: 설계 기준 GPU 만 (아직 설치 전이라 이렇게 하지 않으면 3D 에서 알 길이 없음)
-//   설치·주문 발표가 있는 건물(Horizon 의 GB300 등)은 골랐을 때 GPU 줄로만 → null
+// 개요 칩·건물 이름표의 GPU 표 (짧은 이름): 랙 단위 액체냉각 GPU 세대가 알려진 건물
+//   위에서부터 맞춰 보고 처음 맞는 이름. 공랭 B300·Hopper·여러 세대 혼합 홀은 골랐을 때 GPU 줄로만 → null
+const GPU_TAGS = [
+  { test: /Rubin/i, text: 'Vera Rubin' },   // 스위트워터 1단계 (설계 기준)
+  { test: /GB300/i, text: 'GB300' },        // Horizon 1~4 · 프린스조지 액체냉각 홀 · 캐널플래츠 전환 계획 ("GB300 NVL72" → 짧게)
+]
 export function gpuTag(b) {
-  return b?.gpu?.basis === 'designed_for' ? b.gpu.model : null
+  const model = b?.gpu?.model
+  const text = model ? GPU_TAGS.find((t) => t.test.test(model))?.text ?? null : null
+  // 이름에 이미 그 세대가 들어 있으면(프린스조지 "GB300 액체냉각 홀" 등) 표는 빼서 "GB300 … GB300" 처럼 두 번 나오지 않게
+  if (text && [b.name, b.name_ko].some((n) => n?.includes(text))) return null
+  return text
 }
 
 // 3D 전체 보기에서 계약 없는 건물 무리를 묶는 구역 라벨 종류 (글자는 i18n 의 campus[종류])

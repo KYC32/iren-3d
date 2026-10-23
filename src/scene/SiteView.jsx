@@ -134,7 +134,7 @@ export default function SiteView({ site }) {
           {b.status==='delivered'?<Check size={12}/>:b.status==='operating'?<Activity size={12}/>:b.status==='under_construction'?<HardHat size={12}/>:<span className="signal-pending"/>}
           <span className="signal-name">{pickName(byId[b.buildingId],lang)}</span>
           {b.status==='delivered'?(lang==='ko'?'인수 완료':'Accepted'):t.status[b.status]}
-          {/* 설계 기준 GPU (스위트워터 1단계 = Vera Rubin): 멀리서 보는 기본 화면에서도 보이게 — 가까이 가면 건물 이름표에 같은 표 */}
+          {/* GPU 표 (Horizon = GB300, 스위트워터 1단계 = Vera Rubin): 멀리서 보는 기본 화면에서도 보이게 — 가까이 가면 건물 이름표에 같은 표 */}
           {gpuTag(byId[b.buildingId]) && <span className="gpu-tag"><Cpu size={11} aria-hidden="true" />{gpuTag(byId[b.buildingId])}</span>}
         </button>
       </CampusLabel>)}
@@ -165,7 +165,7 @@ export default function SiteView({ site }) {
                 <div className="row">
                   {b.status==='delivered'?<Check size={13} color={st.color}/>:<span className={`dot${b.status==='operating'?' operating-dot':''}`} style={{ background: st.color }} />}
                   <span className="name">{bld ? pickName(bld, lang) : `${fmtMw(L.remainingMw)}`}</span>
-                  {/* 회사가 '이 칩을 위해 설계'라고 밝힌 건물: 고르지 않아도 GPU 표 (스위트워터 1단계 = Vera Rubin) — buildingLabel.js */}
+                  {/* GPU 표 (Horizon = GB300, 스위트워터 1단계 = Vera Rubin) — 규칙은 buildingLabel.js 의 gpuTag */}
                   {bld && gpuTag(bld) && <span className="gpu-tag"><Cpu size={11} aria-hidden="true" />{gpuTag(bld)}</span>}
                   {/* 건설중이면 진행률 막대 (마우스를 올리지 않아도 보이게) */}
                   {pct != null && (

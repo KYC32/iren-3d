@@ -50,11 +50,17 @@ it('구역 라벨: 넘겨받는 채굴동이 퇴역해 화면 목록에 없어�
   expect(areaKeyOf({ status: 'planned', kind: 'datahall_liquid', buildingId: 'cfLiquid' }, visible, all)).toBe('convert')
 })
 
-// 이름표의 GPU 표: 회사가 "이 칩을 위해 설계"라고만 밝힌 건물(basis designed_for)은
-//   고르지 않아도 늘 보이는 이름표에 표를 붙임 (스위트워터 1단계 = Vera Rubin). 설치·주문 발표가 있는 건물은 골랐을 때 줄로만
+// 이름표·개요 칩의 GPU 표: 랙 단위 액체냉각 GPU(GB300 · Vera Rubin)가 알려진 건물에 붙임
+//   (스위트워터 1단계 = Vera Rubin 설계 기준, Horizon 1~4 = GB300). 공랭 B300·Hopper·혼합 홀은 골랐을 때 GPU 줄로만
 it.each([
   ['설계 기준 GPU (스위트워터)', { gpu: { model: 'Vera Rubin', count: null, basis: 'designed_for' } }, 'Vera Rubin'],
-  ['설치된 GPU (Horizon) 는 이름표 표 없음', { gpu: { model: 'GB300 NVL72', count: null } }, null],
+  ['Horizon 의 GB300 NVL72 → 짧게 GB300', { gpu: { model: 'GB300 NVL72', count: null } }, 'GB300'],
+  ['모델명이 GB300 뿐이어도 GB300', { gpu: { model: 'GB300', count: null } }, 'GB300'],
+  // 프린스조지 "GB300 액체냉각 홀"·캐널플래츠 "GB300 액체냉각 전환": 이름에 이미 GB300 → 표를 붙이면 "GB300 … GB300" 으로 두 번 나옴
+  ['건물 이름에 이미 GB300 이 있으면 표 없음', { name: 'GB300 liquid-cooled hall', name_ko: 'GB300 액체냉각 홀', gpu: { model: 'GB300 NVL72', count: null } }, null],
+  ['공랭 B300 은 표 없음', { gpu: { model: 'B300 (air-cooled)', count: null } }, null],
+  ['여러 세대 혼합은 표 없음', { gpu: { model: 'H200 / B200 / B300 / MI350X (mixed)', count: 23000, basis: 'installed_or_ordered' } }, null],
+  ['Hopper 는 표 없음', { gpu: { model: 'H100 / H200', count: 816 } }, null],
   ['GPU 정보가 없으면 없음', {}, null],
 ])('이름표 GPU 표: %s', (_, building, want) => {
   expect(gpuTag(building)).toBe(want)

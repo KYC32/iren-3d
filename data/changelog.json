@@ -4,6 +4,11 @@
       "date": "2026-10-23",
       "items": [
         {
+          "ko": "Horizon 1~4 에도 'GB300' 표: 개요 칩과 건물 이름표에 GPU 세대를 짧게 붙이는 규칙을 랙 단위 액체냉각 GPU(GB300 · Vera Rubin)로 넓힘 — 프린스조지 GB300 액체냉각 홀·캐널플래츠 GB300 전환 계획도 같은 표. 공랭 B300·Hopper·여러 세대 혼합 홀은 지금처럼 건물을 골랐을 때 GPU 줄로만",
+          "en": "Horizon 1–4 now carry a 'GB300' tag: the short GPU-generation tag on overview chips and building labels now covers rack-scale liquid-cooled GPUs (GB300 · Vera Rubin) — Prince George's GB300 liquid-cooled hall and the Canal Flats GB300 conversion plan get the same tag. Air-cooled B300, Hopper and mixed halls still show their GPUs only in the selected building's line",
+          "source": "https://www.globenewswire.com/news-release/2026/08/13/3344413/0/en/iren-delivers-horizon-1-to-microsoft-and-achieves-nvidia-exemplar-cloud-status-on-gb300-nvl72.html"
+        },
+        {
           "ko": "경영진 발언 카드를 탭 두 개로 바꿈: '약속' 탭은 약속 25개를 한 줄씩 타임라인으로 — 처음 말한 날부터 기한까지 막대, 이룬 날 점, 기한이 지난 뒤 흐른 시간(주황), 회사가 기한을 미룬 날, 다시 말한 날을 한눈에 (결과가 나온 약속 → 2026년 말 → 2027년 말 순, 판정 단추로 거르기, 줄을 누르면 근거와 발언). '발언' 탭은 달별로 묶고 약속은 칩 하나, 영어 원문은 접어 둠. 옥상 CEO 카드의 성적표와 ≡ 메뉴 'CEO 약속 타임라인'이 약속 탭을 바로 열고, 주소 #hq=1&card=promises 로도 공유됨",
           "en": "The management statements card now has two tabs: 'Promises' shows the 25 promises as a timeline, one row each — a bar from when it was first said to the deadline, a dot when it was met, the time past the deadline (orange), when the company moved the deadline and when it was said again, all at a glance (promises with a result first, then due end-2026 and end-2027; filter by verdict; click a row for the evidence and statements). 'Statements' is grouped by month with one chip per promise and the English original folded away. The roof CEO card's scorecard and the ≡ menu 'CEO promise timeline' open the promises tab directly, and #hq=1&card=promises shares it"
         },
