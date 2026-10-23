@@ -2,7 +2,7 @@
 // 화면용 건물 값(view.js)에서 MW 가 0 이면 "모름·없음" → 보여 주지 않아야 함
 //   (버그였던 것: NVIDIA 건물 라벨이 "~60 MW*0 MW gross" 로 붙어 나옴)
 import { it, expect } from 'vitest'
-import { buildingMwText, areaKeyOf, gpuTag, gpuLine } from './buildingLabel.js'
+import { buildingMwText, areaKeyOf, gpuTag, gpuLabel, gpuLine } from './buildingLabel.js'
 
 it.each([
   // [설명, 화면용 건물 값, 기대 문구]
@@ -50,20 +50,38 @@ it('구역 라벨: 넘겨받는 채굴동이 퇴역해 화면 목록에 없어�
   expect(areaKeyOf({ status: 'planned', kind: 'datahall_liquid', buildingId: 'cfLiquid' }, visible, all)).toBe('convert')
 })
 
-// 이름표·개요 칩의 GPU 표: 랙 단위 액체냉각 GPU(GB300 · Vera Rubin)가 알려진 건물에 붙임
-//   (스위트워터 1단계 = Vera Rubin 설계 기준, Horizon 1~4 = GB300). 공랭 B300·Hopper·혼합 홀은 골랐을 때 GPU 줄로만
+// 이름표·개요 칩의 GPU 표 글자: GPU 모델을 아는 건물이면 액체냉각·공랭 상관없이 모두
+//   모델의 짧은 이름 — 괄호 설명과 'NVL72' 같은 꼬리는 빼고, 모델이 여럿이면 '·' 로 이음
 it.each([
   ['설계 기준 GPU (스위트워터)', { gpu: { model: 'Vera Rubin', count: null, basis: 'designed_for' } }, 'Vera Rubin'],
   ['Horizon 의 GB300 NVL72 → 짧게 GB300', { gpu: { model: 'GB300 NVL72', count: null } }, 'GB300'],
   ['모델명이 GB300 뿐이어도 GB300', { gpu: { model: 'GB300', count: null } }, 'GB300'],
-  // 프린스조지 "GB300 액체냉각 홀"·캐널플래츠 "GB300 액체냉각 전환": 이름에 이미 GB300 → 표를 붙이면 "GB300 … GB300" 으로 두 번 나옴
-  ['건물 이름에 이미 GB300 이 있으면 표 없음', { name: 'GB300 liquid-cooled hall', name_ko: 'GB300 액체냉각 홀', gpu: { model: 'GB300 NVL72', count: null } }, null],
-  ['공랭 B300 은 표 없음', { gpu: { model: 'B300 (air-cooled)', count: null } }, null],
-  ['여러 세대 혼합은 표 없음', { gpu: { model: 'H200 / B200 / B300 / MI350X (mixed)', count: 23000, basis: 'installed_or_ordered' } }, null],
-  ['Hopper 는 표 없음', { gpu: { model: 'H100 / H200', count: 816 } }, null],
+  ['공랭 B300: 괄호 설명은 뺌 (차일드레스)', { gpu: { model: 'B300 (air-cooled)', count: null } }, 'B300'],
+  ['공랭 B300: 괄호 설명은 뺌 (매켄지)', { gpu: { model: 'B300 (Blackwell Ultra)', count: null } }, 'B300'],
+  ['Hopper 파일럿: 두 모델을 · 로', { gpu: { model: 'H100 / H200', count: 816 } }, 'H100·H200'],
+  ['여러 세대 혼합: 모델을 모두 · 로 (프린스조지 공랭)', { gpu: { model: 'H200 / B200 / B300 / MI350X (mixed)', count: 23000, basis: 'installed_or_ordered' } }, 'H200·B200·B300·MI350X'],
   ['GPU 정보가 없으면 없음', {}, null],
-])('이름표 GPU 표: %s', (_, building, want) => {
+])('GPU 표 글자: %s', (_, building, want) => {
   expect(gpuTag(building)).toBe(want)
+})
+
+// 이름표·개요 칩에 쓰는 이름과 표: 이름에 표와 같은 모델 글자가 있으면 이름에서 빼서 "GB300 … GB300" 처럼 두 번 나오지 않게
+//   (예전엔 반대로 표를 뺐음 → 이름에 모델이 든 프린스조지 'GB300 액체냉각 홀'·매켄지 '공랭 B300 홀'만 표가 없었음)
+it.each([
+  ['이름에 모델이 없으면 이름 그대로', { name: 'Horizon 1', gpu: { model: 'GB300 NVL72' } }, 'ko', { name: 'Horizon 1', tag: 'GB300' }],
+  ['이름 앞의 GB300 을 뺌 (프린스조지)', { name: 'GB300 liquid-cooled hall', name_ko: 'GB300 액체냉각 홀', gpu: { model: 'GB300 NVL72' } }, 'ko', { name: '액체냉각 홀', tag: 'GB300' }],
+  ['영어 이름은 뺀 뒤 첫 글자를 대문자로', { name: 'GB300 liquid-cooled hall', name_ko: 'GB300 액체냉각 홀', gpu: { model: 'GB300 NVL72' } }, 'en', { name: 'Liquid-cooled hall', tag: 'GB300' }],
+  ['이름 가운데의 B300 을 뺌 (매켄지)', { name: 'Air-cooled B300 halls', name_ko: '공랭 B300 홀', gpu: { model: 'B300 (Blackwell Ultra)' } }, 'ko', { name: '공랭 홀', tag: 'B300' }],
+  ['이름 가운데의 B300 을 뺌 (매켄지, 영어)', { name: 'Air-cooled B300 halls', name_ko: '공랭 B300 홀', gpu: { model: 'B300 (Blackwell Ultra)' } }, 'en', { name: 'Air-cooled halls', tag: 'B300' }],
+  ['괄호 속 모델은 괄호째 뺌 (Hopper 파일럿)', { name: 'Hopper GPU pilot (H100/H200)', name_ko: '초기 GPU 파일럿 (H100/H200)', gpu: { model: 'H100 / H200' } }, 'ko', { name: '초기 GPU 파일럿', tag: 'H100·H200' }],
+  ['괄호 속 모델은 괄호째 뺌 (Hopper 파일럿, 영어)', { name: 'Hopper GPU pilot (H100/H200)', name_ko: '초기 GPU 파일럿 (H100/H200)', gpu: { model: 'H100 / H200' } }, 'en', { name: 'Hopper GPU pilot', tag: 'H100·H200' }],
+  ['모델이 아닌 괄호는 그대로 (차일드레스 공랭)', { name: 'Air-cooled Blackwell (NVIDIA)', name_ko: '공랭 Blackwell (NVIDIA)', gpu: { model: 'B300 (air-cooled)' } }, 'ko', { name: '공랭 Blackwell (NVIDIA)', tag: 'B300' }],
+  ['혼합 홀: 이름에 모델이 없으면 그대로', { name: 'Air-cooled GPU halls', name_ko: '공랭 GPU 홀', gpu: { model: 'H200 / B200 / B300 / MI350X (mixed)' } }, 'ko', { name: '공랭 GPU 홀', tag: 'H200·B200·B300·MI350X' }],
+  ['GB300 속의 B300 은 다른 모델이라 빼지 않음', { name_ko: 'GB300 홀', gpu: { model: 'B300' } }, 'ko', { name: 'GB300 홀', tag: 'B300' }],
+  ['이름이 모델뿐이면 이름을 두고 표는 뺌', { name: 'GB300', gpu: { model: 'GB300' } }, 'ko', { name: 'GB300', tag: null }],
+  ['GPU 정보가 없으면 이름만', { name: 'Mining hall', name_ko: '채굴동' }, 'ko', { name: '채굴동', tag: null }],
+])('이름표 이름·GPU 표: %s', (_, building, lang, want) => {
+  expect(gpuLabel(building, lang)).toEqual(want)
 })
 
 // 건물을 골랐을 때의 GPU 한 줄: 모델 · 개수 · 근거 종류

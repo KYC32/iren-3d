@@ -29,18 +29,52 @@ export function gpuLine(b, lang) {
   const basis = GPU_BASIS[g.basis] ? ` (${GPU_BASIS[g.basis][lang === 'ko' ? 'ko' : 'en']})` : ''
   return `GPU · ${g.model}${count}${basis}`
 }
-// 개요 칩·건물 이름표의 GPU 표 (짧은 이름): 랙 단위 액체냉각 GPU 세대가 알려진 건물
-//   위에서부터 맞춰 보고 처음 맞는 이름. 공랭 B300·Hopper·여러 세대 혼합 홀은 골랐을 때 GPU 줄로만 → null
-const GPU_TAGS = [
-  { test: /Rubin/i, text: 'Vera Rubin' },   // 스위트워터 1단계 (설계 기준)
-  { test: /GB300/i, text: 'GB300' },        // Horizon 1~4 · 프린스조지 액체냉각 홀 · 커낼플랫츠 전환 계획 ("GB300 NVL72" → 짧게)
-]
+// GPU 모델 글자 → 짧은 모델 이름들: '/' 로 나누고, 괄호 설명과 'NVL72' 같은 랙 구성 꼬리는 뺌
+//   'GB300 NVL72' → ['GB300'] · 'B300 (Blackwell Ultra)' → ['B300'] · 'H100 / H200' → ['H100', 'H200']
+//   'H200 / B200 / B300 / MI350X (mixed)' → ['H200', 'B200', 'B300', 'MI350X'] · 'Vera Rubin' → ['Vera Rubin']
+function gpuModels(model) {
+  return String(model)
+    .replace(/\([^)]*\)/g, ' ')   // 괄호 설명 빼기: (air-cooled) · (Blackwell Ultra) · (mixed)
+    .split('/')                   // 모델이 여럿이면 하나씩
+    .map((m) => m.replace(/\bNVL\d+\b/gi, '').replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+}
+// 개요 칩·건물 이름표의 GPU 표 글자: GPU 모델을 아는 건물이면 액체냉각·공랭 상관없이 모두
+//   (Horizon 1~4 = GB300, 스위트워터 1단계 = Vera Rubin, 공랭 홀 = B300, 프린스조지 혼합 홀 = H200·B200·B300·MI350X)
+//   모델이 여럿이면 '·' 로 이음. GPU 정보가 없으면 null
 export function gpuTag(b) {
   const model = b?.gpu?.model
-  const text = model ? GPU_TAGS.find((t) => t.test.test(model))?.text ?? null : null
-  // 이름에 이미 그 세대가 들어 있으면(프린스조지 "GB300 액체냉각 홀" 등) 표는 빼서 "GB300 … GB300" 처럼 두 번 나오지 않게
-  if (text && [b.name, b.name_ko].some((n) => n?.includes(text))) return null
-  return text
+  if (!model) return null
+  const models = gpuModels(model)
+  return models.length ? models.join('·') : null
+}
+
+// 정규식에서 뜻이 있는 글자(. ( ) 등)를 글자 그대로 찾게 바꿈
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+// 개요 칩·건물 이름표에 쓰는 { name: 이름, tag: GPU 표 }
+//   이름에 표와 같은 모델 글자가 있으면 이름에서 빼서 "GB300 … GB300" 처럼 두 번 나오지 않게
+//     프린스조지 "GB300 액체냉각 홀" → "액체냉각 홀" + GB300 표 · 매켄지 "공랭 B300 홀" → "공랭 홀" + B300 표
+//     "초기 GPU 파일럿 (H100/H200)" → 괄호째 빼서 "초기 GPU 파일럿" + H100·H200 표
+//   (예전엔 반대로 표를 뺐는데, 그러면 이름에 모델이 든 홀만 표가 없어 한눈에 비교가 안 됐음)
+//   이름 고르기는 pickName(i18n/useT.js)과 같은 규칙 — 그 파일은 앱 상태(store)까지 불러와서 여기서는 직접 씀
+export function gpuLabel(b, lang) {
+  const full = (lang === 'ko' && b?.name_ko) || b?.name || ''
+  const tag = gpuTag(b)
+  if (!tag) return { name: full, tag: null }
+  let name = full
+  for (const m of gpuModels(b.gpu.model)) {
+    // 앞뒤가 영문·숫자가 아닌 곳만 뺌 (GB300 속의 B300 은 다른 모델). 앞쪽은 글자 하나를 잡아 두었다가 되돌려 놓음
+    //   — 앞을 살피는 정규식(?<!…)은 옛 iOS Safari 에서 오류가 나서 쓰지 않음
+    name = name.replace(new RegExp(`(^|[^A-Za-z0-9])${escapeRe(m)}(?![A-Za-z0-9])`, 'g'), '$1')
+  }
+  name = name
+    .replace(/\(\s*[/·,\s]*\)/g, '')   // 모델만 들어 있던 괄호: "(H100/H200)" → "(/)" → 괄호째 지움
+    .replace(/\s+/g, ' ')
+    .trim()
+  if (!name) return { name: full, tag: null }   // 이름이 모델뿐이었으면 이름을 그대로 두고 표는 뺌
+  if (name !== full) name = name.replace(/^[a-z]/, (c) => c.toUpperCase())   // 영어 "liquid-cooled hall" → "Liquid-cooled hall"
+  return { name, tag }
 }
 
 // 3D 전체 보기에서 계약 없는 건물 무리를 묶는 구역 라벨 종류 (글자는 i18n 의 campus[종류])

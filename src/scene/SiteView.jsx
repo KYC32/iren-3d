@@ -30,7 +30,7 @@ import { figureIcon } from '../ui/figureIcons.js'
 import { openFigure } from '../ui/figureState.js'
 import { DryCampusGround } from './buildings/PhotoReferencedCampus.jsx'
 import { estimateHall, roundNice } from '../data/hallEstimate.js'
-import { buildingMwText, areaKeyOf, gpuTag, gpuLine } from './buildingLabel.js'
+import { buildingMwText, areaKeyOf, gpuLabel, gpuLine } from './buildingLabel.js'
 
 export default function SiteView({ site }) {
   const appearance = campusAppearance(site.id)
@@ -129,21 +129,22 @@ export default function SiteView({ site }) {
 
       {/* 개요 화면의 건물 상태 칩: "Horizon 2 · 시운전" 처럼 이름과 상태를 함께 (전엔 상태만 있어 어느 건물인지 몰랐음)
           건설 중 건물도 칩으로 — "지금 어디까지 지어졌나"가 확대하지 않아도 보이게 (겹치면 낮은 우선순위가 비켜남) */}
-      {!detail && L.blocks.filter(b=>b.isAnchor&&!b.asLot&&b.kind!=='miner_hall'&&['delivered','operating','commissioning','under_construction'].includes(b.status)&&(!zoneKey||customerKey(byId[b.buildingId]?.customer)===zoneKey)&&selectedId!==b.buildingId&&hoverId!==b.buildingId).map(b=><CampusLabel key={`signal-${b.key}`} position={[b.x,b.h+1,b.z]} priority={b.status==='under_construction'?50:55}>
+      {!detail && L.blocks.filter(b=>b.isAnchor&&!b.asLot&&b.kind!=='miner_hall'&&['delivered','operating','commissioning','under_construction'].includes(b.status)&&(!zoneKey||customerKey(byId[b.buildingId]?.customer)===zoneKey)&&selectedId!==b.buildingId&&hoverId!==b.buildingId).map(b=>{const g=gpuLabel(byId[b.buildingId],lang);/* 칩에 쓸 이름과 GPU 표 (이름에 든 모델 글자는 표로 옮김) */return <CampusLabel key={`signal-${b.key}`} position={[b.x,b.h+1,b.z]} priority={b.status==='under_construction'?50:55}>
         <button className={`building-signal signal-${b.status}`} onClick={(e)=>{e.stopPropagation();pickBuilding(b.buildingId, true)}/* 클릭이 3D 로 퍼져 뒤 블록이 선택을 다시 풀지 않게 · 칩을 누르면 그 건물로 */} title={`${pickName(byId[b.buildingId],lang)} · ${t.status[b.status]}`}>
           {b.status==='delivered'?<Check size={12}/>:b.status==='operating'?<Activity size={12}/>:b.status==='under_construction'?<HardHat size={12}/>:<span className="signal-pending"/>}
-          <span className="signal-name">{pickName(byId[b.buildingId],lang)}</span>
+          <span className="signal-name">{g.name}</span>
           {b.status==='delivered'?(lang==='ko'?'인수 완료':'Accepted'):t.status[b.status]}
-          {/* GPU 표 (Horizon = GB300, 스위트워터 1단계 = Vera Rubin): 멀리서 보는 기본 화면에서도 보이게 — 가까이 가면 건물 이름표에 같은 표 */}
-          {gpuTag(byId[b.buildingId]) && <span className="gpu-tag"><Cpu size={11} aria-hidden="true" />{gpuTag(byId[b.buildingId])}</span>}
+          {/* GPU 표 (Horizon = GB300, 스위트워터 1단계 = Vera Rubin, 공랭 홀 = B300 등): 멀리서 보는 기본 화면에서도 보이게 — 가까이 가면 건물 이름표에 같은 표 */}
+          {g.tag && <span className="gpu-tag"><Cpu size={11} aria-hidden="true" />{g.tag}</span>}
         </button>
-      </CampusLabel>)}
+      </CampusLabel>})}
 
       {/* 건물 라벨 (첫 블록 위) */}
       {L.blocks
         .filter((b) => (!zoneKey || customerKey(byId[b.buildingId]?.customer) === zoneKey) && b.isAnchor && !b.asLot && (b.buildingId ? byId[b.buildingId] && (detail || selectedId === b.buildingId || hoverId === b.buildingId) : L.lotCount > 0))
         .map((b) => {
           const bld = b.buildingId ? byId[b.buildingId] : null
+          const g = bld ? gpuLabel(bld, lang) : null   // 이름표에 쓸 이름과 GPU 표 (이름에 든 모델 글자는 표로 옮김)
           const st = styleOf(b.status)
           const hovered = bld && hoverId === bld.id
           const selected = bld && selectedId === bld.id
@@ -164,9 +165,9 @@ export default function SiteView({ site }) {
               >
                 <div className="row">
                   {b.status==='delivered'?<Check size={13} color={st.color}/>:<span className={`dot${b.status==='operating'?' operating-dot':''}`} style={{ background: st.color }} />}
-                  <span className="name">{bld ? pickName(bld, lang) : `${fmtMw(L.remainingMw)}`}</span>
-                  {/* GPU 표 (Horizon = GB300, 스위트워터 1단계 = Vera Rubin) — 규칙은 buildingLabel.js 의 gpuTag */}
-                  {bld && gpuTag(bld) && <span className="gpu-tag"><Cpu size={11} aria-hidden="true" />{gpuTag(bld)}</span>}
+                  <span className="name">{bld ? g.name : `${fmtMw(L.remainingMw)}`}</span>
+                  {/* GPU 표 (Horizon = GB300, 스위트워터 1단계 = Vera Rubin, 공랭 홀 = B300 등) — 규칙은 buildingLabel.js 의 gpuLabel */}
+                  {g?.tag && <span className="gpu-tag"><Cpu size={11} aria-hidden="true" />{g.tag}</span>}
                   {/* 건설중이면 진행률 막대 (마우스를 올리지 않아도 보이게) */}
                   {pct != null && (
                     <span className="prog" aria-label={`${pct}%`}>

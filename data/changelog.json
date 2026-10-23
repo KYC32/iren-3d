@@ -4,6 +4,10 @@
       "date": "2026-10-23",
       "items": [
         {
+          "ko": "공랭 홀에도 GPU 표: 3D 개요 칩과 건물 이름표의 GPU 표를 GPU 모델을 아는 모든 홀로 넓힘. 차일드레스·매켄지 공랭 홀 = B300, 프린스조지 공랭 홀 = H200·B200·B300·MI350X(혼합), 프린스조지 초기 파일럿(2025년까지) = H100·H200. 이름에 같은 모델 글자가 있으면 이름에서 빼고 표로 보여 줌('공랭 B300 홀' → '공랭 홀' + B300 표, 'GB300 액체냉각 홀' → '액체냉각 홀' + GB300 표)",
+          "en": "GPU tags now cover every hall with a known GPU model, air-cooled ones included: Childress and Mackenzie air-cooled halls = B300, Prince George air-cooled halls = H200·B200·B300·MI350X (mixed), Prince George's early pilot (through 2025) = H100·H200. When a name already contains the model, the model moves from the name to the tag ('Air-cooled B300 halls' → 'Air-cooled halls' + B300, 'GB300 liquid-cooled hall' → 'Liquid-cooled hall' + GB300)"
+        },
+        {
           "ko": "본사 화면에서 경영진 카드를 열면 약속 타임라인 탭이 먼저 나옴. CEO 사진·성적표·말풍선 어디를 눌러도 같고 말풍선은 보이는 발언에 걸린 약속을 펼친 채 엶. 발언 탭은 카드 안 탭으로",
           "en": "At HQ the management card now opens on the promise timeline first, whichever you click (CEO photo, scorecard or speech bubble); the bubble opens with its statement's promise expanded, and statements are one tab away"
         },
