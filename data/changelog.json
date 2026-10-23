@@ -4,6 +4,10 @@
       "date": "2026-10-23",
       "items": [
         {
+          "ko": "본사 화면에서 경영진 카드를 열면 약속 타임라인 탭이 먼저 나옴. CEO 사진·성적표·말풍선 어디를 눌러도 같고 말풍선은 보이는 발언에 걸린 약속을 펼친 채 엶. 발언 탭은 카드 안 탭으로",
+          "en": "At HQ the management card now opens on the promise timeline first, whichever you click (CEO photo, scorecard or speech bubble); the bubble opens with its statement's promise expanded, and statements are one tab away"
+        },
+        {
           "ko": "다음 실적 발표 확정: Q1 FY27 2026-11-05(목) — 콘퍼런스콜 미국 동부 오후 5시(한국 11/6 오전 7시). 회사 발표 전 외부 추정(2026-11)을 회사 보도자료(2026-10-22)로 교체",
           "en": "Next earnings confirmed: Q1 FY27 on 2026-11-05 (Thu), conference call 5:00 pm ET. Replaces the earlier estimate (2026-11) with the company release (2026-10-22)",
           "source": "https://www.globenewswire.com/news-release/2026/10/22/3386871/0/en/iren-to-release-q1-fy27-results-on-november-5-2026.html"

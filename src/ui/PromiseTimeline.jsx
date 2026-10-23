@@ -34,9 +34,13 @@ export default function PromiseTimeline({ file, lang, h, open, onOpen }) {
   const chartRef = useRef(null), trackRef = useRef(null)
   const [tip, setTip] = useState(null) // 날짜 풍선: { r, x, y }
 
-  // 다른 탭(발언의 약속 칩)에서 약속을 골라 들어오면 그 줄이 보이게 (처음 그릴 때 한 번만 — 줄을 직접 누를 땐 스크롤하지 않음)
+  // 약속을 골라 들어오면(발언 탭의 약속 칩 · 3D 말풍선) 그 줄이 보이게 (처음 그릴 때 한 번만 — 줄을 직접 누를 땐 스크롤하지 않음)
+  //   한 프레임 뒤에: 카드를 막 여는 중이면 바깥 틀(StatementsCard)의 showModal 이 이 효과보다 늦게 돌아서,
+  //   바로 스크롤하면 아직 닫힌 카드라 움직이지 않음 (말풍선으로 열 때 펼친 줄이 화면 밖에 있었음)
   useEffect(() => {
-    if (open) chartRef.current?.querySelector(`[data-row="${open}"]`)?.scrollIntoView({ block: 'center' })
+    if (!open) return undefined
+    const id = requestAnimationFrame(() => chartRef.current?.querySelector(`[data-row="${open}"]`)?.scrollIntoView({ block: 'center' }))
+    return () => cancelAnimationFrame(id)
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 줄에 마우스가 들어오거나 키보드 초점이 오면 그 줄 아래에 풍선 (손가락은 풍선 없이 펼침만)

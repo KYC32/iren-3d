@@ -349,12 +349,15 @@ describe('본사 3D 화면', () => {
     state().openHqCard({ tab: 'promises' }); state().requestGlobe(); state().enterHq3D()
     expect(state().hqCard).toBeNull()
   })
-  it('탭을 안 주면 발언 탭 · setHqTab 으로 바꾸면 주소도 (펼친 약속은 약속 탭에만, 사람 거르기는 유지)', () => {
+  // 2026-10-23 사용자 요청 "본사에서 경영진 발언을 확인할 때 약속이 먼저" — 탭을 안 주면 약속 탭
+  it('탭을 안 주면 약속 탭 · setHqTab 으로 바꾸면 주소도 (펼친 약속은 약속 탭에만, 사람 거르기는 유지)', () => {
     state().setRaw(raw); state().enterHq3D(); state().openHqCard({})
-    expect(state().hqCard).toEqual({ tab: 'statements' })
+    expect(state().hqCard).toEqual({ tab: 'promises' })
+    expect(window.history.replaceState).toHaveBeenLastCalledWith(null, '', '#hq=1&card=promises')
+    state().setHqTab('statements'); expect(state().hqCard).toEqual({ tab: 'statements' })
+    expect(window.history.replaceState).toHaveBeenLastCalledWith(null, '', '#hq=1&card=statements')
     state().setHqTab('promises', { open: 'p-x' })
     expect(state().hqCard).toEqual({ tab: 'promises', open: 'p-x' })
-    expect(window.history.replaceState).toHaveBeenLastCalledWith(null, '', '#hq=1&card=promises')
     state().setHqTab('statements'); expect(state().hqCard).toEqual({ tab: 'statements' })
     state().openHqCard({ tab: 'statements', person: 'daniel-roberts' }); state().setHqTab('promises')
     expect(state().hqCard).toEqual({ tab: 'promises', person: 'daniel-roberts' })

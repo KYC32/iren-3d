@@ -199,8 +199,8 @@ export const useAppStore = create((set, get) => ({
       mapRegion: { country: 'HQ', seq: get().mapRegion.seq }, mapCamera: null, hqCard: null })
     get().syncHash()
   },
-  // 가운데 카드 열기 (탭을 안 주면 발언 탭) · 닫기 — 둘 다 주소의 card 도 바꿈
-  openHqCard: (card) => { set({ hqCard: { tab: 'statements', ...(card ?? {}) } }); get().syncHash() },
+  // 가운데 카드 열기 (탭을 안 주면 약속 탭 — 2026-10-23 사용자 요청 "약속이 먼저") · 닫기 — 둘 다 주소의 card 도 바꿈
+  openHqCard: (card) => { set({ hqCard: { tab: 'promises', ...(card ?? {}) } }); get().syncHash() },
   closeHqCard: () => { set({ hqCard: null }); get().syncHash() },
   // 카드 안에서 탭 바꾸기: 사람 거르기(CEO 사진으로 연 카드)는 그대로, 펼친 약속(open)은 extra 로만 (발언 탭엔 필요 없음)
   setHqTab: (tab, extra = {}) => {

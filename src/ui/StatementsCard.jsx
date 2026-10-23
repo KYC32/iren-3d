@@ -3,9 +3,10 @@
 // -------------------------------------------------------------
 // 탭 두 개 (useAppStore.hqCard.tab — 주소에도 card=탭):
 //   약속 (promises)   : 약속마다 한 줄 타임라인 — 처음 말한 날 → 기한 막대, 이룬 날 점 (ui/PromiseTimeline.jsx)
-//                       CEO 카드의 성적표 · ≡ 메뉴 'CEO 약속 타임라인' · 발언 탭의 약속 칩이 이 탭을 엶
+//                       카드는 늘 이 탭으로 열림: CEO 사진·성적표 · 말풍선(그 발언의 약속을 펼침) · ≡ 메뉴 'CEO 약속 타임라인'
+//                       (2026-10-23 사용자 요청 "본사에서 경영진 발언을 확인할 때 약속이 먼저")
 //   발언 (statements) : 달별 묶음 (data/statementFeed.js) — 요약이 본문, 약속은 칩 하나(누르면 약속 탭의 그 줄),
-//                       영어 원문은 접어 둠. CEO 사진을 누르면 그 사람 발언만 (hqCard.person)
+//                       영어 원문은 접어 둠. CEO 사진으로 열었으면 이 탭에서 그 사람 발언만 (hqCard.person)
 //   2026-10-22 사용자 요청: "약속만 따로 · 전체 나열은 가독성이 별로" → 예전 한 줄 목록(56줄)을 이 두 탭으로 바꿈
 // 판정(지켜짐·늦게 지켜짐·늦어짐·철회·기한 전)은 손으로 적지 않고 data/promises.js 가 계산 (기준일 = 자료 확인일)
 // <dialog> + showModal(): Esc·바깥(어두운 뒷배경)을 누르면 닫히고, 닫으면 초점이 누른 곳으로 돌아감 (AppMenu 와 같은 방식)
@@ -58,7 +59,7 @@ export default function StatementsCard() {
     return () => ro.disconnect()
   }, [])
   const h = hqText[lang === 'ko' ? 'ko' : 'en']
-  const tab = TABS.includes(card.tab) ? card.tab : 'statements'
+  const tab = TABS.includes(card.tab) ? card.tab : 'promises' // 탭이 없으면 약속 먼저 (2026-10-23 사용자 요청)
   const who = card.person ? file?.people.find((p) => p.id === card.person) : null
   const title = who && tab === 'statements' ? fill(h.personTitle, { name: who.name }) : h.panelTitle
   // 탭 바꾸기: 카드를 맨 위로 올린 뒤 바꿈 (안 그러면 앞 탭의 스크롤 위치에서 시작) — 약속 칩으로 오면 약속 탭이 그 줄로 다시 내림
