@@ -1,6 +1,16 @@
 {
   "entries": [
     {
+      "date": "2026-10-23",
+      "items": [
+        {
+          "ko": "스위트워터 3D 화면에 'Vera Rubin' 표시: 회사가 1단계를 'NVIDIA Vera Rubin 을 포함한 차세대 칩 구조를 위해 설계'한다고 밝힌 것을 건물 데이터에 넣고(근거 종류 '설계 기준' — 주문·설치 발표 전), 멀리서 보는 개요 칩과 건물 이름표에 Vera Rubin 표를 붙임. GPU 수 추정도 GB300 가정(GPU 1개 2.0 kW) 대신 Vera Rubin 가정(약 3.0 kW — NVIDIA 미발표, 업계 추정 랙 190–230 kW ÷ 72)으로 바꿔 약 100,000개 → 약 67,000개",
+          "en": "Sweetwater 3D view now shows 'Vera Rubin': the company's statement that phase 1 is 'designed for next generation chip architectures, including the NVIDIA Vera Rubin' is in the building data (basis 'designed for' — before any order or install), with a Vera Rubin tag on the overview chip and the building label. The GPU estimate switches from the GB300 assumption (2.0 kW per GPU) to a Vera Rubin one (~3.0 kW — not published by NVIDIA; industry estimate of 190–230 kW per rack ÷ 72), about 100,000 → about 67,000",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
+        }
+      ]
+    },
+    {
       "date": "2026-10-22",
       "items": [
         {

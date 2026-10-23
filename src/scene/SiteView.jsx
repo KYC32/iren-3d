@@ -25,12 +25,12 @@ import { contentBox } from './campusCamera.js'
 import { devMilestones } from './devMilestones.js'
 import { fmtWhen } from '../data/events.js'
 import './scene.css' // 3D 화면 전용 스타일 (이 화면 코드와 함께 나중에 불러옴)
-import { Check, Activity, HardHat, CircleCheck, Clock, CircleDashed } from 'lucide-react'
+import { Check, Activity, HardHat, CircleCheck, Clock, CircleDashed, Cpu } from 'lucide-react'
 import { figureIcon } from '../ui/figureIcons.js'
 import { openFigure } from '../ui/figureState.js'
 import { DryCampusGround } from './buildings/PhotoReferencedCampus.jsx'
 import { estimateHall, roundNice } from '../data/hallEstimate.js'
-import { buildingMwText, areaKeyOf } from './buildingLabel.js'
+import { buildingMwText, areaKeyOf, gpuTag, gpuLine } from './buildingLabel.js'
 
 export default function SiteView({ site }) {
   const appearance = campusAppearance(site.id)
@@ -134,6 +134,8 @@ export default function SiteView({ site }) {
           {b.status==='delivered'?<Check size={12}/>:b.status==='operating'?<Activity size={12}/>:b.status==='under_construction'?<HardHat size={12}/>:<span className="signal-pending"/>}
           <span className="signal-name">{pickName(byId[b.buildingId],lang)}</span>
           {b.status==='delivered'?(lang==='ko'?'인수 완료':'Accepted'):t.status[b.status]}
+          {/* 설계 기준 GPU (스위트워터 1단계 = Vera Rubin): 멀리서 보는 기본 화면에서도 보이게 — 가까이 가면 건물 이름표에 같은 표 */}
+          {gpuTag(byId[b.buildingId]) && <span className="gpu-tag"><Cpu size={11} aria-hidden="true" />{gpuTag(byId[b.buildingId])}</span>}
         </button>
       </CampusLabel>)}
 
@@ -163,6 +165,8 @@ export default function SiteView({ site }) {
                 <div className="row">
                   {b.status==='delivered'?<Check size={13} color={st.color}/>:<span className={`dot${b.status==='operating'?' operating-dot':''}`} style={{ background: st.color }} />}
                   <span className="name">{bld ? pickName(bld, lang) : `${fmtMw(L.remainingMw)}`}</span>
+                  {/* 회사가 '이 칩을 위해 설계'라고 밝힌 건물: 고르지 않아도 GPU 표 (스위트워터 1단계 = Vera Rubin) — buildingLabel.js */}
+                  {bld && gpuTag(bld) && <span className="gpu-tag"><Cpu size={11} aria-hidden="true" />{gpuTag(bld)}</span>}
                   {/* 건설중이면 진행률 막대 (마우스를 올리지 않아도 보이게) */}
                   {pct != null && (
                     <span className="prog" aria-label={`${pct}%`}>
@@ -184,7 +188,7 @@ export default function SiteView({ site }) {
                     <div>{t.status[b.status]}{b.status === 'under_construction' && bld.progress != null ? ` · ${Math.round(bld.progress * 100)}%` : ''}</div>
                     {/* 용량 한 줄: IT / 전체 전력 (0 은 "모름"이라 뺌 — buildingLabel.js) */}
                     <div>{buildingMwText(bld)}</div>
-                    {bld.gpu && <div>GPU · {bld.gpu.model}{bld.gpu.count ? ` × ${bld.gpu.count.toLocaleString()}` : ''}{bld.gpu.basis === 'installed_or_ordered' ? (lang === 'ko' ? ' (설치·주문 포함)' : ' (installed or on order)') : ''}</div>}
+                    {bld.gpu && <div>{gpuLine(bld, lang)}</div>}
                     {/* MW → GPU·랙 환산 (회사가 GPU 수를 발표하지 않았으면 추정) — 자세한 가정은 오른쪽 패널 */}
                     {selectedEst && !selectedEst.gpusReported && <div className="est">≈ GPU {roundNice(selectedEst.gpus).toLocaleString()} · {lang === 'ko' ? '랙' : 'racks'} {roundNice(selectedEst.racks).toLocaleString()} <i>{lang === 'ko' ? '추정' : 'est.'}</i></div>}
                     {selectedEst && selectedEst.gpusReported && <div className="est">≈ {lang === 'ko' ? '랙' : 'racks'} {roundNice(selectedEst.racks).toLocaleString()} <i>{lang === 'ko' ? '추정' : 'est.'}</i></div>}

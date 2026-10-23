@@ -558,6 +558,11 @@
           "figure": "sweetwater-1",
           "it_mw": 200,
           "gross_mw": 300,
+          "gpu": {
+            "model": "Vera Rubin",
+            "count": null,
+            "basis": "designed_for"
+          },
           "progress": 0.15,
           "sources": [
             "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm",

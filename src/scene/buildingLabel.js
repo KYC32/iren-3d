@@ -16,6 +16,25 @@ export function buildingMwText(b) {
   return [head, gross].filter(Boolean).join(' / ')
 }
 
+// GPU 근거 종류 글자 (데이터의 gpu.basis — schema.js)
+const GPU_BASIS = {
+  installed_or_ordered: { ko: '설치·주문 포함', en: 'installed or on order' },
+  designed_for: { ko: '설계 기준', en: 'designed for' },   // 회사가 "이 칩을 위해 설계"라고만 밝힘 (주문·설치 발표 전)
+}
+// 건물을 골랐을 때 GPU 한 줄: "GPU · 모델 × 개수 (근거)" — GPU 정보가 없으면 빈 문자열
+export function gpuLine(b, lang) {
+  const g = b?.gpu
+  if (!g) return ''
+  const count = g.count ? ` × ${g.count.toLocaleString('en-US')}` : ''
+  const basis = GPU_BASIS[g.basis] ? ` (${GPU_BASIS[g.basis][lang === 'ko' ? 'ko' : 'en']})` : ''
+  return `GPU · ${g.model}${count}${basis}`
+}
+// 고르지 않아도 늘 보이는 이름표의 GPU 표: 설계 기준 GPU 만 (아직 설치 전이라 이렇게 하지 않으면 3D 에서 알 길이 없음)
+//   설치·주문 발표가 있는 건물(Horizon 의 GB300 등)은 골랐을 때 GPU 줄로만 → null
+export function gpuTag(b) {
+  return b?.gpu?.basis === 'designed_for' ? b.gpu.model : null
+}
+
 // 3D 전체 보기에서 계약 없는 건물 무리를 묶는 구역 라벨 종류 (글자는 i18n 의 campus[종류])
 //   계획 중인 건물이 채굴동 전력을 넘겨받으면(replaces → 채굴동) "AI 전환 예정" = 채굴 → AI 전환 (커낼플랫츠 등)
 //     공랭·액체냉각은 따지지 않음: 커낼플랫츠는 회사 발표대로 "부지 전체를 액체냉각으로 전환"

@@ -15,6 +15,11 @@ describe('GPU 가정 고르기', () => {
     expect(gpuProfile({ gpu: { model: 'H200 / B200 / B300 / MI350X (mixed)' } }).id).toBe('hgx-blackwell')
     expect(gpuProfile({ gpu: { model: 'H100 / H200' } }).id).toBe('hgx-hopper')
   })
+  it('Vera Rubin 은 따로 가정 — 이름에 NVL72 가 붙어도 GB300 가정으로 가지 않고, 출처(업계 추정)를 함께 가짐', () => {
+    expect(gpuProfile({ gpu: { model: 'Vera Rubin' } })).toMatchObject({ id: 'vera-rubin', gpusPerRack: 72, kwPerGpu: 3.0, modelKnown: true })
+    expect(gpuProfile({ gpu: { model: 'Vera Rubin NVL72' } }).id).toBe('vera-rubin')
+    expect(gpuProfile({ gpu: { model: 'Vera Rubin' } }).note.ko).toMatch(/업계 추정/)
+  })
   it('모델 미발표는 냉각 방식으로 가정, 채굴 홀은 대상 아님', () => {
     expect(gpuProfile({ kind: 'datahall_liquid' })).toMatchObject({ id: 'nvl72', modelKnown: false })
     expect(gpuProfile({ kind: 'datahall_air' })).toMatchObject({ id: 'hgx-blackwell', modelKnown: false })
@@ -23,6 +28,12 @@ describe('GPU 가정 고르기', () => {
 })
 
 describe('건물 속 추정 (estimateHall)', () => {
+  it('스위트워터 1단계: 회사가 Vera Rubin 기준 설계라고 밝힘 → IT 200MW ÷ 3.0kW ≈ GPU 66,667개 · 랙 926개 (업계 추정 가정)', () => {
+    const sw = raw.sites.find((s) => s.id === 'sweetwater-1')
+    const b = bld(sw, 'sw1-phase1')
+    expect(b.gpu).toMatchObject({ model: 'Vera Rubin', count: null, basis: 'designed_for' })
+    expect(estimateHall(b)).toMatchObject({ itMw: 200, gpus: 66667, gpusReported: false, racks: 926 })
+  })
   it('Horizon 1: IT 50MW ÷ 2.0kW = GPU 25,000개 · NVL72 랙 348개', () => {
     const e = estimateHall(bld(childress, 'horizon-1'))
     expect(e).toMatchObject({ itMw: 50, itBasis: 'it', gpus: 25000, gpusReported: false, racks: 348 })

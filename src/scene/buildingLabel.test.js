@@ -2,7 +2,7 @@
 // 화면용 건물 값(view.js)에서 MW 가 0 이면 "모름·없음" → 보여 주지 않아야 함
 //   (버그였던 것: NVIDIA 건물 라벨이 "~60 MW*0 MW gross" 로 붙어 나옴)
 import { it, expect } from 'vitest'
-import { buildingMwText, areaKeyOf } from './buildingLabel.js'
+import { buildingMwText, areaKeyOf, gpuTag, gpuLine } from './buildingLabel.js'
 
 it.each([
   // [설명, 화면용 건물 값, 기대 문구]
@@ -48,4 +48,25 @@ it('구역 라벨: 넘겨받는 채굴동이 퇴역해 화면 목록에 없어�
   const visible = { cfLiquid: byId.cfLiquid }   // 그 날짜에 보이는 건물 (채굴동 없음)
   const all = { ...byId }                       // 퇴역한 건물까지 모두
   expect(areaKeyOf({ status: 'planned', kind: 'datahall_liquid', buildingId: 'cfLiquid' }, visible, all)).toBe('convert')
+})
+
+// 이름표의 GPU 표: 회사가 "이 칩을 위해 설계"라고만 밝힌 건물(basis designed_for)은
+//   고르지 않아도 늘 보이는 이름표에 표를 붙임 (스위트워터 1단계 = Vera Rubin). 설치·주문 발표가 있는 건물은 골랐을 때 줄로만
+it.each([
+  ['설계 기준 GPU (스위트워터)', { gpu: { model: 'Vera Rubin', count: null, basis: 'designed_for' } }, 'Vera Rubin'],
+  ['설치된 GPU (Horizon) 는 이름표 표 없음', { gpu: { model: 'GB300 NVL72', count: null } }, null],
+  ['GPU 정보가 없으면 없음', {}, null],
+])('이름표 GPU 표: %s', (_, building, want) => {
+  expect(gpuTag(building)).toBe(want)
+})
+
+// 건물을 골랐을 때의 GPU 한 줄: 모델 · 개수 · 근거 종류
+it.each([
+  ['설계 기준', { gpu: { model: 'Vera Rubin', count: null, basis: 'designed_for' } }, 'ko', 'GPU · Vera Rubin (설계 기준)'],
+  ['설계 기준 (영어)', { gpu: { model: 'Vera Rubin', count: null, basis: 'designed_for' } }, 'en', 'GPU · Vera Rubin (designed for)'],
+  ['설치·주문 포함 + 개수', { gpu: { model: 'B300', count: 23000, basis: 'installed_or_ordered' } }, 'ko', 'GPU · B300 × 23,000 (설치·주문 포함)'],
+  ['모델만', { gpu: { model: 'GB300 NVL72', count: null } }, 'ko', 'GPU · GB300 NVL72'],
+  ['GPU 정보 없음', {}, 'ko', ''],
+])('GPU 줄: %s', (_, building, lang, want) => {
+  expect(gpuLine(building, lang)).toBe(want)
 })
