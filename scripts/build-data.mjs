@@ -8,7 +8,7 @@
 // =============================================================
 import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { validateResearch } from '../src/data/researchSchema.js'
-import { SourceDatesFile, HiringFile } from '../src/data/schema.js'
+import { SourceDatesFile, HiringFile, ProspectsFile } from '../src/data/schema.js'
 import { validateObservations } from '../src/data/observationsSchema.js'
 import { validateStatements } from '../src/data/statementsSchema.js'
 import { validateShares } from '../src/data/sharesSchema.js'
@@ -41,7 +41,11 @@ export function buildInfra() {
   const hiringUrl = new URL('hiring.json', DATA)
   const hiring = existsSync(hiringUrl) ? HiringFile.parse(JSON.parse(readFileSync(hiringUrl, 'utf8'))) : undefined
   for (const h of hiring?.sites ?? []) if (!sites.some((s) => s.id === h.site)) throw new Error(`hiring.json: 없는 사이트 ${h.site}`)
-  return { ...(research ? { research } : {}), ...(sourceDates ? { sourceDates } : {}), ...(hiring ? { hiring } : {}), schema_version: 2, as_of: asOf, companies, programs, sites, ...(changelog ? { changelog } : {}) }
+  // 미확인 진출 정황 (지도 '?' 표시) — 부지와 id 가 겹치면 같은 곳을 두 번 그리게 되므로 빌드 실패
+  const prospectsUrl = new URL('prospects.json', DATA)
+  const prospects = existsSync(prospectsUrl) ? ProspectsFile.parse(JSON.parse(readFileSync(prospectsUrl, 'utf8'))).prospects : undefined
+  for (const p of prospects ?? []) if (sites.some((s) => s.id === p.id)) throw new Error(`prospects.json: 부지와 같은 id ${p.id}`)
+  return { ...(research ? { research } : {}), ...(sourceDates ? { sourceDates } : {}), ...(hiring ? { hiring } : {}), ...(prospects ? { prospects } : {}), schema_version: 2, as_of: asOf, companies, programs, sites, ...(changelog ? { changelog } : {}) }
 }
 
 // 현장 관찰·설비 이중화 (data/observations.json) — infra.json 과 따로 둠:

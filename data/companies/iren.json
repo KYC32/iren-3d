@@ -1629,6 +1629,67 @@
         "https://www.globenewswire.com/news-release/2026/10/21/3385423/0/en/iren-to-advance-europe-s-sovereign-ai-ambitions-with-300mw-spanish-campus.html"
       ],
       "confidence": "medium"
+    },
+    {
+      "id": "redbank",
+      "name": "Redbank (New South Wales)",
+      "name_ko": "레드뱅크 (뉴사우스웨일스)",
+      "country": "AU",
+      "admin1": "AU-NSW",
+      "region": "New South Wales",
+      "tz": "Australia/Sydney",
+      "coord": {
+        "lat": -35.2079,
+        "lng": 147.3808,
+        "confidence": "medium",
+        "method": "described_landmark",
+        "source": "https://redbankdatacentre.com.au/"
+      },
+      "primary": "iren",
+      "parties": [
+        {
+          "company": "iren",
+          "role": "developer",
+          "source": "https://redbankdatacentre.com.au/"
+        }
+      ],
+      "detail": "lite",
+      "announced": "2026-10",
+      "acres": null,
+      "grid_operator": "Transgrid",
+      "cooling": "closed-loop",
+      "summary_ko": "Wagga Wagga 남쪽 Gregadoo 의 계획 캠퍼스(2026-10 공개, 초기 검토 단계). 계획 900MW, 2029년 첫 통전 목표. 계통 연결은 추진 중이라 발표된 5GW 확보 전력에 들어 있지 않음. 기존 고압 송전망에 연결하고 접속 비용은 IREN 이 냄. 새 재생에너지·저장 설비 계약으로 전력을 충당하고 냉각은 폐쇄 루프. 다음 단계는 NSW 계획 승인 범위 보고서(scoping report) 제출.",
+      "summary_en": "Planned campus at Gregadoo, south of Wagga Wagga (unveiled Oct 2026, early assessment). 900MW planned, initial energisation targeted for 2029. The grid connection is still being worked toward, so it is not part of the announced 5GW secured-power portfolio. It will connect to the existing high-voltage transmission network at IREN's cost, contract new renewable generation and storage to cover its use, and recirculate cooling water in a closed loop. Next step: a scoping report for NSW planning approval.",
+      "power": [
+        {
+          "from": "2026-10",
+          "secured_mw": 0,
+          "energized_mw": 0,
+          "basis": "reported",
+          "source": "https://x.com/IREN_Ltd/status/2110149386600947768"
+        }
+      ],
+      "planned": {
+        "mw": 900,
+        "source": "https://redbankdatacentre.com.au/"
+      },
+      "substation": {},
+      "buildings": [],
+      "deliveries": [],
+      "timeline": [
+        {
+          "date": "2026-10-14",
+          "event": "레드뱅크(뉴사우스웨일스) 캠퍼스 계획 공개 — 초기 검토 단계, 5GW 확보 전력 밖",
+          "event_en": "Redbank (NSW) campus plan unveiled — early assessment, outside the 5GW secured-power portfolio",
+          "source": "https://x.com/IREN_Ltd/status/2110149386600947768"
+        }
+      ],
+      "estimates": [],
+      "sources": [
+        "https://redbankdatacentre.com.au/",
+        "https://x.com/IREN_Ltd/status/2110149386600947768"
+      ],
+      "confidence": "medium"
     }
   ],
   "reviewed_at": "2026-10-07"

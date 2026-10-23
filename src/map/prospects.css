@@ -1,0 +1,28 @@
+/* =============================================================
+   지도 '?' 표 (ProspectMarkers) — 캠퍼스 카드보다 작은 점선 표 + 회색으로 "미확인"
+   지도 코드와 함께 늦게 불러오므로 첫 화면 크기에 들지 않음
+   ============================================================= */
+.prospect-map-marker { z-index: 2; pointer-events: auto; }
+.prospect-map-marker.is-open { z-index: 6; }   /* 열린 목록이 다른 캠퍼스 카드 밑에 깔리지 않게 */
+
+/* 표: "? 앨버타" — 아래 짧은 줄과 점이 그 자리를 가리킴 (캠퍼스 카드와 같은 모양, 크기만 작게) */
+.prospect-pin { position: relative; display: flex; align-items: center; gap: 5px; margin-bottom: 11px; padding: 4px 9px 4px 4px; background: linear-gradient(180deg, #f7f8fa, #eceff3); border: 1px dashed #8d99a8; border-radius: 999px; box-shadow: inset 0 1px 0 #ffffffd9, 0 1px 1px #0b344f1f, 0 3px 7px #0b344f1a; color: #33475c; font: inherit; cursor: pointer; white-space: nowrap; }
+.prospect-pin:hover, .prospect-pin:focus-visible, .prospect-pin[aria-expanded="true"] { outline: none; border-color: #5f6e80; box-shadow: inset 0 1px 0 #fff, 0 2px 2px #0b344f22, 0 6px 12px #0b344f22; }
+.prospect-pin b { font-size: 11px; font-weight: 700; letter-spacing: -.02em; }
+.prospect-q { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 50%; background: #e2e6ec; box-shadow: inset 0 1px 2px #0b344f40, inset 0 -1px 0 #ffffffcc; color: #4c5b6c; font: 800 11px/1 ui-sans-serif, system-ui, sans-serif; flex-shrink: 0; }
+.prospect-stem { position: absolute; top: 100%; left: 50%; width: 1.5px; height: 10px; background: #6b7a8c; }
+.prospect-stem::after { content: ''; position: absolute; bottom: -3px; left: -3px; width: 7px; height: 7px; border-radius: 50%; background: #fff; border: 2px solid #6b7a8c; box-sizing: border-box; }
+
+/* 정황 목록: 기본은 표 바로 위, 화면 위쪽이면 점 아래(is-below) */
+.prospect-pop { position: absolute; left: 50%; bottom: calc(100% + 6px); transform: translateX(-50%); width: min(330px, 86vw); padding: 12px 13px; background: #fff; border: 1px solid #d3d9e0; border-radius: 12px; box-shadow: inset 0 1px 0 #fff, 0 3px 8px #0b344f1a, 0 14px 30px #0b344f2e; color: #0b344f; white-space: normal; text-align: left; cursor: default; }
+.prospect-pop.is-below { bottom: auto; top: calc(100% + 8px); }
+.prospect-pop header { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+.prospect-pop header b { display: flex; align-items: center; gap: 6px; font-size: 13px; letter-spacing: -.02em; }
+.prospect-close { display: grid; place-items: center; width: 24px; height: 24px; border: 0; border-radius: 7px; background: #eef1f4; color: #33475c; cursor: pointer; }
+.prospect-close:hover, .prospect-close:focus-visible { background: #dfe4ea; outline: none; }
+.prospect-note { margin: 0 0 8px; padding: 7px 9px; border-radius: 8px; background: #f2f4f7; box-shadow: inset 0 1px 2px #0b344f1f; font-size: 11px; line-height: 1.5; color: #33475c; }
+.prospect-signals { display: grid; gap: 7px; margin: 0; padding: 0; list-style: none; max-height: 220px; overflow-y: auto; }
+.prospect-signals li { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; row-gap: 2px; font-size: 11px; line-height: 1.45; }
+.prospect-signals time { grid-row: span 2; font-variant-numeric: tabular-nums; font-size: 10px; color: #5a6878; padding-top: 1px; }
+.prospect-signals a { display: inline-flex; align-items: center; gap: 2px; font-size: 10px; color: #1f6b4a; text-decoration: none; }
+.prospect-signals a:hover { text-decoration: underline; }

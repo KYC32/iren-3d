@@ -9,6 +9,7 @@ import { locationFor } from '../data/research.js'
 import { siteFeatures, MAP_HOME_CENTER, MAP_WORLD_BOUNDS, mapLongitude, minimumMapZoom, regionBounds, hqLngLat } from './mapData.js'
 import CampusMarkers from './CampusMarkers.jsx'
 import HqMarker from './HqMarker.jsx' // 시드니 본사 카드 (CEO 사진·새 발언 수, 누르면 본사 3D 화면)
+import ProspectMarkers from './ProspectMarkers.jsx' // '?' 카드: 회사 발표 없이 정황만 있는 지역 (앨버타)
 import { applyBasemapLabels } from './basemapStyle.js'
 import { campusPanelLayout } from '../ui/panelLayout.js'
 
@@ -112,6 +113,7 @@ export default function GeoMap() {
     <div className="geo-map-canvas" ref={container} role="region" aria-label={lang==='ko'?'실제 지리 지도':'Geographic map'} />
     {loaded && mapRef.current && <CampusMarkers map={mapRef.current} data={data} lang={lang} selectedId={site?.id} onGroup={setGroup}/> }
     {loaded && mapRef.current && hq && <HqMarker map={mapRef.current} hq={hq} lang={lang}/>}
+    {loaded && mapRef.current && data?.raw?.prospects && <ProspectMarkers map={mapRef.current} prospects={data.raw.prospects} lang={lang}/>}
     {error && <div className="map-error" role="status">{lang==='ko'?'지도를 불러오지 못했습니다. 캠퍼스 목록과 상세 정보는 계속 사용할 수 있습니다.':'Map unavailable. Campus list and details remain available.'}</div>}
     {!loaded&&!error&&<div className="map-loading">{lang==='ko'?'실제 지도 불러오는 중…':'Loading map…'}</div>}
     {group&&<div className="map-group panel"><button className="close-small" onClick={()=>setGroup(null)} aria-label={lang==='ko'?'닫기':'Close'}><X size={14} aria-hidden="true"/></button><b>{lang==='ko'?'이 지역의 캠퍼스':'Campuses in this area'}</b>{group.map(s=><button key={s.id} onClick={()=>{useAppStore.getState().enterSite3D(s.id);setGroup(null)}}>{lang==='ko'?s.name_ko:s.name}</button>)}</div>}

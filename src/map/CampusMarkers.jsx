@@ -77,6 +77,8 @@ export default function CampusMarkers({ map, data, lang, selectedId, onGroup }) 
     const country = site && entry.members.every(s => s.country === site.country) ? countryNames[site.country]?.[ko ? 0 : 1] : null
     const name = entry.isCluster ? country ?? (ko ? '캠퍼스' : 'Campuses') : site ? pickName(site, lang) : ''
     const mw = entry.members.reduce((sum, s) => sum + (s.grid_mw ?? 0), 0)
+    // 확보 전력이 없고 계획 규모만 밝힌 캠퍼스(Redbank)는 '—' 대신 "계획 900 MW" (확보 전력 합계에는 안 넣음)
+    const planned = !entry.isCluster && !mw ? site?.planned?.mw : null
     const color = entry.isCluster ? '#426b60' : styleOf(site?.status).color
     const selected = entry.members.some(s => s.id === selectedId)
     const label = entry.isCluster ? `${name} · ${count}${ko ? '개 캠퍼스 보기' : ' campuses'}` : `${name} · ${ko ? '3D 보기' : 'Explore in 3D'}`
@@ -86,7 +88,7 @@ export default function CampusMarkers({ map, data, lang, selectedId, onGroup }) 
       title={entry.isCluster ? label : `${name} · ${t.status[site?.status] ?? ''} · ${where}${ko ? '' : ' location'}`}
       onClick={e => { e.stopPropagation(); if (entry.isCluster) onGroup(entry.members); else useAppStore.getState().enterSite3D(site.id) }}>
       <span className="map-marker-icon">{entry.isCluster ? <Layers3 size={16}/> : <Building2 size={16}/>}</span>
-      <span className="map-marker-copy"><b>{name}</b><span>{entry.isCluster ? `${count}${ko ? '개 캠퍼스' : ' campuses'}` : where}<i/>{mw ? capacity(mw) : '—'}</span></span>
+      <span className="map-marker-copy"><b>{name}</b><span>{entry.isCluster ? `${count}${ko ? '개 캠퍼스' : ' campuses'}` : where}<i/>{mw ? capacity(mw) : planned ? `${ko ? '계획' : 'Planned'} ${capacity(planned)}` : '—'}</span></span>
       <span className="map-marker-action">{entry.isCluster ? <ChevronRight size={13}/> : <><Box size={11}/><small>3D</small></>}</span>
       <span className="map-marker-stem"/>
     </button>, entry.element, entry.key)

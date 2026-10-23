@@ -220,7 +220,8 @@ export const Site = z.object({
     lat: z.number().min(-90).max(90),
     lng: z.number().min(-180).max(180),
     confidence: z.enum(['high', 'medium', 'low']),
-    method: z.enum(['official_address', 'permit_parcel', 'utility_filing', 'city_centroid', 'county_centroid', 'region_centroid']),
+    // described_landmark = 회사가 설명한 기준 지형지물 근처 (예: Redbank "Gregadoo 폐기물 처리장 서쪽") — 필지 미확인
+    method: z.enum(['official_address', 'permit_parcel', 'utility_filing', 'described_landmark', 'city_centroid', 'county_centroid', 'region_centroid']),
     source: Url.optional(),
   }).strict(),
   primary: Id,                       // 핀 색·순위가 귀속되는 대표 회사
@@ -234,6 +235,9 @@ export const Site = z.object({
   summary_ko: z.string(),
   summary_en: z.string(),
   power: z.array(PowerStep).min(1),
+  // 회사가 밝힌 계획 규모 — 계통을 아직 확보하지 못한 부지만 (예: Redbank 900MW, 5GW 확보 전력 밖)
+  //   확보 전력·합계에는 넣지 않고, 3D 빈 부지 칸 수와 '계획 · 계통 미확보' 글자에만 씀
+  planned: z.object({ mw: z.number().positive(), source: Url }).strict().optional(),
   substation: z.object({ voltage: z.string().optional() }).strict().default({}),
   buildings: z.array(Building),
   deliveries: z.array(z.object({
@@ -263,6 +267,25 @@ export const ChangelogFile = z.object({
   }).strict()).min(1),
 }).strict()
 
+// 미확인 진출 정황 (data/prospects.json) — 회사가 발표하지 않았지만 공개 자료에 흔적이 있는 지역 (예: 앨버타)
+//   부지가 아니라서 지도에 '?' 로만 보이고, 합계·캠퍼스 목록·순위·3D 에는 넣지 않음
+//   coord 는 그 지역의 대략 가운데(region_centroid) — 특정 도시·필지를 뜻하지 않음
+export const ProspectsFile = z.object({
+  checked: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // 마지막으로 확인한 날
+  prospects: z.array(z.object({
+    id: Id,
+    name: z.string(),
+    name_ko: z.string(),
+    country: Iso2,
+    admin1: z.string().regex(/^[A-Z]{2}-[A-Z0-9]{1,3}$/),
+    coord: z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180), method: z.literal('region_centroid') }).strict(),
+    summary_ko: z.string(),
+    summary_en: z.string(),
+    // 정황 하나 = 날짜(그 자료가 공개된 날) · 한 줄 · 출처. 그 날 이후에만 지도에 보임
+    signals: z.array(z.object({ date: When, ko: z.string(), en: z.string(), source: Url }).strict()).min(1),
+  }).strict()),
+}).strict()
+
 export const InfraFile = z.object({
   schema_version: z.literal(2),
   research: Research.optional(),
@@ -273,4 +296,5 @@ export const InfraFile = z.object({
   changelog: ChangelogFile.shape.entries.optional(),
   sourceDates: SourceDatesFile.shape.sources.optional(), // 출처 문서 공개일 (data/source-dates.json)
   hiring: HiringFile.optional(),                         // 채용 공고 스냅샷 (data/hiring.json)
+  prospects: ProspectsFile.shape.prospects.optional(),   // 미확인 진출 정황 (data/prospects.json) — 지도 '?' 표시
 }).strict()

@@ -26,9 +26,10 @@ describe('America-centered map bounds', () => {
   it('preserves canonical marker coordinates and country-level bounds', () => {
     const au = raw.sites.filter(s => s.country === 'AU')
     boundsFor(au, raw.research, { centerLng: MAP_HOME_CENTER[0] })
-    const bundey = pointOf('bundey')
+    const bundey = pointOf('bundey'), redbank = pointOf('redbank')
     expect(siteFeatures(au, raw.research).features[0].geometry.coordinates).toEqual(bundey)
-    expect(boundsFor(au, raw.research)).toEqual([bundey, bundey])
+    // 호주 캠퍼스 2곳(번디·레드뱅크)을 모두 품는 범위: 서쪽·북쪽 = 번디, 동쪽·남쪽 = 레드뱅크
+    expect(boundsFor(au, raw.research)).toEqual([[bundey[0], redbank[1]], [redbank[0], bundey[1]]])
   })
 
   it('fits nearby points across the date line without spanning the whole world', () => {

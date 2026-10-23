@@ -36,7 +36,8 @@ export default function KpiBar({ mode } = {}) {
       { icon: Plug, label: t.panel.grid, value: fmtMw(site.grid_mw), tone: site.substation.status === 'energized' ? 'operating' : 'pending', sub: site.substation.status === 'energized' ? (lang === 'ko' ? '통전 완료' : 'Energized') : energizeLabel(site.substation, t) },
       { icon: Zap, label: t.kpi.operating, value: fmtMw(m.operating), tone: 'operating', sub: includedSub(t, lang, m) },
       { icon: HardHat, label: t.kpi.building, value: fmtMw(m.building), tone: 'construction' },
-      { icon: MapPinned, label: t.kpi.planned, value: fmtMw(m.planned), tone: 'planned' },
+      // 계획 전력 = 확보 전력 중 아직 쓰임이 없는 몫. 계통을 못 잡은 계획 부지(Redbank)는 회사 계획 규모를 아래 줄에 따로 적음
+      { icon: MapPinned, label: t.kpi.planned, value: fmtMw(m.planned), tone: 'planned', sub: !site.grid_mw && site.planned ? (lang === 'ko' ? `계통 미확보 계획 ${fmtMw(site.planned.mw)} 별도` : `${fmtMw(site.planned.mw)} planned, grid not secured`) : undefined },
     ]
   } else {
     // 지구본: 회사·그룹 필터를 반영한 합계

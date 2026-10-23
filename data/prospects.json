@@ -1,0 +1,41 @@
+{
+  "checked": "2026-10-24",
+  "prospects": [
+    {
+      "id": "alberta",
+      "name": "Alberta",
+      "name_ko": "앨버타",
+      "country": "CA",
+      "admin1": "CA-AB",
+      "coord": { "lat": 54.5, "lng": -115.0, "method": "region_centroid" },
+      "summary_ko": "회사 발표 없음 — 부지·전력·고객 모두 미확인. 공개 자료에 앨버타 진출을 짐작하게 하는 흔적만 있음. 표시 위치는 앨버타의 대략 가운데이고 특정 도시나 부지를 뜻하지 않음.",
+      "summary_en": "Not announced by the company — site, power and customer are all unconfirmed. Public records only hint at an Alberta move. The marker sits roughly at the province's centre and does not mean any particular city or site.",
+      "signals": [
+        {
+          "date": "2025-11-26",
+          "ko": "AESO(앨버타 전력망 운영자)의 대형 부하 연결 Phase 2 작업반 참여사 9곳에 'IREN Ltd'가 들어 있음. 데이터센터 연결 규칙을 AESO에 제안하는 자문 모임이고 규칙은 AESO가 정함",
+          "en": "'IREN Ltd' is one of nine participants in AESO's (Alberta's grid operator) Phase 2 Large Load Integration working group, an advisory group proposing data centre connection rules; AESO sets the rules",
+          "source": "https://aesoengage.aeso.ca/pre-engagement-phase-ii-large-load-integration"
+        },
+        {
+          "date": "2026-07-29",
+          "ko": "IREN 밴쿠버 채용 공고(기계 엔지니어)에 'BC 현장과 앞으로 앨버타에 자주 출장' 문구",
+          "en": "An IREN Vancouver job ad (Mechanical Engineer) asks for regular travel to BC sites 'and Alberta in future'",
+          "source": "https://iren.careers.hibob.com/jobs/563856ad-d1f0-48db-a59f-0b8a0ba1af78"
+        },
+        {
+          "date": "2026-10-05",
+          "ko": "IREN 밴쿠버 채용 공고(고압 변전소 설계 엔지니어)에 같은 문구",
+          "en": "Another IREN Vancouver job ad (Senior High Voltage Design Engineer, Substations) has the same line",
+          "source": "https://iren.careers.hibob.com/jobs/0b80104f-7aa2-40b2-a4ff-2e420cd38c5b"
+        },
+        {
+          "date": "2026-10-13",
+          "ko": "FY26 연차보고서(SEC 제출)의 연결 실체 공시표에 'Blue ProjectCo Ltd.'(캐나다, IREN 100%)가 있음. 표에는 나라만 적혀 있어 앨버타 법인인지·설립일·이사는 미확인",
+          "en": "The FY26 annual report (filed with the SEC) lists 'Blue ProjectCo Ltd.' (Canada, 100% IREN) in its consolidated entity disclosure statement; the table gives only the country, so the Alberta registration, incorporation date and directors are unconfirmed",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036126039453/ny20078226x3_ars.pdf"
+        }
+      ]
+    }
+  ]
+}

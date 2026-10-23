@@ -128,9 +128,16 @@ describe('실제 데이터 (IREN)', () => {
     expect(siteMetricsAt(pg, M('2028-06')).ai).toBe(50) // 완전 전환 → 공랭 홀 사라짐
   })
 
-  it('viewInfra: 기준일 IREN 사이트는 9곳, 발표 전 날짜에는 줄어듦', () => {
+  it('viewInfra: 기준일 IREN 사이트는 10곳, 발표 전 날짜에는 줄어듦', () => {
     const iren = (m) => viewInfra(infra, m).sites.filter((s) => s.primary === 'iren')
-    expect(iren(asOf)).toHaveLength(9)
-    expect(iren(M('2024-01')).length).toBeLessThan(9)
+    expect(iren(asOf)).toHaveLength(10)
+    expect(iren(M('2024-01')).length).toBeLessThan(10)
+  })
+
+  // Redbank(NSW): 회사가 계획 900MW 를 밝혔지만 계통은 미확보 — 발표된 5GW 확보 전력 밖이라 합계에 넣지 않음
+  it('viewInfra: Redbank 는 확보 전력 0 (계획 900MW 는 요약·일정으로만), 발표(2026-10) 전에는 없음', () => {
+    const rb = (m) => viewInfra(infra, m).sites.find((s) => s.id === 'redbank')
+    expect(rb(asOf).grid_mw).toBe(0)
+    expect(rb(M('2026-09'))).toBeUndefined()
   })
 })

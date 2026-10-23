@@ -151,6 +151,14 @@
           "title_en": "~0.8 GW (IT) cumulative delivery (2027)",
           "basis": "target",
           "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+        },
+        {
+          "date": "2029",
+          "kind": "other",
+          "title_ko": "레드뱅크(뉴사우스웨일스) 첫 통전 목표 — 계획 900MW, 계통 연결은 아직 추진 중",
+          "title_en": "Redbank (NSW) initial energisation target — 900MW planned, grid connection still being worked toward",
+          "basis": "target",
+          "source": "https://redbankdatacentre.com.au/"
         }
       ],
       "contracts": [

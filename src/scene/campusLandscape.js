@@ -61,6 +61,15 @@ export const CAMPUS_LANDSCAPES = {
     notes_ko: '공식 오클라호마 소개 이미지와 피츠버그 카운티 지역 사진의 초지·활엽수 군락을 참고했습니다. 현장 주변 배치는 미확인입니다.',
     notes_en: 'Meadows and broadleaf clusters reference the official Oklahoma introduction and Pittsburg County photographs. The actual site surroundings are unverified.',
   },
+  // Redbank: iren.com 캠퍼스 페이지가 아직 없어 IREN 이 운영하는 지역 안내 사이트(redbankdatacentre.com.au)의 렌더를 참고
+  redbank: {
+    ...scrub, trees: 34, shrubs: 70, kangaroos: true, ground: '#d4c49c', soil: '#c2a77c', field: '#c9bc8a',
+    foliage: ['#6f7f5e', '#86936c', '#9aa27a'], source: 'https://redbankdatacentre.com.au/',
+    notes_ko: 'IREN 의 Redbank 지역 안내 사이트 렌더를 참고해 마른 초지·방목지와 성긴 유칼립투스 숲을 표현했습니다. 부지 경계·건물 배치는 미확인입니다.',
+    notes_en: "Dry grassland, paddocks and scattered eucalypts follow the renders on IREN's Redbank community site. Site boundaries and buildings are unverified.",
+    decoration_ko: '부지 밖 캥거루는 장식 애니메이션입니다.',
+    decoration_en: 'Kangaroos outside the site are decorative animation.',
+  },
 }
 CAMPUS_LANDSCAPES['sweetwater-2'] = { ...CAMPUS_LANDSCAPES['sweetwater-1'], turbines: false,
   notes_ko: '스위트워터 지역의 건조한 초지와 낮은 관목을 반영했습니다. 2번 부지의 정확한 주변 배치는 미확인입니다.',

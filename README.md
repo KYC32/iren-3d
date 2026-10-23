@@ -63,10 +63,12 @@ npm run build      # validate → 빌드 (dist/)
    - `basis`: `reported`(발표된 사실) · `target`(회사 목표) · `estimate`(우리 추정, `estimates` 에 근거 필요)
    - 기존 건물 전력을 재사용하는 전환(예: 채굴동 → AI 홀)은 `replaces: "<기존 건물 id>"`
    - 고객 계약은 `contracts`(사이트·건물 연결), 실적 발표 같은 회사 일정은 `events`
+   - 계통을 아직 확보하지 못한 계획 부지(예: Redbank)는 `power` 의 확보 전력을 0 으로 두고, 회사가 밝힌 규모를 `planned: { mw, source }` 에 적습니다. 합계에는 안 들어가고 지도 핀 '계획 900 MW', 3D 빈 부지 '계획 · 계통 미확보', 패널·KPI 아래 줄로만 보입니다.
+   - 회사가 발표하지 않았지만 공개 자료에 흔적이 있는 지역은 `data/prospects.json`(지도의 '?' 표, 정황마다 날짜·한 줄·출처)에 적습니다. 부지가 아니므로 캠퍼스 목록·합계·3D 에는 넣지 않고, 타임라인 날짜까지 공개된 정황만 보입니다.
    - 회사 발표 지표는 `metrics`. 위쪽 KPI 줄에는 앞의 2개만 나오고, `show: "contracts"` 인 지표는 계약 탭 맨 위 "계약 조건"에 나옵니다. 회사가 "이상"·"약"으로 쓴 값은 `qualifier: "over"`(>$20m) · `"about"`(~$25m), 범위는 `value_max`(예: 선급금 45~55% → `value: 45, value_max: 55`)
 2. **`data/changelog.json` 맨 위에 오늘 날짜로 바뀐 내용을 적습니다.** 데이터 기준일보다 최신 기록이 없으면 빌드가 실패합니다.
 3. `npm run validate` 로 검사합니다. 스키마·날짜 순서·매달 전력 합계·좌표·계약 참조·갱신 기록을 확인합니다.
-4. 사이트를 추가하거나 좌표를 바꿨다면 `npm run geo` (보드판·지구본 타일 다시 계산).
+4. 사이트를 추가하거나 좌표를 바꿨다면 `npm run geo` (보드판·지구본 타일 다시 계산). 캐나다·호주 주 경계는 `scripts/.cache` 의 Natural Earth 원본(`npm run geo:fetch`)이 있어야 들어갑니다. 캐시가 없으면 주 경계가 빠진 채 만들어지니, 새 작업 폴더에서는 캐시부터 확인하세요.
 5. `git commit` → `git push` 하면 Vercel 이 자동으로 다시 배포합니다.
 
 ## 첫 화면 부팅 그림 (GPU 랙 + GPU)

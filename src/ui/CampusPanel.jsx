@@ -71,7 +71,7 @@ export default function CampusPanel(){
     <div className="research-tabs" role="tablist" aria-label={ko?'상세 정보':'Detail tabs'}>{Object.entries(TABS).map(([key,names])=><button role="tab" key={key} id={`tab-${key}`} aria-controls="campus-tabpanel"  aria-selected={detailTab===key} onClick={()=>st.setDetailTab(key)}>{names[ko?0:1]}</button>)}</div>
     <div role="tabpanel" id="campus-tabpanel" aria-labelledby={`tab-${detailTab}`}>
     {detailTab==='overview'&&<>
-      <dl className="sp-specs"><div><dt>{zone?(ko?'공개 IT 용량 합계':'Disclosed IT capacity'):(ko?'확보 전력':'Secured power')}</dt><dd>{zone?`${zone.itMw || '—'} MW`:`${site.grid_mw || '—'} MW`}</dd></div><div><dt>{ko?'정보 기준일':'Data as of'}</dt><dd>{site.as_of}</dd></div></dl>
+      <dl className="sp-specs"><div><dt>{zone?(ko?'공개 IT 용량 합계':'Disclosed IT capacity'):(ko?'확보 전력':'Secured power')}</dt><dd>{zone?`${zone.itMw || '—'} MW`:!site.grid_mw&&site.planned?(ko?`— (계획 ${site.planned.mw} MW · 계통 미확보)`:`— (${site.planned.mw} MW planned · grid not secured)`):`${site.grid_mw || '—'} MW`}</dd></div><div><dt>{ko?'정보 기준일':'Data as of'}</dt><dd>{site.as_of}</dd></div></dl>
       {zone&&<ul className="zone-statuses">{zone.statuses.map(s=><li key={s.status}><span className="dot" style={{background:styleOf(s.status).color}}/>{t.status[s.status]}<b>{s.count}{ko?'동':' bldgs'}{s.itMw?` · ${s.itMw} MW IT`: ''}</b></li>)}</ul>}
       {/* 기준일 이후(미래)는 회사 목표 기준 전망, 기준일까지는 확인 기록 — 어느 쪽인지 안내 */}
       <p className={`research-note${site._raw?._forecast?' is-forecast':''}`}>{site._raw?._forecast

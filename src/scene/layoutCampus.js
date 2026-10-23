@@ -45,10 +45,17 @@ export function blocksFor(building, blockMw = BLOCK_MW) {
 // 최종 확보 전력 (전력 이력의 마지막 값)
 const finalSecured = (site) => site.power.at(-1).secured_mw
 
+// 확보 전력이 하나도 없고 회사가 계획 규모만 밝힌 부지 (Redbank: 계획 900MW, 계통 미확보)
+export const plannedOnlyOf = (site) => finalSecured(site) === 0 && site.planned?.mw > 0
+
+// 빈 부지 칸을 셀 기준 전력: 확보 전력. 계획만 있는 부지는 계획 규모로 그려 3D 가 비지 않게
+//   (그 대신 이름표에 '계획 · 계통 미확보'를 붙여 확보 전력처럼 읽히지 않게 — SiteView)
+const lotBaseOf = (site) => (plannedOnlyOf(site) ? site.planned.mw : finalSecured(site))
+
 // 발표된 건물로 설명되지 않는 남은 전력 (전환 건물은 기존 전력을 재사용하므로 제외)
 function remainingOf(site) {
   const announced = site.buildings.filter((b) => !b.replaces).reduce((n, b) => n + grossOf(b).mw, 0)
-  return Math.max(0, finalSecured(site) - announced)
+  return Math.max(0, lotBaseOf(site) - announced)
 }
 
 // 블록 1칸의 MW: 총 블록이 MAX_BLOCKS 안에 들어오는 가장 작은 값
@@ -127,6 +134,7 @@ export function layoutCampus(site, { defaultKind = 'datahall_air' } = {}) {
     powerLine: { from: [round2(-half - 10), substation.z], to: [substation.x, substation.z] },
     lotCount,
     remainingMw,
+    plannedOnly: plannedOnlyOf(site),   // 빈 부지가 확보 전력이 아니라 회사 계획 규모라는 표시
   }
 }
 

@@ -109,7 +109,7 @@ describe('location and media integrity',()=>{
    const f=siteFeatures(sites,{locations:[]})
    expect(f.features.map(x=>x.geometry.coordinates)).toEqual([[2,1],[2,1]])
    expect(boundsFor(sites,{locations:[]})).toEqual([[2,1],[2,1]])
-   expect(siteFeatures(raw.sites,raw.research).features).toHaveLength(9)
+   expect(siteFeatures(raw.sites,raw.research).features).toHaveLength(10)
  })
  it('campus panorama is not attributed to a specific building',()=>{
    expect(mediaAt(raw.research,'childress',M('2026-10'),'horizon-1').some(p=>p.id==='childress-apr2025')).toBe(false)

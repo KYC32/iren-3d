@@ -31,6 +31,25 @@ describe('작은 부지의 블록 1칸 크기', () => {
   })
 })
 
+// 계통을 아직 확보하지 못한 계획 부지(Redbank: 회사 발표 계획 900MW, 확보 전력 0)
+//   확보 전력만 보면 빈 부지가 0칸이라 3D 가 비어 보였음 → 회사가 밝힌 계획 규모(planned)로 빈 부지를 그리되
+//   plannedOnly 로 "계획 · 계통 미확보"를 알려 확보 전력처럼 읽히지 않게
+describe('계통 미확보 계획 부지', () => {
+  it('Redbank: 계획 900MW 로 빈 부지 12칸(75MW), plannedOnly', () => {
+    const L = layoutCampus(site('redbank'))
+    expect(L.blockMw).toBe(75)
+    expect(L.lotCount).toBe(12)
+    expect(L.remainingMw).toBe(900)
+    expect(L.plannedOnly).toBe(true)
+  })
+  it('확보 전력이 있는 부지는 계획 값이 있어도 확보 전력으로 그림 (plannedOnly 아님)', () => {
+    const b = site('bundey')
+    const L = layoutCampus({ ...b, planned: { mw: 2000, source: 'https://example.com/plan' } })
+    expect(L.remainingMw).toBe(800)
+    expect(L.plannedOnly).toBe(false)
+  })
+})
+
 describe('실제 모양 3D 모형 (GLB)', () => {
   it('차일드레스 Horizon 1~4 는 horizon-hall 모형, 그림이 없는 Horizon 5 는 모형 없음', () => {
     const L = layoutCampus(site('childress'))

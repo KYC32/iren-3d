@@ -165,7 +165,8 @@ export default function SiteView({ site }) {
               >
                 <div className="row">
                   {b.status==='delivered'?<Check size={13} color={st.color}/>:<span className={`dot${b.status==='operating'?' operating-dot':''}`} style={{ background: st.color }} />}
-                  <span className="name">{bld ? g.name : `${fmtMw(L.remainingMw)}`}</span>
+                  {/* 빈 부지 이름표: 남은 MW. 계획만 있는 부지(Redbank)는 확보 전력이 아니라는 걸 함께 적음 */}
+                  <span className="name">{bld ? g.name : `${fmtMw(L.remainingMw)}${L.plannedOnly ? (lang === 'ko' ? ' · 계획 · 계통 미확보' : ' · planned · grid not secured') : ''}`}</span>
                   {/* GPU 표 (Horizon = GB300, 스위트워터 1단계 = Vera Rubin, 공랭 홀 = B300 등) — 규칙은 buildingLabel.js 의 gpuLabel */}
                   {g?.tag && <span className="gpu-tag"><Cpu size={11} aria-hidden="true" />{g.tag}</span>}
                   {/* 건설중이면 진행률 막대 (마우스를 올리지 않아도 보이게) */}

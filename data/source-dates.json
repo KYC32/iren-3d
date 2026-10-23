@@ -14,6 +14,12 @@
       "note": "게시물 번호의 시각 2025-12-19T13:30Z"
     },
     {
+      "url": "https://x.com/IREN_Ltd/status/2110149386600947768",
+      "published": "2026-10-13",
+      "method": "x-post-id",
+      "note": "게시물 번호의 시각 2026-10-13T23:23Z (호주 동부 시각 10-14 오전) — Redbank 계획 공개"
+    },
+    {
       "url": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html",
       "published": "2026-08-27",
       "method": "url-date"
