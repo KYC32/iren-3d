@@ -736,13 +736,13 @@ const RATIO = Math.round((BLOCK.hvKv * 1000) / BLOCK.lvV);   // 34,500 ÷ 480 �
 const INFO = {
   base: ["모형 받침 · 앞 모서리 자: 작은 눈금 1 m, 큰 눈금 5 m (실제 비율)", "Model base · edge ruler: 1 m ticks, 5 m majors (true scale)"],
   pad: ["세그먼트 패드 · 장비를 받치는 콘크리트, 아래로 콘듀잇이 지나감", "Segment pad · concrete under the gear; conduits run beneath it"],
-  hv: [`34.5 kV 인입 · 현장 변전소에서 땅속 관으로 들어옴 · 2.5 MW 를 보내도 약 ${A_HV} A`, `34.5 kV feed · underground from the on-site substation · only about ${A_HV} A for 2.5 MW`],
-  xfmr: [`강압 변압기 · 34.5 kV → 480 V (3상 480Y/277) · 전압이 1/${RATIO} 로 낮아지는 만큼 전류는 ${RATIO}배: 약 ${A_HV} A → ${fmt(A_LV)} A`, `Step-down transformer · 34.5 kV → 480 V (480Y/277) · voltage falls ${RATIO}×, so current rises ${RATIO}×: about ${A_HV} A → ${fmt(A_LV)} A`],
+  hv: [`34.5 kV 인입 · 현장 변전소에서 땅속 관으로 들어옴 · 2.5 MW를 보내도 약 ${A_HV} A`, `34.5 kV feed · underground from the on-site substation · only about ${A_HV} A for 2.5 MW`],
+  xfmr: [`강압 변압기 · 34.5 kV → 480 V (3상 480Y/277) · 전압이 1/${RATIO}로 낮아지는 만큼 전류는 ${RATIO}배: 약 ${A_HV} A → ${fmt(A_LV)} A`, `Step-down transformer · 34.5 kV → 480 V (480Y/277) · voltage falls ${RATIO}×, so current rises ${RATIO}×: about ${A_HV} A → ${fmt(A_LV)} A`],
   "xfmr-hv": ["변압기 1차 단자함 · 34.5 kV 케이블이 아래에서 들어옴", "Primary compartment · the 34.5 kV cables enter from below"],
   ground: ["접지봉 · 변압기 탱크를 땅에 연결", "Ground rod · bonds the transformer tank to earth"],
   ladder: ["케이블 래더 · 변압기 위로 나온 480 V 케이블이 벽을 따라 ATS·배전반으로", "Cable ladder · 480 V leaves the transformer top and rides along the wall to the ATS"],
   ats: ["ATS·배전반 · 벽에 붙은 긴 회색 줄 (계통 인입 | ATS | 배전 | 피더)", "ATS / switchboard · the long grey lineup on the hall wall (incoming | ATS | distribution | feeders)"],
-  "ats-in": ["계통 인입 칸 · 래더로 온 변압기 480 V 를 받음", "Incoming section · takes the transformer's 480 V from the ladder"],
+  "ats-in": ["계통 인입 칸 · 래더로 온 변압기 480 V를 받음", "Incoming section · takes the transformer's 480 V from the ladder"],
   "ats-blade": ["ATS 전환 접점 · 평소엔 계통(위), 정전이면 발전기를 기동해 아래(발전기)로 넘기고 복전되면 되돌림", "ATS contacts · normally on the utility (up); on an outage it starts the generator and throws down to it, then back when power returns"],
   "ats-n": ["계통(N) 접점 · 변압기 쪽 전원", "Normal (N) contacts · the transformer side"],
   "ats-e": ["발전기(E) 접점 · 콘듀잇 12개로 온 발전기 전원", "Emergency (E) contacts · the generator side, via 12 conduits"],
@@ -751,25 +751,25 @@ const INFO = {
   "ats-lamps": ["전원 표시등 · 초록 = 계통 있음, 주황 = 발전기 준비", "Source lamps · green = utility available, amber = generator ready"],
   "ats-dist": ["배전 칸 · 차단기로 MER 등 하류에 나눠 보냄", "Distribution section · breakers feed the MER and other loads"],
   "ats-feed": ["피더 칸 · 홀로 가는 굵은 케이블이 위로 나감", "Feeder section · the heavy cables to the hall leave from the top"],
-  gen: [`2.5 MW 디젤 발전기 · 480 V 에서 약 ${fmt(A_LV)} A · 세그먼트마다 1대`, `2.5 MW diesel generator · about ${fmt(A_LV)} A at 480 V · one per segment`],
+  gen: [`2.5 MW 디젤 발전기 · 480 V에서 약 ${fmt(A_LV)} A · 세그먼트마다 1대`, `2.5 MW diesel generator · about ${fmt(A_LV)} A at 480 V · one per segment`],
   "gen-intake": ["흡기 루버 · 엔진과 라디에이터가 쓸 공기", "Intake louvers · air for the engine and radiator"],
   "gen-panel": ["발전기 제어반 · 초록 등 = 운전 중", "Generator controller · green lamp = running"],
   "gen-estop": ["비상정지 단추", "Emergency stop"],
   "gen-stack": ["배기 소음기·굴뚝 · 기동하면 배기가 나옴", "Exhaust silencer and stack · puffs when it starts"],
   "gen-aux": ["발전기 보조 회로 · 기동 신호·상태 감시·블록 히터·배터리 충전기 · 매켄지 겨울에도 바로 기동하도록 엔진을 데워 둠", "Generator auxiliaries · start signal, monitoring, block heater and battery charger · keeps the engine warm for a fast start in Mackenzie winters"],
   tank: ["기초 연료 탱크 · 발전기 밑에 디젤을 담음 (주유구·레벨 게이지)", "Sub-base fuel tank · diesel under the generator (fill box, level gauge)"],
-  conduits: [`콘듀잇 ${BLOCK.genConduits}개 · 발전기 약 ${fmt(A_LV)} A 를 나눠 보내는 관 다발 (패드를 잘라 보여 줌)`, `${BLOCK.genConduits} conduits · the generator's ~${fmt(A_LV)} A split over a bundle (pad cut away)`],
-  mer: ["MER (전기실) · 세그먼트의 하류 배전·제어·감시 · UPS 도 있을 것으로 추정", "MER (electrical room) · downstream distribution, controls and monitoring · likely a UPS"],
+  conduits: [`콘듀잇 ${BLOCK.genConduits}개 · 발전기 약 ${fmt(A_LV)} A를 나눠 보내는 관 다발 (패드를 잘라 보여 줌)`, `${BLOCK.genConduits} conduits · the generator's ~${fmt(A_LV)} A split over a bundle (pad cut away)`],
+  mer: ["MER (전기실) · 세그먼트의 하류 배전·제어·감시 · UPS도 있을 것으로 추정", "MER (electrical room) · downstream distribution, controls and monitoring · likely a UPS"],
   "mer-door": ["MER 출입문·계단", "MER door and steps"],
   "mer-hvac": ["MER 냉방기 · 전기실 장비를 식힘", "MER air conditioner · keeps the gear cool"],
-  "mer-feed": ["MER 전원 · ATS 에서 땅속으로 온 굵은 검정 케이블", "MER feed · heavy black cables from the ATS, underground"],
-  feeder: ["홀 피더 · ATS 에서 벽 관통 상자를 지나 홀 배전반으로", "Hall feeders · from the ATS through the wall box to the hall panel"],
+  "mer-feed": ["MER 전원 · ATS에서 땅속으로 온 굵은 검정 케이블", "MER feed · heavy black cables from the ATS, underground"],
+  feeder: ["홀 피더 · ATS에서 벽 관통 상자를 지나 홀 배전반으로", "Hall feeders · from the ATS through the wall box to the hall panel"],
   wall: ["데이터홀 벽 · 오른쪽은 허물어 안을 보여 줌 (빗금 = 잘린 면)", "Data-hall wall · broken away on the right to show inside (hatching = cut)"],
   door: ["홀 출입문", "Hall door"],
   lamp: ["벽등", "Wall light"],
   hall: ["데이터홀 안 · 지붕을 떼어 냄 (실제 지붕엔 원통형 배기구가 줄지어 있음)", "Inside the data hall · roof removed (the real roof has rows of round exhaust stacks)"],
   "hall-floor": ["데이터홀 바닥 · 파랑 = 찬 통로(서버 앞), 주황 = 뜨거운 통로(서버 뒤) — 설명을 위해 칠한 색", "Hall floor · blue = cold aisle (server fronts), orange = hot aisle (server backs) — coloured for explanation"],
-  intake: [`흡기 루버 · 바깥의 찬 공기가 루버·필터로 들어와 찬 통로로 · BC 의 서늘한 공기를 그대로 써서 평균 PUE ${SITE.pue} (회사 홈페이지)`, `Intake louvers · cool outside air enters through louvers and filters into the cold aisle · free air cooling, average PUE ${SITE.pue} (company website)`],
+  intake: [`흡기 루버 · 바깥의 찬 공기가 루버·필터로 들어와 찬 통로로 · BC의 서늘한 공기를 그대로 써서 평균 PUE ${SITE.pue} (회사 홈페이지)`, `Intake louvers · cool outside air enters through louvers and filters into the cold aisle · free air cooling, average PUE ${SITE.pue} (company website)`],
   fanwall: ["배기 팬 벽 · 서버를 지나며 데워진 공기를 뜨거운 통로에서 밖으로 내보냄 (프린스조지 홀 사진의 팬 벽)", "Exhaust fan wall · pulls the air warmed by the servers out of the hot aisle (as in the Prince George hall photo)"],
   netlad: ["통신 케이블 사다리 (찬 통로 위) · 서버 앞면의 광케이블로 이어짐 (매켄지 홀 사진)", "Network cable ladder over the cold aisle · feeds the fibre at the server fronts (as in the Mackenzie hall photos)"],
   rpp: ["홀 배전반 · 랙마다 전원을 나눔 (모양은 예시)", "Hall power panel · splits power to the racks (illustrative)"],
@@ -781,7 +781,7 @@ const INFO = {
 };
 const PHASE_TEXT = {
   normal: [`계통 전력 · 34.5 kV 약 ${A_HV} A → 변압기 → 480 V 약 ${fmt(A_LV)} A`, `Utility power · 34.5 kV ≈ ${A_HV} A → transformer → 480 V ≈ ${fmt(A_LV)} A`],
-  outage: ["정전 · ATS 가 계통 전압이 사라진 걸 확인하고 발전기에 기동 신호", "Outage · the ATS sees the utility drop and signals the generator to start"],
+  outage: ["정전 · ATS가 계통 전압이 사라진 걸 확인하고 발전기에 기동 신호", "Outage · the ATS sees the utility drop and signals the generator to start"],
   crank: ["발전기 기동 중 · 전압·주파수가 설 때까지 (보통 10초 안팎)", "Generator starting · until voltage and frequency settle (typically ~10 s)"],
   transfer: ["전환 · 접점이 계통(N)에서 발전기(E)로", "Transfer · contacts move from utility (N) to generator (E)"],
   gen: [`발전기 전력 · 480 V 약 ${fmt(A_LV)} A · 콘듀잇 ${BLOCK.genConduits}개`, `Generator power · 480 V ≈ ${fmt(A_LV)} A · ${BLOCK.genConduits} conduits`],
@@ -847,7 +847,7 @@ const ICON_ZAP = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><p
 const ICON_DRONE = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 10 7 7"/><path d="m10 14-3 3"/><path d="m14 10 3-3"/><path d="m14 14 3 3"/><path d="M14.205 4.139a4 4 0 1 1 5.439 5.863"/><path d="M19.637 14a4 4 0 1 1-5.432 5.868"/><path d="M4.367 10a4 4 0 1 1 5.438-5.862"/><path d="M9.795 19.862a4 4 0 1 1-5.429-5.873"/><rect x="10" y="8" width="4" height="8" rx="1"/></svg>';
 const zoomText = (ko) => ({
   in: ICON_IN + `<span>${ko ? "확대" : "Zoom"}</span>`, out: ICON_OUT + `<span>${ko ? "전체 보기" : "Full view"}</span>`,
-  aria: ko ? ["전력 블록 그림: 변전소에서 GPU 서버까지 전기가 흐르는 길을 저절로 확대해 하나씩 짚고, 정전 때 ATS 가 발전기로 넘어가는 모습을 보여 줍니다. + 키나 확대 단추로 직접 확대할 수 있습니다", "확대: 포인터나 화살표 키로 둘러보고, Esc 로 전체 보기"]
+  aria: ko ? ["전력 블록 그림: 변전소에서 GPU 서버까지 전기가 흐르는 길을 저절로 확대해 하나씩 짚고 정전 때 ATS가 발전기로 넘어가는 모습을 보여 줍니다. + 키나 확대 단추로 직접 확대할 수 있습니다", "확대: 포인터나 화살표 키로 둘러보고 Esc로 전체 보기"]
     : ["Power block: an automatic tour zooms along the path from the substation to the GPU servers, then shows the ATS moving to the generator during an outage. Press + or the zoom button to zoom yourself", "Zoomed: look around with the pointer or arrow keys; Escape for the full view"],
   hint: ko ? "확대 중 · 부품을 가리키거나 탭하면 바로 옆에 설명이 뜹니다" : "zoomed · point at or tap a part to see what it is right beside it",
 });
@@ -883,7 +883,7 @@ function page(ko) {
     ? [["pw-k-flow", "전류가 흐르는 길"], ["pw-k-lit", "ATS 전환 접점 (움직이는 부분)"], ["pw-k-cold", "찬 통로 (서버 앞)"], ["pw-k-hot", "뜨거운 통로 (서버 뒤)"], ["pw-k-cut", "잘라 보여 준 면"]]
     : [["pw-k-flow", "current flowing"], ["pw-k-lit", "ATS contacts (the moving part)"], ["pw-k-cold", "cold aisle (server fronts)"], ["pw-k-hot", "hot aisle (server backs)"], ["pw-k-cut", "cut-away faces"]];
   const caption = ko
-    ? `배치·전압·발전기 2.5 MW·콘듀잇 ${BLOCK.genConduits}개·MER 은 매켄지 현장을 분석한 제3자 스레드(<a href="${SOURCE.url}" target="_blank" rel="noreferrer">${SOURCE.by}, ${SOURCE.posted}</a>, ${SOURCE.filmed} 드론 영상) 기준이며 회사가 확인한 내용이 아닙니다. 홀 안은 IREN 홈페이지의 <a href="${SITE.pages[0]}" target="_blank" rel="noreferrer">매켄지</a>·<a href="${SITE.pages[1]}" target="_blank" rel="noreferrer">프린스조지</a> 공랭 홀 사진을 보고 그림(흡기 → 찬 통로 → 랙 앞면 → 뜨거운 통로 → 배기 팬 벽, 평균 PUE ${SITE.pue}·최대 랙 밀도 ${SITE.rackMaxKw} kW 는 같은 페이지). 설명을 위해 지붕·벽을 잘라 냈고, 랙은 한 줄 일부만, 통로 바닥 색·케이블 가닥 수·홀 배전반과 트레이 모양은 그림 표현. GPU·랙 수는 사이트 가정(GPU 1개당 ${EST.kwPerGpu.toFixed(1)} kW, 랙당 ${EST.gpusPerRack}개)으로 계산한 추정. 정전·전환 시간은 압축해서 보여 줌. ${SOURCE.filmed} 영상 기준 이 칸들은 장비 설치·케이블 당김까지 — 다음은 종단 → 시험 → 로드뱅크 시운전 → 가동.`
+    ? `배치·전압·발전기 2.5 MW·콘듀잇 ${BLOCK.genConduits}개·MER은 매켄지 현장을 분석한 제3자 스레드(<a href="${SOURCE.url}" target="_blank" rel="noreferrer">${SOURCE.by}, ${SOURCE.posted}</a>, ${SOURCE.filmed} 드론 영상) 기준이며 회사가 확인한 내용이 아닙니다. 홀 안은 IREN 홈페이지의 <a href="${SITE.pages[0]}" target="_blank" rel="noreferrer">매켄지</a>·<a href="${SITE.pages[1]}" target="_blank" rel="noreferrer">프린스조지</a> 공랭 홀 사진을 보고 그림(흡기 → 찬 통로 → 랙 앞면 → 뜨거운 통로 → 배기 팬 벽, 평균 PUE ${SITE.pue}·최대 랙 밀도 ${SITE.rackMaxKw} kW는 같은 페이지). 설명을 위해 지붕·벽을 잘라 냈고 랙은 한 줄 일부만, 통로 바닥 색·케이블 가닥 수·홀 배전반과 트레이 모양은 그림 표현. GPU·랙 수는 사이트 가정(GPU 1개당 ${EST.kwPerGpu.toFixed(1)} kW, 랙당 ${EST.gpusPerRack}개)으로 계산한 추정. 정전·전환 시간은 압축해서 보여 줌. ${SOURCE.filmed} 영상 기준 이 칸들은 장비 설치·케이블 당김까지 — 다음은 종단 → 시험 → 로드뱅크 시운전 → 가동.`
     : `Layout, voltages, the 2.5 MW generator, the ${BLOCK.genConduits} conduits and the MER follow a third-party analysis of the Mackenzie site (<a href="${SOURCE.url}" target="_blank" rel="noreferrer">${SOURCE.by}, ${SOURCE.posted}</a>, drone footage of ${SOURCE.filmed}); not company-confirmed. The hall interior is drawn from IREN's own <a href="${SITE.pages[0]}" target="_blank" rel="noreferrer">Mackenzie</a> and <a href="${SITE.pages[1]}" target="_blank" rel="noreferrer">Prince George</a> air-cooled hall photos (intake → cold aisle → rack fronts → hot aisle → exhaust fan wall; average PUE ${SITE.pue} and ${SITE.rackMaxKw} kW maximum rack density from the same pages). Roof and walls are cut away for explanation, only part of one rack row is shown, and aisle floor colours, cable counts, the hall panel and trays are illustrative. GPU and rack counts are estimates from the site's assumptions (${EST.kwPerGpu.toFixed(1)} kW per GPU, ${EST.gpusPerRack} per rack). Outage timing is compressed. As of the ${SOURCE.filmed} footage these segments had gear set and cables pulled — next: termination → testing → load-bank commissioning → live.`;
   // 9/23 보기: 제목 아래 줄·범례·설명 (보기를 바꾸면 CSS 가 완공 후 글과 바꿔 보여 줌)
   const d = obsDay(ko), miss = missNames(ko), part = partial.map((kind) => OBS_NAME[kind][ko ? 3 : 4]);

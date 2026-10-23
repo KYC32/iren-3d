@@ -303,7 +303,7 @@ float uPx;
 const float ZD=${DT.toFixed(2)};
 const vec4 D0=vec4(${DATA.dies[0].join(",")}),D1=vec4(${DATA.dies[1].join(",")});
 float boxDist(vec2 p,vec4 b){vec2 c=b.xy+b.zw*.5;vec2 q=abs(p-c)-b.zw*.5;return length(max(q,0.))+min(max(q.x,q.y),0.);}
-// 다이 두 개: 윤곽선 안쪽 가장자리에서 끝나고, 가운데가 더 뜨거움(창백한 심)
+// 다이 두 개: 윤곽선 안쪽 가장자리에서 끝나고 가운데가 더 뜨거움(창백한 심)
 float heatOf(vec2 p){float h=0.;for(int i=0;i<2;i++){vec4 b=i==0?D0:D1;float d=boxDist(p,b);float inside=1.-smoothstep(-.3-.7*uPx,-.3+.7*uPx,d);h+=inside*(.55+.45*(1.-smoothstep(-13.,-2.,d)));}return min(h,1.);}
 vec3 paperOf(float e){vec3 c=mix(vec3(1.),vec3(1.,.93,.72),smoothstep(0.,.25,e));c=mix(c,vec3(1.,.70,.30),smoothstep(.2,.6,e));c=mix(c,vec3(.93,.42,.14),smoothstep(.55,.92,e));c=mix(c,vec3(1.,.9,.62),smoothstep(.93,1.,e));return c;}
 vec4 inkFor(vec3 seen,float cover){vec3 ab=1.-seen;float a=max(max(ab.r,max(ab.g,ab.b)),cover);return vec4(vec3(a)-ab,a);}

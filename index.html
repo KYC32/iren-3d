@@ -23,8 +23,8 @@
     <meta name="theme-color" content="#eceffa" />
   </head>
   <body>
-    <!-- 부팅 화면: 지도 코드(약 430KB)를 받는 동안 보이는 GPU 랙 그림 (scripts/anatomy/rack/build.mjs 가 만든 src/boot/rack.html 을 빌드 때 끼워 넣음)
-         지도가 준비되면 window.__bootReady() 가 불리고, 사용자가 그림을 만지고 있지 않으면 바로 지도로 넘어감 -->
+    <!-- 부팅 화면: 지도 코드(약 430KB)를 받는 동안 보이는 GPU 랙 그림 (scripts/anatomy/rack/build.mjs가 만든 src/boot/rack.html을 빌드 때 끼워 넣음)
+         지도가 준비되면 window.__bootReady()가 불리고 사용자가 그림을 만지고 있지 않으면 바로 지도로 넘어감 -->
     <style>
       /* 부팅 화면: 카드가 화면보다 크면 스크롤 (margin:auto 로 가운데 정렬해야 위가 잘리지 않음) */
       #boot{position:fixed;inset:0;z-index:200;display:flex;overflow:auto;padding:16px;background:#eceffa;color:#16213a;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;transition:opacity 480ms ease}
@@ -54,10 +54,10 @@
     <div id="boot" aria-live="polite">
       <div class="boot-card">
         <h1>IREN 3D 현황판</h1>
-        <p class="boot-sub">AI 데이터센터의 기본 단위부터 — 랙 1대 = GPU 72개 ≈ 130 kW, 그래서 50 MW 홀은 랙 약 350대. 그림이 저절로 부품을 확대해 보여 주고, <b>확대</b> 단추로 직접 살펴볼 수도 있습니다.</p>
+        <p class="boot-sub">AI 데이터센터의 기본 단위부터 — 랙 1대 = GPU 72개 ≈ 130 kW, 그래서 50 MW 홀은 랙 약 350대. 그림이 저절로 부품을 확대해 보여 주고 <b>확대</b> 단추로 직접 살펴볼 수도 있습니다.</p>
         <!-- rack -->
         <div class="boot-bar" aria-hidden="true"><i></i></div>
-        <p class="boot-note">GB300 NVL72 랙·B300 GPU 의 도식 (실측 모형 아님). 색은 실물 기준: 구리 냉각판, 검정 기판·호스, 은색 판금. 파랑·빨강 고리 = 냉각수 공급·회수 연결부, 주황 = 열. 비공식 리서치 · 투자 조언 아님.</p>
+        <p class="boot-note">GB300 NVL72 랙·B300 GPU의 도식 (실측 모형 아님). 색은 실물 기준: 구리 냉각판, 검정 기판·호스, 은색 판금. 파랑·빨강 고리 = 냉각수 공급·회수 연결부, 주황 = 열. 비공식 리서치 · 투자 조언 아님.</p>
       </div>
     </div>
     <script>

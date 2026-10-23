@@ -26,7 +26,7 @@ export function workshop(P, { piece = "fig" } = {}) {
   //   info = 부품 설명 키 (확대 화면에서 포인터 아래 부품의 이름·역할을 찾는 데 씀 → <g data-info="키">)
   function put(name, ref, svg, shapes = [], { bias = 0, info, ...rest } = {}) {
     // 안전장치: 평면에 r 이 빠지는 등 숫자가 깨지면 좌표가 NaN 이 되어 부품이 조용히 사라짐 → 빌드를 멈춤
-    if (svg.includes("NaN")) throw new Error(`${name}: 좌표에 NaN — 평면(plan)의 x·y·w·d·r 을 확인하세요`);
+    if (svg.includes("NaN")) throw new Error(`${name}: 좌표에 NaN — 평면(plan)의 x·y·w·d·r을 확인하세요`);
     if (info) svg = `<g data-info="${info}">${svg}</g>`;
     return R.put({ name: R.nameFor(name), at: ref, bias, svg, shapes, piece, ...rest });
   }

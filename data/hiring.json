@@ -1,6 +1,6 @@
 {
   "asOf": "2026-10-09",
-  "note_ko": "회사 공식 채용 사이트(HiBob) 기준 공개 공고 수. 바다호스는 회사 사이트에 없어 LinkedIn 의 IREN 인증 공고(첫 페이지)로 셈. 선행지표로만 쓰며 공사 진척의 확정 근거가 아님",
+  "note_ko": "회사 공식 채용 사이트(HiBob) 기준 공개 공고 수. 바다호스는 회사 사이트에 없어 LinkedIn의 IREN 인증 공고(첫 페이지)로 셈. 선행지표로만 쓰며 공사 진척의 확정 근거가 아님",
   "note_en": "Open roles on the company careers site (HiBob). Badajoz is counted from IREN-verified LinkedIn postings (first page) because it is not on the company site. A leading indicator only, not confirmation of progress",
   "sites": [
     { "site": "childress", "channel": "company", "total": 64, "construction": 29, "operations": 28, "signal_ko": "시운전·운영 확충", "signal_en": "Commissioning + ops ramp", "source": "https://iren.careers.hibob.com/jobs?site=2548682" },

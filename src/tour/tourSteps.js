@@ -74,7 +74,7 @@ export function buildTourSteps(data, lang = 'ko') {
     if (h1 && ['delivered', 'operating', 'commissioning'].includes(h1.status)) {
       steps.push({
         id: 'childress-horizon-1', surface: '3d', site: 'childress', building: 'horizon-1', dur: 8 * SEC,
-        title: ko ? '건물 속 · MW 를 GPU 로' : 'Inside a hall · MW to GPUs',
+        title: ko ? '건물 속 · MW를 GPU로' : 'Inside a hall · MW to GPUs',
         text: ko
           ? `${name(h1)} ${h1.it_mw} MW IT. 지붕을 열면 추정 GPU 랙이 보입니다 — 캠퍼스 패널의 카드에 GPU 수·랙 수·계약 기준 연 매출 환산(모두 추정)이 있습니다.`
           : `${name(h1)}, ${h1.it_mw} MW IT. With the roof off you see the estimated GPU racks — the campus panel card converts it to GPUs, racks and contract run-rate (all estimates).`,
@@ -164,7 +164,7 @@ export function buildTourSteps(data, lang = 'ko') {
     id: 'outro', surface: 'map', region: 'NA', dur: 7 * SEC,
     title: ko ? '직접 살펴보기' : 'Explore on your own',
     text: ko
-      ? '왼쪽 목록에서 캠퍼스를 고르고, 마커를 눌러 3D 로 들어가세요. 날짜를 옮겨 보려면 "현황" 페이지나 3D 화면의 타임라인을 쓰세요 — 과거엔 "그때 공개된 자료", 기준일 뒤엔 "회사 목표" 기준입니다. 비공식 자료 · 투자 조언 아님.'
+      ? '왼쪽 목록에서 캠퍼스를 고르고 마커를 눌러 3D로 들어가세요. 날짜를 옮겨 보려면 "현황" 페이지나 3D 화면의 타임라인을 쓰세요 — 과거엔 "그때 공개된 자료", 기준일 뒤엔 "회사 목표" 기준입니다. 비공식 자료 · 투자 조언 아님.'
       : 'Pick a campus from the list, click a marker to enter 3D. To move through time, use the timeline on the Overview page or in 3D — past dates show what was public then, dates after the as-of date follow company targets. Unofficial · not investment advice.',
   })
   return steps

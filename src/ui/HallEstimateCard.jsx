@@ -33,7 +33,7 @@ export default function HallEstimateCard({ building }) {
     <section className="hall-est" aria-label={ko ? '건물 속 추정' : 'Inside this hall (estimate)'}>
       <header>
         <Cpu size={14} aria-hidden="true" />
-        <b>{ko ? '건물 속 · MW 를 GPU 로' : 'Inside · MW to GPUs'}</b>
+        <b>{ko ? '건물 속 · MW를 GPU로' : 'Inside · MW to GPUs'}</b>
         <span className="est-badge">{ko ? '추정' : 'Estimate'}</span>
       </header>
       <div className="hall-est-grid">

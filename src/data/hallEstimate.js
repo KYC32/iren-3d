@@ -21,7 +21,7 @@ export const GPU_PROFILES = [
   //   가운데 ≈ 210kW ÷ 72 ≈ 2.9kW + 네트워크·스토리지 몫 → 약 3.0kW. GB300 NVL72(2.0kW)보다 GPU 1개당 전력이 커서
   //   같은 IT 전력이면 GPU 수가 약 2/3 로 줄어듦. 이름에 "NVL72" 가 붙어도 여기서 먼저 맞춤
   { id: 'vera-rubin', test: /Rubin/i, label: 'Vera Rubin NVL72', gpusPerRack: 72, kwPerGpu: 3.0, cooling: 'liquid',
-    note: { ko: '업계 추정 — NVIDIA 는 랙 전력을 발표하지 않았고, 랙 약 190–230 kW(공급망 조사·SemiAnalysis)의 가운데를 GPU 72개로 나눈 값', en: 'industry estimate — NVIDIA has not published rack power; midpoint of ~190–230 kW per rack (supply-chain checks, SemiAnalysis) ÷ 72 GPUs' } },
+    note: { ko: '업계 추정 — NVIDIA는 랙 전력을 발표하지 않았고 랙 약 190–230 kW(공급망 조사·SemiAnalysis)의 가운데를 GPU 72개로 나눈 값', en: 'industry estimate — NVIDIA has not published rack power; midpoint of ~190–230 kW per rack (supply-chain checks, SemiAnalysis) ÷ 72 GPUs' } },
   { id: 'nvl72', test: /NVL72|GB300|GB200/i, label: 'NVL72', gpusPerRack: 72, kwPerGpu: 2.0, cooling: 'liquid' },
   { id: 'hgx-blackwell', test: /B300|B200|MI3\d\d|Blackwell/i, label: 'HGX', gpusPerRack: 32, kwPerGpu: 2.0, cooling: 'air' },
   { id: 'hgx-hopper', test: /H100|H200|Hopper/i, label: 'HGX (Hopper)', gpusPerRack: 32, kwPerGpu: 1.4, cooling: 'air' },

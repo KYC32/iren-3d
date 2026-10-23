@@ -1,6 +1,6 @@
 {
   "checked": "2026-10-16",
-  "note_ko": "SEC 공시(424B4·20-F·10-K·10-Q 표지와 본문)에서 옮긴 수치. 주식 수는 공시마다 대출형 주식(LFS) 포함 여부 표기가 다를 수 있음. 새 10-Q·10-K 표지 수치는 매일 갱신 스크립트(scripts/fetch-shares.mjs)가 SEC XBRL 에서 덧붙임. ATM·전환사채는 공시 본문에서 사람이 옮김.",
+  "note_ko": "SEC 공시(424B4·20-F·10-K·10-Q 표지와 본문)에서 옮긴 수치. 주식 수는 공시마다 대출형 주식(LFS) 포함 여부 표기가 다를 수 있음. 새 10-Q·10-K 표지 수치는 매일 갱신 스크립트(scripts/fetch-shares.mjs)가 SEC XBRL에서 덧붙임. ATM·전환사채는 공시 본문에서 사람이 옮김.",
   "note_en": "Figures copied from SEC filings (424B4, 20-F, 10-K and 10-Q cover pages and text). Filings may differ on whether loan-funded shares are included. New 10-Q/10-K cover counts are appended daily from SEC XBRL by scripts/fetch-shares.mjs; ATM and convertible details are copied from filing text by hand.",
   "points": [
     {
@@ -87,7 +87,7 @@
       "shares": 108063868,
       "gross_usd": 771438000,
       "source": "https://www.sec.gov/Archives/edgar/data/1878848/000162828024038677/iren-20240630.htm",
-      "note_ko": "2024-06-30 까지 판매 계약으로 판 누적 수치 (20-F FY24)",
+      "note_ko": "2024-06-30까지 판매 계약으로 판 누적 수치 (20-F FY24)",
       "note_en": "Cumulative sales under the Sales Agreement through 2024-06-30 (FY24 20-F)"
     },
     {
@@ -101,7 +101,7 @@
       "gross_usd": 999999452,
       "limit_usd": 1000000000,
       "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm",
-      "note_ko": "2025-09 까지 다 씀",
+      "note_ko": "2025-09까지 다 씀",
       "note_en": "Fully used by 2025-09"
     },
     {
@@ -127,7 +127,7 @@
       "gross_usd": 2492057000,
       "limit_usd": 6000000000,
       "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm",
-      "note_ko": "2026-08-14 에도 같은 수치 (7~8월 추가 판매 없음)",
+      "note_ko": "2026-08-14에도 같은 수치 (7~8월 추가 판매 없음)",
       "note_en": "Unchanged as of 2026-08-14 (no sales in July–August)"
     }
   ],

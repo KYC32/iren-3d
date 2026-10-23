@@ -77,7 +77,7 @@ export default function SiteFacts({ site, month, lang }) {
           <p className="facts-note">{ko ? p.note_ko : p.note_en}</p>
         </div>
       })}
-      <p className="facts-disclaimer">{ko ? '제3자 관찰은 회사가 확인한 사실이 아니며, 공식 상태(건설·가동)를 바꾸지 않습니다.' : 'Third-party observations are not company-confirmed and never change official statuses.'}</p>
+      <p className="facts-disclaimer">{ko ? '제3자 관찰은 회사가 확인한 사실이 아니며 공식 상태(건설·가동)를 바꾸지 않습니다.' : 'Third-party observations are not company-confirmed and never change official statuses.'}</p>
     </section>
   )
 }

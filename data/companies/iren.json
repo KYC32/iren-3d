@@ -603,7 +603,7 @@
         },
         {
           "date": "2026-05-08",
-          "event": "NVIDIA 와 전략적 제휴 — 최대 5GW DSX 정렬 AI 인프라, 스위트워터 2GW 캠퍼스는 DSX 대표 배치로 기대 (NVIDIA 매수권: 주당 $70 · 최대 3,000만 주 · 5년)",
+          "event": "NVIDIA와 전략적 제휴 — 최대 5GW DSX 정렬 AI 인프라, 스위트워터 2GW 캠퍼스는 DSX 대표 배치로 기대 (NVIDIA 매수권: 주당 $70 · 최대 3,000만 주 · 5년)",
           "event_en": "Strategic partnership with NVIDIA — up to 5GW of DSX-aligned AI infrastructure; the 2GW Sweetwater campus expected as a flagship DSX deployment (NVIDIA right to buy up to 30M shares at $70 · 5 yrs)",
           "source": "https://iren.gcs-web.com/news-releases/news-release-details/nvidia-and-iren-announce-strategic-partnership-accelerate"
         },
@@ -938,7 +938,7 @@
         },
         {
           "date": "2024-02",
-          "event": "Poolside 와 H100 GPU 클라우드 계약 — 첫 AI 클라우드 고객",
+          "event": "Poolside와 H100 GPU 클라우드 계약 — 첫 AI 클라우드 고객",
           "event_en": "H100 GPU cloud agreement with Poolside — first AI cloud customer",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000162828024038677/iren-20240630.htm"
         },
@@ -956,7 +956,7 @@
         },
         {
           "date": "2025-12",
-          "event": "해시레이트 전량을 GPU 로 대체 (채굴 종료)",
+          "event": "해시레이트 전량을 GPU로 대체 (채굴 종료)",
           "event_en": "All hashrate displaced by GPUs (mining ends)",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000015/iren-20251231.htm"
         },
@@ -986,32 +986,32 @@
           "source": "https://iren.careers.hibob.com/jobs?site=2549092"
         },
         {
-          "note": "초기 GPU 파일럿 2MW: H100 816개 × 1.93kW(IREN 이 쓰는 GPU당 전력, 부대설비 포함) × PUE 1.1 ≈ 1.7MW 로 계산. 2025-06엔 1.9k개(≈4MW)로 늘었지만 2024 기준값으로 고정 (추정)",
+          "note": "초기 GPU 파일럿 2MW: H100 816개 × 1.93kW(IREN이 쓰는 GPU당 전력, 부대설비 포함) × PUE 1.1 ≈ 1.7MW로 계산. 2025-06엔 1.9k개(≈4MW)로 늘었지만 2024 기준값으로 고정 (추정)",
           "note_en": "Hopper pilot 2MW: 816 H100 × 1.93kW per GPU (IREN reference incl. ancillary) × PUE 1.1 ≈ 1.7MW; grew to ~1.9k GPUs (~4MW) by Jun 2025 (estimate)",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036125024747/ef20051566_ex99-1.htm"
         },
         {
-          "note": "초기 GPU 파일럿 retired 2025-12: GPU 는 계속 돌지만 2025-12 부터 공랭 GPU 홀(50MW)에 포함해 셈 — 중복 계산 방지용 (추정)",
+          "note": "초기 GPU 파일럿 retired 2025-12: GPU는 계속 돌지만 2025-12부터 공랭 GPU 홀(50MW)에 포함해 셈 — 중복 계산 방지용 (추정)",
           "note_en": "Hopper pilot retired Dec 2025: GPUs keep running but are counted inside the 50MW GPU halls from then on, to avoid double counting (estimate)",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000015/iren-20251231.htm"
         },
         {
-          "note": "공랭 GPU 홀 가동 2026-08: 2026-05 녹취는 \"가동 또는 시운전 중\"까지만 확인. 전량 가동 월은 Tier 1 에서 확인 못함 (추정)",
+          "note": "공랭 GPU 홀 가동 2026-08: 2026-05 녹취는 \"가동 또는 시운전 중\"까지만 확인. 전량 가동 월은 Tier 1에서 확인 못함 (추정)",
           "note_en": "GPU halls operating from Aug 2026: May 2026 call only confirms \"operating or commissioning\"; full-operation month not found in Tier 1 (estimate)",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
         },
         {
-          "note": "2026-05-08 실적 발표 콜: 프린스조지 공랭 GPU 는 모두 납품됐고 50MW 전체에서 \"가동 중이거나 시운전 중\" — 가동·시운전 비율이 미공개라 보수적으로 시운전으로 둠. 홈페이지의 \">23,000 GPU\" 는 설치 또는 주문 기준",
+          "note": "2026-05-08 실적 발표 콜: 프린스조지 공랭 GPU는 모두 납품됐고 50MW 전체에서 \"가동 중이거나 시운전 중\" — 가동·시운전 비율이 미공개라 보수적으로 시운전으로 둠. 홈페이지의 \">23,000 GPU\" 는 설치 또는 주문 기준",
           "note_en": "Q3 FY26 call (2026-05-08): all air-cooled GPUs delivered and \"either operating or undergoing commissioning\" across the 50MW site — split undisclosed, so kept at commissioning (conservative). Website \">23,000 GPUs\" is installed-or-on-order",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
         },
         {
-          "note": "진행률 추정: GB300 액체냉각 홀 80% — FY26 발표 자료 13쪽 \"첫 액체냉각 GPU 설치 진행, 4분기 시운전 목표\"를 보고 매긴 값. 공랭 홀과 사이트 50MW 를 나눠 써서, 가동하면 공랭 홀 몫을 넘겨받는 것으로 봄(액체냉각 IT 10MW × 기본 PUE 1.3)",
+          "note": "진행률 추정: GB300 액체냉각 홀 80% — FY26 발표 자료 13쪽 \"첫 액체냉각 GPU 설치 진행, 4분기 시운전 목표\"를 보고 매긴 값. 공랭 홀과 사이트 50MW를 나눠 써서, 가동하면 공랭 홀 몫을 넘겨받는 것으로 봄(액체냉각 IT 10MW × 기본 PUE 1.3)",
           "note_en": "Progress estimate: GB300 liquid-cooled hall 80% — from p.13 of the FY26 presentation (\"initial liquid-cooled GPU installations underway, commissioning targeted for Q4\"). It shares the 50MW site with the air-cooled hall, so it is modelled as taking over part of that hall once it runs (10MW IT × default PUE 1.3)",
           "source": "https://iren.gcs-web.com/static-files/1ca5b6f0-4b4d-4710-a7e2-69435e112b60"
         },
         {
-          "note": "공랭 홀 PUE 1.1 — 회사 가정: 2025-07 보도자료 주석 2 \"총 50MW · PUE 1.1 · GPU 1개당 1.93kW\" (GPU 수 검산에 씀, 총 전력 50MW 는 그대로)",
+          "note": "공랭 홀 PUE 1.1 — 회사 가정: 2025-07 보도자료 주석 2 \"총 50MW · PUE 1.1 · GPU 1개당 1.93kW\" (GPU 수 검산에 씀, 총 전력 50MW는 그대로)",
           "note_en": "Air-cooled hall PUE 1.1 — company assumption in note 2 of the July 2025 release (\"50MW gross · PUE 1.1 · 1.93kW per GPU\"); used for the GPU check, the 50MW gross stays as is",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036125024747/ef20051566_ex99-1.htm"
         }
@@ -1213,7 +1213,7 @@
           "source": "https://iren.careers.hibob.com/jobs?site=2549089"
         },
         {
-          "note": "채굴동 retired 2026-05: 2026-05-11 녹취에서 80MW 가 이미 GPU 설치용으로 준비됐다고 밝혀 그 전에 채굴이 끝난 것으로 봄. 정확한 종료 월은 미공개 (추정)",
+          "note": "채굴동 retired 2026-05: 2026-05-11 녹취에서 80MW가 이미 GPU 설치용으로 준비됐다고 밝혀 그 전에 채굴이 끝난 것으로 봄. 정확한 종료 월은 미공개 (추정)",
           "note_en": "Mining retired by May 2026: the May 11, 2026 call says all 80MW was already prepared for GPUs; exact end month not disclosed (estimate)",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
         },
@@ -1223,7 +1223,7 @@
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
         },
         {
-          "note": "공랭 B300 홀 시운전 2026-10: 10-K 의 \"2026-12-31까지 단계 인도\"와 \"2026 하반기 설치 시작\" 발언으로 추정. Tier 1 에서 시운전 개시를 직접 확인하지 못함 (추정)",
+          "note": "공랭 B300 홀 시운전 2026-10: 10-K의 \"2026-12-31까지 단계 인도\"와 \"2026 하반기 설치 시작\" 발언으로 추정. Tier 1에서 시운전 개시를 직접 확인하지 못함 (추정)",
           "note_en": "Commissioning from Oct 2026: inferred from staged delivery through Dec 31, 2026 (10-K) and H2 2026 installation start; not directly confirmed in Tier 1 (estimate)",
           "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm"
         },
@@ -1389,12 +1389,12 @@
       ],
       "estimates": [
         {
-          "note": "채굴동 retired 2026-10: 10-Q(2025-12) 의 \"2026-09까지 가동 후 매각\" 계획을 그대로 적용. 실제 철수·매각 완료는 확인 못함 (추정)",
+          "note": "채굴동 retired 2026-10: 10-Q(2025-12)의 \"2026-09까지 가동 후 매각\" 계획을 그대로 적용. 실제 철수·매각 완료는 확인 못함 (추정)",
           "note_en": "Mining retired from Oct 2026: applies the 10-Q plan to run miners through Sep 2026 then sell; actual removal not confirmed (estimate)",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000015/iren-20251231.htm"
         },
         {
-          "note": "공랭 AI 개조 planned 2026-10: 계획은 2026-05 발표됐지만 같은 30MW 를 채굴과 시기만 달리 쓰므로 채굴 종료 이후로 배치 (추정)",
+          "note": "공랭 AI 개조 planned 2026-10: 계획은 2026-05 발표됐지만 같은 30MW를 채굴과 시기만 달리 쓰므로 채굴 종료 이후로 배치 (추정)",
           "note_en": "AI retrofit shown as planned from Oct 2026: announced May 2026 but placed after mining ends because it reuses the same 30MW (estimate)",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000028/irentranscript.htm"
         }
@@ -1467,7 +1467,7 @@
       ],
       "estimates": [
         {
-          "note": "2026-10-09 회사 채용 3건뿐(키오와 PM·조달 매니저, 오클라호마 원격 계약 코디네이터), 현장 시공 인력 없음 → 착공 전 개발·조달 단계 (추정)",
+          "note": "2026-10-09 회사 채용 3건뿐(카이오와 PM·조달 매니저, 오클라호마 원격 계약 코디네이터), 현장 시공 인력 없음 → 착공 전 개발·조달 단계 (추정)",
           "note_en": "2026-10-09 company postings: only 3 (Kiowa project manager, procurement manager, remote Oklahoma contracts coordinator), no field construction roles → pre-construction development/procurement (estimate)",
           "source": "https://iren.careers.hibob.com/jobs?site=2591467"
         }
@@ -1613,7 +1613,7 @@
       ],
       "estimates": [
         {
-          "note": "2026-10-09 LinkedIn 의 IREN 인증 공고 17건+(첫 페이지 기준), 대부분 최근 1주: 프로젝트 디렉터·총괄 현장소장·공정/원가/계약·전기/기계/토목(CSA)/전력 PM·BIM·안전 → 착공 직전 현장 조직 구성 (추정). 회사 채용 사이트에는 스페인 공고가 없음",
+          "note": "2026-10-09 LinkedIn의 IREN 인증 공고 17건+(첫 페이지 기준), 대부분 최근 1주: 프로젝트 디렉터·총괄 현장소장·공정/원가/계약·전기/기계/토목(CSA)/전력 PM·BIM·안전 → 착공 직전 현장 조직 구성 (추정). 회사 채용 사이트에는 스페인 공고가 없음",
           "note_en": "2026-10-09 IREN-verified LinkedIn postings: 17+ on the first page, mostly within the last week — project director, general superintendent, planning/cost/contracts, electrical/mechanical/CSA/power PMs, BIM, HSE → site team forming ahead of construction (estimate). None on the company careers site",
           "source": "https://www.linkedin.com/jobs/search/?keywords=IREN%20Badajoz"
         }

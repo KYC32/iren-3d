@@ -358,7 +358,7 @@ const CSS = `
 .rk-stage[data-aim=auto] .rk-aim::after{content:"";position:absolute;inset:-9px;border-radius:50%;background:rgba(113,218,128,.3);animation:rk-aim 1.6s ease-in-out infinite;z-index:-1}
 @keyframes rk-aim{50%{transform:scale(1.3);opacity:.45}}
 /* 지시선 말풍선 (도면식): 짚는 점 → 45° 꺾인 남색 선(흰 테) → 선반(밑줄) 위에 이름, 아래에 설명
-   말풍선 칸이 없어 사진·그림을 덜 가리고, 문장마다 흰 띠 한 칸(도면의 흰 따냄)이라 어두운 사진 위에서도 또렷함
+   말풍선 칸이 없어 사진·그림을 덜 가리고 문장마다 흰 띠 한 칸(도면의 흰 따냄)이라 어두운 사진 위에서도 또렷함
    이 상자는 짚는 점에 놓인 크기 0 상자: ::before = 사선, ::after = 선반. 자리(data-side)·폭(--w·--mw)·꺾임(--d)은 움직임 코드가 정함 */
 .rk-tip{position:absolute;left:0;top:0;z-index:1;width:0;height:0;--d:24px;--w:120px;--mw:240px;pointer-events:none;opacity:0;transition:opacity .25s}
 .rk-tip[data-on]{opacity:1}
@@ -414,7 +414,7 @@ const CSS = `
 .rk-steel{--anatomy-paper:#aab2bd;--anatomy-top:#cfd5dd;--anatomy-shade-0:#8a929d;--anatomy-shade-1:#939ba6;--anatomy-shade-2:#9ca4af;--anatomy-shade-3:#a5adb8;--anatomy-hi:#262b33;--anatomy-mid:#5d6570;--anatomy-lo:#79818c}
 .rk-led-g .iso-dots circle{fill:#22d36b;opacity:1}
 .rk-led-b .iso-dots circle{fill:#4c9bff;opacity:1}
-/* WebGL 이 없을 때: GPU 윗면이 부하만큼 데워진 색으로 (셰이더와 같은 잉크 색, 곱하기 혼합) */
+/* WebGL이 없을 때: GPU 윗면이 부하만큼 데워진 색으로 (셰이더와 같은 잉크 색, 곱하기 혼합) */
 .rk-stage:not([data-gl]) .rk-gpu>.iso-top,.rk-stage:not([data-gl]) .rk-die-solid>.iso-top{fill:color-mix(in srgb,var(--anatomy-top),#f0a640 calc(var(--rk-load,0)*70%))}
 .rk-stage:not([data-gl]) .rk-gpu>.iso-shade{fill:color-mix(in srgb,var(--anatomy-shade-2),#e06a2a calc(var(--rk-load,0)*45%))}
 .rk-ui{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:6px;font-family:var(--anatomy-mono);font-size:11.5px;color:var(--anatomy-text)}
@@ -458,12 +458,12 @@ const FRAGMENT = `
 uniform float uLoad;      // 0..1 부하
 uniform float uPull;      // 트레이가 나온 거리 (세계 단위, +y)
 uniform float uFirst;     // 처음 켜질 때 0→1 (잉크를 통째로 페이드)
-float uPx;                // 이 픽셀의 세계 단위 크기 (main 에서 채움)
+float uPx;                // 이 픽셀의 세계 단위 크기 (main에서 채움)
 const float ZTOP=${DATA.zTop.toFixed(1)};
 const float FRONT=${DATA.front.toFixed(1)};
 const vec4 G0=vec4(${DATA.gpu[0].join(",")}),G1=vec4(${DATA.gpu[1].join(",")}),G2=vec4(${DATA.gpu[2].join(",")}),G3=vec4(${DATA.gpu[3].join(",")});
 float boxDist(vec2 p,vec4 b){vec2 c=b.xy+b.zw*.5;vec2 q=abs(p-c)-b.zw*.5;return length(max(q,0.))+min(max(q.x,q.y),0.);}
-// 한 블록의 열: 안쪽은 1, 가장자리에서 핀 밖으로 조금 새어 나가며 0 으로. 네 블록을 합침
+// 한 블록의 열: 안쪽은 1, 가장자리에서 핀 밖으로 조금 새어 나가며 0으로. 네 블록을 합침
 float heatOf(vec2 p){
   float h=0.;
   vec4 B[4];B[0]=G0;B[1]=G1;B[2]=G2;B[3]=G3;
@@ -483,7 +483,7 @@ void main(){
   vec2 vb=viewOf(gl_FragCoord.xy);
   float px=pixelOf()/uCam.z;uPx=px;
   vec3 p=onFloor(vb,ZTOP);
-  vec2 q=p.xy-vec2(0.,uPull);                      // 트레이 좌표로 (트레이가 +y 로 나간 만큼 되돌림)
+  vec2 q=p.xy-vec2(0.,uPull);                      // 트레이 좌표로 (트레이가 +y로 나간 만큼 되돌림)
   float outside=smoothstep(FRONT-.7*px,FRONT+.7*px,p.y); // 랙 앞면 밖에 있는 부분만 (안쪽은 랙이 가림)
   float e=heatOf(q)*uLoad*outside;
   if(e<.002){gl_FragColor=vec4(0.);return;}
@@ -517,7 +517,7 @@ const INFO = {
   module: ["GPU 모듈 기판 (SXM) · 소켓에 꽂혀 GPU만 따로 교체 가능", "GPU module (SXM) · socketed, so the GPU can be replaced on its own"],
   substrate: ["패키지 기판 · 칩의 수많은 단자를 기판 배선으로 넓혀 줌", "Package substrate · fans the chip's many pins out to the board"],
   interposer: ["인터포저 (CoWoS-L) · 다이와 HBM을 아주 촘촘한 배선으로 연결", "Interposer (CoWoS-L) · dense wiring between the dies and HBM"],
-  die: ["GPU 다이 · 실리콘 2개가 10 TB/s 로 이어져 한 GPU처럼 동작 · 최대 1.4 kW", "GPU dies · two dies linked at 10 TB/s work as one GPU · up to 1.4 kW"],
+  die: ["GPU 다이 · 실리콘 2개가 10 TB/s로 이어져 한 GPU처럼 동작 · 최대 1.4 kW", "GPU dies · two dies linked at 10 TB/s work as one GPU · up to 1.4 kW"],
   hbm: ["HBM3e 메모리 · 12단 적층 36 GB, 8개 합쳐 288 GB", "HBM3e · a 12-high stack of 36 GB; eight make 288 GB"],
   manifold: ["매니폴드 블록 · 냉각수를 나눠 보내는 스테인리스 블록", "Manifold block · stainless block that feeds the coolant"],
   "socket-supply": ["퀵커넥터 소켓 · 파랑 고리 = 냉각수 공급 (차가운 쪽)", "Quick-disconnect socket · blue ring = supply (cold side)"],
@@ -558,12 +558,12 @@ const zoomLabel = (ko, on, what) => (on ? ICON_OUT : ICON_IN) + `<span>${on ? (k
 const zoomText = (ko) => ({
   rack: {
     in: zoomLabel(ko, false, ko ? "트레이 확대" : "Zoom tray"), out: zoomLabel(ko, true),
-    aria: ko ? ["GPU 랙 그림: 트레이가 저절로 나와 확대되며 부품을 하나씩 보여 줍니다. + 키나 확대 단추로 직접 확대할 수 있습니다", "트레이 확대: 포인터나 화살표 키로 둘러보고, Esc 로 전체 보기"]
+    aria: ko ? ["GPU 랙 그림: 트레이가 저절로 나와 확대되며 부품을 하나씩 보여 줍니다. + 키나 확대 단추로 직접 확대할 수 있습니다", "트레이 확대: 포인터나 화살표 키로 둘러보고 Esc로 전체 보기"]
       : ["GPU rack: a compute tray slides out and zooms in to show its parts one by one. Press + or the zoom button to zoom yourself", "Tray zoom: look around with the pointer or arrow keys; Escape for the full view"],
   },
   gpu: {
     in: zoomLabel(ko, false, ko ? "기판 확대" : "Zoom board"), out: zoomLabel(ko, true),
-    aria: ko ? ["GPU 모듈 그림: 냉각판과 뚜껑이 저절로 들리고 기판을 확대해 부품을 하나씩 보여 줍니다. + 키나 확대 단추로 직접 확대할 수 있습니다", "기판 확대: 포인터나 화살표 키로 둘러보고, Esc 로 전체 보기"]
+    aria: ko ? ["GPU 모듈 그림: 냉각판과 뚜껑이 저절로 들리고 기판을 확대해 부품을 하나씩 보여 줍니다. + 키나 확대 단추로 직접 확대할 수 있습니다", "기판 확대: 포인터나 화살표 키로 둘러보고 Esc로 전체 보기"]
       : ["GPU module: the cold plate and the lid lift on their own, then the board zooms in part by part. Press + or the zoom button to zoom yourself", "Board zoom: look around with the pointer or arrow keys; Escape for the full view"],
   },
   hint: ko ? "확대 중 · 부품을 가리키거나 탭하면 바로 옆에 설명이 뜹니다" : "zoomed · point at or tap a part to see what it is right beside it",
@@ -660,7 +660,7 @@ function zoomer(st,{W,H,zoom,focus,btn,labels,hide,stops}){
   Z.rect=()=>{const s=1+(zoom-1)*sm(0,1,Z.k),w=W/s,h=H/s;return [Z.fx*(W-w),Z.fy*(H-h),w,h];};
   // 한 점 아래의 부품 설명 찾기
   Z.pick=(x,y)=>{const el=document.elementFromPoint(x,y);const g=el&&el.closest?el.closest("[data-info]"):null;const key=g&&st.contains(g)?g.getAttribute("data-info"):"";Z.info=key&&INFO[key]?INFO[key][KO?0:1]:"";};
-  // 그리기 전에: 보이는 범위를 SVG 들에 적용하고, 움직였으면 부품을 다시 찾음
+  // 그리기 전에: 보이는 범위를 SVG 들에 적용하고 움직였으면 부품을 다시 찾음
   Z.apply=()=>{
     const r=Z.rect(),box=r.map((n)=>n.toFixed(2)).join(" ");
     const shown=Z.on||Z.k>0;if(shown!==Z.shown){Z.shown=shown;st.toggleAttribute("data-zoom",shown);}   // 확대돼 있는 동안 칸 밖을 자름
@@ -726,7 +726,7 @@ function draw(){
   say(read1,c1||(Z1.on?ZT.hint:trayText+" · "+(perTrayKw*load.x).toFixed(1)+" kW"),!!c1);
   say(read2,c2||(Z2.on?ZT.hint:plateText+" · "+(G.kw*load.x).toFixed(2)+" kW"),!!c2);
 }
-// 따라가는 값들을 dt 초만큼 (둘러보기 중이면 시계도). tick·warm 이 같이 씀
+// 따라가는 값들을 dt 초만큼 (둘러보기 중이면 시계도). tick·warm이 같이 씀
 function advance(dt,calm){
   // 그림은 저절로 움직임(28초 둘러보기, 마우스로 조작하지 않음). 확대해 보는 동안만 그 자리에서 멈췄다가, 끝나면 멈춘 곳부터 이어짐
   const zoomed=Z1.on||Z2.on;touring=!calm&&!zoomed;

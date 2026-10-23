@@ -16,7 +16,7 @@ export const hqText = {
     badgeOpen: '{name}의 발언 보기', statementsN: '발언 {n}', bubbleAll: '전체 {n}건', bubbleOpen: '이 발언 자세히 (카드)',
     prev: '이전 발언', next: '다음 발언', signOpen: '약속 타임라인 보기', scoreLine: '약속 {n}건 · 기한 안에 지켜짐 {a}/{b}',
     silentNote: '{names}: 2023-08-29 이후 이름이 붙은 발언을 찾지 못해 화면에서 뺐어요 (찾으면 다시 나타남)',
-    personTitle: '{name}의 발언', noStatements: '2023-08-29 AI 전환 뒤 회사 보도자료·실적 발표 콜·X 에서 {name} 이름이 붙은 발언을 찾지 못했어요.',
+    personTitle: '{name}의 발언', noStatements: '2023-08-29 AI 전환 뒤 회사 보도자료·실적 발표 콜·X에서 {name} 이름이 붙은 발언을 찾지 못했어요.',
     // ≡ 메뉴 바로가기 (AppMenu) — 경영진 발언(본사 화면) · CEO 약속 타임라인(본사 화면 + 약속 탭)
     menuEntry: '경영진 발언', menuSub: '공동 CEO 발언 · 약속 지켜졌나',
     menuPromises: 'CEO 약속 타임라인', menuPromisesSub: '말한 날 → 기한 → 이룬 날을 한눈에',
@@ -44,8 +44,8 @@ export const hqText = {
     // 판정 옆 근거 한 줄 ({ym} = YYYY-MM)
     detail: {
       kept: '{ym} {ev}로 확인', lateKept: '기한 {due} → {ym} 확인', late: '기한 지남, 아직 확인 안 됨', progress: '진행 {done} / {of}',
-      pending: '{due} 까지', reduced: '원래 목표', reducedDone: '로 줄여서 이룸', reducedOnly: '로 줄임',
-      postponed: '회사가 {to} 로 미룸', periodOnly: "이룬 시점: 회사가 '{period}'로만 밝힘", publishedOnly: '이룬 시점: 발표일 기준',
+      pending: '{due}까지', reduced: '원래 목표', reducedDone: '로 줄여서 이룸', reducedOnly: '로 줄임',
+      postponed: '회사가 {to}로 미룸', periodOnly: "이룬 시점: 회사가 '{period}'로만 밝힘", publishedOnly: '이룬 시점: 발표일 기준',
     },
     source: '원문', loading: '불러오는 중…', loadError: '발언 자료를 불러오지 못했습니다',
     disclaimer: "요약은 이 사이트가 원문을 보고 정리한 것 · '지켜짐'은 회사 보도자료·SEC 공시로 확인됐을 때만 · 비공식 · 투자 조언 아님",

@@ -33,7 +33,7 @@ export function gpuLine(b, lang) {
 //   위에서부터 맞춰 보고 처음 맞는 이름. 공랭 B300·Hopper·여러 세대 혼합 홀은 골랐을 때 GPU 줄로만 → null
 const GPU_TAGS = [
   { test: /Rubin/i, text: 'Vera Rubin' },   // 스위트워터 1단계 (설계 기준)
-  { test: /GB300/i, text: 'GB300' },        // Horizon 1~4 · 프린스조지 액체냉각 홀 · 캐널플래츠 전환 계획 ("GB300 NVL72" → 짧게)
+  { test: /GB300/i, text: 'GB300' },        // Horizon 1~4 · 프린스조지 액체냉각 홀 · 커낼플랫츠 전환 계획 ("GB300 NVL72" → 짧게)
 ]
 export function gpuTag(b) {
   const model = b?.gpu?.model
