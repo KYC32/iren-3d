@@ -5,7 +5,8 @@ import { pickName, useT } from '../i18n/useT.js'
 import { customerZones } from '../data/customerZones.js'
 import { signedContractsAt } from '../data/contracts.js' // 그 날짜까지 서명된 계약만 (계약 탭과 같은 기준)
 import { claimsAt, locationFor, milestonesAt, EMPTY_RESEARCH, sourceById } from '../data/research.js'
-import { toMonth } from '../data/timeline.js'
+import { toMonth, monthLabel } from '../data/timeline.js'
+import { siteNewsAt } from '../data/siteNews.js' // 보고 있는 달까지의 캠퍼스 소식 (최신 위)
 import { styleOf } from '../data/statusStyle.js'
 import EvidenceCard from './research/EvidenceCard.jsx'
 import PlanHistory from './research/PlanHistory.jsx'
@@ -17,6 +18,7 @@ import HallEstimateCard from './HallEstimateCard.jsx'
 // 전력·통신 이중화 · 현장 진척(제3자 관찰) 칸 — 따로 불러와 첫 화면 번들에 안 들어감
 const SiteFacts = lazy(() => import('./SiteFacts.jsx'))
 const FigureButton = lazy(() => import('./FigureButton.jsx')) // 고른 건물의 그림(전력 경로·홀 안) 단추
+const SiteNews = lazy(() => import('./SiteNews.jsx')) // 캠퍼스 최근 소식 목록 (현황 페이지와 같은 조각)
 const TABS={overview:['현황','Overview'],history:['계획 이력','Plan history'],evidence:['사진·근거','Photos & evidence']}
 export default function CampusPanel(){
   const site=useAppStore(selectSelectedSite), st=useAppStore(), t=useT(), panel=useRef(null)
@@ -80,6 +82,10 @@ export default function CampusPanel(){
       <h3>{zone?`${zone.name} · `:''}{ko?'건물·단계':'Buildings & phases'}</h3><div className="research-buildings">{buildings.map(b=><button key={b.id} className={b.id===selectedBuildingId?'selected':''} onClick={()=>st.selectBuilding(b.id,true)}><span className="dot" style={{background:styleOf(b.status).color}}/><span><b>{pickName(b,lang)}</b><small>{t.status[b.status]} · {b.evidenceReview==='verified'?(ko?'원문 확인':'Source reviewed'):(ko?'재검토 필요':'Needs review')}</small></span><strong>{b.it_mw?`${b.it_mw} IT`:b.disclosedMw?`~${b.disclosedMw} MW*`:b.gross_mw?`${b.gross_mw} MW`:'—'}</strong></button>)}</div>
       {buildings.some(b=>b.disclosedMw)&&<p className="research-note">{ko?'* IT·총전력 기준 미명시. 용량 합계와 분리합니다.':'* IT/gross basis unspecified; excluded from typed capacity totals.'}</p>}
       {!buildings.length&&<p className="research-empty">{ko?'이 시점에 확인 가능한 건물 기록 없음':'No building records available at this date'}</p>}
+      {/* 최근 소식: 보고 있는 달까지의 캠퍼스 소식 (지난 날짜를 보면 제목에 'O년 O월까지') · 캠퍼스 전체 소식이라 고객 구역을 고르면 숨김 */}
+      {!zone&&<Suspense fallback={null}><SiteNews key={site.id} items={siteNewsAt(site,month)} lang={lang}
+        title={<h3>{ko?'최근 소식':'Recent news'}{month<toMonth(site.as_of)&&(ko?` · ${monthLabel(month,lang)}까지`:` · through ${monthLabel(month,lang)}`)}</h3>}
+        empty={ko?'이 시점까지 공개된 소식이 없습니다.':'No news published by this date.'}/></Suspense>}
       {!zone&&<Suspense fallback={null}><SiteFacts site={site} month={month} lang={lang}/></Suspense>}
       <h3>{ko?'현장 자료':'Site imagery'}</h3><PhotoGallery site={site} buildingId={selectedBuildingId} buildingIds={zone?.buildings.map(b=>b.id)} research={research} month={month} lang={lang} compact/>
       <h3>{ko?'위치 근거':'Location evidence'}</h3><p className="research-note">{ko?location.note_ko:location.note_en}</p><a href={location.source??site.sources[0]} target="_blank" rel="noreferrer">{ko?'위치 관련 원문':'Location source'}<ArrowUpRight size={12} aria-hidden="true"/></a>

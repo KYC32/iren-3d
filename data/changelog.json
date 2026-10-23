@@ -4,6 +4,10 @@
       "date": "2026-10-23",
       "items": [
         {
+          "ko": "캠퍼스 소식 목록 추가 (그동안 타임라인 눈금·주가 차트의 마우스 설명에만 있던 소식). 지도·3D에서 캠퍼스를 고르면 '현황' 탭 '건물·단계' 아래에, 현황 페이지에서는 캠퍼스 표 아래에 날짜·한 줄·출처 링크로 나옴. 캠퍼스마다 최신 3개를 먼저 보이고 '이전 소식 더 보기'로 펼침. 타임라인을 과거로 옮기면 그 뒤 소식은 숨김",
+          "en": "Campus news now has its own list (until now it only appeared in tooltips on the timeline ticks and the stock chart). Pick a campus on the map or in 3D to see it under 'Buildings & phases' in the Overview tab; the Overview page lists it below the campus table — date, one line and a source link. Each campus shows its latest 3 first, with 'Show earlier' to expand. Moving the timeline into the past hides news published after that month"
+        },
+        {
           "ko": "사이트 한글 다듬기 (내용·숫자는 그대로): 영문·숫자 뒤 조사를 붙여 씀('Microsoft 에' → 'Microsoft에', 189곳). 연결어미(-고·-며·-지만) 바로 뒤 쉼표 48곳을 지움. 변경 기록의 140자 넘는 긴 문장 24항목을 나눔(문장 평균 94자 → 72자). 화면 아래 안내문의 같은 끝맺음 반복을 줄이고 지명 표기를 공식 이름(커낼플랫츠·카이오와)으로 맞춤",
           "en": "Korean copy edit across the site (content and numbers unchanged): particles now attach to Latin words and numbers per Korean spelling rules (189 places), 48 commas right after connective endings removed, long changelog sentences split (24 items, average sentence 94 → 72 characters), the footer notice reworded to avoid four identical endings in a row, and place names unified to the official Korean spellings"
         },

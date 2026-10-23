@@ -1,0 +1,17 @@
+/* =============================================================
+   siteNews.css — 캠퍼스 "최근 소식" 목록 (SiteNews.jsx 와 함께 나중에 불러옴 · 첫 화면 번들 밖)
+   왼쪽 날짜 칸(IREN 남색) + 글 한 줄 + 작은 출처, 항목 사이는 가는 선 — 색 칸 없이
+   ============================================================= */
+.site-news { list-style: none; margin: 0; padding: 0; }
+.site-news li { display: grid; grid-template-columns: 68px 1fr; gap: 8px; align-items: baseline; padding: 7px 0; border-top: 1px solid #edf1f4; }
+.site-news li:first-child { border-top: 0; padding-top: 0; }
+.site-news-date { font-size: 11px; font-weight: 700; color: #0b344f; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.site-news-body { min-width: 0; }
+/* 캠퍼스 패널의 링크 규칙(.campus-panel a: 11px 청록)보다 우선 — 소식 글은 본문처럼 읽히게 */
+.site-news li a { font-size: 12px; line-height: 1.45; color: #1f3550; text-decoration: none; word-break: keep-all; overflow-wrap: anywhere; }
+.site-news li a:hover { text-decoration: underline; }
+.site-news li a svg { color: #6b7591; }
+.site-news small { display: block; margin-top: 1px; font-size: 10.5px; color: #7a889c; }
+/* 펼치기 단추: 글자 단추 (남색), 칸 없음 */
+.site-news-more { display: inline-flex; align-items: center; gap: 3px; margin-top: 6px; border: 0; background: none; padding: 2px 0; font: inherit; font-size: 11px; font-weight: 600; color: #0b344f; cursor: pointer; }
+.site-news-more:hover { text-decoration: underline; }
