@@ -4,6 +4,21 @@
       "date": "2026-10-23",
       "items": [
         {
+          "ko": "다음 실적 발표 확정: Q1 FY27 2026-11-05(목) — 콘퍼런스콜 미국 동부 오후 5시(한국 11/6 오전 7시). 회사 발표 전 외부 추정(2026-11)을 회사 보도자료(2026-10-22)로 교체",
+          "en": "Next earnings confirmed: Q1 FY27 on 2026-11-05 (Thu), conference call 5:00 pm ET. Replaces the earlier estimate (2026-11) with the company release (2026-10-22)",
+          "source": "https://www.globenewswire.com/news-release/2026/10/22/3386871/0/en/iren-to-release-q1-fy27-results-on-november-5-2026.html"
+        },
+        {
+          "ko": "2026 정기 주주총회 일정 추가: 2026-11-24 미국 동부 오후 4:30, 온라인으로만 열림. 안건 6개는 이사 Christopher Guzowski 재선임, 전환사채 관련 자사주 매입 승인 2건(선급 선도 거래·캡드콜, 투표의 75% 찬성 필요), 임원 보수 자문 투표, KPMG 감사인 2건. 출처는 DEF 14A(2026-10-13 제출)",
+          "en": "Added the 2026 AGM: 2026-11-24, 4:30 pm ET, virtual — 6 proposals (re-elect director Christopher Guzowski, 2 share-repurchase approvals tied to convertible notes (prepaid forward and capped calls, 75% needed), say-on-pay, 2 KPMG auditor items). Source: DEF 14A filed 2026-10-13",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036126039451/ny20078226x1_def14a.htm"
+        },
+        {
+          "ko": "바다호스: 토목 공사 허가 확보·IREN Europe 설립(이사회 의장 Ángel Corcóstegui, 유럽 총괄 Roberto Purcaro)을 타임라인에 추가(2026-10-21, GTC Berlin). 냉각은 '미상' → 폐쇄 루프(액체 냉각, 물 사용 최소), 요약에 NVIDIA DSX 호환 설계와 2028 첫 가동 목표 반영. 회사 자료 반영 기준일 2026-10-06 → 2026-10-23",
+          "en": "Badajoz: civil works license secured and IREN Europe established (board chaired by Ángel Corcóstegui; Roberto Purcaro as Executive Director for Europe) added to the timeline (2026-10-21, GTC Berlin). Cooling 'unknown' → closed-loop (liquid cooling, minimal water); summary now notes NVIDIA DSX compatibility and initial operations targeted for 2028. Data as-of date moved 2026-10-06 → 2026-10-23",
+          "source": "https://www.globenewswire.com/news-release/2026/10/21/3385423/0/en/iren-to-advance-europe-s-sovereign-ai-ambitions-with-300mw-spanish-campus.html"
+        },
+        {
           "ko": "캠퍼스 소식 목록 추가 (그동안 타임라인 눈금·주가 차트의 마우스 설명에만 있던 소식). 지도·3D에서 캠퍼스를 고르면 '현황' 탭 '건물·단계' 아래에, 현황 페이지에서는 캠퍼스 표 아래에 날짜·한 줄·출처 링크로 나옴. 캠퍼스마다 최신 3개를 먼저 보이고 '이전 소식 더 보기'로 펼침. 타임라인을 과거로 옮기면 그 뒤 소식은 숨김",
           "en": "Campus news now has its own list (until now it only appeared in tooltips on the timeline ticks and the stock chart). Pick a campus on the map or in 3D to see it under 'Buildings & phases' in the Overview tab; the Overview page lists it below the campus table — date, one line and a source link. Each campus shows its latest 3 first, with 'Show earlier' to expand. Moving the timeline into the past hides news published after that month"
         },

@@ -1,6 +1,6 @@
 {
   "company_id": "iren",
-  "as_of": "2026-10-06",
+  "as_of": "2026-10-23",
   "sites": [
     {
       "id": "childress",
@@ -1575,9 +1575,9 @@
       "announced": "2026-05",
       "acres": null,
       "grid_operator": "REE",
-      "cooling": "unknown",
-      "summary_ko": "Nostrum Group 인수(2026-06 완료)로 확보한 유럽 첫 거점. Badajoz ~300MW 계획, Nostrum 전체 490MW 계통 확보. 2028 가동 목표.",
-      "summary_en": "First European foothold via the Nostrum Group acquisition (closed Jun 2026). ~300MW planned at Badajoz; 490MW grid-connected across Nostrum. Operations targeted 2028.",
+      "cooling": "closed-loop",
+      "summary_ko": "Nostrum Group 인수(2026-06 완료)로 확보한 유럽 첫 거점. Badajoz ~300MW 계획(계통 연결·토목 공사 허가 확보), Nostrum 전체 490MW 계통 확보. 폐쇄 루프 액체 냉각, NVIDIA DSX 호환 설계. 2028 첫 가동 목표. 유럽 사업 지주회사 IREN Europe 설립(2026-10).",
+      "summary_en": "First European foothold via the Nostrum Group acquisition (closed Jun 2026). ~300MW planned at Badajoz (grid connection and civil works license secured); 490MW grid-connected across Nostrum. Closed-loop liquid cooling, designed for NVIDIA DSX compatibility. Initial operations targeted 2028. IREN Europe established as the holding company for European operations (Oct 2026).",
       "power": [
         {
           "from": "2026-05",
@@ -1609,6 +1609,12 @@
           "event": "인수 완료, 전력 포트폴리오 5GW 도달",
           "event_en": "Acquisition closed; power portfolio reaches 5GW",
           "source": "https://www.globenewswire.com/news-release/2026/06/15/3311680/0/en/iren-completes-acquisition-of-nostrum-group-expanding-ai-cloud-platform-to-europe.html"
+        },
+        {
+          "date": "2026-10-21",
+          "event": "바다호스 캠퍼스 토목 공사 허가 확보, IREN Europe 설립 (이사회 의장 Ángel Corcóstegui) — GTC Berlin 발표",
+          "event_en": "Badajoz campus civil works license secured; IREN Europe established (board chaired by Ángel Corcóstegui) — announced at GTC Berlin",
+          "source": "https://www.globenewswire.com/news-release/2026/10/21/3385423/0/en/iren-to-advance-europe-s-sovereign-ai-ambitions-with-300mw-spanish-campus.html"
         }
       ],
       "estimates": [
@@ -1619,7 +1625,8 @@
         }
       ],
       "sources": [
-        "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm"
+        "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm",
+        "https://www.globenewswire.com/news-release/2026/10/21/3385423/0/en/iren-to-advance-europe-s-sovereign-ai-ambitions-with-300mw-spanish-campus.html"
       ],
       "confidence": "medium"
     }

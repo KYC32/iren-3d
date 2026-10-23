@@ -121,12 +121,20 @@
           "source": "https://nvidianews.nvidia.com/news/european-ecosystem-builds-worlds-most-efficient-ai-factories-with-nvidia-dsx"
         },
         {
-          "date": "2026-11",
+          "date": "2026-11-05",
           "kind": "earnings",
-          "title_ko": "Q1 FY27 실적 발표 (예상 · 회사 일정 미발표)",
-          "title_en": "Q1 FY27 results (expected · date not yet announced)",
-          "basis": "estimate",
-          "source": "https://iren.gcs-web.com/events-and-presentations"
+          "title_ko": "Q1 FY27 실적 발표 · 콘퍼런스콜 미국 동부 오후 5시 (한국 11/6 오전 7시)",
+          "title_en": "Q1 FY27 results · conference call 5:00 pm ET",
+          "basis": "reported",
+          "source": "https://www.globenewswire.com/news-release/2026/10/22/3386871/0/en/iren-to-release-q1-fy27-results-on-november-5-2026.html"
+        },
+        {
+          "date": "2026-11-24",
+          "kind": "other",
+          "title_ko": "2026 정기 주주총회 (온라인, 한국 11/25 오전 6:30) · 자사주 매입 승인 등 안건 6개",
+          "title_en": "2026 AGM (virtual, 4:30 pm ET) · 6 proposals incl. share-repurchase approvals",
+          "basis": "reported",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036126039451/ny20078226x1_def14a.htm"
         },
         {
           "date": "2026-12",
