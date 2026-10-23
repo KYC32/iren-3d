@@ -14,17 +14,32 @@ export const hqText = {
     modelNote: '건물은 단순화한 모형 · {floors}층(건물 소유사 Mirvac) · IREN {level}층(10-K 주소)', buildingSource: '건물 자료',
     // 옥상 위 CEO 카드 · 말풍선 (HqParts) — 누르면 가운데 카드 (StatementsCard)
     badgeOpen: '{name}의 발언 보기', statementsN: '발언 {n}', bubbleAll: '전체 {n}건', bubbleOpen: '이 발언 자세히 (카드)',
-    prev: '이전 발언', next: '다음 발언', signOpen: '약속만 모아 보기', scoreLine: '약속 {n}건 · 기한 안에 지켜짐 {a}/{b}',
+    prev: '이전 발언', next: '다음 발언', signOpen: '약속 타임라인 보기', scoreLine: '약속 {n}건 · 기한 안에 지켜짐 {a}/{b}',
     silentNote: '{names}: 2023-08-29 이후 이름이 붙은 발언을 찾지 못해 화면에서 뺐어요 (찾으면 다시 나타남)',
     personTitle: '{name}의 발언', noStatements: '2023-08-29 AI 전환 뒤 회사 보도자료·실적 발표 콜·X 에서 {name} 이름이 붙은 발언을 찾지 못했어요.',
-    // ≡ 메뉴 바로가기 (AppMenu)
+    // ≡ 메뉴 바로가기 (AppMenu) — 경영진 발언(본사 화면) · CEO 약속 타임라인(본사 화면 + 약속 탭)
     menuEntry: '경영진 발언', menuSub: '공동 CEO 발언 · 약속 지켜졌나',
+    menuPromises: 'CEO 약속 타임라인', menuPromisesSub: '말한 날 → 기한 → 이룬 날을 한눈에',
+    // 카드 탭 (StatementsCard)
+    tabs: { promises: '약속 {n}', statements: '발언 {n}' },
+    // 약속 탭 = 타임라인 (PromiseTimeline) — {ym} YYYY-MM · {span} '7개월'·'8일' · {md} 'M/D'
+    tl: {
+      all: '전체 {n}', decided: '결과가 나온 약속', pendingGroup: '기한 {due} · {left} 남음',
+      kept: '{ym} 이룸', lateKept: '{span} 늦게 이룸', late: '기한 지나 {span}', withdrawn: '{ym} 철회', pending: '기한 {ym}',
+      said: '처음 말함 {date} · 언급 {n}번', due: '기한 {date}', achieved: '이룸 {date}', overdue: '기한 지나 {span} · 아직 확인 안 됨',
+      withdrawnOn: '철회 {date}', left: '{span} 남음', postponed: '회사가 기한을 미룬 날 {dates}', lateBy: '기한보다 {span} 늦게',
+      today: '{md} 확인', mentions: '이 약속을 말한 발언 {n}건',
+      legend: { promised: '말한 날 → 기한', deadline: '기한', achieved: '이룬 날', late: '기한이 지난 뒤', postponed: '회사가 기한을 미룬 날', mention: '다시 말한 날', today: '확인 기준일' },
+      chartLabel: '약속 타임라인 — 막대는 처음 말한 날부터 기한까지, 점은 이룬 날',
+    },
+    // 발언 탭 (달별 묶음)
+    fd: { count: '{n}건', quote: '영어 원문', repeat: '다시 언급', personOnly: '{name} 발언만', showAll: '모두 보기' },
     // 경영진 발언 카드 (StatementsCard)
     panelLabel: 'IREN / 본사 · {city}', panelTitle: '경영진 발언', close: '닫기', photoSource: '사진: IREN 홈페이지',
     promisesCount: '기한을 밝힌 약속 {n}건', keptOnTime: '기한 안에 지켜짐 {a}/{b}', checkedAt: '{date} 확인 기준',
     status: { kept: '지켜짐', 'late-kept': '늦게 지켜짐', late: '늦어짐', withdrawn: '철회', pending: '기한 전' },
     reducedTag: '목표 줄임', reducedInLegend: '그중 목표 줄임 {n}', opinion: '약속 아님 (의견)',
-    repeat: '다시 언급 · 처음 {date}', beforeSince: '처음 약속 (시작일 전)', sameQuote: '위와 같은 문장 (약속이 하나 더 들어 있음)',
+    beforeSince: '처음 약속 (시작일 전)',
     chips: { all: '전체', promises: '약속만', x: 'X', call: '실적 발표', interview: '인터뷰', release: '보도자료' },
     // 판정 옆 근거 한 줄 ({ym} = YYYY-MM)
     detail: {
@@ -40,15 +55,27 @@ export const hqText = {
     towerFloor: 'IREN · Level {level}',
     modelNote: 'Simplified model · {floors} storeys (building owner Mirvac) · IREN on Level {level} (10-K address)', buildingSource: 'Building data',
     badgeOpen: 'See statements by {name}', statementsN: '{n} statements', bubbleAll: 'All {n}', bubbleOpen: 'Open this statement (card)',
-    prev: 'Previous statement', next: 'Next statement', signOpen: 'See promises only', scoreLine: '{n} promises · kept on time {a}/{b}',
+    prev: 'Previous statement', next: 'Next statement', signOpen: 'See the promise timeline', scoreLine: '{n} promises · kept on time {a}/{b}',
     silentNote: '{names}: no attributed statements found since 2023-08-29, so not shown (will reappear if found)',
     personTitle: 'Statements by {name}', noStatements: 'Since the 2023-08-29 AI pivot we found no statements attributed to {name} in company releases, earnings calls or on X.',
     menuEntry: 'Management statements', menuSub: 'What the co-CEOs said · promises kept?',
+    menuPromises: 'CEO promise timeline', menuPromisesSub: 'Said → due → met, at a glance',
+    tabs: { promises: 'Promises {n}', statements: 'Statements {n}' },
+    tl: {
+      all: 'All {n}', decided: 'Promises with a result', pendingGroup: 'Due {due} · {left} left',
+      kept: 'Met {ym}', lateKept: 'Met {span} late', late: '{span} past due', withdrawn: 'Withdrawn {ym}', pending: 'Due {ym}',
+      said: 'First said {date} · mentions: {n}', due: 'Due {date}', achieved: 'Met {date}', overdue: '{span} past due · not yet confirmed',
+      withdrawnOn: 'Withdrawn {date}', left: '{span} left', postponed: 'Company moved the deadline on {dates}', lateBy: '{span} after the deadline',
+      today: 'checked {md}', mentions: 'Statements with this promise ({n})',
+      legend: { promised: 'Said → due', deadline: 'Deadline', achieved: 'Met', late: 'Past the deadline', postponed: 'Company moved the deadline', mention: 'Said again', today: 'Check date' },
+      chartLabel: 'Promise timeline — bars run from when it was first said to the deadline, dots mark when it was met',
+    },
+    fd: { count: '{n}', quote: 'Original (English)', repeat: 'Repeated', personOnly: 'Only {name}', showAll: 'Show all' },
     panelLabel: 'IREN / HQ · {city}', panelTitle: 'Management statements', close: 'Close', photoSource: 'Photos: IREN website',
     promisesCount: '{n} promises with a deadline', keptOnTime: 'Kept on time {a}/{b}', checkedAt: 'As checked on {date}',
     status: { kept: 'Kept', 'late-kept': 'Kept late', late: 'Late', withdrawn: 'Withdrawn', pending: 'Not yet due' },
     reducedTag: 'Target cut', reducedInLegend: 'incl. {n} with target cut', opinion: 'Not a promise (opinion)',
-    repeat: 'Repeated · first said {date}', beforeSince: 'First promised (before start date)', sameQuote: 'Same sentence as above (it holds another promise)',
+    beforeSince: 'First promised (before start date)',
     chips: { all: 'All', promises: 'Promises', x: 'X', call: 'Earnings calls', interview: 'Interviews', release: 'Press releases' },
     detail: {
       kept: 'Confirmed {ym} in a {ev}', lateKept: 'Due {due} → confirmed {ym}', late: 'Past due, not yet confirmed', progress: 'progress {done} / {of}',

@@ -74,4 +74,17 @@ describe('본사 화면 주소', () => {
     expect(buildHash({ hq: true, page: 'stock' })).toBe('#page=stock&hq=1')
     expect(buildHash({ hq: true, sky: 'night' })).toBe('#hq=1&sky=night')
   })
+  // 본사 화면의 가운데 카드 탭 (약속 타임라인 | 발언) — 공유 링크로 약속 탭을 바로 열 수 있게 (2026-10-22)
+  it('card=promises|statements → 본사 카드 탭 (본사 화면일 때만, 다른 값은 무시)', () => {
+    expect(parseHash('#hq=1&card=promises')).toEqual({ hq: true, card: 'promises' })
+    expect(parseHash('#hq=1&card=statements')).toEqual({ hq: true, card: 'statements' })
+    expect(parseHash('#hq=1&card=foo')).toEqual({ hq: true })
+    expect(parseHash('#card=promises')).toEqual({})
+  })
+  it('본사 카드가 열려 있으면 주소에 card (hq 바로 뒤 · 캠퍼스 주소엔 없음)', () => {
+    expect(buildHash({ hq: true, card: 'promises' })).toBe('#hq=1&card=promises')
+    expect(buildHash({ hq: true, card: 'statements', sky: 'night' })).toBe('#hq=1&card=statements&sky=night')
+    expect(buildHash({ hq: true, card: 'promises', site: 'childress' })).toBe('#site=childress')
+    expect(buildHash({ card: 'promises' })).toBe('')
+  })
 })

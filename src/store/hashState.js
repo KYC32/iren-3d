@@ -9,6 +9,7 @@
 //   page  : 지도 대신 보여 줄 페이지 (portfolio 사업 현황 | stock 주가 | news 뉴스) — 지도는 생략
 //   at    : 주가 차트에서 강조할 날짜 (YYYY-MM-DD, page=stock 일 때만)
 //   hq    : 1 이면 시드니 본사 3D 화면(본사 건물 + CEO·경영진 발언) — 캠퍼스(site)가 있으면 생략, 페이지와는 함께
+//   card  : 본사 화면의 가운데 카드가 열려 있으면 그 탭 (promises 약속 타임라인 | statements 발언) — hq 일 때만
 // 옛 링크(#site=childress)도 그대로 동작합니다.
 // =============================================================
 
@@ -38,17 +39,20 @@ export function parseHash(hash) {
   if (['day', 'dusk', 'night', 'live'].includes(sky)) out.sky = sky
   for (const key of ['building','zone']) { const v=q.get(key); if (v && /^[a-z0-9-]+$/.test(v)) out[key]=v }
   if (q.get('hq') === '1') out.hq = true // 본사 3D 화면
+  const card = q.get('card')
+  if (out.hq && ['promises', 'statements'].includes(card)) out.card = card // 본사 카드 탭
   return out
 }
 
 // 기본값과 같은 항목은 생략해 주소를 짧게 유지
-export function buildHash({ site = null, date = null, companies = [], color = 'status', surface = 'map', tab = 'overview', building = null, zone = null, sky = 'live', page = null, at = null, hq = false } = {}) {
+export function buildHash({ site = null, date = null, companies = [], color = 'status', surface = 'map', tab = 'overview', building = null, zone = null, sky = 'live', page = null, at = null, hq = false, card = null } = {}) {
   const q = new URLSearchParams()
   if (page) q.set('page', page)              // 맨 앞: 공유 링크에서 "무슨 페이지인지"가 먼저 보이게
   if (page === 'stock' && at) q.set('at', at)
   if (date) q.set('date', date)
   if (site) q.set('site', site)
   if (hq && !site) q.set('hq', '1') // 본사 화면 — 캠퍼스가 있으면 캠퍼스가 먼저 (페이지를 닫으면 본사로 돌아오게 페이지와는 함께)
+  if (hq && !site && card) q.set('card', card) // 본사 카드 탭 (열려 있을 때만)
   if (companies.length) q.set('c', [...companies].join(','))
   if (color && color !== 'status') q.set('color', color)
   if (site && surface === '3d') q.set('surface', surface)

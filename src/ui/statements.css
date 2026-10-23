@@ -1,7 +1,10 @@
 /* =============================================================
-   statements.css — 본사 3D 화면의 가운데 카드 "경영진 발언" (StatementsCard.jsx 와 함께 처음 열 때 불러옴)
-   겉 상자는 <dialog class="statements-card"> (가운데, 휴대폰은 아래쪽 넓게) · 판정 색 변수는 .statements-panel
-   색: IREN 남색 #0B344F · 초록 #71DA80, 판정 색은 아래 변수 다섯 개
+   statements.css — 경영진 발언 카드(StatementsCard) · 약속 타임라인(PromiseTimeline) · 공통 조각(statementParts)
+   공통 조각(사진 · 채널 · 판정 배지 · 성적표 막대)은 옥상 위 CEO 카드·말풍선(HqParts)도 씀 → statementParts.jsx 가 불러옴
+   겉 상자는 <dialog class="statements-card"> (가운데, 휴대폰은 아래쪽 넓게) · 색 변수는 .statements-panel
+   색: IREN 남색 #0B344F · 초록 #71DA80
+     판정 색 --v-* : 성적표 막대·배지 (남색 CEO 카드 위에서도 보이는 밝은 색)
+     타임라인 색 --tl-* : 흰 바탕 위 막대 (dataviz 색 검사 — 이룬 날 초록·늦은 시간 주황·철회 자주, 2026-10-22)
    ============================================================= */
 .statements-panel {
   --v-kept: #71da80;       /* 지켜짐 */
@@ -9,82 +12,212 @@
   --v-late: #e8b04a;       /* 늦어짐 */
   --v-withdrawn: #c4645a;  /* 철회 */
   --v-pending: #c3ccd3;    /* 기한 전 */
+  --tl-promised: #7c8d9a;  /* 말한 날 → 기한 (흰 바탕 대비 3.4:1) */
+  --tl-future: #cfd7de;    /* 기한 전 약속의 확인일 뒤 (남은 기간) */
+  --tl-met: #0f8a6e;       /* 이룬 날 점 */
+  --tl-late: #e39a2c;      /* 기한이 지난 뒤 흐른 시간 (대비가 낮아 왼쪽 글자로 보완) */
+  --tl-withdrawn: #b02a4a; /* 철회 × */
+  --tl-due: #0b344f;       /* 기한 눈금 */
+  --tl-today: #0b344f;     /* 확인 기준일 세로 줄 */
+  --tl-grid: #e2e8ed;      /* 해 세로 줄 */
+  --tl-grid-q: #f1f4f7;    /* 분기 세로 줄 */
+  --tl-label: 300px;       /* 왼쪽 글자 칸 폭 (줄마다 같아야 막대가 줄 맞춤) */
   color: #16213a;
 }
 .statements-panel .st-status { margin: 12px 0; font-size: 12.5px; color: #4b5b68; }
 
-/* 0) 카드 겉 상자 (dialog): 안쪽(.st-card-body)이 스크롤, 머리줄은 위에 붙어 있음 */
+/* ---------- 0) 카드 겉 상자 (dialog): 안쪽(.st-card-body)이 스크롤, 머리줄(제목 + 탭)은 위에 붙어 있음 ---------- */
 /* margin:auto = 화면 가운데 (사이트 공통 초기화가 dialog 기본 여백을 0 으로 지워서 다시 줌) */
-.statements-card { margin: auto; width: min(580px, calc(100vw - 24px)); max-height: min(86vh, 920px); padding: 0; border: 0; border-radius: 16px; background: #fff; box-shadow: 0 24px 64px rgba(11, 52, 79, .35); overflow: hidden; }
+.statements-card { margin: auto; width: min(1080px, calc(100vw - 32px)); max-height: min(90vh, 980px); padding: 0; border: 0; border-radius: 16px; background: #fff; box-shadow: 0 24px 64px rgba(11, 52, 79, .35); overflow: hidden; }
 .statements-card::backdrop { background: rgba(11, 22, 40, .45); }
-.st-card-body { max-height: min(86vh, 920px); overflow-y: auto; padding: 0 20px 18px; box-sizing: border-box; }
-.st-card-head { position: sticky; top: 0; z-index: 1; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 16px 0 8px; background: #fff; }
+.st-card-body { max-height: min(90vh, 980px); overflow-y: auto; padding: 0 22px 18px; box-sizing: border-box; }
+.st-card-head { position: sticky; top: 0; z-index: 3; padding: 16px 0 0; background: #fff; border-bottom: 1px solid #e6ebef; }
+.st-card-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .st-card-head small { font-size: 10.5px; color: #5a6b78; letter-spacing: .02em; }
 .st-card-head h2 { margin: 2px 0 0; font-size: 18px; color: #0b344f; }
 .st-empty { margin: 14px 0; font-size: 12.5px; line-height: 1.6; color: #4b5b68; }
-@media (max-width: 767px) {
-  .statements-card { width: calc(100vw - 16px); max-height: 88vh; margin: auto auto 8px; border-radius: 14px; }
-  .st-card-body { max-height: 88vh; padding: 0 14px 14px; }
-}
 
-/* 1) 사람 */
-.st-people { display: flex; flex-wrap: wrap; gap: 10px 16px; margin-top: 4px; }
-.st-person { display: flex; align-items: center; gap: 8px; }
-.st-person b { display: block; font-size: 12.5px; color: #0b344f; }
-.st-person small { display: block; font-size: 10.5px; color: #5a6b78; }
+/* 탭: 고른 탭은 남색 글자 + 아래 초록 띠 */
+.st-tabs { display: flex; gap: 2px; margin-top: 8px; }
+.st-tabs [role="tab"] { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px 9px; border: 0; border-bottom: 3px solid transparent; background: none; color: #5a6b78; font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; }
+.st-tabs [role="tab"]:hover { color: #0b344f; }
+.st-tabs [role="tab"][aria-selected="true"] { color: #0b344f; border-bottom-color: #71da80; }
+.st-tabs [role="tab"]:focus-visible { outline: 2px solid #71da80; outline-offset: -2px; border-radius: 6px 6px 0 0; }
+
+/* ---------- 공통 조각 (CEO 카드·말풍선도 씀) ---------- */
 .st-face { display: grid; place-items: center; flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #fff; background: #c9d2d9; object-fit: cover; box-shadow: 0 1px 4px rgba(11, 52, 79, .2); font: 700 11px/1 ui-sans-serif, system-ui, sans-serif; font-style: normal; color: #fff; }
 .st-face.is-small { width: 24px; height: 24px; font-size: 9px; }
 .st-face.is-initials { background: #0b344f; }
-.st-photo-src { margin: 6px 0 0; font-size: 10.5px; }
-.st-photo-src a { display: inline-flex; align-items: center; gap: 2px; color: #3a6a9a; text-decoration: none; }
-.st-photo-src a:hover { text-decoration: underline; }
-
-/* 2) 성적표 */
-.st-score { margin-top: 12px; padding: 10px 0; border-top: 1px solid #e6ebef; border-bottom: 1px solid #e6ebef; }
-.st-score-top { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
-.st-score-top span { color: #1d7a45; font-weight: 650; }
 .st-bar { display: flex; gap: 2px; height: 9px; margin-top: 7px; border-radius: 5px; overflow: hidden; background: #eef1f4; }
-.st-bar i { display: block; height: 100%; }
-.st-legend { display: flex; flex-wrap: wrap; gap: 3px 10px; margin-top: 6px; font-size: 10.5px; color: #4b5b68; }
-.st-legend span::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 4px; border-radius: 2px; vertical-align: -1px; background: var(--c); }
-.st-checked { display: block; margin-top: 5px; font-size: 10.5px; color: #6b7a86; }
-/* 판정 색: 막대 칸·범례 점·배지가 같은 변수 */
+.st-bar i { display: block; height: 100%; background: var(--c); }
+/* 판정 색: 성적표 막대 칸·배지가 같은 변수 */
 .v-kept { --c: var(--v-kept); } .v-late-kept { --c: var(--v-late-kept); } .v-late { --c: var(--v-late); }
 .v-withdrawn { --c: var(--v-withdrawn); } .v-pending { --c: var(--v-pending); }
-.st-bar i { background: var(--c); }
-
-/* 3) 거르기 단추 */
-.st-chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 10px 0 4px; }
-.st-chips button { border: 1px solid #d5dde3; background: #fff; color: #4b5b68; border-radius: 999px; padding: 3px 10px; font-size: 11.5px; cursor: pointer; }
-.st-chips button[aria-pressed="true"] { background: #0b344f; border-color: #0b344f; color: #fff; }
-
-/* 4) 목록 */
-.st-list { list-style: none; margin: 0; padding: 0; }
-.st-row { display: flex; gap: 9px; padding: 10px 0; border-bottom: 1px solid #f0f3f5; }
-.st-row-body { flex: 1; min-width: 0; }
 .st-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 10.5px; color: #5a6b78; }
 .st-x { font-size: 11px; font-weight: 800; color: #0b344f; }
 .st-summary { margin: 3px 0 4px; font-size: 12.5px; line-height: 1.45; }
 .st-quote { display: block; margin: 0 0 5px; font-size: 11.5px; color: #4b5b68; font-style: italic; }
-/* 발언이 없어 뺀 사람 안내 (예: 공동 CEO Will Roberts) */
-.st-silent { margin: 4px 0 0; font-size: 11px; line-height: 1.45; color: #6b7a86; }
-/* 본사 3D 건물 안내 (단순화한 모형 · 층수 출처) */
-.st-model-note { margin: 4px 0 10px; font-size: 11px; color: #6b7a86; line-height: 1.45; }
-.st-model-note a { display: inline-flex; align-items: center; gap: 2px; color: inherit; text-decoration: underline; text-underline-offset: 2px; }
-/* 한 문장에 약속이 둘일 때 둘째 줄: 인용 대신 "위와 같은 문장" */
-.st-same { display: block; margin: 0 0 5px; font-size: 11px; color: #6b7a86; }
 .st-verdict-top { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
-.st-verdict-top small { font-size: 10.5px; color: #4b5b68; }
+.st-verdict-top small { font-size: 11px; color: #4b5b68; }
 .st-badge { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 6px; font-size: 10.5px; font-weight: 650; color: #16213a; background: color-mix(in srgb, var(--c) 35%, #fff); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 70%, #fff); }
 .st-badge.v-withdrawn { color: #7a2a22; }
 .st-badge em { font-style: normal; font-size: 10px; font-weight: 700; color: #8a5a00; background: #fdf0d6; border-radius: 4px; padding: 0 5px; }
-.st-note { margin: 4px 0 0; font-size: 10.5px; color: #8a5a00; }
+.st-note { margin: 4px 0 0; font-size: 11px; color: #8a5a00; }
 .st-note s { color: #a08a63; }
-.st-opinion { display: block; font-size: 10.5px; color: #8a98a3; } /* 한 줄 차지 — 바로 뒤 "원문" 링크가 붙어 보이지 않게 */
-.st-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
-.st-tags small { font-size: 10px; color: #5a6b78; background: #eef1f4; border-radius: 4px; padding: 1px 6px; }
-.st-src { display: inline-flex; align-items: center; gap: 2px; margin-top: 5px; font-size: 10.5px; color: #3a6a9a; text-decoration: none; }
+.st-opinion { display: inline-block; font-size: 11px; color: #8a98a3; }
+.st-src { display: inline-flex; align-items: center; gap: 2px; margin-left: auto; font-size: 10.5px; color: #3a6a9a; text-decoration: none; }
 .st-src:hover { text-decoration: underline; }
+/* 거르기 단추 (발언 탭 채널) */
+.st-chips { display: flex; flex-wrap: wrap; gap: 5px; margin: 12px 0 4px; }
+.st-chips button { display: inline-flex; align-items: center; gap: 4px; border: 1px solid #d5dde3; background: #fff; color: #4b5b68; border-radius: 999px; padding: 3px 10px; font-size: 11.5px; cursor: pointer; }
+.st-chips button[aria-pressed="true"] { background: #0b344f; border-color: #0b344f; color: #fff; }
 
-/* 5) 안내 */
-.st-disclaimer { margin: 10px 0 2px; font-size: 10px; line-height: 1.5; color: #6b7a86; }
+/* ---------- 1) 약속 탭: 성적표 한 줄 + 판정 거르기 ---------- */
+.tl { margin-top: 12px; }
+.tl-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; }
+.tl-summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 12px; margin: 0; font-size: 12.5px; }
+.tl-summary b { font-size: 14px; color: #0b344f; }
+.tl-summary span { font-weight: 700; color: #0b344f; }
+.tl-summary small { font-size: 11px; color: #6b7a86; }
+.tl-filter { display: flex; flex-wrap: wrap; gap: 5px; }
+.tl-filter button { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid #d5dde3; border-radius: 999px; background: #fff; color: #33424e; font: inherit; font-size: 11.5px; cursor: pointer; }
+.tl-filter button:hover { border-color: #0b344f; }
+.tl-filter button b { font-weight: 750; color: #0b344f; }
+.tl-filter button[aria-pressed="true"] { background: #0b344f; border-color: #0b344f; color: #fff; }
+.tl-filter button[aria-pressed="true"] b { color: #fff; }
+/* 단추의 작은 그림 = 막대 위 그림과 같은 모양 */
+.sw { position: relative; display: inline-block; flex-shrink: 0; }
+.sw-kept { width: 10px; height: 10px; border-radius: 50%; background: var(--tl-met); box-shadow: 0 0 0 1.5px #fff; }
+.sw-late-kept { width: 22px; height: 8px; }
+.sw-late-kept::before { content: ''; position: absolute; left: 0; top: 0; width: 16px; height: 8px; border-radius: 0 4px 4px 0; background: var(--tl-late); }
+.sw-late-kept::after { content: ''; position: absolute; right: 0; top: -1px; width: 10px; height: 10px; border-radius: 50%; background: var(--tl-met); box-shadow: 0 0 0 1.5px #fff; }
+.sw-late { width: 18px; height: 8px; border-radius: 0 4px 4px 0; background: var(--tl-late); }
+.sw-pending { width: 18px; height: 8px; border-radius: 4px; background: var(--tl-future); box-shadow: inset 0 0 0 1px #b4c0c9; }
+.sw-x { flex-shrink: 0; color: var(--tl-withdrawn); }
+.tl-filter button[aria-pressed="true"] .sw-x { color: #ff9db0; }
+
+/* ---------- 2) 약속 탭: 차트 ---------- */
+.tl-chart { position: relative; margin-top: 10px; }
+.tl-axis, .tl-line { display: grid; grid-template-columns: var(--tl-label) minmax(0, 1fr) 18px; column-gap: 14px; }
+/* 축은 스크롤해도 카드 머리 바로 아래에 붙어 있음 (--st-head-h 는 StatementsCard 가 잰 머리 높이) */
+/* 축 두 줄: 위 = 확인일 표시(남색 알약), 아래 = 해 이름 — 둘이 가까워도 겹치지 않게 높이 40px */
+.tl-axis { position: sticky; top: var(--st-head-h, 0px); z-index: 2; height: 40px; background: #fff; border-bottom: 1px solid #e6ebef; }
+.tl-axis .tl-track { position: relative; height: 40px; } /* 줄 높이를 직접 (그리드가 늘려 주지 않아 해 이름이 가운데로 올라왔었음) */
+.tl-year { position: absolute; bottom: 3px; transform: translateX(-50%); font-size: 11px; line-height: 14px; font-weight: 650; color: #5a6b78; font-variant-numeric: tabular-nums; }
+.tl-year.is-start { transform: none; }
+.tl-today-label { position: absolute; top: 2px; transform: translateX(-50%); padding: 1px 6px; border-radius: 4px; background: #0b344f; color: #fff; font-size: 10px; line-height: 14px; font-weight: 700; white-space: nowrap; }
+.tl-group-head { display: flex; align-items: baseline; gap: 6px; margin: 14px 0 2px; font-size: 12px; font-weight: 750; color: #0b344f; }
+.tl-group-head small { font-size: 11px; font-weight: 600; color: #6b7a86; }
+.tl-rows { list-style: none; margin: 0; padding: 0; }
+.tl-row { border-bottom: 1px solid #eef2f5; }
+.tl-line { width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; align-items: stretch; }
+.tl-line:hover { background: #f5faf7; }
+.tl-line:focus-visible { outline: 2px solid #71da80; outline-offset: -2px; }
+.tl-row.is-open .tl-line { background: #f1f8f3; }
+.tl-label { display: flex; flex-direction: column; justify-content: center; gap: 2px; min-width: 0; padding: 7px 0; }
+.tl-title { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 12.5px; line-height: 1.35; color: #16213a; }
+.tl-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 11px; color: #4b5b68; }
+.tl-meta b { font-weight: 700; color: #16213a; }
+.tl-icon { flex-shrink: 0; }
+.is-kept .tl-icon, .is-late-kept .tl-icon { color: var(--tl-met); }
+.is-late .tl-icon { color: #c47a10; }
+.is-withdrawn .tl-icon { color: var(--tl-withdrawn); }
+.is-pending .tl-icon { color: var(--tl-promised); }
+/* 막대 칸: 배경(backgroundImage)은 해·분기·확인일 세로 줄 — 줄마다 같은 그림이라 이어져 보임 */
+.tl-track { position: relative; min-height: 26px; }
+.tl-seg { position: absolute; top: 50%; height: 8px; margin-top: -4px; border-radius: 4px; }
+.tl-seg.is-promised { background: var(--tl-promised); }
+.tl-seg.is-future { background: var(--tl-future); }
+.tl-seg.is-late { border-radius: 0 4px 4px 0; background: var(--tl-late); }
+.tl-seg.is-late.is-open-end { border-radius: 0; } /* 아직 안 이룸 — 확인일에서 잘린 채 */
+.tl-due { position: absolute; top: 50%; width: 2px; height: 16px; margin: -8px 0 0 -1px; border-radius: 1px; background: var(--tl-due); }
+.tl-mention { position: absolute; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: #0b344f; box-shadow: 0 0 0 1.5px #fff; }
+.tl-postponed { position: absolute; top: 50%; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 2px var(--tl-late), 0 0 0 1.5px #fff; }
+.tl-met { position: absolute; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--tl-met); box-shadow: 0 0 0 2px #fff; }
+.tl-withdrawn { position: absolute; top: 50%; margin: -6px 0 0 -6px; color: var(--tl-withdrawn); }
+.tl-chev { align-self: center; color: #8a98a3; transition: transform .15s; }
+.tl-row.is-open .tl-chev { transform: rotate(180deg); }
+/* 마우스를 따라가는 세로 선 + 날짜 */
+.tl-cross { position: absolute; top: 0; bottom: 0; z-index: 3; width: 1px; background: rgba(11, 52, 79, .4); pointer-events: none; }
+.tl-cross span { position: absolute; left: 6px; padding: 1px 6px; border-radius: 4px; background: #fff; box-shadow: 0 0 0 1px #c9d4de; color: #0b344f; font-size: 10.5px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* 날짜 풍선 */
+.tl-tip { position: absolute; z-index: 4; width: 260px; padding: 8px 11px; border-radius: 10px; background: #0b344f; color: #fff; font-size: 11.5px; line-height: 1.55; box-shadow: 0 10px 24px rgba(6, 28, 44, .3), inset 0 1px 0 rgba(255, 255, 255, .16); pointer-events: none; }
+.tl-tip b { display: block; margin-bottom: 1px; font-size: 12px; color: #71da80; }
+.tl-tip span { display: block; }
+/* 펼친 내용: 판정 근거 + 이 약속을 말한 발언들 */
+.tl-detail { padding: 8px 0 14px; }
+.tl-detail h5 { margin: 10px 0 4px; font-size: 11.5px; color: #0b344f; }
+.tl-said { list-style: none; margin: 0; padding: 0 0 0 12px; border-left: 2px solid #e2e8ed; }
+.tl-said li { padding: 6px 0; }
+.tl-said li + li { border-top: 1px solid #f0f3f5; }
+
+/* 읽는 법 (막대 위 그림과 같은 모양) */
+.tl-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 14px 0 0; padding: 10px 0 0; border-top: 1px solid #e6ebef; list-style: none; font-size: 11px; color: #4b5b68; }
+.tl-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.lg { position: relative; display: inline-block; flex-shrink: 0; }
+.lg-promised { width: 22px; height: 8px; border-radius: 4px; background: var(--tl-promised); }
+.lg-due { width: 2px; height: 14px; border-radius: 1px; background: var(--tl-due); }
+.lg-met { width: 12px; height: 12px; border-radius: 50%; background: var(--tl-met); }
+.lg-late { width: 22px; height: 8px; border-radius: 0 4px 4px 0; background: var(--tl-late); }
+.lg-postponed { width: 10px; height: 10px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--tl-late); }
+.lg-mention { width: 6px; height: 6px; border-radius: 50%; background: #0b344f; }
+.lg-today { width: 1px; height: 14px; background: var(--tl-today); }
+.lg-withdrawn { flex-shrink: 0; color: var(--tl-withdrawn); }
+
+/* ---------- 3) 발언 탭: 달별 묶음 (왼쪽 달 · 오른쪽 발언) ---------- */
+.fd-month { display: grid; grid-template-columns: 112px minmax(0, 1fr); column-gap: 18px; padding: 14px 0; border-top: 1px solid #e6ebef; }
+.st-chips + .fd-month { border-top: 0; }
+.fd-month-head { display: flex; flex-direction: column; gap: 2px; margin: 0; padding-top: 1px; font-size: 13px; font-weight: 750; color: #0b344f; }
+.fd-month-head small { font-size: 11px; font-weight: 600; color: #6b7a86; }
+.fd-items { list-style: none; margin: 0; padding: 0; }
+.fd-item + .fd-item { margin-top: 12px; padding-top: 12px; border-top: 1px solid #f0f3f5; }
+.fd-summary { max-width: 72ch; margin: 4px 0 7px; font-size: 13.5px; line-height: 1.55; color: #16213a; }
+.fd-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.fd-chip { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; padding: 3px 10px 3px 8px; border: 1px solid #d5dde3; border-radius: 999px; background: #fff; color: #16213a; font: inherit; font-size: 11.5px; cursor: pointer; }
+.fd-chip:hover, .fd-chip:focus-visible { border-color: #0b344f; outline: none; box-shadow: 0 0 0 2px rgba(113, 218, 128, .45); }
+.fd-chip-icon { flex-shrink: 0; }
+.fd-chip.is-kept .fd-chip-icon, .fd-chip.is-late-kept .fd-chip-icon { color: var(--tl-met); }
+.fd-chip.is-late .fd-chip-icon { color: #c47a10; }
+.fd-chip.is-withdrawn .fd-chip-icon { color: var(--tl-withdrawn); }
+.fd-chip.is-pending .fd-chip-icon { color: var(--tl-promised); }
+.fd-chip-title { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fd-chip-status { flex-shrink: 0; font-size: 11px; color: #5a6b78; }
+.fd-chip em { flex-shrink: 0; padding: 0 5px; border-radius: 4px; background: #eef1f4; color: #5a6b78; font-size: 10px; font-style: normal; }
+.fd-tag { padding: 1px 6px; border-radius: 4px; background: #eef1f4; color: #5a6b78; font-size: 10.5px; }
+.fd-quote { margin-top: 6px; }
+.fd-quote summary { width: max-content; cursor: pointer; font-size: 11px; color: #3a6a9a; }
+.fd-quote .st-quote { margin: 4px 0 0; }
+.fd-person { color: #0b344f !important; border-color: #0b344f !important; }
+
+/* ---------- 4) 카드 맨 아래 작은 글씨 ---------- */
+.st-notes { margin-top: 18px; padding-top: 10px; border-top: 1px solid #e6ebef; }
+.st-people { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; }
+.st-person { display: flex; align-items: center; gap: 7px; }
+.st-person b { display: block; font-size: 12px; color: #0b344f; }
+.st-person small { display: block; font-size: 10.5px; color: #5a6b78; }
+.st-photo-src { margin: 0; font-size: 10.5px; }
+.st-photo-src a { display: inline-flex; align-items: center; gap: 2px; color: #3a6a9a; text-decoration: none; }
+.st-photo-src a:hover { text-decoration: underline; }
+.st-silent { margin: 6px 0 0; font-size: 11px; line-height: 1.45; color: #6b7a86; } /* 발언이 없어 뺀 사람 (예: Will Roberts) */
+.st-model-note { margin: 4px 0 0; font-size: 11px; line-height: 1.45; color: #6b7a86; } /* 3D 건물 안내 */
+.st-model-note a { display: inline-flex; align-items: center; gap: 2px; color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.st-disclaimer { margin: 8px 0 2px; font-size: 10px; line-height: 1.5; color: #6b7a86; }
+
+/* ---------- 태블릿 (768~1023px): 왼쪽 글자 칸을 좁게 ---------- */
+@media (max-width: 1023px) {
+  .statements-panel { --tl-label: 230px; }
+}
+/* ---------- 휴대폰 (767px 이하): 글자 아래에 막대 · 달은 발언 위에 ---------- */
+@media (max-width: 767px) {
+  /* max-width:none — 브라우저 기본값(화면 − 38px)이 카드를 337px(375px 폭)로 줄여서 막대가 짧아졌음 */
+  .statements-card { width: calc(100vw - 16px); max-width: none; max-height: 92vh; margin: auto auto 8px; border-radius: 14px; }
+  .st-card-body { max-height: 92vh; padding: 0 12px 12px; }
+  .tl-axis { grid-template-columns: minmax(0, 1fr); }
+  .tl-axis > .tl-label, .tl-axis > span:last-child { display: none; }
+  .tl-line { grid-template-columns: minmax(0, 1fr) 16px; grid-template-areas: 'label chev' 'track track'; column-gap: 8px; }
+  .tl-line .tl-label { grid-area: label; padding: 8px 0 2px; }
+  .tl-line .tl-track { grid-area: track; min-height: 22px; margin-bottom: 6px; }
+  .tl-line .tl-chev { grid-area: chev; }
+  .fd-month { grid-template-columns: minmax(0, 1fr); }
+  .fd-month-head { flex-direction: row; align-items: baseline; gap: 6px; margin-bottom: 6px; }
+}

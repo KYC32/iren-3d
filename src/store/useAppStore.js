@@ -76,7 +76,8 @@ export const useAppStore = create((set, get) => ({
   // 모바일: 순위·사이트 패널을 바텀시트로 열었는지
   sheetOpen: false,
   mapListCollapsed: false,
-  // 본사 3D 화면의 가운데 카드: null | { person?: 사람 id, filter?: 'all'|'promises'|… } (말풍선·CEO 배지·옥상 간판을 누르면)
+  // 본사 3D 화면의 가운데 카드: null | { tab: 'promises' 약속 타임라인 | 'statements' 발언, person?: 사람 id, open?: 펼친 약속 id }
+  //   (CEO 성적표 → 약속 탭, CEO 사진 → 그 사람 발언, 말풍선 → 발언 탭) — 열려 있으면 주소에 card=탭
   hqCard: null,
 
   // ----- 액션 -----
@@ -96,6 +97,7 @@ export const useAppStore = create((set, get) => ({
       selectedZoneKey: customerZones(data.sites.find((s)=>s.id===id) ?? {buildings:[]},data.companies).some((z)=>z.key===h.zone) ? h.zone : null,
       activeCompanies: new Set((h.companies ?? []).filter((id) => raw.companies.some((c) => c.id === id))),
       colorMode: h.color ?? 'status', skyMode: h.sky ?? 'live', page: h.page ?? null, stockAt: h.at ?? null,
+      hqCard: !id && h.hq && h.card ? { tab: h.card } : null, // #hq=1&card=promises → 약속 탭 카드가 열린 채
       // #hq=1 로 들어오면 지역 단추도 '본사'로 — 본사 화면에서 지도로 돌아가면 시드니가 보이게 (GeoMap 이 첫 지역으로 본사 처리)
       ...(!id && h.hq ? { mapRegion: { country: 'HQ', seq: get().mapRegion.seq } } : {}),
     })
@@ -134,6 +136,7 @@ export const useAppStore = create((set, get) => ({
       companies: [...st.activeCompanies],
       color: st.colorMode, surface: st.surface, tab: st.detailTab, building: st.selectedBuildingId, zone: st.selectedZoneKey,
       sky: st.skyMode, page: st.page, at: st.stockAt, hq: st.view === 'hq',
+      card: st.view === 'hq' && st.hqCard ? st.hqCard.tab : null,
     })
     window.history.replaceState(null, '', hash || window.location.pathname + window.location.search)
   },
@@ -153,7 +156,7 @@ export const useAppStore = create((set, get) => ({
     })
     // 주소(해시)로 이동할 땐 카메라 전환 애니메이션 없이 바로 그 화면으로 (pending: null)
     set({ surface: id ? h.surface ?? 'map' : h.hq ? '3d' : 'map', detailTab: h.tab ?? 'overview', selectedSiteId: id, view: id ? 'site' : h.hq ? 'hq' : 'globe', pending: null,
-      campusPanelCollapsed: false,
+      campusPanelCollapsed: false, hqCard: !id && h.hq && h.card ? { tab: h.card } : null,
       // 본사 주소로 바뀌면 지역도 '본사'로 (본사 화면에서 지도로 돌아가면 시드니)
       ...(!id && h.hq && get().mapRegion.country !== 'HQ' ? { mapRegion: { country: 'HQ', seq: get().mapRegion.seq + 1 } } : {}),
       selectedBuildingId: next.data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? h.building : null,
@@ -196,10 +199,17 @@ export const useAppStore = create((set, get) => ({
       mapRegion: { country: 'HQ', seq: get().mapRegion.seq }, mapCamera: null, hqCard: null })
     get().syncHash()
   },
-  openHqCard: (card) => set({ hqCard: card ?? {} }),
-  closeHqCard: () => set({ hqCard: null }),
-  // 어느 화면(주가·뉴스 페이지, 다른 캠퍼스)에서든 본사 3D 화면으로 — ≡ 메뉴 '경영진 발언'
-  showHq: () => { get().setPage(null); get().enterHq3D() },
+  // 가운데 카드 열기 (탭을 안 주면 발언 탭) · 닫기 — 둘 다 주소의 card 도 바꿈
+  openHqCard: (card) => { set({ hqCard: { tab: 'statements', ...(card ?? {}) } }); get().syncHash() },
+  closeHqCard: () => { set({ hqCard: null }); get().syncHash() },
+  // 카드 안에서 탭 바꾸기: 사람 거르기(CEO 사진으로 연 카드)는 그대로, 펼친 약속(open)은 extra 로만 (발언 탭엔 필요 없음)
+  setHqTab: (tab, extra = {}) => {
+    const person = get().hqCard?.person
+    set({ hqCard: { tab, ...(person ? { person } : {}), ...extra } })
+    get().syncHash()
+  },
+  // 어느 화면(주가·뉴스 페이지, 다른 캠퍼스)에서든 본사 3D 화면으로 — ≡ 메뉴 '경영진 발언'(tab 없음)·'CEO 약속'(tab 'promises')
+  showHq: (tab = null) => { get().setPage(null); get().enterHq3D(); if (tab) get().openHqCard({ tab }) },
   setLoadError: (err) => set({ loadError: err }),
   // src: '3d'(캔버스 속 물체) | 'dom'(라벨·목록 등 HTML, 기본값)
   setHover: (id, src = 'dom') => {

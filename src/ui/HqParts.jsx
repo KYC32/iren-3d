@@ -4,7 +4,7 @@
 // scene/HqView.jsx 가 3D 위치에 붙임: 옥상 위 = CEO 카드(큰 사진 · 이름 · 발언 수 · 약속 성적표) + 그 옆 말풍선,
 //   IREN 층 왼쪽 끝 = 'IREN · 5층' 표시 (2026-10-22 사용자 요청: 사진을 빌딩 위쪽에, 눈에 띄게)
 // 휴대폰(767px 이하): 말풍선은 빌딩 위에 자리가 없어 ui/HqDock.jsx 가 화면 아래에 붙임 (CSS 가 위쪽 말풍선을 숨김)
-// 누르면 가운데 카드 (useAppStore.openHqCard → ui/StatementsCard.jsx)
+// 누르면 가운데 카드 (useAppStore.openHqCard → ui/StatementsCard.jsx): 성적표 = 약속 탭(타임라인), 사진·말풍선 = 발언 탭
 // =============================================================
 import { useEffect, useMemo, useState } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
@@ -13,7 +13,7 @@ import { hqText } from '../i18n/hq.js'
 import { loadStatements, peekStatements } from '../data/loadStatements.js'
 import { scoreboard } from '../data/promises.js'
 import { statementRows, speakers } from '../data/statementRows.js'
-import { Face, ChannelMark, VerdictBadge, ScoreBar, fill } from './StatementsCard.jsx' // 카드와 같은 그림 조각
+import { Face, ChannelMark, VerdictBadge, ScoreBar, fill } from './statementParts.jsx' // 카드와 같은 그림 조각
 import '../scene/hq.css'
 
 const BUBBLE_COUNT = 6  // 말풍선으로 돌려 보여 줄 최근 발언 수
@@ -43,7 +43,7 @@ export function CeoTop({ file }) {
 }
 
 // CEO 카드 (남색 바탕 · 큰 사진 · 초록 테두리): 발언이 있는 사람만 (speakers — 발언이 없는 공동 CEO 는 뺌)
-//   사람을 누르면 그 사람 발언 카드, 아래 성적표를 누르면 약속만 모은 카드
+//   사람을 누르면 그 사람 발언(발언 탭), 아래 성적표를 누르면 약속 타임라인(약속 탭)
 export function CeoCard({ file }) {
   const { lang, h } = useHqText()
   const openCard = useAppStore((s) => s.openHqCard)
@@ -54,7 +54,7 @@ export function CeoCard({ file }) {
       {speakers(file).map((p) => {
         const n = file.statements.filter((s) => s.person === p.id).length
         return (
-          <button key={p.id} type="button" className="hq-ceo-person" onClick={() => openCard({ person: p.id })}
+          <button key={p.id} type="button" className="hq-ceo-person" onClick={() => openCard({ tab: 'statements', person: p.id })}
             aria-label={fill(h.badgeOpen, { name: p.name })} title={fill(h.badgeOpen, { name: p.name })}>
             <span className="hq-ceo-photo"><Face person={p} /></span>
             <b>{p.name}</b>
@@ -63,7 +63,7 @@ export function CeoCard({ file }) {
           </button>
         )
       })}
-      <button type="button" className="hq-ceo-score" onClick={() => openCard({ filter: 'promises' })} title={h.signOpen}
+      <button type="button" className="hq-ceo-score" onClick={() => openCard({ tab: 'promises' })} title={h.signOpen}
         aria-label={`${h.signOpen}: ${fill(h.scoreLine, { n: sb.total, a: sb.kept, b: sb.due })}`}>
         <span>{fill(h.scoreLine, { n: sb.total, a: sb.kept, b: sb.due })}</span>
         <ScoreBar counts={counts} />
@@ -100,7 +100,7 @@ export function Bubble({ file, docked = false }) {
   return (
     <div className={`hq-bubble statements-panel${docked ? ' is-docked' : ''}`} onPointerEnter={() => setHold(true)} onPointerLeave={() => setHold(false)}
       onFocus={() => setHold(true)} onBlur={() => setHold(false)}>
-      <button type="button" className="hq-bubble-main" onClick={() => openCard({})} title={h.bubbleOpen} aria-label={`${h.bubbleOpen}: ${ko ? r.summary_ko : r.summary_en}`}>
+      <button type="button" className="hq-bubble-main" onClick={() => openCard({ tab: 'statements' })} title={h.bubbleOpen} aria-label={`${h.bubbleOpen}: ${ko ? r.summary_ko : r.summary_en}`}>
         <span className="st-meta"><ChannelMark channel={r.channel} h={h} /><span>·</span><span>{people[r.person]?.name}</span><span>·</span><time dateTime={r.date}>{r.date}</time></span>
         {r.quote && <q className="hq-bubble-quote">{r.quote}</q>}
         {/* 한국어 화면은 요약도 (영어 원문만으로는 읽기 어려움) · 영어 화면은 인용이 없을 때만 요약 */}
@@ -111,7 +111,7 @@ export function Bubble({ file, docked = false }) {
         <button type="button" onClick={() => step(-1)} aria-label={h.prev} title={h.prev}><ChevronLeft size={14} aria-hidden="true" /></button>
         <span aria-live="polite">{(i % rows.length) + 1}/{rows.length}</span>
         <button type="button" onClick={() => step(1)} aria-label={h.next} title={h.next}><ChevronRight size={14} aria-hidden="true" /></button>
-        <button type="button" className="hq-all" onClick={() => openCard({})}>{fill(h.bubbleAll, { n: file.statements.length })}</button>
+        <button type="button" className="hq-all" onClick={() => openCard({ tab: 'statements' })}>{fill(h.bubbleAll, { n: file.statements.length })}</button>
       </div>
     </div>
   )

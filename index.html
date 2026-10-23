@@ -103,8 +103,9 @@
         timer = setInterval(tryGo, 400);
         ['pointermove', 'pointerdown', 'keydown', 'wheel'].forEach(function (ev) { if (boot) boot.addEventListener(ev, function () { lastTouch = Date.now(); }, { passive: true }); });
         if (go) go.addEventListener('click', dismiss);
-        // 주가·뉴스 페이지 링크로 들어오면 그림 없이 바로
-        if (/page=/.test(location.hash)) dismiss();
+        // 주가·뉴스 페이지 링크, 본사 카드 링크(#hq=1&card=promises — 약속 타임라인)로 들어오면 그림 없이 바로
+        //   (카드는 <dialog> 라 맨 위 층에 그려져 부팅 그림보다 위에 뜸 → 그림을 남겨 두면 '지도 보기' 단추가 카드에 가려짐)
+        if (/(page|card)=/.test(location.hash)) dismiss();
         // 안전장치: 30초가 지나도 신호가 없으면 준비된 것으로 봄 (지도 서버 장애 등)
         setTimeout(function () { window.__bootReady(); }, 30000);
       })();
