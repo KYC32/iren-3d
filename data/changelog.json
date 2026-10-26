@@ -19,6 +19,11 @@
           "source": "https://huggingface.co/datasets/sarkarghya/im3_open_source_data_center_atlas_v2026.02.09"
         },
         {
+          "ko": "캠퍼스 3D 화면에 주차장과 공사 장비 추가. 쓰거나 짓는 건물이 있으면 주차장에 차가 서 있고(최대 8대) 건설중 건물 옆에는 굴착 트랙터·라바콘·자재 컨테이너가 보임. 모두 그림 표현이라 차 수는 직원 수가 아님. 모형은 Kenney Car Kit·City Kit Industrial(CC0)",
+          "en": "Added a parking lot and site equipment to the campus 3D view. Campuses with buildings in use or under construction show parked cars (up to 8), and buildings under construction get a loader, traffic cones and a materials container. All illustrative: the car count is not a headcount. Models: Kenney Car Kit and City Kit Industrial (CC0)",
+          "source": "https://kenney.nl/assets/car-kit"
+        },
+        {
           "ko": "스위트워터 2 현장 진척에 EPA 공공 허가 기록 추가: 'Sweetwater 2 변전소 부지 정지' 건설 빗물 허가 TXR1547YU(2026-07-09 발급, 08-01 효력, 위반 없음). 허가는 공사를 해도 된다는 뜻이라 공식 상태(계획)는 그대로 둠",
           "en": "Added an EPA public permit record to Sweetwater 2 site progress: construction stormwater permit TXR1547YU for 'Sweetwater 2 substation rough grading' (issued 2026-07-09, effective 08-01, no violation). A permit allows the work, so the official status (planned) stays as is",
           "source": "https://echo.epa.gov/detailed-facility-report?fid=110072223370"

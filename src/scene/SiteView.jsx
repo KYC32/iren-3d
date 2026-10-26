@@ -4,7 +4,7 @@
 // =============================================================
 import { logoKeyOf, BRAND_COLOR } from '../ui/logos/index.jsx'
 import { customerKey } from '../data/customerZones.js'
-import { useMemo, useRef } from 'react'
+import { Suspense, lazy, useCallback, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { SKY } from './nightLights.js'
 import { Line, RoundedBox } from '@react-three/drei'
@@ -31,6 +31,8 @@ import { openFigure } from '../ui/figureState.js'
 import { DryCampusGround } from './buildings/PhotoReferencedCampus.jsx'
 import { estimateHall, roundNice } from '../data/hallEstimate.js'
 import { buildingMwText, areaKeyOf, gpuLabel, gpuLine } from './buildingLabel.js'
+// 주차한 차·공사 장비 소품 (Kenney 모형, 그림 표현): 캠퍼스를 연 뒤 따로 불러옴 → 첫 3D 지도 묶음 밖
+const CampusProps = lazy(() => import('./buildings/CampusProps.jsx'))
 
 export default function SiteView({ site }) {
   const appearance = campusAppearance(site.id)
@@ -72,6 +74,9 @@ export default function SiteView({ site }) {
   const selectedEst = useMemo(() => (selectedId && byId[selectedId] ? estimateHall(byId[selectedId]) : null), [selectedId, byId])
   const selectedBlockCount = L.blocks.filter((b) => b.buildingId === selectedId).length || 1
   const racksPerBlock = selectedEst ? Math.ceil(selectedEst.racks / selectedBlockCount) : 0
+
+  // 고객 구역을 골랐으면 그 구역 건물의 공사 장비만 (크레인과 같은 규칙)
+  const keepZone = useCallback((id) => !zoneKey || customerKey(byId[id]?.customer) === zoneKey, [zoneKey, byId])
 
   const flowTargets = L.flowTargets.filter((b) => isStatusActive(activeStatuses, b.status)
     && (!zoneKey || customerKey(byId[b.buildingId]?.customer) === zoneKey))
@@ -213,6 +218,7 @@ export default function SiteView({ site }) {
       {L.cranes.filter((c) => !zoneKey || customerKey(byId[c.buildingId]?.customer) === zoneKey).map((c, i) => <Crane key={c.key} x={c.x} z={c.z} seed={i} />)}
       {L.trucks.some(tr => !tr.targetBuildingId) && <ReceivingBay bay={L.receiving} />}
       {L.trucks.map((tr, i) => <Truck key={tr.key} truck={tr} index={i} lang={lang} />)}
+      <Suspense fallback={null}><CampusProps layout={layout} state={S} keep={keepZone} /></Suspense>
       {appearance && <DryCampusGround layout={L} appearance={appearance}/>}
       {landscape ? <CampusLandscape siteId={site.id} layout={layout} profile={landscape}/> : <Trees side={L.side} seed={site.id.length * 7} roadZ={L.road.z} />}
     </group>

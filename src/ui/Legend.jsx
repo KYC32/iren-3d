@@ -88,7 +88,7 @@ export default function Legend() {
         {lang==='ko'?'불빛 = 가동 (AI · 채굴)':'Lights = live (AI · mining)'}
       </div>}
       <div className="legend-hint">{t.legend.hint}</div>
-      {view==='site'&&<div className="legend-hint">{lang==='ko'?<>팬·전력·트럭은 흐름 연출<br/>건물 상태는 지붕색·배지로 구분</>:<>Fans, power & trucks illustrate flows<br/>Roof colors & badges show status</>}</div>}
+      {view==='site'&&<div className="legend-hint">{lang==='ko'?<>팬·전력·트럭은 흐름 연출<br/>주차한 차·공사 장비는 그림 표현<br/>건물 상태는 지붕색·배지로 구분</>:<>Fans, power & trucks illustrate flows<br/>Parked cars & site equipment are illustrative<br/>Roof colors & badges show status</>}</div>}
     </div>
   )
 }

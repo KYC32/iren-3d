@@ -6,9 +6,8 @@
 // 지연 로딩되는 두 화면에서만 import → GLTFLoader·meshopt 해제기와 함께 따로 떨어진 묶음이 됨 (첫 화면 예산과 무관)
 // =============================================================
 import { Box3, InstancedMesh, Matrix4, Object3D } from 'three'
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
-import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js'
-import { isGzip, isGlb, readJson } from '../horizonHall.js'
+import { readJson } from '../horizonHall.js'
+import { loadPackedGlb } from './packedGlb.js'   // gzip GLB 받기·풀기·읽기 (캠퍼스 소품과 공용)
 
 const MODEL_URL = '/models/horizon-hall.glb.gz'
 const noHit = () => null   // 마우스 판정에서 뺌
@@ -17,29 +16,8 @@ const dummy = new Object3D()
 // ---------- 모형 받기 (한 번만 받아 모든 화면이 같이 씀) ----------
 let modelPromise = null
 export function loadHorizonModel() {
-  modelPromise ??= fetch(MODEL_URL)
-    .then((r) => {
-      if (!r.ok) throw new Error(`모형 파일 ${r.status}`)
-      return r.arrayBuffer()
-    })
-    .then(unpack)
-    .then((buf) => {
-      const loader = new GLTFLoader()
-      loader.setMeshoptDecoder(MeshoptDecoder)
-      return loader.parseAsync(buf, '')
-    })
-    .then((gltf) => prepare(gltf.scene))
+  modelPromise ??= loadPackedGlb(MODEL_URL).then((gltf) => prepare(gltf.scene))
   return modelPromise
-}
-
-// gzip 이면 브라우저 기본 기능(DecompressionStream)으로 풂. 서버가 이미 풀어서 줬으면 그대로 씀
-//   Vercel 은 .glb.gz 를 application/gzip 그대로, vite 개발·미리보기 서버는 Content-Encoding 으로 풀어서 줌
-async function unpack(buf) {
-  const head = new Uint8Array(buf, 0, Math.min(4, buf.byteLength))
-  if (isGlb(head)) return buf
-  if (!isGzip(head)) throw new Error('모형 파일 형식을 알 수 없음')
-  if (typeof DecompressionStream === 'undefined') throw new Error('이 브라우저는 gzip 풀기를 지원하지 않음')
-  return new Response(new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer()
 }
 
 // 읽은 장면 → 부품 묶음 (show: always 늘 · closed 닫혔을 때 · open 속을 열었을 때) + 랙 틀·자리 + 흐름 선 + 건물 크기
