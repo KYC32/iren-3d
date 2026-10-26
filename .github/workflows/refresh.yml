@@ -7,6 +7,8 @@
 # scripts/fetch-stock.mjs, fetch-news.mjs, fetch-shares.mjs 가 public/data/stock.json·news.json·shares.json(+ data/shares.json) 을 고치고,
 # 바뀐 게 있으면 커밋·푸시 → Vercel 이 자동 배포. 소스가 막히면 스크립트가 기존 파일을 그대로 두고 0 으로 끝남.
 # 같은 날 두 번 돌아도 바뀐 게 없으면 커밋하지 않음 (증분 병합이라 결과가 같음)
+# 언론 제목 기계 번역(Kanana 1.5 · CPU): 새 제목만 번역 → 검사기(숫자·금액·티커)를 통과한 것만 public/data/news-ko.json
+#   번역 단계가 실패해도 주가·뉴스 갱신은 그대로 커밋됨 (continue-on-error)
 name: refresh-data
 on:
   schedule:
@@ -22,7 +24,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -33,6 +35,29 @@ jobs:
       - run: node scripts/fetch-stock.mjs
       - run: node scripts/fetch-news.mjs --max=60
       - run: node scripts/fetch-shares.mjs   # 새 10-Q·10-K 표지 주식 수를 SEC XBRL 에서 덧붙임
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: scripts/translate/requirements.txt
+      - name: 기계 번역 준비 (CPU 판 torch + transformers 4.x)
+        continue-on-error: true
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install -r scripts/translate/requirements.txt
+      - name: 번역 모델 캐시 (Kanana 1.5, 약 4.6GB — 한 번 받으면 다시 받지 않음)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface/hub
+          key: hf-kanana-1.5-2.1b-instruct-2505
+      - name: 언론 제목 기계 번역 (새 제목만 · 실패해도 계속)
+        continue-on-error: true
+        timeout-minutes: 25
+        env:
+          HF_HUB_DISABLE_TELEMETRY: '1'
+        run: |
+          python scripts/translate/translate_titles.py --out "$RUNNER_TEMP/ko-raw.json" --max 60
+          node scripts/apply-translations.mjs "$RUNNER_TEMP/ko-raw.json"
       - name: 기준일 뒤 새 회사 공시 확인 (현황 페이지 안내 파일 + GitHub 이슈)
         run: node scripts/check-asof.mjs --issue
         env:
@@ -41,7 +66,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/stock.json public/data/news.json data/shares.json public/data/shares.json public/data/asof-check.json
+          git add public/data/stock.json public/data/news.json public/data/news-ko.json data/shares.json public/data/shares.json public/data/asof-check.json
           if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
           git commit -m "data: 주가·뉴스·주식 수 자동 갱신 $(date -u +%F)"
           git pull --rebase origin main

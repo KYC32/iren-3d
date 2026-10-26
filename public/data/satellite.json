@@ -1,0 +1,700 @@
+{
+ "images": [
+  {
+   "site": "childress",
+   "month": "2025-01",
+   "date": "2025-01-06",
+   "scene": "S2B_MSIL2A_20250106T172619_R012_T14SLD_20250106T212204",
+   "bad": 0.0,
+   "src": "/satellite/childress/2025-01.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2025-02",
+   "date": "2025-02-25",
+   "scene": "S2B_MSIL2A_20250225T172209_R012_T14SMD_20250225T211601",
+   "bad": 0.0,
+   "src": "/satellite/childress/2025-02.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2025-03",
+   "date": "2025-03-07",
+   "scene": "S2B_MSIL2A_20250307T172059_R012_T14SMD_20250307T212220",
+   "bad": 0.0,
+   "src": "/satellite/childress/2025-03.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2025-04",
+   "date": "2025-04-11",
+   "scene": "S2C_MSIL2A_20250411T173031_R012_T14SMD_20250411T224520",
+   "bad": 0.0,
+   "src": "/satellite/childress/2025-04.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2025-05",
+   "date": "2025-05-21",
+   "scene": "S2C_MSIL2A_20250521T171911_R012_T14SMD_20250521T203212",
+   "bad": 0.0,
+   "src": "/satellite/childress/2025-05.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2025-06",
+   "date": "2025-06-20",
+   "scene": "S2C_MSIL2A_20250620T171911_R012_T14SMD_20250620T220317",
+   "bad": 0.0,
+   "src": "/satellite/childress/2025-06.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2025-07",
+   "date": "2025-07-30",
+   "scene": "S2C_MSIL2A_20250730T171921_R012_T14SMD_20250730T224316",
+   "bad": 0.0,
+   "src": "/satellite/childress/2025-07.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2025-08",
+   "date": "2025-08-14",
+   "scene": "S2B_MSIL2A_20250814T171859_R012_T14SMD_20250814T205709",
+   "bad": 0.0,
+   "src": "/satellite/childress/2025-08.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2025-09",
+   "date": "2025-09-03",
+   "scene": "S2B_MSIL2A_20250903T171859_R012_T14SMD_20250903T212347",
+   "bad": 0.0,
+   "src": "/satellite/childress/2025-09.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2025-10",
+   "date": "2025-10-28",
+   "scene": "S2C_MSIL2A_20251028T172441_R012_T14SLD_20251028T205609",
+   "bad": 0.0,
+   "src": "/satellite/childress/2025-10.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2025-11",
+   "date": "2025-11-17",
+   "scene": "S2C_MSIL2A_20251117T172621_R012_T14SMD_20251117T204313",
+   "bad": 0.0,
+   "src": "/satellite/childress/2025-11.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2025-12",
+   "date": "2025-12-17",
+   "scene": "S2C_MSIL2A_20251217T172741_R012_T14SLD_20251217T203910",
+   "bad": 0.0,
+   "src": "/satellite/childress/2025-12.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2026-01",
+   "date": "2026-01-26",
+   "scene": "S2C_MSIL2A_20260126T172611_R012_T14SMD_20260126T203613",
+   "bad": 0.0,
+   "src": "/satellite/childress/2026-01.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2026-02",
+   "date": "2026-02-15",
+   "scene": "S2C_MSIL2A_20260215T172411_R012_T14SMD_20260215T210013",
+   "bad": 0.0,
+   "src": "/satellite/childress/2026-02.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2026-03",
+   "date": "2026-03-12",
+   "scene": "S2B_MSIL2A_20260312T172019_R012_T14SMD_20260312T225134",
+   "bad": 0.0,
+   "src": "/satellite/childress/2026-03.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2026-04",
+   "date": "2026-04-16",
+   "scene": "S2C_MSIL2A_20260416T171851_R012_T14SLD_20260416T221209",
+   "bad": 0.0,
+   "src": "/satellite/childress/2026-04.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2026-05",
+   "date": "2026-05-16",
+   "scene": "S2C_MSIL2A_20260516T171851_R012_T14SLD_20260516T221410",
+   "bad": 0.0,
+   "src": "/satellite/childress/2026-05.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2026-06",
+   "date": "2026-06-10",
+   "scene": "S2B_MSIL2A_20260610T171849_R012_T14SMD_20260610T210908",
+   "bad": 0.0,
+   "src": "/satellite/childress/2026-06.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2026-07",
+   "date": "2026-07-10",
+   "scene": "S2B_MSIL2A_20260710T171859_R012_T14SMD_20260710T210658",
+   "bad": 0.0,
+   "src": "/satellite/childress/2026-07.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2026-08",
+   "date": "2026-08-04",
+   "scene": "S2C_MSIL2A_20260804T171901_R012_T14SMD_20260804T221418",
+   "bad": 0.0,
+   "src": "/satellite/childress/2026-08.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2026-09",
+   "date": "2026-09-03",
+   "scene": "S2C_MSIL2A_20260903T171851_R012_T14SMD_20260903T222009",
+   "bad": 0.0,
+   "src": "/satellite/childress/2026-09.jpg"
+  },
+  {
+   "site": "childress",
+   "month": "2026-10",
+   "date": "2026-10-08",
+   "scene": "S2B_MSIL2A_20261008T172209_R012_T14SMD_20261008T222906",
+   "bad": 0.0,
+   "src": "/satellite/childress/2026-10.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2025-01",
+   "date": "2025-01-20",
+   "scene": "S2B_MSIL2A_20250120T170529_R069_T15STU_20250120T223056",
+   "bad": 0.0018,
+   "src": "/satellite/kiowa/2025-01.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2025-03",
+   "date": "2025-03-01",
+   "scene": "S2B_MSIL2A_20250301T170129_R069_T15STU_20250301T210437",
+   "bad": 0.0,
+   "src": "/satellite/kiowa/2025-03.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2025-04",
+   "date": "2025-04-15",
+   "scene": "S2C_MSIL2A_20250415T165911_R069_T15STU_20250415T233312",
+   "bad": 0.0,
+   "src": "/satellite/kiowa/2025-04.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2025-05",
+   "date": "2025-05-20",
+   "scene": "S2B_MSIL2A_20250520T165849_R069_T15STU_20250520T210407",
+   "bad": 0.0,
+   "src": "/satellite/kiowa/2025-05.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2025-06",
+   "date": "2025-06-29",
+   "scene": "S2B_MSIL2A_20250629T165849_R069_T15STU_20250629T210517",
+   "bad": 0.0,
+   "src": "/satellite/kiowa/2025-06.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2025-07",
+   "date": "2025-07-24",
+   "scene": "S2C_MSIL2A_20250724T165911_R069_T14SQD_20250724T220257",
+   "bad": 0.0,
+   "src": "/satellite/kiowa/2025-07.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2025-08",
+   "date": "2025-08-08",
+   "scene": "S2B_MSIL2A_20250808T165849_R069_T15STU_20250808T210221",
+   "bad": 0.0005,
+   "src": "/satellite/kiowa/2025-08.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2025-09",
+   "date": "2025-09-27",
+   "scene": "S2B_MSIL2A_20250927T165959_R069_T15STU_20250927T224244",
+   "bad": 0.0,
+   "src": "/satellite/kiowa/2025-09.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2025-10",
+   "date": "2025-10-02",
+   "scene": "S2C_MSIL2A_20251002T170141_R069_T14SQD_20251002T222514",
+   "bad": 0.0,
+   "src": "/satellite/kiowa/2025-10.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2025-11",
+   "date": "2025-11-26",
+   "scene": "S2B_MSIL2A_20251126T170539_R069_T15STU_20251126T205829",
+   "bad": 0.0,
+   "src": "/satellite/kiowa/2025-11.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2025-12",
+   "date": "2025-12-26",
+   "scene": "S2B_MSIL2A_20251226T170629_R069_T15STU_20251226T220523",
+   "bad": 0.0,
+   "src": "/satellite/kiowa/2025-12.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2026-01",
+   "date": "2026-01-12",
+   "scene": "S2A_MSIL2A_20260112T170721_R069_T15STU_20260112T223018",
+   "bad": 0.0,
+   "src": "/satellite/kiowa/2026-01.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2026-02",
+   "date": "2026-02-09",
+   "scene": "S2C_MSIL2A_20260209T170441_R069_T14SQD_20260209T204020",
+   "bad": 0.0469,
+   "src": "/satellite/kiowa/2026-02.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2026-03",
+   "date": "2026-03-21",
+   "scene": "S2C_MSIL2A_20260321T170011_R069_T15STU_20260321T234211",
+   "bad": 0.0,
+   "src": "/satellite/kiowa/2026-03.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2026-04",
+   "date": "2026-04-05",
+   "scene": "S2B_MSIL2A_20260405T165849_R069_T15STU_20260405T222103",
+   "bad": 0.0,
+   "src": "/satellite/kiowa/2026-04.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2026-06",
+   "date": "2026-06-01",
+   "scene": "S2A_MSIL2A_20260601T170711_R069_T15STU_20260601T233915",
+   "bad": 0.0,
+   "src": "/satellite/kiowa/2026-06.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2026-07",
+   "date": "2026-07-11",
+   "scene": "S2A_MSIL2A_20260711T170711_R069_T15STU_20260711T234409",
+   "bad": 0.0,
+   "src": "/satellite/kiowa/2026-07.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2026-08",
+   "date": "2026-08-18",
+   "scene": "S2C_MSIL2A_20260818T165841_R069_T15STU_20260818T215909",
+   "bad": 0.0,
+   "src": "/satellite/kiowa/2026-08.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2026-09",
+   "date": "2026-09-02",
+   "scene": "S2B_MSIL2A_20260902T165849_R069_T15STU_20260902T222911",
+   "bad": 0.0,
+   "src": "/satellite/kiowa/2026-09.jpg"
+  },
+  {
+   "site": "kiowa",
+   "month": "2026-10",
+   "date": "2026-10-17",
+   "scene": "S2C_MSIL2A_20261017T170311_R069_T15STU_20261017T202312",
+   "bad": 0.0,
+   "src": "/satellite/kiowa/2026-10.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2025-01",
+   "date": "2025-01-06",
+   "scene": "S2B_MSIL2A_20250106T172619_R012_T14SLB_20250106T212204",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2025-01.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2025-02",
+   "date": "2025-02-25",
+   "scene": "S2B_MSIL2A_20250225T172209_R012_T14SLB_20250225T211601",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2025-02.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2025-03",
+   "date": "2025-03-22",
+   "scene": "S2C_MSIL2A_20250322T172031_R012_T14SLB_20250322T224712",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2025-03.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2025-04",
+   "date": "2025-04-21",
+   "scene": "S2C_MSIL2A_20250421T173031_R012_T14SLB_20250421T224157",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2025-04.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2025-05",
+   "date": "2025-05-11",
+   "scene": "S2C_MSIL2A_20250511T171911_R012_T14SLB_20250511T220605",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2025-05.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2025-06",
+   "date": "2025-06-20",
+   "scene": "S2C_MSIL2A_20250620T171911_R012_T14SLB_20250620T220317",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2025-06.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2025-07",
+   "date": "2025-07-30",
+   "scene": "S2C_MSIL2A_20250730T171921_R012_T14SLB_20250730T221713",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2025-07.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2025-08",
+   "date": "2025-08-14",
+   "scene": "S2B_MSIL2A_20250814T171859_R012_T14SLB_20250814T205709",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2025-08.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2025-09",
+   "date": "2025-09-03",
+   "scene": "S2B_MSIL2A_20250903T171859_R012_T14SLB_20250903T212347",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2025-09.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2025-10",
+   "date": "2025-10-18",
+   "scene": "S2C_MSIL2A_20251018T172341_R012_T14SLB_20251019T014822",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2025-10.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2025-11",
+   "date": "2025-11-17",
+   "scene": "S2C_MSIL2A_20251117T172621_R012_T14SLB_20251117T204313",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2025-11.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2025-12",
+   "date": "2025-12-17",
+   "scene": "S2C_MSIL2A_20251217T172741_R012_T14SLB_20251217T203910",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2025-12.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2026-01",
+   "date": "2026-01-21",
+   "scene": "S2B_MSIL2A_20260121T172529_R012_T14SLB_20260121T211103",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2026-01.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2026-02",
+   "date": "2026-02-05",
+   "scene": "S2C_MSIL2A_20260205T172511_R012_T14SLB_20260205T204409",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2026-02.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2026-03",
+   "date": "2026-03-12",
+   "scene": "S2B_MSIL2A_20260312T172019_R012_T14SLB_20260312T225134",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2026-03.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2026-04",
+   "date": "2026-04-16",
+   "scene": "S2C_MSIL2A_20260416T171851_R012_T14SLB_20260416T221209",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2026-04.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2026-05",
+   "date": "2026-05-16",
+   "scene": "S2C_MSIL2A_20260516T171851_R012_T14SLB_20260516T221410",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2026-05.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2026-06",
+   "date": "2026-06-10",
+   "scene": "S2B_MSIL2A_20260610T171849_R012_T14SLB_20260610T210908",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2026-06.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2026-07",
+   "date": "2026-07-10",
+   "scene": "S2B_MSIL2A_20260710T171859_R012_T14SLB_20260710T210658",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2026-07.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2026-08",
+   "date": "2026-08-24",
+   "scene": "S2C_MSIL2A_20260824T171851_R012_T14SLB_20260824T222703",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2026-08.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2026-09",
+   "date": "2026-09-15",
+   "scene": "S2A_MSIL2A_20260915T172721_R012_T14SLB_20260916T015515",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-1/2026-09.jpg"
+  },
+  {
+   "site": "sweetwater-1",
+   "month": "2026-10",
+   "date": "2026-10-18",
+   "scene": "S2B_MSIL2A_20261018T172329_R012_T14SLB_20261018T211640",
+   "bad": 0.0011,
+   "src": "/satellite/sweetwater-1/2026-10.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2025-01",
+   "date": "2025-01-06",
+   "scene": "S2B_MSIL2A_20250106T172619_R012_T14SLB_20250106T212204",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2025-01.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2025-02",
+   "date": "2025-02-25",
+   "scene": "S2B_MSIL2A_20250225T172209_R012_T14SLB_20250225T211601",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2025-02.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2025-03",
+   "date": "2025-03-22",
+   "scene": "S2C_MSIL2A_20250322T172031_R012_T14SLB_20250322T224712",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2025-03.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2025-04",
+   "date": "2025-04-21",
+   "scene": "S2C_MSIL2A_20250421T173031_R012_T14SLB_20250421T224157",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2025-04.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2025-05",
+   "date": "2025-05-23",
+   "scene": "S2A_MSIL2A_20250523T172721_R012_T14SLB_20250523T233913",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2025-05.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2025-06",
+   "date": "2025-06-20",
+   "scene": "S2C_MSIL2A_20250620T171911_R012_T14SLB_20250620T220317",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2025-06.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2025-07",
+   "date": "2025-07-30",
+   "scene": "S2C_MSIL2A_20250730T171921_R012_T14SLB_20250730T221713",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2025-07.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2025-08",
+   "date": "2025-08-14",
+   "scene": "S2B_MSIL2A_20250814T171859_R012_T14SLB_20250814T205709",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2025-08.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2025-09",
+   "date": "2025-09-03",
+   "scene": "S2B_MSIL2A_20250903T171859_R012_T14SLB_20250903T212347",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2025-09.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2025-10",
+   "date": "2025-10-18",
+   "scene": "S2C_MSIL2A_20251018T172341_R012_T14SLB_20251019T014822",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2025-10.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2025-11",
+   "date": "2025-11-17",
+   "scene": "S2C_MSIL2A_20251117T172621_R012_T14SLB_20251117T204313",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2025-11.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2025-12",
+   "date": "2025-12-17",
+   "scene": "S2C_MSIL2A_20251217T172741_R012_T14SLB_20251217T203910",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2025-12.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2026-01",
+   "date": "2026-01-16",
+   "scene": "S2C_MSIL2A_20260116T172651_R012_T14SLB_20260116T204713",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2026-01.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2026-02",
+   "date": "2026-02-05",
+   "scene": "S2C_MSIL2A_20260205T172511_R012_T14SLB_20260205T204409",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2026-02.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2026-03",
+   "date": "2026-03-07",
+   "scene": "S2C_MSIL2A_20260307T172151_R012_T14SLB_20260307T221115",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2026-03.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2026-04",
+   "date": "2026-04-16",
+   "scene": "S2C_MSIL2A_20260416T171851_R012_T14SLB_20260416T221209",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2026-04.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2026-05",
+   "date": "2026-05-16",
+   "scene": "S2C_MSIL2A_20260516T171851_R012_T14SLB_20260516T221410",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2026-05.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2026-06",
+   "date": "2026-06-10",
+   "scene": "S2B_MSIL2A_20260610T171849_R012_T14SLB_20260610T210908",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2026-06.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2026-07",
+   "date": "2026-07-10",
+   "scene": "S2B_MSIL2A_20260710T171859_R012_T14SLB_20260710T210658",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2026-07.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2026-08",
+   "date": "2026-08-24",
+   "scene": "S2C_MSIL2A_20260824T171851_R012_T14SLB_20260824T222703",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2026-08.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2026-09",
+   "date": "2026-09-15",
+   "scene": "S2A_MSIL2A_20260915T172721_R012_T14SLB_20260916T015515",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2026-09.jpg"
+  },
+  {
+   "site": "sweetwater-2",
+   "month": "2026-10",
+   "date": "2026-10-08",
+   "scene": "S2B_MSIL2A_20261008T172209_R012_T14SLB_20261008T222906",
+   "bad": 0.0,
+   "src": "/satellite/sweetwater-2/2026-10.jpg"
+  }
+ ],
+ "checked": "2026-10-26",
+ "size_px": 400,
+ "box_km": 4.0,
+ "source": {
+  "name": "Copernicus Sentinel-2 L2A (Microsoft Planetary Computer)",
+  "url": "https://planetarycomputer.microsoft.com/dataset/sentinel-2-l2a",
+  "attribution": "Contains modified Copernicus Sentinel data (2025–2026)"
+ }
+}

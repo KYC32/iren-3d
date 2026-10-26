@@ -60,6 +60,9 @@
 .news-row .basis { flex: none; margin-top: 2px; white-space: nowrap; }
 .news-body { min-width: 0; }
 .news-row a { color: var(--text); text-decoration: none; font-size: 13px; line-height: 1.4; }
+/* 원문 아래 기계 번역 한 줄 — 원문보다 작고 흐리게, 끝에 '기계 번역' 표 (색 칸 없이 글자로만) */
+.news-ko { display: block; margin-top: 2px; font-size: 12px; line-height: 1.4; color: #5a6878; word-break: keep-all; }
+.news-ko em { margin-left: 6px; font-style: normal; font-size: 10px; font-weight: 700; color: #8a95a6; letter-spacing: .02em; }
 .news-row a:hover { text-decoration: underline; }
 .news-row a svg { vertical-align: -1px; color: var(--text-muted); }
 .news-row small { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; color: var(--text-muted); font-size: 11px; margin-top: 2px; }

@@ -4,6 +4,16 @@
       "date": "2026-10-26",
       "items": [
         {
+          "ko": "뉴스 페이지 언론 탭에 한국어 기계 번역 한 줄 추가(한국어 화면, 영어 원문 아래). 모델은 Kanana 1.5(Apache-2.0)이고 숫자·금액·티커·거래소 표기가 원문과 같은 번역만 보임(지금 202개 중 117개). 작은 모델이 '$2.8bn'을 '2.8억 달러'로 틀린 일이 있어 금액은 원문 표기 그대로를 요구함. 회사 발표 제목은 번역하지 않음",
+          "en": "The news page's media tab now shows a Korean machine translation under each English headline (Korean UI). Model: Kanana 1.5 (Apache-2.0); only translations whose numbers, amounts, tickers and exchange labels match the original are shown (117 of 202 now). The small model once turned '$2.8bn' into the Korean for $280m, so amounts must stay as written. Company filing titles are not translated",
+          "source": "https://huggingface.co/kakaocorp/kanana-1.5-2.1b-instruct-2505"
+        },
+        {
+          "ko": "캠퍼스 패널에 '위성으로 본 변화' 추가(미국 부지 4곳): Sentinel-2 월별 사진 86장(2025-01~2026-10, 부지 중심 4km, 달마다 구름이 가장 적은 한 장). 처음 사진과 고른 달을 나란히 보고 막대로 달을 옮김. 매달 자동 갱신. 출처 Copernicus Sentinel(Microsoft Planetary Computer)",
+          "en": "Added 'Seen from space' to the campus panel (4 US sites): 86 monthly Sentinel-2 images (Jan 2025–Oct 2026, 4 km around the site, least-cloudy scene per month). Compare the first image with a chosen month via a slider; refreshed monthly. Source: Copernicus Sentinel via Microsoft Planetary Computer",
+          "source": "https://planetarycomputer.microsoft.com/dataset/sentinel-2-l2a"
+        },
+        {
           "ko": "스위트워터 2 현장 진척에 EPA 공공 허가 기록 추가: 'Sweetwater 2 변전소 부지 정지' 건설 빗물 허가 TXR1547YU(2026-07-09 발급, 08-01 효력, 위반 없음). 허가는 공사를 해도 된다는 뜻이라 공식 상태(계획)는 그대로 둠",
           "en": "Added an EPA public permit record to Sweetwater 2 site progress: construction stormwater permit TXR1547YU for 'Sweetwater 2 substation rough grading' (issued 2026-07-09, effective 08-01, no violation). A permit allows the work, so the official status (planned) stays as is",
           "source": "https://echo.epa.gov/detailed-facility-report?fid=110072223370"

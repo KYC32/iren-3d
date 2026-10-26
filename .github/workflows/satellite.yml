@@ -1,0 +1,34 @@
+# 위성 사진(Sentinel-2) 월별 갱신 — 매달 3일·17일 (지난달 마지막 장면이 목록에 올라온 뒤, 이번 달 중간에 한 번 더)
+#   scripts/satellite/fetch_sentinel.py 가 미국 부지 4곳의 아직 없는 달만 받아 public/satellite/ 와 public/data/satellite.json 을 늘림
+#   Microsoft Planetary Computer 공개 목록·공개 서명 토큰을 씀 (계정·비밀 값 불필요)
+#   깨끗한 장면이 없는 달은 건너뛰고, 다음 실행에서 다시 시도 → 바뀐 게 없으면 커밋하지 않음
+name: refresh-satellite
+on:
+  schedule:
+    - cron: '20 7 3,17 * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: refresh-satellite
+  cancel-in-progress: false
+jobs:
+  satellite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install rasterio numpy pillow
+      - run: python scripts/satellite/fetch_sentinel.py --from 2025-01
+      - name: 바뀐 파일만 커밋·푸시
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/satellite public/data/satellite.json
+          if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
+          git commit -m "data: 위성 사진 월별 갱신 $(date -u +%F)"
+          git pull --rebase origin main
+          git push

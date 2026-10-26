@@ -1,0 +1,6 @@
+# 뉴스 제목 기계 번역 (scripts/translate/translate_titles.py) — GitHub Action 과 로컬에서 같은 판
+# Kanana 1.5 는 transformers 5 의 설정 검사(hidden_size ÷ 머리 수)에 걸려 4.x 를 씀
+transformers>=4.48,<4.58
+accelerate
+safetensors
+sentencepiece

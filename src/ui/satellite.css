@@ -1,0 +1,11 @@
+/* =============================================================
+   satellite.css — 캠퍼스 패널 "위성으로 본 변화" 칸 (SiteSatellite.jsx 와 함께 나중에 불러옴)
+   사진 두 장을 나란히(처음 · 고른 달), 아래 달 막대. 사진 칸은 음각(안쪽 그림자)으로 — 색 칸 없이
+   ============================================================= */
+.sat h3 { display: flex; align-items: center; gap: 5px; }
+.sat-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.sat-pair figure { margin: 0; }
+.sat-pair img { display: block; width: 100%; height: auto; aspect-ratio: 1; border-radius: 8px; background: #e7ecef; box-shadow: inset 0 1px 3px #0b344f33, 0 0 0 1px #d7dee3; }
+.sat-pair figcaption { margin-top: 3px; font-size: 10.5px; font-weight: 700; color: #0b344f; font-variant-numeric: tabular-nums; }
+.sat-range { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 6px; margin: 6px 0 4px; font-size: 10px; color: #56675f; font-variant-numeric: tabular-nums; }
+.sat-range input { width: 100%; accent-color: #0b344f; }

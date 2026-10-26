@@ -1,7 +1,8 @@
 // =============================================================
 // NewsPage — IREN 뉴스 (#page=news): [회사 발표 | 언론 보도] 탭 + 종류/매체 칩 + 날짜별 목록
 //   회사 발표 = SEC EDGAR 제출(보도자료·실적·공시·내부자), 언론 = Google 뉴스 검색 결과
-//   데이터: public/data/news.json (GitHub Action 이 매일 갱신). 제목은 영문 원문 그대로
+//   데이터: public/data/news.json (GitHub Action 이 매일 갱신). 제목은 영문 원문이 기준
+//   한국어 화면의 언론 탭은 원문 아래에 기계 번역 한 줄 (public/data/news-ko.json — 숫자·금액·티커 검사를 통과한 것만)
 // =============================================================
 import { useEffect, useMemo, useState } from 'react'
 import { ExternalLink, ChartLine } from 'lucide-react'
@@ -27,6 +28,14 @@ export default function NewsPage() {
   const [limit, setLimit] = useState(PAGE)
   const load = () => { setError(null); loadNews().then(setFile).catch((e) => setError(e.message)) }
   useEffect(load, [])
+  // 기계 번역: 한국어 화면에서 언론 탭을 열 때만 받음 (없거나 실패하면 원문만 보임)
+  const [koFile, setKoFile] = useState(null)
+  useEffect(() => {
+    if (!ko || tab !== 'press' || koFile) return
+    fetch('/data/news-ko.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).then((f) => f && setKoFile(f)).catch(() => {})
+  }, [ko, tab, koFile])
+  // 원문 제목 → 번역 (같은 제목이 다른 기사 번호로 또 나와도 같은 번역을 씀)
+  const koOf = useMemo(() => new Map(Object.values(koFile?.items ?? {}).map((v) => [v.src, v.ko])), [koFile])
   useEffect(() => setLimit(PAGE), [tab, kinds, source])
 
   const block = file?.[tab]
@@ -86,6 +95,8 @@ export default function NewsPage() {
                 {tab === 'company' ? <span className={`basis kind-${it.kind}`}>{KIND_LABEL[it.kind][ko ? 'ko' : 'en']}</span> : <span className="basis kind-press-media">{it.source}</span>}
                 <div className="news-body">
                   <a href={tab === 'company' ? it.url : it.link} target="_blank" rel="noreferrer">{it.title}{it.count > 1 && <> ×{it.count}</>} <ExternalLink size={11} aria-hidden="true" /></a>
+                  {/* 원문 아래 기계 번역 한 줄 (원문이 기준 — 번역은 읽기를 돕는 보조) */}
+                  {tab === 'press' && ko && koOf.get(it.title) && <span className="news-ko">{koOf.get(it.title)}<em>기계 번역</em></span>}
                   <small>
                     {tab === 'company'
                       ? <>sec.gov · {it.form}{it.title_from === 'form' && itemLabels(it.items, ko ? 'ko' : 'en').length > 0 && <> · {itemLabels(it.items, ko ? 'ko' : 'en').join(' · ')}</>}{it.title_from === 'exhibit' && ' · Exhibit 99.1'}</>

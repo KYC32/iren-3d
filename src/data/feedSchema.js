@@ -38,3 +38,15 @@ export const NewsFile = z.object({
   company: Block(CompanyItem),
   press: Block(PressItem),
 }).strict()
+
+// 뉴스 '언론' 제목의 한국어 기계 번역 (public/data/news-ko.json — scripts/apply-translations.mjs 가 씀)
+//   items: 검사기(translateGuard.js)를 통과한 번역 · skipped: 탈락한 것과 까닭 (같은 제목을 다시 번역하지 않으려고 적어 둠)
+//   src 는 번역할 때의 영어 원문 — 원문이 바뀌면 다시 번역
+export const NewsKoFile = z.object({
+  schema_version: z.literal(1),
+  model: z.string(),
+  license: z.string(),
+  fetched_at: z.string(),
+  items: z.record(z.string(), z.object({ src: z.string(), ko: z.string() }).strict()),
+  skipped: z.record(z.string(), z.object({ src: z.string(), why: z.string() }).strict()),
+}).strict()
