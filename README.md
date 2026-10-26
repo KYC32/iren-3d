@@ -207,6 +207,7 @@ docs/research-brief.md      참고 사례·코드·데이터 출처 리서치
 - Natural Earth (퍼블릭 도메인): 국경·해안선 110m(world-atlas 경유), 주·도 경계 50m — https://www.naturalearthdata.com
 - us-atlas: 미국 주 경계 (U.S. Census Bureau 자료 기반)
 - h3-js: 육각 격자 (Uber H3)
+- IM3 Open Source Data Center Atlas v2026.02.09 (ODbL 1.0 · © OpenStreetMap contributors): 실제 지도 '주변 데이터센터' 층(기본 꺼짐)의 미국 기존 데이터센터 1,474곳 — https://huggingface.co/datasets/sarkarghya/im3_open_source_data_center_atlas_v2026.02.09 (판 번호 고정). `node scripts/fetch-im3.mjs` 로 `public/data/im3-datacenters.json` 을 다시 만듭니다. 이 파일은 ODbL 자료에서 만든 파생 데이터베이스라 같은 ODbL 로 공개합니다. 출처 문구는 지도 아래 출처 표기에 자동으로 붙습니다. 층 코드(`src/map/DataCenterLayer.jsx`)는 지도를 띄운 뒤 따로 불러와 지도 묶음 크기 한도에 들지 않습니다.
 
 ## 참고한 사례
 
@@ -228,7 +229,8 @@ docs/research-brief.md      참고 사례·코드·데이터 출처 리서치
 - 현재 9개 위치 모두 부지 정합 재검토가 필요합니다. 기존의 공식 주소 분류도 좌표 검증을 대체하지 않으며, 지역 마커로 표시하고 자동 확대를 줌 9로 제한합니다.
 - 프로젝트 소유자의 사용 허용에 따라 IREN 공식 홈페이지 사진 3장을 로컬 자산으로 표시합니다. 원본 주소·출처·이용 근거를 기록하고 확대·2장 비교를 제공합니다. IR 자료 2건은 원문 링크로 유지합니다. 홈페이지 사진의 게시일·촬영일은 미상이며, 검토 시점(2026-10-08) 이전 월에는 표시하지 않습니다. 확인일을 촬영일·게시일로 바꾸지 않으며, 특정 건물로 식별되지 않은 사진은 캠퍼스 수준에서만 표시합니다.
 - 새 문서를 추가할 때 발표일, 문서 내 위치, 검토일을 기록하고 목표를 덮어쓰지 말고 revisions에 추가합니다. 같은 대상·완료 조건만 한 일정에 묶습니다. 다른 범위는 별도 일정으로 남깁니다.
+- 현장 사진 설비 후보 찾기: `scripts/vision/find_equipment.py` 가 드론·회사 사진에서 크레인·굴착기·트럭·변압기 같은 설비 후보에 번호 상자를 그립니다. 검출은 OWLv2(`google/owlv2-base-patch16-ensemble`), `--masks` 를 주면 SAM 2.1(`facebook/sam2.1-hiera-small`)로 윤곽 면적도 잽니다(둘 다 Apache-2.0). 결과는 후보일 뿐입니다. 사람이 번호 그림을 보고 맞는 것만 골라 `data/observations.json` 에 적습니다. 스위트워터 항공 사진 시험에서는 후보 54개에 틀린 이름도 섞여 있었습니다. 회사·제3자 사진과 결과 그림은 저장소에 넣지 않고 `--out` 폴더(저장소 밖)에만 둡니다. 필요한 패키지는 `scripts/vision/requirements.txt` 에 있습니다.
 - `npm run validate`, `npm test`, `npm run build`로 확인합니다. 단위 테스트는 정보의 사실성을 보장하지 않으므로 문서 원문 검토도 필요합니다.
-- 지도 배경은 현재 제공 데이터입니다. 타임라인이 과거여도 과거 지형 영상이 아니며, 위성영상은 이 버전에 포함하지 않습니다. 타일 실패 시에도 목록·상세는 독립적으로 동작합니다.
+- 지도 배경은 현재 제공 데이터입니다. 타임라인이 과거여도 과거 지형 영상이 아닙니다. 지도 배경에는 위성영상이 없습니다(위성 사진은 캠퍼스 패널 '위성으로 본 변화' 칸에만 있음). 타일 실패 시에도 목록·상세는 독립적으로 동작합니다.
 
 OpenFreeMap / OpenMapTiles / OpenStreetMap 출처 표시는 지도에 유지합니다. 유료 가입·API 키·자동 자료 게시 기능은 없습니다. 녹화 모드는 기존 자료의 시나리오 연출을 유지하며 투자자용 확인 현황과 구별됩니다.

@@ -1,0 +1,15 @@
+/* =============================================================
+   dataCenterLayer.css — 실제 지도 '주변 데이터센터' 단추와 말풍선 (DataCenterLayer.jsx 와 함께 늦게 불러옴)
+   단추는 지도 오른쪽 아래 조종 칸(확대·축소 단추 위) — 양각, 켜면 음각(눌린 모양)
+   ============================================================= */
+.im3-ctrl { clear: both; }
+.im3-toggle { display: inline-flex; align-items: center; gap: 5px; padding: 6px 10px; border: 1px solid #d3d9e0; border-radius: 9px; background: linear-gradient(180deg, #ffffff, #f1f4f7); box-shadow: inset 0 1px 0 #fff, 0 1px 2px #0b344f1f, 0 3px 8px #0b344f1a; color: #33475c; font-family: inherit; font-size: 11px; font-weight: 600; line-height: 1.2; cursor: pointer; white-space: nowrap; }
+.im3-toggle:hover, .im3-toggle:focus-visible { outline: none; border-color: #9aa6b4; }
+.im3-toggle.is-on { background: #e4e9ef; box-shadow: inset 0 1px 3px #0b344f40; color: #0b344f; }
+.im3-toggle small { font-weight: 400; color: #6b7a8c; }
+.im3-card { position: relative; width: max-content; max-width: 230px; padding: 8px 26px 8px 10px; border: 1px solid #d3d9e0; border-radius: 9px; background: #fff; box-shadow: 0 2px 4px #0b344f1f, 0 6px 16px #0b344f26; font-size: 11.5px; line-height: 1.45; color: #1f3550; }
+.im3-card b { display: block; font-size: 12px; }
+.im3-card span { display: block; color: #33475c; }
+.im3-card small { display: block; margin-top: 2px; color: #7a889c; font-size: 10px; }
+.im3-card-close { position: absolute; top: 5px; right: 5px; display: grid; place-items: center; width: 18px; height: 18px; padding: 0; border: 0; border-radius: 5px; background: transparent; color: #6b7a8c; cursor: pointer; }
+.im3-card-close:hover, .im3-card-close:focus-visible { outline: none; background: #eef1f5; color: #0b344f; }

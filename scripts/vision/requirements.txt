@@ -1,0 +1,6 @@
+# find_equipment.py 에 필요한 패키지 (OWLv2 검출 + SAM 2.1 윤곽)
+#   transformers 4.56 부터 Sam2Model 이 들어 있음 · SAM 2.1 은 torchvision 도 씀
+torch
+torchvision
+transformers>=4.56
+pillow
