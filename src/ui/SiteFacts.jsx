@@ -7,7 +7,7 @@
 // 제3자 관찰은 공식 상태(건설·가동)를 바꾸지 않고 근거로만 — 화면에도 그렇게 적음
 // =============================================================
 import { useEffect, useState } from 'react'
-import { ArrowUpRight, Zap, Cable, Factory, Fuel, BatteryCharging, Camera, Thermometer } from 'lucide-react'
+import { ArrowUpRight, Zap, Cable, Factory, Fuel, BatteryCharging, Camera, Thermometer, FileCheck } from 'lucide-react'
 import FigureButton from './FigureButton.jsx'
 import { factsFor, segmentStages } from './siteFacts.js'
 import { fmtWhen } from '../data/events.js'
@@ -20,7 +20,8 @@ const load = () => (pending ??= fetch('/data/observations.json', { cache: 'no-ca
   .then((r) => (r.ok ? r.json() : null)).catch(() => null).then((f) => (loaded = f)))
 
 const ITEM_ICON = { substation: Zap, fiber: Cable, transformers: Factory, generators: Fuel, ups: BatteryCharging }
-const METHOD = { drone: { Icon: Camera, ko: '드론 영상', en: 'drone footage' }, photo: { Icon: Camera, ko: '사진', en: 'photos' }, thermal: { Icon: Thermometer, ko: '열화상', en: 'thermal imaging' } }
+// 관찰 종류별 아이콘·글자 (permit = 정부 허가 기록: 공사를 해도 된다는 뜻일 뿐 진척을 보여 주지는 않음)
+const METHOD = { drone: { Icon: Camera, ko: '드론 영상', en: 'drone footage' }, photo: { Icon: Camera, ko: '사진', en: 'photos' }, thermal: { Icon: Thermometer, ko: '열화상', en: 'thermal imaging' }, permit: { Icon: FileCheck, ko: '공공 허가 기록', en: 'public permit record' } }
 // 세그먼트 칸 단계 (siteFacts.segmentStages) — 앞설수록 진한 색
 const STAGES = [
   ['ats', { ko: 'ATS·배전반까지', en: 'ATS / switchboard' }],

@@ -22,6 +22,12 @@ describe('factsFor', () => {
     expect(before.progress).toEqual([])
     expect(before.facilities.every((f) => f.basis === 'reported')).toBe(true) // 회사 홈페이지 설명은 날짜와 무관
   })
+  // 정부 허가 기록(EPA ECHO · TCEQ 건설 빗물 일반 허가)도 같은 칸 — 회사 발표가 아니라 관찰과 같은 등급
+  it('스위트워터 2 는 EPA 허가 기록(2026-07-09 발급)이 그 달부터 보이고 그 전에는 없음', () => {
+    const ids = (m) => factsFor(file, 'sweetwater-2', toMonth(m)).progress.map((p) => [p.id, p.method])
+    expect(ids('2026-10')).toContainEqual(['sw2-2026-07-09-permit', 'permit'])
+    expect(ids('2026-06')).toEqual([])
+  })
   it('다른 사이트 관찰은 섞이지 않음', () => {
     expect(factsFor(file, 'kiowa', toMonth('2026-10'))).toEqual({ facilities: [], progress: [] })
   })

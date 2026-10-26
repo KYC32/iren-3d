@@ -40,7 +40,7 @@ const Progress = z.object({
   id: z.string().regex(/^[a-z0-9-]+$/),
   site: z.string(),
   building: z.string().optional(),
-  method: z.enum(['drone', 'thermal', 'photo']),
+  method: z.enum(['drone', 'thermal', 'photo', 'permit']),   // permit = 정부 허가 기록 (EPA ECHO 등) — 회사 발표 아님, 관찰과 같은 등급
   date: Day,
   published: Day,
   by: z.string(),

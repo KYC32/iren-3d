@@ -122,6 +122,17 @@
   ],
   "progress": [
     {
+      "id": "sw2-2026-07-09-permit",
+      "site": "sweetwater-2",
+      "method": "permit",
+      "date": "2026-07-09",
+      "published": "2026-07-09",
+      "by": "EPA ECHO · TCEQ 건설 빗물 일반 허가 TXR1547YU",
+      "source": "https://echo.epa.gov/detailed-facility-report?fid=110072223370",
+      "note_ko": "허가 이름 'IREN Sweetwater 2 Data Center Project Substation Rough Grad' — 스위트워터 2 변전소 자리의 부지 정지(땅 고르기) 공사에 쓰는 빗물 관리 허가. 2026-07-09 발급, 2026-08-01 효력, 상태 유효(위반 없음). 위치는 1730 FM 540, Hamlin(피셔 카운티)로 iren-3d 의 부지 좌표와 약 300m 차이. 허가는 공사를 해도 된다는 뜻이고 실제 공사 진척을 보여 주지는 않음",
+      "note_en": "Permit 'IREN Sweetwater 2 Data Center Project Substation Rough Grad' — stormwater coverage for rough grading at the Sweetwater 2 substation site. Issued 2026-07-09, effective 2026-08-01, status effective (no violation identified). Location 1730 FM 540, Hamlin (Fisher County), about 300 m from the iren-3d site point. A permit allows the work; it does not show how far construction has progressed"
+    },
+    {
       "id": "mk-air-2026-09-23",
       "site": "mackenzie",
       "building": "mk-air",

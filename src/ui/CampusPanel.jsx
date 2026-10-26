@@ -19,6 +19,7 @@ import HallEstimateCard from './HallEstimateCard.jsx'
 const SiteFacts = lazy(() => import('./SiteFacts.jsx'))
 const FigureButton = lazy(() => import('./FigureButton.jsx')) // 고른 건물의 그림(전력 경로·홀 안) 단추
 const SiteNews = lazy(() => import('./SiteNews.jsx')) // 캠퍼스 최근 소식 목록 (현황 페이지와 같은 조각)
+const SiteRules = lazy(() => import('./SiteRules.jsx')) // 지역 규제 칸 (미국 부지 · 데이터센터 유예·제한, data/restrictions.json)
 const TABS={overview:['현황','Overview'],history:['계획 이력','Plan history'],evidence:['사진·근거','Photos & evidence']}
 export default function CampusPanel(){
   const site=useAppStore(selectSelectedSite), st=useAppStore(), t=useT(), panel=useRef(null)
@@ -47,6 +48,7 @@ export default function CampusPanel(){
   const appearance=campusAppearance(site.id)
   const landscape=campusLandscape(site.id)
   const research=st.data.raw.research??EMPTY_RESEARCH, location=locationFor(site,research)
+  const rules=st.data.raw.restrictions?.sites.find(r=>r.site===site.id) // 지역 규제 요약 (미국 부지만 있음)
   const zones=customerZones(site,st.data.companies), zone=zones.find(z=>z.key===selectedZoneKey)
   const building=site.buildings.find(b=>b.id===selectedBuildingId), buildings=zone?.buildings??site.buildings
   const claims=claimsAt(research,site.id,month,selectedBuildingId).filter(c=>!zone||zone.buildings.some(b=>b.id===c.building))
@@ -87,6 +89,8 @@ export default function CampusPanel(){
         title={<h3>{ko?'최근 소식':'Recent news'}{month<toMonth(site.as_of)&&(ko?` · ${monthLabel(month,lang)}까지`:` · through ${monthLabel(month,lang)}`)}</h3>}
         empty={ko?'이 시점까지 공개된 소식이 없습니다.':'No news published by this date.'}/></Suspense>}
       {!zone&&<Suspense fallback={null}><SiteFacts site={site} month={month} lang={lang}/></Suspense>}
+      {/* 지역 규제: 자료가 있는 미국 부지만 (자료 기간이 2026-08 까지라 지난 날짜를 봐도 같은 요약) */}
+      {!zone&&rules&&<Suspense fallback={null}><SiteRules rules={rules} source={st.data.raw.restrictions.source} lang={lang}/></Suspense>}
       <h3>{ko?'현장 자료':'Site imagery'}</h3><PhotoGallery site={site} buildingId={selectedBuildingId} buildingIds={zone?.buildings.map(b=>b.id)} research={research} month={month} lang={lang} compact/>
       <h3>{ko?'위치 근거':'Location evidence'}</h3><p className="research-note">{ko?location.note_ko:location.note_en}</p><a href={location.source??site.sources[0]} target="_blank" rel="noreferrer">{ko?'위치 관련 원문':'Location source'}<ArrowUpRight size={12} aria-hidden="true"/></a>
     </>}

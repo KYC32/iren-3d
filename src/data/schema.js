@@ -286,6 +286,27 @@ export const ProspectsFile = z.object({
   }).strict()),
 }).strict()
 
+// 지역 규제 (data/restrictions.json) — 부지 카운티·주의 데이터센터 유예·제한 조치 요약 (scripts/fetch-restrictions.mjs 가 씀)
+//   제3자 연구 자료(CC BY 4.0) — 출처 표기 필수, 회사 발표 아님
+export const RestrictionsFile = z.object({
+  checked: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),          // 자료를 받아 계산한 날
+  source: z.object({
+    name: z.string(), url: Url, license: z.literal('CC-BY-4.0'), attribution: z.string(),
+    coverage: z.string(),                                       // 자료가 다루는 기간 (예: 2017-01 ~ 2026-08)
+  }).strict(),
+  sites: z.array(z.object({
+    site: Id, county: z.string(), county_fips: z.string().regex(/^\d{5}$/), state: z.string().regex(/^[A-Z]{2}$/),
+    county_count: z.number().int().nonnegative(),               // 같은 카운티 조치 수
+    state_count: z.number().int().nonnegative(),                // 같은 주 조치 수 (기간 전체)
+    state_count_year: z.number().int().nonnegative(),           // 같은 주 · year 해의 조치 수
+    year: z.number().int(),
+    nearest: z.object({                                         // 같은 주에서 가장 가까운 조치 (없으면 null)
+      jurisdiction: z.string(), type: z.string(), county: z.string(), date: z.string(), km: z.number().nonnegative(),
+      status: z.enum(['active', 'rescinded', 'replaced', 'expired', 'unknown']),   // replaced = 영구 규정으로 대체
+    }).strict().nullable(),
+  }).strict()),
+}).strict()
+
 export const InfraFile = z.object({
   schema_version: z.literal(2),
   research: Research.optional(),
@@ -297,4 +318,5 @@ export const InfraFile = z.object({
   sourceDates: SourceDatesFile.shape.sources.optional(), // 출처 문서 공개일 (data/source-dates.json)
   hiring: HiringFile.optional(),                         // 채용 공고 스냅샷 (data/hiring.json)
   prospects: ProspectsFile.shape.prospects.optional(),   // 미확인 진출 정황 (data/prospects.json) — 지도 '?' 표시
+  restrictions: RestrictionsFile.optional(),             // 지역 규제 요약 (data/restrictions.json) — 캠퍼스 패널 '현황' 탭
 }).strict()

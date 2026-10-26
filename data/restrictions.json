@@ -1,0 +1,84 @@
+{
+  "checked": "2026-10-26",
+  "source": {
+    "name": "US data center moratoria and local opposition (Miklian 2026)",
+    "url": "https://huggingface.co/datasets/miklia/us-data-center-moratoria-local-opposition/tree/aede5834e0f4add48f3f4eb22a62ec0c429f7396/replication",
+    "license": "CC-BY-4.0",
+    "attribution": "Miklian, Jason. 2026. \"US data center moratoria and local opposition: replication materials.\" CC BY 4.0.",
+    "coverage": "2017-01 ~ 2026-08"
+  },
+  "sites": [
+    {
+      "site": "childress",
+      "county": "Childress County",
+      "county_fips": "48075",
+      "state": "TX",
+      "county_count": 0,
+      "state_count": 3,
+      "state_count_year": 3,
+      "year": 2026,
+      "nearest": {
+        "jurisdiction": "Hill County",
+        "type": "County",
+        "county": "Hill County",
+        "date": "2026-05-12",
+        "km": 385,
+        "status": "rescinded"
+      }
+    },
+    {
+      "site": "sweetwater-1",
+      "county": "Fisher County",
+      "county_fips": "48151",
+      "state": "TX",
+      "county_count": 0,
+      "state_count": 3,
+      "state_count_year": 3,
+      "year": 2026,
+      "nearest": {
+        "jurisdiction": "Hill County",
+        "type": "County",
+        "county": "Hill County",
+        "date": "2026-05-12",
+        "km": 335,
+        "status": "rescinded"
+      }
+    },
+    {
+      "site": "sweetwater-2",
+      "county": "Fisher County",
+      "county_fips": "48151",
+      "state": "TX",
+      "county_count": 0,
+      "state_count": 3,
+      "state_count_year": 3,
+      "year": 2026,
+      "nearest": {
+        "jurisdiction": "Hill County",
+        "type": "County",
+        "county": "Hill County",
+        "date": "2026-05-12",
+        "km": 313,
+        "status": "rescinded"
+      }
+    },
+    {
+      "site": "kiowa",
+      "county": "Pittsburg County",
+      "county_fips": "40121",
+      "state": "OK",
+      "county_count": 0,
+      "state_count": 8,
+      "state_count_year": 8,
+      "year": 2026,
+      "nearest": {
+        "jurisdiction": "Seminole Nation of Oklahoma",
+        "type": "Tribal",
+        "county": "Seminole County",
+        "date": "2026-03-07",
+        "km": 74,
+        "status": "active"
+      }
+    }
+  ]
+}

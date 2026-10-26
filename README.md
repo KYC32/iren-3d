@@ -65,6 +65,8 @@ npm run build      # validate → 빌드 (dist/)
    - 고객 계약은 `contracts`(사이트·건물 연결), 실적 발표 같은 회사 일정은 `events`
    - 계통을 아직 확보하지 못한 계획 부지(예: Redbank)는 `power` 의 확보 전력을 0 으로 두고, 회사가 밝힌 규모를 `planned: { mw, source }` 에 적습니다. 합계에는 안 들어가고 지도 핀 '계획 900 MW', 3D 빈 부지 '계획 · 계통 미확보', 패널·KPI 아래 줄로만 보입니다.
    - 회사가 발표하지 않았지만 공개 자료에 흔적이 있는 지역은 `data/prospects.json`(지도의 '?' 표, 정황마다 날짜·한 줄·출처)에 적습니다. 부지가 아니므로 캠퍼스 목록·합계·3D 에는 넣지 않고, 타임라인 날짜까지 공개된 정황만 보입니다.
+   - 정부 허가 기록(EPA ECHO 등)은 `data/observations.json` 의 `progress` 에 `method: "permit"` 으로 적습니다. 제3자 관찰과 같은 등급이라 공식 상태를 바꾸지 않습니다(예: 스위트워터 2 변전소 부지 정지 허가 TXR1547YU).
+   - 캠퍼스 패널의 '지역 규제' 칸은 `data/restrictions.json` 을 읽습니다. `node scripts/fetch-restrictions.mjs` 가 Hugging Face 의 Miklian(2026) 데이터센터 유예·제한 자료(CC BY 4.0, 판 번호 고정)와 FCC 카운티 조회로 미국 부지마다 계산합니다. 새 판이 나오면 스크립트의 `REV` 를 바꾸고 다시 돌립니다.
    - 회사 발표 지표는 `metrics`. 위쪽 KPI 줄에는 앞의 2개만 나오고, `show: "contracts"` 인 지표는 계약 탭 맨 위 "계약 조건"에 나옵니다. 회사가 "이상"·"약"으로 쓴 값은 `qualifier: "over"`(>$20m) · `"about"`(~$25m), 범위는 `value_max`(예: 선급금 45~55% → `value: 45, value_max: 55`)
 2. **`data/changelog.json` 맨 위에 오늘 날짜로 바뀐 내용을 적습니다.** 데이터 기준일보다 최신 기록이 없으면 빌드가 실패합니다.
 3. `npm run validate` 로 검사합니다. 스키마·날짜 순서·매달 전력 합계·좌표·계약 참조·갱신 기록을 확인합니다.

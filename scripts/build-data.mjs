@@ -8,7 +8,7 @@
 // =============================================================
 import { readFileSync, readdirSync, writeFileSync, mkdirSync, existsSync } from 'node:fs'
 import { validateResearch } from '../src/data/researchSchema.js'
-import { SourceDatesFile, HiringFile, ProspectsFile } from '../src/data/schema.js'
+import { SourceDatesFile, HiringFile, ProspectsFile, RestrictionsFile } from '../src/data/schema.js'
 import { validateObservations } from '../src/data/observationsSchema.js'
 import { validateStatements } from '../src/data/statementsSchema.js'
 import { validateShares } from '../src/data/sharesSchema.js'
@@ -45,7 +45,11 @@ export function buildInfra() {
   const prospectsUrl = new URL('prospects.json', DATA)
   const prospects = existsSync(prospectsUrl) ? ProspectsFile.parse(JSON.parse(readFileSync(prospectsUrl, 'utf8'))).prospects : undefined
   for (const p of prospects ?? []) if (sites.some((s) => s.id === p.id)) throw new Error(`prospects.json: 부지와 같은 id ${p.id}`)
-  return { ...(research ? { research } : {}), ...(sourceDates ? { sourceDates } : {}), ...(hiring ? { hiring } : {}), ...(prospects ? { prospects } : {}), schema_version: 2, as_of: asOf, companies, programs, sites, ...(changelog ? { changelog } : {}) }
+  // 지역 규제 요약 (scripts/fetch-restrictions.mjs 가 만든 것) — 없는 부지 id 를 적으면 빌드 실패
+  const restrictionsUrl = new URL('restrictions.json', DATA)
+  const restrictions = existsSync(restrictionsUrl) ? RestrictionsFile.parse(JSON.parse(readFileSync(restrictionsUrl, 'utf8'))) : undefined
+  for (const r of restrictions?.sites ?? []) if (!sites.some((s) => s.id === r.site)) throw new Error(`restrictions.json: 없는 사이트 ${r.site}`)
+  return { ...(research ? { research } : {}), ...(sourceDates ? { sourceDates } : {}), ...(hiring ? { hiring } : {}), ...(prospects ? { prospects } : {}), ...(restrictions ? { restrictions } : {}), schema_version: 2, as_of: asOf, companies, programs, sites, ...(changelog ? { changelog } : {}) }
 }
 
 // 현장 관찰·설비 이중화 (data/observations.json) — infra.json 과 따로 둠:

@@ -1,6 +1,21 @@
 {
   "entries": [
     {
+      "date": "2026-10-26",
+      "items": [
+        {
+          "ko": "스위트워터 2 현장 진척에 EPA 공공 허가 기록 추가: 'Sweetwater 2 변전소 부지 정지' 건설 빗물 허가 TXR1547YU(2026-07-09 발급, 08-01 효력, 위반 없음). 허가는 공사를 해도 된다는 뜻이라 공식 상태(계획)는 그대로 둠",
+          "en": "Added an EPA public permit record to Sweetwater 2 site progress: construction stormwater permit TXR1547YU for 'Sweetwater 2 substation rough grading' (issued 2026-07-09, effective 08-01, no violation). A permit allows the work, so the official status (planned) stays as is",
+          "source": "https://echo.epa.gov/detailed-facility-report?fid=110072223370"
+        },
+        {
+          "ko": "캠퍼스 패널에 '지역 규제' 칸 추가(미국 부지): 카운티·주의 데이터센터 유예·제한 조치 수와 같은 주에서 가장 가까운 조치. IREN 카운티 4곳(차일드레스·피셔·피츠버그)은 0건이고 텍사스는 2026년 3건, 오클라호마는 2026년 8건. 자료는 제3자 연구(Miklian 2026, CC BY 4.0, 2017-01~2026-08)",
+          "en": "Added a 'Local rules' block to the campus panel (US sites): county and state data center moratoria counts and the nearest in-state action. IREN's counties (Childress, Fisher, Pittsburg) have none; Texas had 3 in 2026 and Oklahoma 8. Source: third-party research (Miklian 2026, CC BY 4.0, Jan 2017–Aug 2026)",
+          "source": "https://huggingface.co/datasets/miklia/us-data-center-moratoria-local-opposition"
+        }
+      ]
+    },
+    {
       "date": "2026-10-24",
       "items": [
         {
