@@ -29,6 +29,31 @@ export function hqDirection(view = HQ_VIEW) {
   return [Math.cos(a) * Math.cos(e), Math.sin(e), Math.sin(a) * Math.cos(e)]
 }
 
+// 로비 위 전광판이 붙는 벽: 포디움 윤곽 중 길 쪽(바깥 방향이 북 = Market St · 동 = Pitt St) 벽
+//   벽마다 a → b 는 밖에서 본 사람의 왼쪽 → 오른쪽 (그래서 글자가 왼쪽에서 오른쪽으로 읽힘), u0 = 앞 벽들 길이의 합
+//   (윤곽을 시계 방향으로 맞추면 변 방향 = 바깥 방향을 오른쪽으로 90° 돌린 쪽 = 보는 사람의 오른쪽)
+export function streetFaces(ring) {
+  const cw = signedArea(ring) < 0 ? ring : [...ring].reverse()
+  const faces = cw.map((a, i) => {
+    const b = cw[(i + 1) % cw.length], dx = b[0] - a[0], dz = b[1] - a[1], len = Math.hypot(dx, dz) || 1
+    return { a, b, n: [-dz / len + 0, dx / len + 0], len }
+  })
+  const street = (f) => f.n[0] > 0.7 || f.n[1] > 0.7
+  const start = Math.max(0, faces.findIndex((f) => !street(f))) // 길 쪽이 아닌 벽 다음부터 → 이어진 길 쪽 벽이 차례로
+  const ordered = [...faces.slice(start), ...faces.slice(0, start)].filter(street)
+  let u = 0
+  return ordered.map((f) => { const out = { ...f, u0: u }; u += f.len; return out })
+}
+
+// 본사 화면에 들어올 때 위에서 내려오는 카메라의 시작 자리: home = [카메라 x,y,z, 바라보는 점 x,y,z]
+//   같은 방위에서 높이각 72°, 거리 1.7배 — CameraRig 가 여기서 처음 시점(home)으로 부드럽게 옮김
+export function hqStartPose(home, { elevation = 72, scale = 1.7 } = {}) {
+  const [px, py, pz, tx, ty, tz] = home
+  const vx = px - tx, vz = pz - tz, dist = Math.hypot(vx, py - ty, vz) * scale, h = Math.hypot(vx, vz) || 1
+  const e = (elevation * Math.PI) / 180
+  return [tx + (vx / h) * dist * Math.cos(e), ty + dist * Math.sin(e), tz + (vz / h) * dist * Math.cos(e), tx, ty, tz]
+}
+
 // 다각형 변마다 바깥쪽 방향(n)과 양 끝 점 — x 를 오른쪽, z 를 위로 보면 반시계 윤곽의 바깥쪽은 (dz, −dx)
 export function ringFaces(ring) {
   const ccw = signedArea(ring) > 0

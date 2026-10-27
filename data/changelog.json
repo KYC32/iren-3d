@@ -4,6 +4,10 @@
       "date": "2026-10-27",
       "items": [
         {
+          "ko": "본사 3D 화면이 움직임: 차가 Market St·Pitt St 차로를 따라 다니고(왼쪽 통행) 차 없는 Pitt St Mall에는 사람이 걸음. 포디움의 길 쪽 벽에 전광판을 둘러 전일 종가와 다음 실적 발표·주총까지 남은 날을 흘려 보여 줌(그림 표현). 지도에서 들어오면 카메라가 위에서 내려옴. 움직임 줄이기 설정이면 모두 멈춤",
+          "en": "The HQ 3D view now moves: cars drive the Market St and Pitt St lanes (keeping left) and people walk the car-free Pitt St Mall. A ticker wraps the podium's street faces with the previous close and the days until the next earnings release and AGM (illustrative). Entering from the map, the camera descends from above. Everything stops with reduced motion"
+        },
+        {
           "ko": "본사 3D 화면의 동네를 실제 모양으로 바꿈: OpenStreetMap 건물 윤곽·층수(층수가 없으면 종류별 어림값)와 길(차도·차 없는 Pitt St Mall·조지 스트리트 경전철·횡단보도)·가로수 위치를 씀. 본사는 땅 윤곽 전체를 덮는 3층 유리 로비 위에 모서리를 깎은 탑. 시드니 타워는 309m 그대로라 화면 위로 나감. 처음 구도는 남동쪽(본사 동쪽 벽 정면)이고 가로등·차는 꾸밈",
           "en": "The HQ 3D view now shows the real neighborhood: OpenStreetMap building outlines and storey counts (estimated by type where missing), streets (roads, the car-free Pitt St Mall, the George St light rail, crossings) and street-tree positions. The HQ is a chamfered tower on a three-storey glass podium covering the lot. Sydney Tower keeps its 309 m height, so it rises out of frame. The first view looks from the south-east (the HQ's east face); street lamps and cars are decorative",
           "source": "https://www.openstreetmap.org/copyright"

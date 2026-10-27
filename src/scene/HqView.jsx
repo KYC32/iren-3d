@@ -7,6 +7,7 @@
 //   동네 자료를 받기 전엔 바닥 판만, 못 받으면 정사각형 기본 모양 (hqTower.js)
 // 카메라는 CameraRig 가 같은 모양(hqTower)으로 맞춤
 // 빌딩: 층 구간마다 창문 그림(facade.js) 기둥(prism.js) — 밤엔 창문에 불이 켜짐 · IREN 층은 초록 유리 + 빛 띠
+//   포디움 길 쪽 벽엔 전광판(HqTicker.jsx — 전일 종가 · 실적 발표·주총까지 남은 날, 그림 표현)
 // 동네: HqCity.jsx (실제 건물 윤곽·높이 · 길 · 가로수 · 꾸밈 가로등·차) — 돌려 볼 때 본사를 가리는 건물은 흐려짐
 // 빌딩에 붙는 것 (3D 위치에 붙은 HTML — 그림 조각은 ui/HqParts.jsx):
 //   옥상 위: CEO 카드(큰 사진 · 이름 · 약속 성적표) + 그 옆 최근 발언 말풍선 (휴대폰은 말풍선을 화면 아래로 — HqDock)
@@ -24,6 +25,7 @@ import { prismGeometry, flatGeometry } from './prism.js'
 import { centroid, inflateRing, segmentQuad } from './geom2d.js'
 import { loadHqCity, peekHqCity } from '../data/loadHqCity.js'
 import HqCity from './HqCity.jsx'
+import HqTicker from './HqTicker.jsx'
 import Html from './SafeHtml.jsx'
 import { SKY } from './nightLights.js'
 import { CeoTop, FloorTag, useStatementsFile } from '../ui/HqParts.jsx' // 옥상 위 CEO 카드·말풍선, 5층 표시
@@ -119,6 +121,7 @@ function Tower({ T, nightList }) {
         <mesh geometry={extra.parapet}><meshStandardMaterial color="#56697c" roughness={0.6} /></mesh>
       </group>
       {T.iren && <IrenHalo f={T.iren} ring={T.ring} />}
+      <HqTicker T={T} />
       {extra.door && <>
         <mesh position={[extra.door.canopy.p[0], BASE + T.floors[0].h * 0.72, extra.door.canopy.p[1]]} rotation={[0, extra.door.canopy.ry, 0]} castShadow>
           <boxGeometry args={[extra.door.canopy.w, 0.08, 0.9]} />

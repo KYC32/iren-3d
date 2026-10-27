@@ -65,8 +65,8 @@ describe('건물', () => {
       expect(ringsOverlap(b.ring, L.hq.podium, 0.15)).toBe(false)
     }
   })
-  it('건물·길·나무·차는 모두 바닥 판 안 (밖으로 나간 부분은 잘림)', () => {
-    const pts = [...L.buildings.flatMap((b) => b.ring), ...L.asphalt.flat(), ...L.paving.flat(), ...L.trees, ...L.cars.map((c) => [c.x, c.z])]
+  it('건물·길·나무·가로등은 모두 바닥 판 안 (밖으로 나간 부분은 잘림)', () => {
+    const pts = [...L.buildings.flatMap((b) => b.ring), ...L.asphalt.flat(), ...L.paving.flat(), ...L.trees, ...L.lamps]
     for (const [x, z] of pts) {
       expect(Math.abs(x)).toBeLessThanOrEqual(HALF + 1e-6)
       expect(Math.abs(z)).toBeLessThanOrEqual(HALF + 1e-6)
@@ -106,20 +106,10 @@ describe('길 · 가로수 · 차', () => {
   const cars = L.roads.filter((r) => r.kind === 'car')
   const walks = L.roads.filter((r) => r.kind === 'walk')
   const onRoad = (p, roads) => roads.some((r) => r.line && r.line.some((a, i) => i > 0 && distToSegment(p, r.line[i - 1], a) <= r.width / 2 + 1e-6))
-  it('차는 차도 위에만 — 보행자 거리(Pitt St Mall) 위엔 없음', () => {
-    expect(L.cars.length).toBeGreaterThan(5)
-    for (const c of L.cars) {
-      expect(onRoad([c.x, c.z], cars)).toBe(true)
-      expect(onRoad([c.x, c.z], walks.filter((r) => r.name === 'Pitt Street Mall'))).toBe(false)
-    }
-  })
   it('바닥 길 이름은 처음 카메라에서 보이는 자리 (카메라와 글자 사이에 건물이 없음)', () => {
     const d = hqDirection(), cam = [d[0] * 60, 8 + d[1] * 60, d[2] * 60]
     for (const g of L.ground) expect(occludersOf(cam, L.buildings, [{ p: [g.at[0], 0.13, g.at[1]], n: [d[0], 0, d[2]] }])).toEqual([])
     expect(L.ground.some((g) => g.text === 'Pitt St')).toBe(true)
-  })
-  it('바닥 길 이름 위에는 차를 세우지 않음 (글자가 가리지 않게)', () => {
-    for (const c of L.cars) for (const g of L.ground) expect(Math.hypot(c.x - g.at[0], c.z - g.at[1])).toBeGreaterThan(2.4)
   })
   it('가로수는 건물 안·차도 위가 아님', () => {
     expect(L.trees.length).toBeGreaterThan(5)

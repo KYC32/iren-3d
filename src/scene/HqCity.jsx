@@ -1,6 +1,7 @@
 // =============================================================
 // HqCity — 본사 3D 화면의 실제 동네 (시드니 도심 Market St · Pitt St 모퉁이): 바닥 판 · 길(아스팔트·보도·경전철 선로·
-//          차선 점선·횡단보도) · 이웃 건물(OSM 윤곽 · 층수 높이 · 창문 그림) · 가로수(OSM 위치) · 가로등·차(꾸밈) · 이름표
+//          차선 점선·횡단보도) · 이웃 건물(OSM 윤곽 · 층수 높이 · 창문 그림) · 가로수(OSM 위치) · 가로등(꾸밈) · 이름표
+//          움직이는 차·사람은 HqTraffic.jsx (Kenney 차 모형 · Pitt St Mall 보행자)
 // -------------------------------------------------------------
 // 배치는 hqCity.js (순수 계산 · 테스트) — 자료는 OpenStreetMap (© OpenStreetMap contributors · ODbL, 화면 아래 출처 표기)
 // 벽·지붕 모양은 prism.js, 창문 그림은 facade.js
@@ -20,6 +21,7 @@ import { PLOT } from './hqTower.js'
 import { SKY } from './nightLights.js'
 import { useAppStore } from '../store/useAppStore.js'
 import Html from './SafeHtml.jsx'
+import HqTraffic from './HqTraffic.jsx'
 
 const C = { plate: '#e3dfd5', road: '#737d8b', paving: '#d8ccb4', rail: '#59626d', mark: '#f4f2ea', grass: '#a6c98f', roof: '#c7cdd5', trunk: '#7a5d45', lampPole: '#3d4a57' }
 const LEAVES = ['#6f9e5e', '#5f8f52', '#7fae68', '#86b56f']
@@ -66,7 +68,7 @@ function CityContent({ L, nightList, targets }) {
     </group>
     <Trees points={L.trees} />
     <Lamps points={L.lamps} />
-    {L.cars.map((c, i) => <Car key={i} c={c} />)}
+    <HqTraffic roads={L.roads} />
     {L.ground.map((g) => <GroundLabel key={g.text} g={g} />)}
     <Labels L={L} />
   </>
@@ -193,16 +195,6 @@ function Lamps({ points }) {
       <planeGeometry args={[2.4, 2.4]} />
     </instancedMesh>
   </>
-}
-
-// 자동차 한 대: 차체 + 유리 지붕 (ry = 길 방향으로 돌림)
-function Car({ c }) {
-  return (
-    <group position={[c.x, BASE - 0.035, c.z]} rotation={[0, c.ry, 0]}>
-      <mesh position={[0, 0.2, 0]} castShadow><boxGeometry args={[1.5, 0.32, 0.72]} /><meshStandardMaterial color={c.color} roughness={0.45} metalness={0.2} /></mesh>
-      <mesh position={[-0.08, 0.46, 0]} castShadow><boxGeometry args={[0.82, 0.24, 0.62]} /><meshStandardMaterial color="#2f3c4b" roughness={0.2} metalness={0.4} /></mesh>
-    </group>
-  )
 }
 
 // 바닥에 쓴 길 이름 (지도처럼 길 위에 눕힌 글자) — 차도는 흰 글자, 보행자 거리는 짙은 글자

@@ -5,7 +5,8 @@
 // 화면 좌표: 본사 탑('City Centre' 조각) 가운데 = (0,0), x = 북쪽, z = 동쪽, y = 위, 1칸 = 5.5m
 //   이 축 배치는 지도를 거울처럼 뒤집지 않음. 처음 카메라는 남동쪽 위(hqTower.HQ_VIEW) → 본사 동쪽(Pitt St) 벽이 정면
 // 하는 일: 좌표 바꾸기 · 바닥 판(PLOT) 밖 자르기 · 건물 높이(층수·height 태그, 없으면 종류별 기본값) · 창문 모양 고르기 ·
-//   길을 바닥 그림으로(아스팔트·보도·경전철 선로·차선 점선·횡단보도) · 가로수(OSM 나무 위치) · 가로등·차(꾸밈) · 이름표
+//   길을 바닥 그림으로(아스팔트·보도·경전철 선로·차선 점선·횡단보도) · 가로수(OSM 나무 위치) · 가로등(꾸밈) · 이름표
+//   움직이는 차·사람은 hqTraffic.js
 // 돌려서 볼 때 본사를 가리는 건물은 occludersOf 가 고르고 HqCity.jsx 가 흐리게 그림
 // =============================================================
 import { FLOOR_H, PLOT, ringFaces, hqDirection, HQ_VIEW } from './hqTower.js'
@@ -26,7 +27,6 @@ const CROSS_M = 3   // 횡단보도 줄무늬 길이 (차가 다니는 방향)
 const STREET_LABELS = { 'Market Street': 'Market St', 'Pitt Street': 'Pitt St', 'Pitt Street Mall': 'Pitt St Mall', 'Castlereagh Street': 'Castlereagh St', 'George Street': 'George St' }
 //   스테이트 시어터는 본사 바로 서쪽 옆이라 어느 쪽에서 보든 이름표가 본사 위에 겹쳐서 뺌 (2026-10-27)
 const BUILDING_LABELS = { 'Westfield Sydney': { ko: '웨스트필드 시드니', en: 'Westfield Sydney' } }
-const CAR_COLORS = ['#f4f6f8', '#c8463d', '#2f4a6b', '#e9b949', '#9aa5b1', '#1f2a36', '#5d7f99', '#e7e1d4']
 
 // 문자열 → 0 이상 정수 (같은 건물은 늘 같은 창문 모양 · 같은 길은 늘 같은 차 배치)
 const hash = (s) => { let h = 2166136261; for (const c of s) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0; return h }
@@ -109,32 +109,19 @@ export function hqCityLayout(file, plot = PLOT, view = HQ_VIEW) {
   const edgeOk = (p, m) => Math.abs(p[0]) <= half - m && Math.abs(p[1]) <= half - m
   const trees = (file.trees ?? []).map(P).filter((p) => edgeOk(p, 0.6) && !inSolid(p) && !onCarRoad(p, 0.15))
 
-  // ── 5) 바닥 길 이름 (먼저 자리를 정해 차가 그 위에 서지 않게) ──
+  // ── 5) 바닥 길 이름 ──
   const dir = hqDirection(view), dl = Math.hypot(dir[0], dir[2]) || 1
   const cam = [dir[0] * 60, 8 + dir[1] * 60, dir[2] * 60] // 처음 카메라 자리 어림 (거리 60 — 가림 확인용)
   const ground = streetLabels(roads, [dir[2] / dl, -dir[0] / dl], [dir[0] / dl, dir[2] / dl], half, (p) => !buildings.some((b) => segmentHitsPrism([p[0], BLOCK_TOP + 0.01, p[1]], cam, b)))
-  const onLabel = (p) => ground.some((g) => Math.hypot(p[0] - g.at[0], p[1] - g.at[1]) < 2.6)
 
-  // ── 6) 가로등 · 차 (꾸밈 — OSM 에 가로등 위치가 거의 없어 차도 가장자리에 일정 간격으로) ──
-  const lamps = [], cars = []
+  // ── 6) 가로등 (꾸밈 — OSM 에 가로등 위치가 거의 없어 차도 가장자리에 일정 간격으로) · 움직이는 차는 hqTraffic.js ──
+  const lamps = []
   for (const r of carRoads) {
     const h = hash(r.id)
     // 가로등: 인도 쪽 가장자리를 따라 5칸마다, 양쪽 번갈아
     for (const [i, s] of samples(r.line, 5, (h % 7) / 7 * 5).entries()) {
       const side = i % 2 ? 1 : -1, p = offsetPoint(s, side * (r.width / 2 + u(1.8)))
       if (edgeOk(p, 0.4) && !inSolid(p) && !onCarRoad(p, 0.05)) lamps.push(p)
-    }
-    // 차: 폭이 6m 넘는 차도에 5칸(약 27m)마다 — 일방통행은 차로마다 같은 방향, 양방향은 바깥 차로에 서로 반대로
-    if (r.width < u(6)) continue
-    const lanes = Math.max(1, Math.round(r.lanes ?? r.width / u(LANE_M)))
-    for (const [i, s] of samples(r.line, 5, ((h >> 3) % 5) + 1).entries()) {
-      const lane = (i + (h % lanes)) % lanes
-      const off = r.oneway ? (lane - (lanes - 1) / 2) * u(LANE_M) : (i % 2 ? 1 : -1) * r.width / 4
-      const back = !r.oneway && i % 2 === 1 // 양방향 길의 반대 차로 → 반대 방향
-      const p = offsetPoint(s, off)
-      const nearOther = carRoads.some((q) => q !== r && q.line.some((a, k) => k > 0 && distToSegment(p, q.line[k - 1], a) < q.width / 2 + 0.7)) // 교차로 안
-      if (!edgeOk(p, 1.2) || nearOther || onLabel(p) || cars.some((c) => Math.hypot(c.x - p[0], c.z - p[1]) < 1.6)) continue
-      cars.push({ x: r3(p[0]), z: r3(p[1]), ry: r3(Math.atan2(-(back ? -s.d[1] : s.d[1]), back ? -s.d[0] : s.d[0])), color: CAR_COLORS[(h + i) % CAR_COLORS.length], road: r.id })
     }
   }
 
@@ -154,7 +141,7 @@ export function hqCityLayout(file, plot = PLOT, view = HQ_VIEW) {
   return {
     origin: o, half,
     hq: { podium: ring(podiumM?.ring ?? []), tower: ring(towerM?.ring ?? []), osmLevels: towerM?.['building:levels'] ?? null },
-    buildings, roads, asphalt, paving, rails, dashes, zebras, parks, trees, lamps, cars, labels, ground,
+    buildings, roads, asphalt, paving, rails, dashes, zebras, parks, trees, lamps, labels, ground,
     landmarks: { sydneyTower },
   }
 }
@@ -199,7 +186,7 @@ function samples(line, step, start = 0) {
   }
   return out
 }
-// 진행 방향의 왼쪽(+)·오른쪽(−)으로 off 만큼 옮긴 점
+// 진행 방향의 오른쪽(+)·왼쪽(−)으로 off 만큼 옮긴 점 (x 북 · z 동 화면 좌표에서)
 const offsetPoint = (s, off) => [s.p[0] - s.d[1] * off, s.p[1] + s.d[0] * off]
 
 // 꺾은선을 옆으로 off 만큼 평행이동 (선로 두 줄) — 꺾인 곳은 두 변의 이동점을 그대로 이음 (작은 꺾임만 있는 길이라 충분)

@@ -17,7 +17,7 @@ import { customerKey, zoneBounds } from '../data/customerZones.js'
 import { layoutCampus } from './layoutCampus.js'
 import { Box3, Vector3 } from 'three'
 import { SINGLE_COMPANY } from '../config.js'
-import { hqTower, hqLabelRoom, hqDirection } from './hqTower.js'
+import { hqTower, hqLabelRoom, hqDirection, hqStartPose } from './hqTower.js'
 import { loadHqCity, peekHqCity } from '../data/loadHqCity.js' // 본사 탑 실제 윤곽 (OSM — 받기 전엔 정사각형)
 
 // 3D 개요 화면은 지구본(다회사 모드 계보 · 영상 녹화 인트로).
@@ -177,7 +177,17 @@ export default function CameraRig() {
     if (st.view === 'hq') {
       const T = hqShape()
       applyLimits(c, 'site', T.side, T.height)
-      c.setLookAt(...hqHome(T), false)
+      const home = hqHome(T)
+      // 들어올 때 위에서 내려옴 (지도에서 본사 카드를 눌렀을 때) — 부팅 그림이 덮고 있거나 움직임 줄이기면 바로 처음 시점
+      const boot = document.getElementById('boot')
+      const covered = boot && !boot.classList.contains('is-done')
+      const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+      if (!covered && !reduced) {
+        c.setLookAt(...hqStartPose(home), false)
+        c.smoothTime = 0.75 // 약 1.5초에 걸쳐 내려옴
+        c.setLookAt(...home, true)
+        setTimeout(() => { if (ref.current) ref.current.smoothTime = 0.3 }, 1800) // 그 뒤 조작은 평소 빠르기로
+      } else c.setLookAt(...home, false)
       applyFocalOffset(c, 'hq', T.side, false)
     } else if (st.view === 'site' && site) {
       const L = layoutCampus(site._raw)

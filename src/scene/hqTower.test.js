@@ -84,3 +84,36 @@ describe('hqTower: 실제 윤곽', () => {
   })
   it('바닥 판은 40칸(≈220m) — 북동쪽 약 120m 의 시드니 타워까지 담음', () => expect(PLOT).toBe(40))
 })
+
+// 본사 화면에 들어올 때 위에서 내려오는 카메라: 시작 자리 = 같은 방위, 더 높은 각도·더 먼 거리, 바라보는 점은 그대로
+describe('hqStartPose', () => {
+  const home = [-20, 25, 20, 0, 8, 0] // 카메라 x,y,z · 바라보는 점 x,y,z
+  it('바라보는 점은 그대로, 방위(바닥 방향)는 같고 더 높고 멀리서 시작', async () => {
+    const { hqStartPose } = await import('./hqTower.js')
+    const s = hqStartPose(home)
+    expect(s.slice(3)).toEqual(home.slice(3))
+    const v = [s[0] - s[3], s[1] - s[4], s[2] - s[5]], h = [home[0] - home[3], home[1] - home[4], home[2] - home[5]]
+    expect(Math.atan2(v[2], v[0])).toBeCloseTo(Math.atan2(h[2], h[0])) // 같은 방위
+    expect(Math.hypot(...v)).toBeGreaterThan(Math.hypot(...h) * 1.4)   // 더 멀리
+    const elev = (w) => Math.atan2(w[1], Math.hypot(w[0], w[2]))
+    expect(elev(v)).toBeGreaterThan(elev(h) + 0.3)                     // 더 위에서 내려다봄
+  })
+})
+
+// 로비 위 전광판이 붙는 벽: 포디움 윤곽 중 길 쪽(북 = Market St, 동 = Pitt St) 벽 — 보는 사람 기준 왼쪽→오른쪽으로 글자가 이어지게
+describe('streetFaces', () => {
+  it('직사각형 포디움: 동쪽 벽(북으로 진행) 다음 북쪽 벽(서로 진행), 글자 위치(u)가 모서리에서 이어짐', async () => {
+    const { streetFaces } = await import('./hqTower.js')
+    const f = streetFaces([[-5, -4], [6, -4], [6, 3], [-5, 3]]) // x 북 · z 동
+    expect(f.map((x) => x.n)).toEqual([[0, 1], [1, 0]])
+    expect(f[0].a).toEqual([-5, 3]); expect(f[0].b).toEqual([6, 3])   // 동쪽 벽: 남 → 북 (밖에서 보면 왼쪽 → 오른쪽)
+    expect(f[1].a).toEqual([6, 3]); expect(f[1].b).toEqual([6, -4])   // 북쪽 벽: 동 → 서
+    expect(f[0].u0).toBe(0); expect(f[1].u0).toBeCloseTo(11)
+  })
+  it('윤곽 방향(시계·반시계)과 시작점이 달라도 같은 결과', async () => {
+    const { streetFaces } = await import('./hqTower.js')
+    const a = streetFaces([[-5, -4], [6, -4], [6, 3], [-5, 3]])
+    const b = streetFaces([[6, 3], [6, -4], [-5, -4], [-5, 3]])
+    expect(b).toEqual(a)
+  })
+})
