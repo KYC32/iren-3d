@@ -2,7 +2,8 @@
 // NewsPage — IREN 뉴스 (#page=news): [회사 발표 | 언론 보도] 탭 + 종류/매체 칩 + 날짜별 목록
 //   회사 발표 = SEC EDGAR 제출(보도자료·실적·공시·내부자), 언론 = Google 뉴스 검색 결과
 //   데이터: public/data/news.json (GitHub Action 이 매일 갱신). 제목은 영문 원문이 기준
-//   한국어 화면의 언론 탭은 원문 아래에 기계 번역 한 줄 (public/data/news-ko.json — 숫자·금액·티커 검사를 통과한 것만)
+//   한국어 화면은 원문 아래에 기계 번역 한 줄 (public/data/news-ko.json — 숫자·금액·티커·고유명사 검사를 통과한 것만)
+//     언론 탭만 (회사 발표 헤드라인은 공식 문장이라 옮기지 않음) · 회사 발표 중 서식 이름으로 만든 제목은 한국어 이름으로 (filingTitle)
 // =============================================================
 import { useEffect, useMemo, useState } from 'react'
 import { ExternalLink, ChartLine } from 'lucide-react'
@@ -10,7 +11,7 @@ import PageShell from './PageShell.jsx'
 import { useAppStore } from '../store/useAppStore.js'
 import { useT } from '../i18n/useT.js'
 import { loadNews } from '../data/loadFeeds.js'
-import { KIND_LABEL, domainOf, itemLabels, filingsAfter } from '../data/news.js'
+import { KIND_LABEL, domainOf, itemLabels, filingsAfter, filingTitle } from '../data/news.js'
 
 const PAGE = 60 // 한 번에 보여 줄 항목 수 ("더 보기"로 늘림)
 
@@ -94,8 +95,9 @@ export default function NewsPage() {
               <div key={it.id} className="news-row">
                 {tab === 'company' ? <span className={`basis kind-${it.kind}`}>{KIND_LABEL[it.kind][ko ? 'ko' : 'en']}</span> : <span className="basis kind-press-media">{it.source}</span>}
                 <div className="news-body">
-                  <a href={tab === 'company' ? it.url : it.link} target="_blank" rel="noreferrer">{it.title}{it.count > 1 && <> ×{it.count}</>} <ExternalLink size={11} aria-hidden="true" /></a>
-                  {/* 원문 아래 기계 번역 한 줄 (원문이 기준 — 번역은 읽기를 돕는 보조) */}
+                  {/* 제목: 원문 헤드라인 그대로 · 서식 이름으로 만든 제목(title_from 'form')만 한국어 화면에서 한국어 이름 */}
+                  <a href={tab === 'company' ? it.url : it.link} target="_blank" rel="noreferrer">{tab === 'company' && ko && it.title_from === 'form' ? filingTitle(it, 'ko') : it.title}{it.count > 1 && <> ×{it.count}</>} <ExternalLink size={11} aria-hidden="true" /></a>
+                  {/* 원문 아래 기계 번역 한 줄 (원문이 기준 — 번역은 읽기를 돕는 보조) · 언론 탭만 */}
                   {tab === 'press' && ko && koOf.get(it.title) && <span className="news-ko">{koOf.get(it.title)}<em>기계 번역</em></span>}
                   <small>
                     {tab === 'company'

@@ -72,6 +72,10 @@ describe('SEC EDGAR 분류', () => {
   it('기본 제목·정렬·도메인', () => {
     expect(filingTitle({ form: '10-K', report_date: '2026-06-30' })).toBe('Annual report (10-K) (FY2026)')
     expect(filingTitle({ form: '8-K/A', report_date: null })).toBe('Current report (8-K) — amendment')
+    // 한국어 화면: 서식 이름으로 만든 제목은 번역이 아니라 우리가 붙인 이름이라 한국어로 (원문 헤드라인은 그대로)
+    expect(filingTitle({ form: '10-K', report_date: '2026-06-30' }, 'ko')).toBe('연차 보고서(10-K) (FY2026)')
+    expect(filingTitle({ form: '6-K/A', report_date: null }, 'ko')).toBe('외국 발행사 보고서(6-K) — 정정')
+    expect(filingTitle({ form: '4', report_date: null }, 'ko')).toBe('내부자 거래 신고(Form 4)')
     const sorted = sortNews([{ date: '2026-01-01', kind: 'filing' }, { date: '2026-02-01', kind: 'insider' }, { date: '2026-01-01', kind: 'press' }])
     expect(sorted.map((x) => `${x.date}:${x.kind}`)).toEqual(['2026-02-01:insider', '2026-01-01:press', '2026-01-01:filing'])
     expect(domainOf('https://www.sec.gov/Archives/x')).toBe('sec.gov')

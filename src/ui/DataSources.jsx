@@ -52,6 +52,7 @@ const GROUPS = [
     title: L('모델 (Hugging Face)', 'Models (Hugging Face)'),
     items: [
       [L('Kanana 1.5 2.1B Instruct (Kakao)', 'Kanana 1.5 2.1B Instruct (Kakao)'), L('Apache-2.0', 'Apache-2.0'), L('언론 제목 기계 번역 (검사를 통과한 것만)', 'Machine translation of press headlines (only those that pass checks)'), 'https://huggingface.co/kakaocorp/kanana-1.5-2.1b-instruct-2505'],
+      [L('Qwen3-4B-Instruct-2507 (Alibaba Qwen)', 'Qwen3-4B-Instruct-2507 (Alibaba Qwen)'), L('Apache-2.0', 'Apache-2.0'), L('기계 번역의 뜻 판정 — 원문과 뜻이 다른 번역을 빼는 데만 씀', 'Meaning check of machine translations — only used to drop translations that change the meaning'), 'https://huggingface.co/Qwen/Qwen3-4B-Instruct-2507'],
       [L('Qwen3-TTS 0.6B CustomVoice \'Sohee\'', 'Qwen3-TTS 0.6B CustomVoice "Sohee"'), L('Apache-2.0', 'Apache-2.0'), L('소개 영상의 한국어 음성', 'Korean narration of the intro video'), 'https://huggingface.co/Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice'],
       [L('OWLv2 (Google) · SAM 2.1 (Meta)', 'OWLv2 (Google) · SAM 2.1 (Meta)'), L('Apache-2.0', 'Apache-2.0'), L('현장 사진 설비 후보 찾기 — 사이트엔 사람이 확인한 숫자만', 'Finding equipment candidates in site photos — only human-checked counts reach the site'), 'https://huggingface.co/google/owlv2-base-patch16-ensemble'],
     ],

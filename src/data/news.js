@@ -138,12 +138,18 @@ export function headlineFromHtml(html) {
 }
 
 // 헤드라인이 없을 때의 기본 제목
-export function filingTitle(f) {
+// 서식 이름 (영어는 news.json 에 저장되는 기본 제목, 한국어는 한국어 화면에서만 — 원문 헤드라인이 아니라 우리가 붙인 이름이라 번역이 아님)
+const FORM_NAMES = {
+  en: { '10-K': 'Annual report (10-K)', '20-F': 'Annual report (20-F)', '10-Q': 'Quarterly report (10-Q)', 4: 'Insider transaction (Form 4)', '8-K': 'Current report (8-K)', '6-K': 'Report of foreign issuer (6-K)' },
+  ko: { '10-K': '연차 보고서(10-K)', '20-F': '연차 보고서(20-F)', '10-Q': '분기 보고서(10-Q)', 4: '내부자 거래 신고(Form 4)', '8-K': '수시 보고서(8-K)', '6-K': '외국 발행사 보고서(6-K)' },
+}
+export function filingTitle(f, lang = 'en') {
+  const ko = lang === 'ko'
   const base = String(f.form).replace(/\/A$/, '')
   const year = f.report_date ? Number(f.report_date.slice(0, 4)) : null
   const fy = year != null && base === '10-K' ? ` (FY${f.report_date.slice(5, 7) >= '07' ? year + 1 : year})` : ''
-  const names = { '10-K': 'Annual report (10-K)', '20-F': 'Annual report (20-F)', '10-Q': 'Quarterly report (10-Q)', 4: 'Insider transaction (Form 4)', '8-K': 'Current report (8-K)', '6-K': 'Report of foreign issuer (6-K)' }
-  return `${names[base] ?? `${f.form} filing`}${fy}${f.form.endsWith('/A') ? ' — amendment' : ''}`
+  const name = FORM_NAMES[ko ? 'ko' : 'en'][base] ?? (ko ? `${f.form} 제출` : `${f.form} filing`)
+  return `${name}${fy}${f.form.endsWith('/A') ? (ko ? ' — 정정' : ' — amendment') : ''}`
 }
 
 export function sortNews(items) {

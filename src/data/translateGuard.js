@@ -59,6 +59,8 @@ export function checkTranslation(src, out) {
   if ((rest.match(LATIN_UP) ?? []).some((w) => !srcUp.has(w))) return 'new-token'
   if (srcUp.has('IREN') && !/\bIREN\b/.test(o)) return 'iren'
   if (/아이언|아이렌|이렌|아이리엔/.test(o)) return 'iren'   // 회사 이름을 한글로 옮긴 표기 (원문엔 늘 IREN)
+  // 'IREN 제한회사' 는 원문에 Limited 가 없어도 나옴 — 지시문의 "IREN Limited 는 IREN 으로" 예시를 보고 지어냄 (2026-10-28)
+  if (/제한회사|유한회사|리미티드/.test(o)) return 'name'
   // 거래소:티커 → 티커와 거래소(영문 또는 '나스닥')가 남아야 함 (실제로 "IREN(주식회사)"로 바꾼 번역이 있었음)
   for (const [, ex, tk] of String(src).matchAll(EXCHANGE)) if (!new RegExp(`\\b${tk}\\b`).test(o) || !EXCHANGE_KO[ex].test(o)) return 'exchange'
   // 7) 번역의 영어 낱말(2글자 이상)은 원문에도 있어야 함 (대소문자 무시)
@@ -67,4 +69,15 @@ export function checkTranslation(src, out) {
   if (ENGLISH_LEFT.test(o)) return 'english-left'   // 요일·달을 영어로 남긴 번역 (덜 옮긴 것)
   if (o.length > String(src).length * 2.5 + 20) return 'too-long'
   return 'ok'
+}
+
+// 8) 뜻 판정 (scripts/translate/judge_titles.py — Qwen3-4B 에게 "영어 제목과 같은 뜻인가"를 물은 '예' 확률)
+//   2026-10-28 시험: 규칙을 통과한 번역 110개 중 뜻이 틀린 10개 가운데 4개가 0.001 안팎, 바른 번역은 모두 0.77 이상
+//   점수가 없으면(판정 전·판정 모델을 못 불렀던 실행) 규칙만 봄 → 판정이 실패해도 예전보다 나빠지지 않음
+export const JUDGE_MIN = 0.5
+// c: { src, ko, judge? } → 'ok' 또는 탈락 까닭 (규칙 까닭이 먼저, 그다음 'judge')
+export function checkCandidate(c) {
+  const why = checkTranslation(c.src, c.ko)
+  if (why !== 'ok') return why
+  return c.judge != null && c.judge < JUDGE_MIN ? 'judge' : 'ok'
 }

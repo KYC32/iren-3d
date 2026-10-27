@@ -1,6 +1,6 @@
 // 뉴스 제목 기계 번역 검사기 시험 — 예시는 2026-10-26 모델 비교에서 실제로 나온 번역
 import { describe, it, expect } from 'vitest'
-import { checkTranslation } from './translateGuard.js'
+import { checkTranslation, checkCandidate, JUDGE_MIN } from './translateGuard.js'
 
 describe('checkTranslation', () => {
   it('숫자·티커·금액이 그대로면 통과', () => {
@@ -50,8 +50,19 @@ describe('checkTranslation', () => {
     expect(checkTranslation('Applied Digital Falls 4%; IREN Slides', '어플라이드 디지털 4% 하락, IREN도 하락')).toBe('ok')
     expect(checkTranslation('OpenAI Revenue Report Lifts IREN', '오픈AI 매출 보도에 IREN 상승')).toBe('ok')
   })
+  it('원문에 Limited 가 없어도 제한회사를 지어내면 탈락 · 고객사 이름(Poolside)을 뜻으로 옮기면 탈락', () => {
+    expect(checkTranslation('IREN Delivers Horizon 1 to Microsoft', 'IREN 제한회사, Microsoft에 Horizon 1 공급')).toBe('name')
+    expect(checkTranslation('Poolside upsizes and extends AI Cloud Services contract', '수영장 옆 확장 및 AI 클라우드 서비스 계약 연장')).toBe('name')
+  })
   it('원문에 없는 영어 낱말을 지어내면 탈락 (IREN, Inc.)', () => {
     expect(checkTranslation('IREN Adds Mirantis, Which Has Served 1,500+ Enterprise Customers', 'IREN, Inc. 추가로 Mirantis 도입... 1,500개 이상의 엔터프라이즈 고객 서비스')).toBe('new-latin')
+  })
+  it('뜻 판정 점수(judge)가 기준보다 낮으면 탈락, 점수가 없으면 규칙만 봄', () => {
+    const c = { src: 'IREN Scores Double Upgrade On Strong Deal Momentum', ko: 'IREN 제휴 강화로 두 배 성장' }
+    expect(checkCandidate({ ...c, judge: 0.001 })).toBe('judge')
+    expect(checkCandidate({ ...c, judge: JUDGE_MIN })).toBe('ok')
+    expect(checkCandidate(c)).toBe('ok')   // 판정 전 (판정 모델을 못 불렀던 실행) — 규칙만
+    expect(checkCandidate({ src: 'IREN Limited Estimates', ko: 'IREN 제한회사 예상치', judge: 1 })).toBe('name')   // 규칙이 먼저
   })
   it('빈 번역·지나치게 긴 번역은 탈락', () => {
     expect(checkTranslation('Why Is IREN Stock Falling?', '')).toBe('empty')
@@ -68,6 +79,6 @@ describe('public/data/news-ko.json', () => {
     if (!existsSync(p)) return
     const f = JSON.parse(readFileSync(p, 'utf8'))
     expect(NewsKoFile.safeParse(f).success).toBe(true)
-    for (const v of Object.values(f.items)) expect(checkTranslation(v.src, v.ko)).toBe('ok')
+    for (const v of Object.values(f.items)) expect(checkCandidate(v)).toBe('ok')   // 규칙 + 뜻 판정 점수
   })
 })

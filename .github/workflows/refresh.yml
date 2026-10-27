@@ -7,8 +7,10 @@
 # scripts/fetch-stock.mjs, fetch-news.mjs, fetch-shares.mjs 가 public/data/stock.json·news.json·shares.json(+ data/shares.json) 을 고치고,
 # 바뀐 게 있으면 커밋·푸시 → Vercel 이 자동 배포. 소스가 막히면 스크립트가 기존 파일을 그대로 두고 0 으로 끝남.
 # 같은 날 두 번 돌아도 바뀐 게 없으면 커밋하지 않음 (증분 병합이라 결과가 같음)
-# 언론 제목 기계 번역(Kanana 1.5 · CPU): 새 제목만 번역 → 검사기(숫자·금액·티커)를 통과한 것만 public/data/news-ko.json
-#   번역 단계가 실패해도 주가·뉴스 갱신은 그대로 커밋됨 (continue-on-error)
+# 언론 제목 기계 번역(Kanana 1.5 · CPU): 새 제목만 번역 (회사 발표 헤드라인은 오역 위험으로 번역하지 않음)
+#   → 검사기(숫자·금액·티커·이름)를 통과한 것만 public/data/news-ko.json
+#   → 뜻 판정(Qwen3-4B · CPU bf16, 2026-10-28): 새 번역에 점수를 매겨 낮으면 뺌 (한 번에 15개까지, 남으면 다음 실행)
+#   번역·판정 단계가 실패해도 주가·뉴스 갱신은 그대로 커밋됨 (continue-on-error) — 판정이 실패하면 규칙 검사만 통과한 번역이 보임
 name: refresh-data
 on:
   schedule:
@@ -24,7 +26,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60   # 번역(최대 25분) + 판정(최대 20분) + 받기·커밋
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,11 +47,18 @@ jobs:
         run: |
           pip install torch --index-url https://download.pytorch.org/whl/cpu
           pip install -r scripts/translate/requirements.txt
+      # 모델 캐시는 모델마다 따로 (저장소 캐시 한도 10GB — Kanana 약 3GB + Qwen 약 6GB, 압축 뒤)
+      #   예전 키(hf-kanana-1.5-2.1b-instruct-2505)는 hub 폴더 전체라 판정 모델까지 담을 수 있어 경로를 좁힘
       - name: 번역 모델 캐시 (Kanana 1.5, 약 4.6GB — 한 번 받으면 다시 받지 않음)
         uses: actions/cache@v4
         with:
-          path: ~/.cache/huggingface/hub
-          key: hf-kanana-1.5-2.1b-instruct-2505
+          path: ~/.cache/huggingface/hub/models--kakaocorp--kanana-1.5-2.1b-instruct-2505
+          key: hf-model-kanana-1.5-2.1b-instruct-2505
+      - name: 판정 모델 캐시 (Qwen3-4B-Instruct-2507, 약 8GB — 판 고정)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface/hub/models--Qwen--Qwen3-4B-Instruct-2507
+          key: hf-model-qwen3-4b-instruct-2507-cdbee75
       - name: 언론 제목 기계 번역 (새 제목만 · 실패해도 계속)
         continue-on-error: true
         timeout-minutes: 25
@@ -58,6 +67,14 @@ jobs:
         run: |
           python scripts/translate/translate_titles.py --out "$RUNNER_TEMP/ko-raw.json" --max 60
           node scripts/apply-translations.mjs "$RUNNER_TEMP/ko-raw.json"
+      - name: 번역 뜻 판정 (점수 없는 번역 15개까지 · 실패해도 계속)
+        continue-on-error: true
+        timeout-minutes: 20
+        env:
+          HF_HUB_DISABLE_TELEMETRY: '1'
+        run: |
+          python scripts/translate/judge_titles.py --out "$RUNNER_TEMP/judge.json" --max 15
+          node scripts/apply-translations.mjs --judge "$RUNNER_TEMP/judge.json"
       - name: 기준일 뒤 새 회사 공시 확인 (현황 페이지 안내 파일 + GitHub 이슈)
         run: node scripts/check-asof.mjs --issue
         env:

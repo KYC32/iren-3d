@@ -46,7 +46,9 @@ export const NewsKoFile = z.object({
   schema_version: z.literal(1),
   model: z.string(),
   license: z.string(),
+  judge_model: z.string().optional(),   // 뜻 판정 모델 (scripts/translate/judge_titles.py — 2026-10-28 부터)
   fetched_at: z.string(),
-  items: z.record(z.string(), z.object({ src: z.string(), ko: z.string() }).strict()),
+  // judge: 뜻 판정 '예' 확률 (0~1). 없으면 아직 판정 전 — 규칙 검사만 통과한 것 (translateGuard.checkCandidate)
+  items: z.record(z.string(), z.object({ src: z.string(), ko: z.string(), judge: z.number().min(0).max(1).optional() }).strict()),
   skipped: z.record(z.string(), z.object({ src: z.string(), why: z.string() }).strict()),
 }).strict()

@@ -4,6 +4,14 @@
       "date": "2026-10-28",
       "items": [
         {
+          "ko": "언론 제목 기계 번역에 뜻 판정을 더함. Qwen3-4B(Apache-2.0)에게 원문과 같은 뜻인지 물어 점수가 낮은 번역은 원문만 보임. 고유명사 지시문으로 다시 번역해 보이는 번역이 96개에서 117개로 늘고 뜻이 틀린 번역은 줄어듦",
+          "en": "Press headline translations now get a meaning check: Qwen3-4B (Apache-2.0) is asked whether each one says the same as the original, and low scores show only the English. Re-translating with the proper-name prompt raised visible translations from 96 to 117 with fewer meaning errors"
+        },
+        {
+          "ko": "회사 발표 탭에서 서식 이름으로 만든 제목을 한국어로 보임('Current report (8-K)' → '수시 보고서(8-K)'). 회사 헤드라인 기계 번역은 시험에서 33개 중 약 8개가 뜻이 틀려 넣지 않음",
+          "en": "Company-tab titles built from form names now show in Korean ('Current report (8-K)' → '수시 보고서(8-K)'). Machine translation of company headlines was tested but left out: about 8 of 33 changed the meaning"
+        },
+        {
           "ko": "언론 제목 기계 번역에 고유명사 검사를 더함. 'IREN Limited'를 'IREN 제한회사'로, 'Applied Digital'을 '적용 디지털'로 옮긴 것처럼 회사·매체·사람 이름을 뜻으로 옮긴 번역은 이제 원문만 보임. 보이던 번역 122개 중 26개를 뺌",
           "en": "Machine-translated press headlines now get a proper-name check. Translations that render names by meaning (e.g. 'IREN Limited' as 'IREN 제한회사', 'Applied Digital' as '적용 디지털') now show only the original; 26 of the 122 visible translations were removed"
         },
