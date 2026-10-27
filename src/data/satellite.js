@@ -12,3 +12,6 @@ export function satelliteAt(manifest, siteId, month) {
     .filter((i) => i.site === siteId && toMonth(i.month) <= month)
     .sort((a, b) => (a.month < b.month ? -1 : a.month > b.month ? 1 : 0))
 }
+
+// 자동 넘김 한 걸음: 지금 사진 순번 i, 마지막 순번 last → 다음 순번 (마지막이면 null = 멈춤)
+export const nextFrame = (i, last) => (i >= last ? null : i + 1)

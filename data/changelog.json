@@ -4,6 +4,18 @@
       "date": "2026-10-28",
       "items": [
         {
+          "ko": "위성 사진을 9곳으로 넓힘: 캐나다 3곳·번디·바다호스를 더해 모두 177장. 칸의 30% 넘게 눈이 덮은 달은 건너뜀(캐나다 겨울 사진이 하얘서 처음 사진과 비교가 안 됐음)",
+          "en": "Satellite images now cover 9 sites: adding the three BC campuses, Bundey and Badajoz brings the total to 177. Months with more than 30% snow cover are skipped (BC winter images were white and useless for comparison)"
+        },
+        {
+          "ko": "위성 칸에 '크게' 보기와 ▶ 자동 넘김을 더함. 현황 페이지에는 캠퍼스별 처음·최근 위성 사진과 지역 규제 한 줄을 모은 칸을 새로 둠",
+          "en": "The satellite card gains an 'Enlarge' view and ▶ autoplay through the months. The overview page gets a new section comparing each campus's first and latest images with its local-rules line"
+        },
+        {
+          "ko": "뉴스 회사 발표 탭에 SEC에 내지 않은 회사 공식 발표 7건(GlobeNewswire·회사 X)을 더함. 레드뱅크·바다호스·실적 발표일 공지 등이고 제목은 이 사이트가 정리한 문구",
+          "en": "The news Company tab now adds 7 official IREN releases that were never filed with the SEC (GlobeNewswire, company X), such as Redbank, Badajoz and the earnings-date notice; their titles are this site's summaries"
+        },
+        {
           "ko": "언론 제목 기계 번역에 뜻 판정을 더함. Qwen3-4B(Apache-2.0)에게 원문과 같은 뜻인지 물어 점수가 낮은 번역은 원문만 보임. 고유명사 지시문으로 다시 번역해 보이는 번역이 96개에서 117개로 늘고 뜻이 틀린 번역은 줄어듦",
           "en": "Press headline translations now get a meaning check: Qwen3-4B (Apache-2.0) is asked whether each one says the same as the original, and low scores show only the English. Re-translating with the proper-name prompt raised visible translations from 96 to 117 with fewer meaning errors"
         },

@@ -1,6 +1,7 @@
 // =============================================================
 // PortfolioPage — "현황" 페이지 (#page=portfolio): 포트폴리오 사업 현황을 지도에서 떼어 따로 보여 줌
-//   핵심 지표(KpiBar, 회사 전체 기준) → 타임라인(날짜를 옮기면 지표·표가 그 시점으로) → 캠퍼스별 표 → 캠퍼스별 최근 소식
+//   핵심 지표(KpiBar, 회사 전체 기준) → 타임라인(날짜를 옮기면 지표·표가 그 시점으로) → 캠퍼스별 표
+//   → 캠퍼스별 위성 사진·지역 규제(PortfolioObserve, 관찰 자료) → 캠퍼스별 최근 소식
 //   지도 화면은 늘 기준일 모습이고, 날짜를 옮겨 보는 일은 이 페이지(와 3D 화면)에서 합니다
 //   표의 캠퍼스를 누르면 지도로 돌아가 그 캠퍼스를 엶
 // =============================================================
@@ -10,6 +11,7 @@ import PageShell from './PageShell.jsx'
 import KpiBar from '../ui/KpiBar.jsx'
 import TimelineSlider from '../ui/TimelineSlider.jsx'
 import SiteNews from '../ui/SiteNews.jsx' // 캠퍼스 최근 소식 목록 (캠퍼스 패널과 같은 조각)
+import PortfolioObserve from './PortfolioObserve.jsx' // 캠퍼스별 위성 사진·지역 규제 카드
 import { useAppStore } from '../store/useAppStore.js'
 import { useT, pickName } from '../i18n/useT.js'
 import { siteMetrics } from '../data/loadSites.js'
@@ -77,6 +79,7 @@ export default function PortfolioPage() {
       <p className="page-note">{ko
         ? '확보 전력 = 계통에 연결(또는 확보)한 용량. AI 가동에는 고객 인수 확인분 포함. 과거 날짜는 "그때 공개된 자료", 기준일 뒤는 회사 목표 기준의 전망입니다.'
         : 'Secured = grid capacity connected or secured. AI live includes customer-accepted capacity. Past dates show what was public then; dates after the as-of date follow company targets.'}</p>
+      <PortfolioObserve sites={data.sites} month={month} restrictions={data.raw.restrictions} lang={lang} onOpen={open} />
       {news.length > 0 && <section className="pf-news" aria-labelledby="pf-news-title">
         <h3 id="pf-news-title">{ko ? `최근 소식 · ${newsUntil}까지` : `Recent news · through ${newsUntil}`}</h3>
         <div className="pf-news-grid">{news.map(({ site: s, items }) => (

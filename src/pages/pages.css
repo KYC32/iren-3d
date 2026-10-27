@@ -134,3 +134,15 @@
 /* 현황 표: 계통을 아직 확보하지 못한 계획 전력 (레드뱅크 900 MW) — 확보 전력·합계와 섞이지 않게 흐리게, 아래에 까닭 */
 .pf-unsecured { color: #7a8794; }
 .pf-unsecured small { display: block; font-size: 10px; }
+
+/* 현황 페이지 '위성으로 본 변화 · 지역 규제' 카드 (PortfolioObserve.jsx) — 최근 소식 카드와 같은 틀 */
+.pf-observe-open { display: inline-flex; align-items: center; gap: 2px; padding: 0; border: 0; background: none; color: #0b344f; font: inherit; font-weight: 700; cursor: pointer; }
+.pf-observe-open:hover, .pf-observe-open:focus-visible { text-decoration: underline; }
+.pf-sat { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.pf-sat figure { margin: 0; }
+.pf-sat img { display: block; width: 100%; height: auto; aspect-ratio: 1; border-radius: 7px; background: #e7ecef; box-shadow: inset 0 1px 3px #0b344f33, 0 0 0 1px #d7dee3; }
+.pf-sat figcaption { margin-top: 2px; font-size: 10px; font-weight: 700; color: #0b344f; font-variant-numeric: tabular-nums; }
+.pf-rules { display: flex; gap: 5px; align-items: flex-start; margin: 8px 0 0; font-size: 11.5px; line-height: 1.45; color: #2a3550; }
+.pf-rules svg { flex-shrink: 0; margin-top: 3px; color: #56675f; }
+.pf-rules small { display: block; font-size: 10.5px; color: #6a7884; }
+.pf-observe-none { display: flex; gap: 4px; align-items: center; margin: 0; font-size: 11px; color: #7a8794; }

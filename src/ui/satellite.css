@@ -9,3 +9,29 @@
 .sat-pair figcaption { margin-top: 3px; font-size: 10.5px; font-weight: 700; color: #0b344f; font-variant-numeric: tabular-nums; }
 .sat-range { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 6px; margin: 6px 0 4px; font-size: 10px; color: #56675f; font-variant-numeric: tabular-nums; }
 .sat-range input { width: 100%; accent-color: #0b344f; }
+
+/* 제목 오른쪽 '크게' 단추 — 사진을 눌러도 크게 보기 (2026-10-28) */
+.sat h3 .sat-zoom { margin-left: auto; display: inline-flex; align-items: center; gap: 3px; padding: 3px 8px; border: 1px solid #d7dee3; border-radius: 999px; background: #fff; color: #0b344f; font-size: 10.5px; font-weight: 700; cursor: pointer; }
+.sat h3 .sat-zoom:hover, .sat h3 .sat-zoom:focus-visible { background: #eef4f1; outline: none; }
+.sat-img-btn { display: block; width: 100%; padding: 0; border: 0; background: none; border-radius: 8px; cursor: zoom-in; }
+.sat-img-btn:focus-visible { outline: 3px solid #438b7c; outline-offset: 2px; }
+/* ▶(자동 넘김) + 달 막대 한 줄 */
+.sat-controls { display: flex; align-items: center; gap: 8px; margin: 6px 0 4px; }
+.sat-controls .sat-range { flex: 1; margin: 0; }
+.sat-play { flex-shrink: 0; display: inline-grid; place-items: center; width: 26px; height: 26px; padding: 0; border: 1px solid #0b344f; border-radius: 50%; background: #0b344f; color: #fff; cursor: pointer; }
+.sat-play[aria-pressed=true] { background: #fff; color: #0b344f; }
+.sat-play:focus-visible { outline: 3px solid #438b7c; outline-offset: 2px; }
+/* 크게 보기 대화상자 — 전역 초기화가 dialog 의 margin 을 지우므로 margin:auto, 기본 최대 폭 제한도 풂 */
+.sat-dialog { margin: auto; width: min(900px, 96vw); max-width: none; max-height: 94dvh; padding: 0; border: 0; border-radius: 14px; background: #fff; color: var(--text); box-shadow: 0 20px 60px rgba(14, 20, 34, .3); }
+.sat-dialog::backdrop { background: rgba(14, 20, 34, .45); }
+.sat-dialog-body { max-height: 94dvh; overflow-y: auto; padding: 14px 16px 12px; }
+.sat-dialog-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.sat-dialog-head b { flex: 1; font-size: 14px; color: #0b344f; }
+.sat-dialog-head button { display: inline-grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 9px; background: transparent; color: var(--text); cursor: pointer; }
+.sat-dialog-head button:hover { background: #eef2fb; }
+.sat-pair-big { gap: 12px; }
+.sat-pair-big figcaption { font-size: 12px; }
+/* 휴대폰: 큰 사진 두 장을 위아래로 (나란히 두면 한 장이 175px 밖에 안 됨) */
+@media (max-width: 600px) { .sat-pair-big { grid-template-columns: 1fr; } }
+/* 크게 보기 안의 ▶·달 막대는 스크롤해도 아래에 붙어 있게 — 휴대폰은 사진 두 장이 위아래라 막대가 화면 밖으로 밀렸음 */
+.sat-dialog .sat-controls { position: sticky; bottom: -12px; z-index: 1; margin: 6px 0 0; padding: 8px 0; background: #fff; }

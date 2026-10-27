@@ -1,6 +1,7 @@
 // =============================================================
 // NewsPage — IREN 뉴스 (#page=news): [회사 발표 | 언론 보도] 탭 + 종류/매체 칩 + 날짜별 목록
-//   회사 발표 = SEC EDGAR 제출(보도자료·실적·공시·내부자), 언론 = Google 뉴스 검색 결과
+//   회사 발표 = SEC EDGAR 제출(보도자료·실적·공시·내부자) + SEC 에 내지 않은 회사 공식 발표(사이트 기록 — companyNews.siteReleases)
+//   언론 = Google 뉴스 검색 결과
 //   데이터: public/data/news.json (GitHub Action 이 매일 갱신). 제목은 영문 원문이 기준
 //   한국어 화면은 원문 아래에 기계 번역 한 줄 (public/data/news-ko.json — 숫자·금액·티커·고유명사 검사를 통과한 것만)
 //     언론 탭만 (회사 발표 헤드라인은 공식 문장이라 옮기지 않음) · 회사 발표 중 서식 이름으로 만든 제목은 한국어 이름으로 (filingTitle)
@@ -11,7 +12,8 @@ import PageShell from './PageShell.jsx'
 import { useAppStore } from '../store/useAppStore.js'
 import { useT } from '../i18n/useT.js'
 import { loadNews } from '../data/loadFeeds.js'
-import { KIND_LABEL, domainOf, itemLabels, filingsAfter, filingTitle } from '../data/news.js'
+import { KIND_LABEL, domainOf, itemLabels, filingsAfter, filingTitle, sortNews } from '../data/news.js'
+import { siteReleases } from '../data/companyNews.js'
 
 const PAGE = 60 // 한 번에 보여 줄 항목 수 ("더 보기"로 늘림)
 
@@ -19,7 +21,8 @@ export default function NewsPage() {
   const t = useT()
   const lang = useAppStore((s) => s.lang)
   const setPage = useAppStore((s) => s.setPage)
-  const asOf = useAppStore((s) => s.data?.raw?.as_of)   // 사이트 숫자의 기준일 (캠퍼스 데이터를 아직 못 받았으면 없음)
+  const raw = useAppStore((s) => s.data?.raw)           // 캠퍼스·회사 자료 (아직 못 받았으면 없음 — 그때는 SEC 제출만)
+  const asOf = raw?.as_of   // 사이트 숫자의 기준일
   const ko = lang === 'ko'
   const [file, setFile] = useState(null)
   const [error, setError] = useState(null)
@@ -39,6 +42,8 @@ export default function NewsPage() {
   const koOf = useMemo(() => new Map(Object.values(koFile?.items ?? {}).map((v) => [v.src, v.ko])), [koFile])
   useEffect(() => setLimit(PAGE), [tab, kinds, source])
 
+  // 회사 발표 = SEC 제출 + 사이트 기록의 회사 공식 발표 중 SEC 제출과 겹치지 않는 것 (GlobeNewswire·회사 X 로만 낸 발표)
+  const companyItems = useMemo(() => (file ? sortNews([...file.company.items, ...siteReleases(raw, file.company.items)]) : []), [file, raw])
   const block = file?.[tab]
   // 기준일 뒤에 나온 회사 공시 = 사이트 숫자에 아직 반영 안 됐을 수 있는 것 → 줄마다 표시 + 목록 위 안내
   const pending = useMemo(() => new Set(filingsAfter(file?.company.items, asOf).map((x) => x.id)), [file, asOf])
@@ -51,8 +56,8 @@ export default function NewsPage() {
   }, [file])
   const items = useMemo(() => {
     if (!block) return []
-    return tab === 'company' ? block.items.filter((i) => kinds.has(i.kind)) : block.items.filter((i) => !source || i.source === source)
-  }, [block, tab, kinds, source])
+    return tab === 'company' ? companyItems.filter((i) => kinds.has(i.kind)) : block.items.filter((i) => !source || i.source === source)
+  }, [block, companyItems, tab, kinds, source])
   // 날짜별 묶음. 같은 날 같은 제목(예: Form 4 가 7건)은 한 줄로 합치고 ×n 표시
   const groups = useMemo(() => {
     const out = []
@@ -74,7 +79,7 @@ export default function NewsPage() {
   return (
     <PageShell className="news-page">
       <div className="tabs map-tabs" role="tablist">
-        {['company', 'press'].map((k) => <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{t.news[k]} <small>{file[k].items.length}</small></button>)}
+        {['company', 'press'].map((k) => <button key={k} role="tab" aria-selected={tab === k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>{t.news[k]} <small>{k === 'company' ? companyItems.length : file[k].items.length}</small></button>)}
       </div>
       <div className="news-chips">
         {tab === 'company'
@@ -96,11 +101,14 @@ export default function NewsPage() {
                 {tab === 'company' ? <span className={`basis kind-${it.kind}`}>{KIND_LABEL[it.kind][ko ? 'ko' : 'en']}</span> : <span className="basis kind-press-media">{it.source}</span>}
                 <div className="news-body">
                   {/* 제목: 원문 헤드라인 그대로 · 서식 이름으로 만든 제목(title_from 'form')만 한국어 화면에서 한국어 이름 */}
-                  <a href={tab === 'company' ? it.url : it.link} target="_blank" rel="noreferrer">{tab === 'company' && ko && it.title_from === 'form' ? filingTitle(it, 'ko') : it.title}{it.count > 1 && <> ×{it.count}</>} <ExternalLink size={11} aria-hidden="true" /></a>
+                  {/*   사이트 기록의 회사 발표(from 'site')는 공식 헤드라인이 없어 이 사이트가 정리한 문구 (아래 작은 줄에 그렇게 적음) */}
+                  <a href={tab === 'company' ? it.url : it.link} target="_blank" rel="noreferrer">{it.from === 'site' ? (ko ? it.title_ko : it.title_en) : tab === 'company' && ko && it.title_from === 'form' ? filingTitle(it, 'ko') : it.title}{it.count > 1 && <> ×{it.count}</>} <ExternalLink size={11} aria-hidden="true" /></a>
                   {/* 원문 아래 기계 번역 한 줄 (원문이 기준 — 번역은 읽기를 돕는 보조) · 언론 탭만 */}
                   {tab === 'press' && ko && koOf.get(it.title) && <span className="news-ko">{koOf.get(it.title)}<em>기계 번역</em></span>}
                   <small>
-                    {tab === 'company'
+                    {it.from === 'site'
+                      ? <>{domainOf(it.url)} · {ko ? '회사 발표 · SEC 제출 없음 · 제목은 이 사이트가 정리' : 'company release · not filed with the SEC · summary by this site'}</>
+                      : tab === 'company'
                       ? <>sec.gov · {it.form}{it.title_from === 'form' && itemLabels(it.items, ko ? 'ko' : 'en').length > 0 && <> · {itemLabels(it.items, ko ? 'ko' : 'en').join(' · ')}</>}{it.title_from === 'exhibit' && ' · Exhibit 99.1'}</>
                       : domainOf(it.source_url || it.link)}
                     {tab === 'company' && pending.has(it.id) && <> · <span className="news-pending">{ko ? '기준일 뒤 · 미반영' : 'after as-of · not in site data yet'}</span></>}
