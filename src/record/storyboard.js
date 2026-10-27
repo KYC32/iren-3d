@@ -33,7 +33,6 @@ export const SHOTS = [
 //   예전엔 글로 박아 둬서 '9개 사이트'(지금 10곳)·'2026.10.06 기준'이 낡았고, 마무리의 '수주잔고 $13bn+'는 근거가 없었음
 //   캠퍼스 일정 문구(인도·납품 목표)는 회사 발표 문장이라 글로 둠 — 회사가 일정을 바꾸면 여기와 NARRATION 을 함께 고칠 것
 // data: viewInfra 결과 (스토어의 data) · 결과는 녹화 화면(RecordDirector · overlay)과 내레이션 검사가 같이 씀
-const REGION_KO = { Texas: '텍사스' }
 const gw = (mw) => fmtMw(mw).replace(' ', '')   // 영상 자막은 붙여 씀: 5.6GW · 750MW
 const dotMonth = (ym) => String(ym).slice(0, 7).replace('-', '.')   // '2026-05-01' → '2026.05'
 
@@ -56,9 +55,9 @@ function cardFacts(data) {
 export function buildCards(data, lang = 'ko') {
   const f = cardFacts(data)
   const ko = lang === 'ko'
-  // 장면 제목: 캠퍼스 · 주 ('Texas (Fisher County)' 처럼 괄호로 붙은 카운티는 뺌 — 제목은 짧게)
-  const state = (s) => String(s.region).replace(/\s*\(.*\)$/, '')
-  const place = (s) => (ko ? `${s.name_ko ?? s.name} · ${REGION_KO[state(s)] ?? state(s)}` : `${s.name}, ${state(s)}`)
+  // 장면 제목: 'Childress, Texas' — 한국어 영상도 지명·명칭은 원문 그대로 (2026-10-28 사용자 지시)
+  //   'Texas (Fisher County)' 처럼 괄호로 붙은 카운티는 뺌 (제목은 짧게)
+  const place = (s) => `${s.name}, ${String(s.region).replace(/\s*\(.*\)$/, '')}`
   // 회사 지표 한 줄 (한국어 '계약 ARR $4bn' · 영어 '$4bn contracted ARR') — 지표가 없으면 그 줄을 뺌
   const stat = (x, label) => x && (ko ? `${label} ${fmtMetric(x, 'ko')}` : `${fmtMetric(x, 'en')} ${label}`)
   const gpuText = f.gpus && (ko ? `총 GPU ~${Math.round(f.gpus.value / 1e4)}만` : `~${Math.round(f.gpus.value / 1000)}k GPUs`)
@@ -70,7 +69,7 @@ export function buildCards(data, lang = 'ko') {
     { t0: 16.6, t1: 19.3, kind: 'caption', tone: 'planned', text: `채굴동 ${f.chMining} — 2026년 말 폐쇄, AI로 전환` },
     { t0: 19.9, t1: 27.8, kind: 'header', title: place(f.sw), sub: `${f.swGrid} 변전소 통전 완료 (${dotMonth(f.swOn)})` },
     { t0: 21.0, t1: 24.4, kind: 'caption', tone: 'under_construction', text: '1단계 300MW 건설중 — 2027년 4분기 납품 목표' },
-    { t0: 24.4, t1: 27.8, kind: 'caption', tone: 'pending', text: '스위트워터 2와 합쳐 2GW 허브 — ERCOT 편입' },
+    { t0: 24.4, t1: 27.8, kind: 'caption', tone: 'pending', text: 'Sweetwater 2와 합쳐 2GW 허브 — ERCOT 편입' },
     { t0: 29.0, t1: DURATION, kind: 'outro', title: `확보 전력 ${f.secured}`, stats: [stat(f.arr, '계약 ARR'), stat(f.backlog, '계약 잔액'), gpuText].filter(Boolean), url: 'iren-3d.vercel.app', note: `비공식 · 공개자료 기반 · 투자 조언 아님 · ${f.asOf.replaceAll('-', '.')} 기준` },
   ] : [
     { t0: 0.6, t1: 6.3, kind: 'title', title: 'IREN Data Center Map', sub: `From bitcoin mining to AI cloud · ${f.sites} sites, ${f.secured}` },

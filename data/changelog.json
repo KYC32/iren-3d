@@ -4,8 +4,8 @@
       "date": "2026-10-28",
       "items": [
         {
-          "ko": "소개 영상 자막의 숫자를 자료에서 계산하게 바꿈. '9개 사이트'가 '10개 사이트'로, '2026.10.06 기준'이 기준일로 바뀌고 장면 제목은 '차일드레스 · 텍사스'처럼 한국어 지명. 근거가 없던 '수주잔고 $13bn+'는 10-K의 계약 잔액 약 $16.6bn(RPO $5.1bn + 리스 계약 $11.4bn, 6/30 기준)으로 바로잡음",
-          "en": "Intro video captions now compute their numbers from the data: '9 sites' becomes '10 sites' and the as-of date follows the data; Korean scene titles use Korean place names. The unsourced '$13bn+ backlog' is replaced by the 10-K's ~$16.6bn contracted backlog (RPO $5.1bn + lease contracts $11.4bn, as of June 30)",
+          "ko": "소개 영상 자막의 숫자를 자료에서 계산하게 바꿈. '9개 사이트'가 '10개 사이트'로, '2026.10.06 기준'이 기준일로 바뀜. 근거가 없던 '수주잔고 $13bn+'는 10-K의 계약 잔액 약 $16.6bn(RPO $5.1bn + 리스 계약 $11.4bn, 6/30 기준)으로 바로잡음",
+          "en": "Intro video captions now compute their numbers from the data: '9 sites' becomes '10 sites' and the as-of date follows the data. The unsourced '$13bn+ backlog' is replaced by the 10-K's ~$16.6bn contracted backlog (RPO $5.1bn + lease contracts $11.4bn, as of June 30)",
           "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm"
         },
         {

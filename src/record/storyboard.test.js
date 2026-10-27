@@ -34,8 +34,9 @@ describe('buildCards — 자료로 만든 자막', () => {
     expect(all).toContain(`채굴동 ${siteMetricsAt(site('childress'), m).mining}MW`)
     expect(all).toContain('1.4GW 변전소 통전 완료 (2026.05)')
   })
-  it('한국어 장면 제목은 공식 한국어 지명 (차일드레스 · 텍사스)', () => {
-    expect(ko.filter((c) => c.kind === 'header').map((c) => c.title)).toEqual(['차일드레스 · 텍사스', '스위트워터 1 · 텍사스'])
+  it('장면 제목은 한국어 영상도 원문 지명·명칭 그대로 (Childress, Texas — 2026-10-28 사용자 지시)', () => {
+    expect(ko.filter((c) => c.kind === 'header').map((c) => c.title)).toEqual(['Childress, Texas', 'Sweetwater 1, Texas'])
+    expect(ko.map(text).join(' ')).toContain('Sweetwater 2와 합쳐')
     expect(en.filter((c) => c.kind === 'header').map((c) => c.title)).toEqual(['Childress, Texas', 'Sweetwater 1, Texas'])
   })
   it('시간표는 그대로 (카드 9장, 영상 안)', () => {
