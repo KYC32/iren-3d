@@ -63,8 +63,13 @@ export default function CampusPanel(){
       <div className="campus-heading-actions"><button className="campus-panel-toggle" onClick={togglePanel} aria-label={panelAction} title={panelAction} aria-expanded={!collapsed} aria-controls="campus-panel-content"><ChevronRight size={15} aria-hidden="true"/><span>{collapsed?(ko?'펼치기':'Expand'):(ko?'접기':'Collapse')}</span></button><button className="close-small" onClick={st.requestGlobe} aria-label={ko?'캠퍼스 닫기':'Close campus'} title={ko?'캠퍼스 닫기':'Close campus'}><X size={14} aria-hidden="true"/></button></div>
     </div>
     <div id="campus-panel-content" className="campus-panel-body" ref={panel} hidden={collapsed}>
-    <div className="research-badges"><span className="research-badge">{location.precise?(ko?'주소 위치 · 경계 미확인':'Address · boundary unverified'):(ko?'지역 위치 · 부지 미확인':'Regional location · parcel unverified')}</span><span className="research-badge">{site.evidenceReview==='partial'?(ko?'건물별 근거 검토':'Building evidence reviewed'):(ko?'근거 이력 미정리':'Evidence history pending')}</span></div>
-    <button className="surface-switch" onClick={()=>st.setSurface(st.surface==='map'?'3d':'map')}>{st.surface==='map'?<><Box size={14} aria-hidden="true"/>{ko?'3D 사업 구성도':'3D business diagram'}</>:<><MapIcon size={14} aria-hidden="true"/>{ko?'실제 지도로':'Geographic map'}</>}</button>
+    {/* 위치·근거 표시. 3D 화면이면 위치 표시 바로 옆에 작은 '지도에서 위치 보기' (같은 캠퍼스를 실제 지도 위에서)
+        2026-10-27 사용자 결정: 예전 폭 전체 남색 막대 '실제 지도로'는 뺌 — 뒤로 가기(← · ×)처럼 읽혀 헷갈리고 칸에서 가장 무거웠음 */}
+    <div className="research-badges"><span className="research-badge">{location.precise?(ko?'주소 위치 · 경계 미확인':'Address · boundary unverified'):(ko?'지역 위치 · 부지 미확인':'Regional location · parcel unverified')}</span>
+      {st.surface==='3d'&&<button type="button" className="map-link" onClick={()=>st.setSurface('map')} title={ko?'이 캠퍼스를 실제 지도 위에서 보기':'See this campus on the geographic map'}><MapIcon size={12} aria-hidden="true"/>{ko?'지도에서 위치 보기':'See on map'}</button>}
+      <span className="research-badge">{site.evidenceReview==='partial'?(ko?'건물별 근거 검토':'Building evidence reviewed'):(ko?'근거 이력 미정리':'Evidence history pending')}</span></div>
+    {/* 지도 화면에서는 3D 로 들어가는 큰 단추 (여기서 하는 다음 동작이라 그대로) */}
+    {st.surface==='map'&&<button className="surface-switch" onClick={()=>st.setSurface('3d')}><Box size={14} aria-hidden="true"/>{ko?'3D 사업 구성도':'3D business diagram'}</button>}
     <div className="zone-switch">{zones.map(z=><button key={z.key} aria-pressed={z.key===selectedZoneKey} onClick={()=>st.selectZone(z.key)}><span className="customer-mark" aria-hidden="true"><CustomerLogo name={logoKeyOf(z.name)} size={16}/></span><span>{z.name}</span></button>)}{(building||zone)&&<button onClick={()=>{st.requestCampusHome();st.syncHash()}}>{ko?'선택 해제':'Clear'}</button>}</div>
     {building&&<div className="selected-building"><b>{pickName(building,lang)}</b><span>{t.status[building.status]} · {building.lastReported ?? site.as_of}</span></div>}
     {/* 고른 건물에 그림(전력 경로·홀 안·냉각수 길)이 있으면 바로 아래 단추 — 따로 불러오는 묶음 */}

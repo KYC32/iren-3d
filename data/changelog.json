@@ -4,6 +4,10 @@
       "date": "2026-10-27",
       "items": [
         {
+          "ko": "3D 캠퍼스 칸의 폭 전체 '실제 지도로' 막대를 빼고 위치 표시 옆 작은 '지도에서 위치 보기' 링크로 바꿈. 전체 지도로 돌아가기는 왼쪽 위 ←와 칸의 ×",
+          "en": "The full-width 'Geographic map' bar in the 3D campus panel is now a small 'See on map' link next to the location badge; going back to the overview stays on the top-left ← and the panel's ×"
+        },
+        {
           "ko": "경영진 약속과 캠퍼스를 이음: 캠퍼스에 걸린 약속 13건에 캠퍼스(일부는 건물)를 적어 약속 줄을 펼치면 '○○ 현장 3D 보기' 단추가 나오고 캠퍼스 패널에는 '경영진 약속 · 이 캠퍼스' 칸이 생김. CEO 카드에 다음 기한(2026-12 · 10건 · 2개월 남음)을 넣음. 기한 전 약속도 회사가 밝힌 진행 숫자를 보여 줌(ARR 25~29% 등). '2026년 AI 클라우드 480MW' 약속엔 FY26 10-K의 운영 용량 약 40MW(6/30 기준)를 진행으로 넣음",
           "en": "Linked management promises to campuses: 13 campus-specific promises now name their campus (some a building), so an expanded promise row offers 'See … in 3D' and the campus panel gains a 'Management promises · this campus' block. The CEO card shows the next deadline (2026-12 · 10 promises · 2 months left). Pending promises now show company-reported progress (ARR 25–29%, etc.). The '480MW of AI Cloud capacity in 2026' promise takes the FY26 10-K's ~40MW operating capacity (as of June 30) as progress",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm"
