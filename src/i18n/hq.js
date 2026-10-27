@@ -11,7 +11,7 @@ export const hqText = {
     title: 'IREN 본사', sub: '{city} · 경영진 발언 {n}건', newCount: '발언 {n}', open: '본사 건물 · 경영진 발언 보기 (3D)',
     // 본사 3D 화면 (빌딩 옆 'IREN · 5층' 표시 · 카드의 건물 설명)
     towerFloor: 'IREN · {level}층', floorTitle: 'IREN 공시 주소의 층 · 층 전체를 쓰는지는 공시에 없음',
-    modelNote: '건물은 단순화한 모형 · {floors}층(건물 소유사 Mirvac) · IREN {level}층은 공시 주소 기준이며 층 전체를 쓰는지는 공시에 없음', buildingSource: '건물 자료',
+    modelNote: '건물·길 모양은 OpenStreetMap 윤곽·층수로 만든 모형(층수가 없는 건물은 어림값) · 본사 {floors}층(건물 소유사 Mirvac) · IREN {level}층은 공시 주소 기준이며 층 전체를 쓰는지는 공시에 없음', buildingSource: '건물 자료',
     movedNote: '{date} 분기 보고서부터 {level}층 주소 (그 전 보고서엔 {from}층)', filingSource: '공시',
     // 옥상 위 CEO 카드 · 말풍선 (HqParts) — 누르면 가운데 카드 (StatementsCard)
     badgeOpen: '{name}의 약속·발언 보기', statementsN: '발언 {n}', bubbleAll: '약속·발언 보기', bubbleOpen: '약속·발언 카드 열기',
@@ -55,7 +55,7 @@ export const hqText = {
   en: {
     title: 'IREN HQ', sub: '{city} · {n} management statements', newCount: '{n} new', open: 'See the HQ building and management statements (3D)',
     towerFloor: 'IREN · Level {level}', floorTitle: "Floor in IREN's filing address · filings do not say whether it uses the whole floor",
-    modelNote: "Simplified model · {floors} storeys (building owner Mirvac) · IREN on Level {level} per its filing address — filings do not say whether it uses the whole floor", buildingSource: 'Building data',
+    modelNote: "Buildings and streets are modelled from OpenStreetMap outlines and storey counts (estimated where missing) · HQ {floors} storeys (building owner Mirvac) · IREN on Level {level} per its filing address — filings do not say whether it uses the whole floor", buildingSource: 'Building data',
     movedNote: 'Address shows Level {level} from the {date} quarterly report (Level {from} before)', filingSource: 'Filing',
     badgeOpen: 'See promises and statements by {name}', statementsN: '{n} statements', bubbleAll: 'Promises & statements', bubbleOpen: 'Open the promises and statements card',
     prev: 'Previous statement', next: 'Next statement', signOpen: 'See the promise timeline', scoreLine: '{n} promises · kept on time {a}/{b}',

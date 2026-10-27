@@ -1,6 +1,6 @@
 // 본사 3D 화면의 사무 빌딩 모양 (hqTower.js) — 층 쌓기 · IREN 층 · 카메라 상자
-import { it, expect } from 'vitest'
-import { hqTower, TOWER_W, TOWER_D, sideCorners, hqLabelRoom } from './hqTower.js'
+import { describe, it, expect } from 'vitest'
+import { hqTower, TOWER_W, TOWER_D, sideCorners, hqLabelRoom, PLOT, PODIUM_FLOORS } from './hqTower.js'
 
 const T = hqTower({ floors: 20, level: 5 })
 
@@ -57,4 +57,30 @@ it('hqLabelRoom: 태블릿은 말풍선을 좁게 (260+40), 휴대폰은 위 CEO
   // 휴대폰 CEO 카드는 가로 한 줄 (사진 | 이름 | 성적표, 옥상 위 약 83px) → 카메라 상자의 옥상 위 여유(2.5칸, 390×844 에서 약 110px)에
   //   거의 다 들어가서 위 자리는 조금만 (375×667 작은 휴대폰에서도 카드가 상단 바 밑에 들어오는 값 · 예전 세로 카드는 190)
   expect(hqLabelRoom(767)).toEqual({ top: 20, right: 0, left: 0 })
+})
+
+// 실제 윤곽(OSM)을 받으면: 탑 = 'City Centre' 조각 윤곽, 아래 3층 = 땅 윤곽 전체(포디움 · FK 2021 리모델링의 3층 높이 유리 로비)
+describe('hqTower: 실제 윤곽', () => {
+  const tower = [[-4, -3], [5, -3], [5, 2], [-4, 2]], podium = [[-5, -4], [6, -4], [6, 3], [-5, 3]]
+  const R = hqTower({ floors: 20, level: 5 }, { tower, podium })
+  it('탑 윤곽·포디움 윤곽을 그대로 씀 (없으면 정사각형)', () => {
+    expect(R.ring).toEqual(tower)
+    expect(R.podium.ring).toEqual(podium)
+    expect(T.ring).toHaveLength(4) // 기본 모양 = TOWER_W × TOWER_D 정사각형
+  })
+  it('포디움은 아래 3층(G·1·2층) 높이', () => {
+    expect(PODIUM_FLOORS).toBe(3)
+    expect(R.podium.h).toBeCloseTo(R.floors[3].y)
+  })
+  it('카메라 상자는 탑 윤곽을 모두 담음 (둘레 2칸 여유)', () => {
+    expect(R.box.x0).toBeLessThanOrEqual(-4 - 2); expect(R.box.x1).toBeGreaterThanOrEqual(5 + 2)
+    expect(R.box.z0).toBeLessThanOrEqual(-3 - 2); expect(R.box.z1).toBeGreaterThanOrEqual(2 + 2)
+  })
+  it('sideCorners: 윤곽을 주면 그 윤곽의 꼭짓점 중에서 고름', () => {
+    const c = sideCorners(30, 30, tower)
+    expect(tower).toContainEqual(c.left)
+    expect(tower).toContainEqual(c.right)
+    expect(c.left).toEqual([-4, 2]) // (+x, +z) 쪽 카메라: 화면 왼쪽 = (−x, +z) 끝
+  })
+  it('바닥 판은 40칸(≈220m) — 북동쪽 약 120m 의 시드니 타워까지 담음', () => expect(PLOT).toBe(40))
 })

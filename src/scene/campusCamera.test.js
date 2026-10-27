@@ -35,6 +35,29 @@ it.each([
   }
 })
 
+// 본사 화면은 카메라 방향을 따로 줌 (실제 동네에서 본사가 가장 잘 보이는 쪽) — 방향이 달라도 상자가 영역 안에 들어옴
+it.each([[[-1, 1.4, 1]], [[1, 1.4, 0.2]], [[-1, 1.2, -1]]])('campusFrameBox: 카메라 방향 %j 를 주면 그 방향에서 상자를 맞춤', (direction) => {
+  const w = 1440, h = 900, rect = { left: 224, right: 1056, top: 318, bottom: 860 }
+  const box = { x0: -6, x1: 6, z0: -5, z1: 5, y0: 0, y1: 17 }
+  const frame = campusFrameBox(box, w, h, rect, 30, 0.92, direction)
+  // 카메라 위치 − 바라보는 점 = 준 방향 (크기만 다름)
+  const v = frame.position.map((p, i) => p - frame.target[i]), l = Math.hypot(...v), dl = Math.hypot(...direction)
+  v.forEach((c, i) => expect(c / l).toBeCloseTo(direction[i] / dl, 6))
+  const camera = new PerspectiveCamera(30, w / h, 0.5, 3000)
+  camera.position.fromArray(frame.position)
+  camera.lookAt(new Vector3(...frame.target))
+  const [ox, oy] = campusOffset(frame.distance, w, h, rect)
+  camera.position.add(new Vector3(ox, -oy, 0).applyQuaternion(camera.quaternion))
+  camera.updateMatrixWorld()
+  for (const x of [box.x0, box.x1]) for (const y of [box.y0, box.y1]) for (const z of [box.z0, box.z1]) {
+    const p = new Vector3(x, y, z).project(camera)
+    expect((p.x + 1) * w / 2).toBeGreaterThanOrEqual(rect.left - 0.5)
+    expect((p.x + 1) * w / 2).toBeLessThanOrEqual(rect.right + 0.5)
+    expect((1 - p.y) * h / 2).toBeGreaterThanOrEqual(rect.top - 0.5)
+    expect((1 - p.y) * h / 2).toBeLessThanOrEqual(rect.bottom + 0.5)
+  }
+})
+
 it('건물 영역 상자는 모든 블록과 변전소를 담음', () => {
   const L = layoutCampus(buildInfra().sites.find((s) => s.id === 'childress'))
   const box = contentBox(L)

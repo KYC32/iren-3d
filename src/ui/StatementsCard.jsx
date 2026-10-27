@@ -195,6 +195,8 @@ function Notes({ file, lang, h, building }) {
       {building && <p className="st-model-note">{fill(h.modelNote, { floors: building.floors, level: building.level })} · <a href={building.source} target="_blank" rel="noreferrer">{h.buildingSource}<ArrowUpRight size={10} aria-hidden="true" /></a>
         {/* 공시 주소의 층이 바뀐 기록 (예: 2026-05-08 분기 보고서부터 5층, 그 전엔 6층) + 그 공시 */}
         {building.moved_from && <> · {fill(h.movedNote, { date: building.moved_from.first_seen, level: building.level, from: building.moved_from.level })} · <a href={building.moved_from.source} target="_blank" rel="noreferrer">{h.filingSource}<ArrowUpRight size={10} aria-hidden="true" /></a></>}
+        {/* 동네 모양 출처 (ODbL 출처 표기) */}
+        {' · '}<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors<ArrowUpRight size={10} aria-hidden="true" /></a>
       </p>}
       <p className="st-disclaimer">{h.disclaimer}</p>
     </footer>

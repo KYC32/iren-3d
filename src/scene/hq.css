@@ -55,6 +55,11 @@
 .hq-floor .dot { width: 9px; height: 9px; border-radius: 50%; background: #71da80; box-shadow: 0 0 0 3px rgba(113, 218, 128, .3), 0 0 10px #71da80; }
 .hq-floor small { font-size: 10.5px; color: #b8d0de; }
 
+/* 동네 건물 이름표 (스테이트 시어터 · 웨스트필드 시드니 · 시드니 타워): 작은 흰 알약 — 본사 표시보다 눈에 덜 띄게 */
+.hq-place { display: inline-block; padding: 3px 8px; border-radius: 999px; background: rgba(255, 255, 255, .86); color: #33424e; font-size: 10.5px; font-weight: 650; white-space: nowrap; pointer-events: none;
+  box-shadow: 0 1px 4px rgba(6, 28, 44, .18); }
+.hq-place.is-tower { background: rgba(255, 246, 214, .92); color: #6b5210; }
+
 /* 태블릿(768~1023px): 말풍선 조금 좁게 (hqLabelRoom 의 260 과 같게) */
 @media (min-width: 768px) and (max-width: 1023px) {
   .hq-top { --ceo-w: 196px; }

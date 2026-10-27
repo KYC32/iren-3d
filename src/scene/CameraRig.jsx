@@ -7,7 +7,7 @@
 //   → 페이드 아웃
 // 지구본으로 돌아갈 때는 역순입니다.
 // =============================================================
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { CameraControls, CameraControlsImpl } from '@react-three/drei'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
@@ -17,7 +17,8 @@ import { customerKey, zoneBounds } from '../data/customerZones.js'
 import { layoutCampus } from './layoutCampus.js'
 import { Box3, Vector3 } from 'three'
 import { SINGLE_COMPANY } from '../config.js'
-import { hqTower, hqLabelRoom } from './hqTower.js'
+import { hqTower, hqLabelRoom, hqDirection } from './hqTower.js'
+import { loadHqCity, peekHqCity } from '../data/loadHqCity.js' // 본사 탑 실제 윤곽 (OSM — 받기 전엔 정사각형)
 
 // 3D 개요 화면은 지구본(다회사 모드 계보 · 영상 녹화 인트로).
 // 단일 회사(IREN) 모드에선 개요를 실제 지도(GeoMap)가 맡아서, 3D 는 캠퍼스 화면에만 쓰입니다.
@@ -50,7 +51,8 @@ function campusHome(L) {
 // 본사 화면(view 'hq'): 사무 빌딩 모양(층수는 데이터)과 그 빌딩이 쓸 수 있는 화면을 채우는 시점
 const isCampusLike = (view) => view === 'site' || view === 'hq' // 캠퍼스처럼 돌려 보는 3D 화면
 function hqShape() {
-  return hqTower(useAppStore.getState().data?.companies?.[0]?.hq?.building ?? { floors: 20, level: 5 })
+  const shape = peekHqCity()?.hq // 실제 윤곽(탑·포디움)을 받았으면 그것으로, 아니면 정사각형 기본 모양
+  return hqTower(useAppStore.getState().data?.companies?.[0]?.hq?.building ?? { floors: 20, level: 5 }, shape?.tower?.length >= 3 ? shape : null)
 }
 // 본사 화면에서 빌딩이 들어갈 화면 영역: 위 = 상단 바 아래 + 옥상 위 CEO 카드 자리, 양옆 = 말풍선·5층 표시 자리,
 //   아래 = 휴대폰이면 말풍선 묶음(.hq-dock) 위까지 (본사 화면엔 KPI 판이 없어 위는 상단 바에서 잼)
@@ -64,7 +66,7 @@ function hqViewport(w, h) {
 }
 function hqHome(T) {
   const w = window.innerWidth, h = window.innerHeight
-  const frame = campusFrameBox(T.box, w, h, hqViewport(w, h))
+  const frame = campusFrameBox(T.box, w, h, hqViewport(w, h), 30, 0.92, hqDirection()) // 본사가 가장 잘 보이는 쪽에서
   return [...frame.position, ...frame.target]
 }
 
@@ -118,6 +120,14 @@ export default function CameraRig() {
   const size = useThree((s) => s.size)
   const safeRect = useRef(null)
   const lastOffset = useRef(null) // 마지막으로 적용한 캠퍼스 초점 이동값 (같으면 다시 안 함)
+  // 본사 화면: 동네 자료(탑 실제 윤곽)를 받으면 카메라를 다시 맞춤 (사용자가 이미 돌렸으면 그대로)
+  const [hqCityReady, setHqCityReady] = useState(() => !!peekHqCity())
+  useEffect(() => {
+    if (view !== 'hq' || hqCityReady) return undefined
+    let alive = true
+    loadHqCity().then((x) => { if (alive && x) setHqCityReady(true) })
+    return () => { alive = false }
+  }, [view, hqCityReady])
 
   // Explicit navigation resets the view. Panel/date changes preserve the user's close-up.
   useEffect(() => {
@@ -156,7 +166,7 @@ export default function CameraRig() {
       if (el) observer.observe(el)
     }
     return () => observer.disconnect()
-  }, [view, size.width, size.height, homeSeq, zoneKey, siteId])
+  }, [view, size.width, size.height, homeSeq, zoneKey, siteId, hqCityReady])
 
   // 처음 마운트: 딥링크(#site=...)면 캠퍼스, 아니면 지구본 시점
   useEffect(() => {

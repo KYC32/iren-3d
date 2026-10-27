@@ -29,12 +29,14 @@ export function campusFrame(side, width, height, rect, fov = 30) {
 //   campusFrame 은 부지 판 전체(정사각형 + 넉넉한 여백)용. 이것은 처음 화면을 "건물이 있는 곳"에 맞출 때 씀
 //   → 예전엔 판 전체를 맞춰 1440×900 에서도 건물 영역이 가운데 약 350px 뿐이었음 (지금은 약 700px)
 //   fill: 영역 가장자리에 남길 여유 비율 (0.92 = 8% 여유)
-export function campusFrameBox(box, width, height, rect, fov = 30, fill = 0.92) {
-  const direction = [1, 1.05, 1]          // 캠퍼스를 내려다보는 방향 (campusFrame 과 같은 구도)
+//   direction: 바라보는 점에서 카메라 쪽 방향 (기본 = 캠퍼스 구도 [1, 1.05, 1] — 본사 화면은 실제 동네에 맞춰 따로 줌)
+export function campusFrameBox(box, width, height, rect, fov = 30, fill = 0.92, direction = [1, 1.05, 1]) {
   const length = Math.hypot(...direction)
   const dir = direction.map((v) => v / length)
-  const right = [Math.SQRT1_2, 0, -Math.SQRT1_2]
-  const up = [-dir[1] * Math.SQRT1_2, Math.SQRT2 * dir[0], -dir[1] * Math.SQRT1_2]
+  // 화면 오른쪽 = 바닥에서 방향을 시계로 90° 돌린 쪽 (dz, 0, −dx) · 화면 위 = dir × right (기본 방향이면 예전 값과 같음)
+  const rl = Math.hypot(dir[0], dir[2]) || 1
+  const right = [dir[2] / rl, 0, -dir[0] / rl]
+  const up = [dir[1] * right[2] - dir[2] * right[1], dir[2] * right[0] - dir[0] * right[2], dir[0] * right[1] - dir[1] * right[0]]
   const tan = Math.tan(fov * Math.PI / 360)
   const center = [(box.x0 + box.x1) / 2, (box.y0 + box.y1) / 2, (box.z0 + box.z1) / 2]
   const usableW = Math.max(80, rect.right - rect.left) / width * fill

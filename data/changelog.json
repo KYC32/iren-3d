@@ -4,6 +4,11 @@
       "date": "2026-10-27",
       "items": [
         {
+          "ko": "본사 3D 화면의 동네를 실제 모양으로 바꿈: OpenStreetMap 건물 윤곽·층수(층수가 없으면 종류별 어림값)와 길(차도·차 없는 Pitt St Mall·조지 스트리트 경전철·횡단보도)·가로수 위치를 씀. 본사는 땅 윤곽 전체를 덮는 3층 유리 로비 위에 모서리를 깎은 탑. 시드니 타워는 309m 그대로라 화면 위로 나감. 처음 구도는 남동쪽(본사 동쪽 벽 정면)이고 가로등·차는 꾸밈",
+          "en": "The HQ 3D view now shows the real neighborhood: OpenStreetMap building outlines and storey counts (estimated by type where missing), streets (roads, the car-free Pitt St Mall, the George St light rail, crossings) and street-tree positions. The HQ is a chamfered tower on a three-storey glass podium covering the lot. Sydney Tower keeps its 309 m height, so it rises out of frame. The first view looks from the south-east (the HQ's east face); street lamps and cars are decorative",
+          "source": "https://www.openstreetmap.org/copyright"
+        },
+        {
           "ko": "본사 3D 화면 손질. CEO 카드 성적표 막대 색을 약속 타임라인과 같게 맞춤(초록 = 기한 안에 지켜짐 · 주황·초록 빗금 = 늦게 지켜짐 · 주황 = 늦어짐 · 회색 = 기한 전). 휴대폰은 CEO 카드를 가로 한 줄로 바꿔 높이가 186px에서 65px로 줄고 빌딩이 더 크게 보임. 본사 화면 면책 문구는 한 줄로 줄임(긴 문구는 마우스를 올리면 보임). 자동 투어에 본사 단계 추가",
           "en": "HQ 3D view polish. The CEO card's scorecard bar now uses the promise timeline's colors (green = kept on time · orange/green stripes = kept late · orange = late · grey = not yet due). On phones the CEO card is a single row, so its height drops from 186px to 65px and the building shows larger. The HQ view's disclaimer is cut to one line (hover for the full text). The guided tour gains an HQ step"
         },
