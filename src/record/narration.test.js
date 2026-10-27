@@ -1,7 +1,13 @@
 // 영상 내레이션 시험 — 읽을 문장이 화면 자막과 맞는지, 소리 조각을 시간표에 맞게 놓는지
 import { describe, it, expect } from 'vitest'
 import { numbersOf, checkNarration, placeClips, MAX_SPEED, GAP } from './narration.js'
-import { CARDS, NARRATION, DURATION } from './storyboard.js'
+import { buildCards, NARRATION, DURATION } from './storyboard.js'
+import { buildInfra } from '../../scripts/build-data.mjs'
+import { viewInfra, asOfMonth } from '../data/view.js'
+
+// 자막은 자료로 만들므로 실제 자료로 검사 (자료가 바뀌어 자막 숫자가 달라지면 내레이션도 고쳐야 함을 알려 줌)
+const raw = buildInfra()
+const CARDS = { ko: buildCards(viewInfra(raw, asOfMonth(raw.as_of)), 'ko') }
 
 describe('numbersOf — 글 속 숫자', () => {
   it('YYYY.MM 날짜는 해·달 둘로, 소수는 그대로', () => {

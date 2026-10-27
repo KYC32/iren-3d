@@ -4,7 +4,7 @@
 // 색·모양은 웹앱 UI(파스텔 패널, 상태색 점)와 맞췄습니다.
 // =============================================================
 import { styleOf, PENDING_COLOR } from '../data/statusStyle.js'
-import { CARDS, clamp01, easeInOut } from './storyboard.js'
+import { clamp01, easeInOut } from './storyboard.js'
 
 const FONT = '"Apple SD Gothic Neo", "Pretendard", "Noto Sans KR", sans-serif'
 const TEXT = '#16213a'
@@ -59,12 +59,8 @@ export function drawPill(o, x, y, u, { color, text, sub, alpha = 1 }) {
 
 // 시간 t 의 자막 카드들 그리기
 // 링크 미리보기(OG) 전용 고정 카드: 서비스 이름 + 한 줄 설명 + 주소 (영상 자막 대신)
-const OG_CARD = {
-  ko: { title: 'IREN 데이터센터 3D 현황판', sub: '가동·건설·계획 9개 사이트 · 2024~2028 타임라인 · 고객 계약', url: 'iren-3d.vercel.app' },
-  en: { title: 'IREN Data Center 3D Map', sub: '9 sites: operating, building, planned · 2024–2028 timeline · contracts', url: 'iren-3d.vercel.app' },
-}
-function drawOgCard(o, W, H, lang) {
-  const c = OG_CARD[lang]
+//   문구는 storyboard.ogCard(data, lang) — 사이트 수를 자료에서 셈 (예전엔 '9개 사이트' 고정)
+function drawOgCard(o, W, H, c) {
   const u = H / 630
   const x = 40 * u, y = 34 * u
   o.save()
@@ -96,11 +92,12 @@ function drawOgCard(o, W, H, lang) {
   o.restore()
 }
 
-export function drawCards(o, t, W, H, lang, format) {
-  if (format === 'og') return drawOgCard(o, W, H, lang)
+// cards: storyboard.buildCards(data, lang) · og: storyboard.ogCard(data, lang) — 숫자는 자료에서 계산한 것
+export function drawCards(o, t, W, H, format, cards, og) {
+  if (format === 'og') return drawOgCard(o, W, H, og)
   const u = Math.min(W, H) / 1080 // 1080 기준 크기 단위
   const shorts = format === 'shorts'
-  for (const c of CARDS[lang]) {
+  for (const c of cards) {
     if (t < c.t0 || t > c.t1) continue
     const a = easeInOut(clamp01((t - c.t0) / 0.45)) * (1 - easeInOut(clamp01((t - (c.t1 - 0.35)) / 0.35)))
     if (a <= 0) continue

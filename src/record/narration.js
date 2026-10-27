@@ -1,7 +1,7 @@
 // =============================================================
 // narration.js — 영상 내레이션(읽을 문장) 검사와 소리 조각 놓기 (순수 함수, narration.test.js)
 // -------------------------------------------------------------
-// 읽을 문장은 storyboard.js 의 NARRATION 에 있습니다 (자막 CARDS 옆).
+// 읽을 문장은 storyboard.js 의 NARRATION 에 있습니다 (자막은 같은 파일의 buildCards — 자료로 만듦).
 //   checkNarration: 그 시간대 화면 자막에 없는 숫자를 말하지 않는지 · 이름을 한글로 썼는지 · 시각이 맞는지
 //     (번역 검사기 translateGuard 와 같은 생각: 기계가 만든 소리는 숫자를 틀리기 쉬우니 글부터 묶어 둠)
 //   placeClips: 문장마다 만든 소리 조각(초)을 시간표에 놓음 — t0 에서 시작, 앞 조각이 길면 이어서,
@@ -27,7 +27,7 @@ export function numbersOf(text) {
 const cardText = (c) => [c.title, c.sub, c.text, c.note, ...(c.stats ?? [])].filter(Boolean).join(' ')
 
 /**
- * @param {Array} cards     storyboard CARDS[lang]
+ * @param {Array} cards     storyboard.buildCards(data, lang)
  * @param {Array} lines     storyboard NARRATION[lang] — { t0, t1, say }
  * @param {number} duration 영상 길이(초)
  * @returns {string[]} 문제 목록 (빈 배열이면 통과)

@@ -44,13 +44,14 @@
           "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
         },
         {
-          "key": "backlog_usd_bn",
-          "value": 13,
+          "key": "contracted_backlog_usd_bn",
+          "value": 16.6,
+          "qualifier": "about",
           "unit": "USD bn",
-          "label_ko": "수주잔고",
-          "label_en": "Backlog",
-          "as_of": "2026-10",
-          "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+          "label_ko": "계약 잔액(RPO+리스)",
+          "label_en": "Contracted backlog (RPO + leases)",
+          "as_of": "2026-06",
+          "source": "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm"
         },
         {
           "key": "gpus_total",

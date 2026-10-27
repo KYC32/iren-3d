@@ -19,7 +19,7 @@ import { styleOf, PENDING_COLOR } from '../data/statusStyle.js'
 import ko from '../i18n/ko.js'
 import en from '../i18n/en.js'
 import { RECORD } from './recordMode.js'
-import { DURATION, CARDS, shotAt, fadeAt, clamp01, easeInOut, lerp } from './storyboard.js'
+import { DURATION, buildCards, ogCard, shotAt, fadeAt, clamp01, easeInOut, lerp } from './storyboard.js'
 import { drawPill, drawCards, drawFade, drawRanking } from './overlay.js'
 import { toMonth, monthLabel, companyRanking } from '../data/timeline.js'
 import { energizeLabel } from '../data/format.js'
@@ -52,6 +52,9 @@ export default function RecordDirector() {
     const t = lang === 'en' ? en : ko
     const aspect = W / H
     const baseAlt = globeBaseAlt(aspect)
+    // 자막·링크 미리보기 문구는 자료에서 한 번 계산 (원본·기준일 기준이라 녹화 중 날짜가 흘러도 같음)
+    const cards = buildCards(useAppStore.getState().data, lang)
+    const og = ogCard(useAppStore.getState().data, lang)
     // 사이트 목록은 날짜에 따라 달라지므로 매 프레임 스토어에서 지금 값을 읽음
     const cur = () => {
       const sites = useAppStore.getState().data.sites
@@ -144,7 +147,7 @@ export default function RecordDirector() {
       // 세로 영상은 휴대폰에서 보므로 라벨을 더 크게
       const u = (Math.min(W, H) / 1080) * (aspect < 1 ? 1.35 : 1)
       // 아웃트로 정리 카드가 떠 있는 동안은 라벨을 그리지 않음 (카드 뒤로 비치지 않게)
-      if (CARDS[lang].some((c) => c.kind === 'outro' && time >= c.t0)) return
+      if (cards.some((c) => c.kind === 'outro' && time >= c.t0)) return
       if (shot.type === 'globe') {
         const { sites } = cur()
         const display = spreadPins(sites, 0.8)
@@ -229,7 +232,7 @@ export default function RecordDirector() {
           const byIdC = Object.fromEntries(st.data.companies.map((c) => [c.id, c]))
           drawRanking(o, rows, byIdC, W, H, { lang, dateLabel: monthLabel(st.month, lang) })
         }
-        drawCards(o, time, W, H, lang, format)
+        drawCards(o, time, W, H, format, cards, og)
         drawFade(o, W, H, fadeAt(time))
         const blob = await new Promise((r) => out.toBlob(r, 'image/png'))
         await fetch(`/frame?fmt=${format}&i=${only != null ? `preview-${(f / FPS).toFixed(1)}` : f}`, { method: 'POST', body: blob })

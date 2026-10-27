@@ -163,6 +163,7 @@ node scripts/record-server.mjs og --only=13           # 링크 미리보기 1200
 ```
 
 - 장면 순서·카메라 동선·자막은 `src/record/storyboard.js` 의 시간표만 고치면 됩니다.
+- 자막의 숫자(사이트 수·확보 전력·차일드레스 계통·변전소·채굴동·스위트워터 1 계통·통전 달·회사 지표·정보 기준일)는 `buildCards(data, lang)` 가 자료에서 계산합니다. 링크 미리보기 문구도 `ogCard` 가 사이트 수를 셉니다. 예전엔 글로 박아 둬서 '9개 사이트'·'2026.10.06 기준'이 낡았습니다. 캠퍼스 일정 문구(인도·납품 목표)는 회사 발표 문장이라 글로 두므로, 회사가 일정을 바꾸면 그 줄과 `NARRATION` 을 함께 고칩니다. `storyboard.test.js` 가 자막 숫자를 자료와 대조합니다.
 - 영상 위 라벨·자막은 `src/record/overlay.js` 가 2D 캔버스에 직접 그립니다 (HTML 라벨은 캡처되지 않음).
 - 렌더 루프를 멈추고 프레임마다 시각을 지정하므로, 컴퓨터 속도와 상관없이 정확히 30fps 로 찍힙니다.
 - 필요 조건: Google Chrome, ffmpeg (`brew install ffmpeg`). 결과물 `video/` 폴더는 git 에 올리지 않습니다.

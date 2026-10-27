@@ -14,7 +14,9 @@ import { spawnSync } from 'node:child_process'
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { CARDS, NARRATION, DURATION } from '../../src/record/storyboard.js'
+import { buildCards, NARRATION, DURATION } from '../../src/record/storyboard.js'
+import { buildInfra } from '../build-data.mjs'
+import { viewInfra, asOfMonth } from '../../src/data/view.js'
 import { checkNarration, placeClips } from '../../src/record/narration.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
@@ -24,7 +26,9 @@ const lines = NARRATION[lang]
 if (!lines || !VOICE[lang]) { console.error(`❌ ${lang} 내레이션이 없음 (storyboard.js NARRATION · narrate.mjs VOICE)`); process.exit(1) }
 
 // 1) 문장 검사
-const problems = checkNarration(CARDS[lang], lines, DURATION)
+// 자막은 자료로 만듦 (storyboard.buildCards) — 녹화 화면과 같은 자막으로 검사
+const raw = buildInfra()
+const problems = checkNarration(buildCards(viewInfra(raw, asOfMonth(raw.as_of)), lang), lines, DURATION)
 if (problems.length) { console.error('❌ 읽을 문장 문제:\n  ' + problems.join('\n  ')); process.exit(1) }
 
 // 2) 소리 조각 만들기 (파이썬)

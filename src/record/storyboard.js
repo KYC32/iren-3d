@@ -4,6 +4,10 @@
 // 카메라는 각 장면의 진행률 p(0~1) 에 대한 함수라서 같은 시각엔 항상 같은 화면이 나옵니다.
 // =============================================================
 
+import { totalsAt, powerAt, siteMetricsAt, monthLabel, toMonth } from '../data/timeline.js'
+import { asOfMonth } from '../data/view.js'
+import { fmtMw, fmtMetric } from '../data/format.js'
+
 export const DURATION = 34 // 전체 길이(초)
 
 // type: 'globe' = 지구본, 'site' = 캠퍼스
@@ -25,29 +29,68 @@ export const SHOTS = [
 
 // 자막 카드. kind: 'title'(큰 제목) | 'header'(장면 제목) | 'caption'(아래 자막) | 'outro'
 // tone: 상태색 점 (operating / commissioning / under_construction / planned / pending)
-export const CARDS = {
-  ko: [
-    { t0: 0.6, t1: 6.3, kind: 'title', title: 'IREN 데이터센터 현황', sub: '비트코인 채굴에서 AI 클라우드로 · 9개 사이트 5.6GW' },
-    { t0: 9.4, t1: 19.2, kind: 'header', title: 'Childress, Texas', sub: '계통 750MW · 자사 변전소 345kV' },
+// 숫자(사이트 수·확보 전력·캠퍼스 계통·채굴동·회사 지표·기준일)는 자료에서 계산 (2026-10-28)
+//   예전엔 글로 박아 둬서 '9개 사이트'(지금 10곳)·'2026.10.06 기준'이 낡았고, 마무리의 '수주잔고 $13bn+'는 근거가 없었음
+//   캠퍼스 일정 문구(인도·납품 목표)는 회사 발표 문장이라 글로 둠 — 회사가 일정을 바꾸면 여기와 NARRATION 을 함께 고칠 것
+// data: viewInfra 결과 (스토어의 data) · 결과는 녹화 화면(RecordDirector · overlay)과 내레이션 검사가 같이 씀
+const REGION_KO = { Texas: '텍사스' }
+const gw = (mw) => fmtMw(mw).replace(' ', '')   // 영상 자막은 붙여 씀: 5.6GW · 750MW
+const dotMonth = (ym) => String(ym).slice(0, 7).replace('-', '.')   // '2026-05-01' → '2026.05'
+
+function cardFacts(data) {
+  const raw = data.raw
+  const m = asOfMonth(raw.as_of)
+  const total = totalsAt(data.observedRaw ?? raw, m)
+  const site = (id) => raw.sites.find((s) => s.id === id)
+  const ch = site('childress'), sw = site('sweetwater-1')
+  const metrics = data.companies[0]?.metrics ?? []
+  const metric = (key) => metrics.find((x) => x.key === key)
+  return {
+    asOf: raw.as_of, sites: total.sites, secured: gw(total.secured),
+    ch, chGrid: gw(powerAt(ch, m)?.secured ?? 0), chKv: ch.substation?.voltage, chMining: gw(siteMetricsAt(ch, m).mining),
+    sw, swGrid: gw(powerAt(sw, m)?.secured ?? 0), swOn: sw.power.find((p) => p.energized_mw > 0)?.from ?? '',
+    arr: metric('contracted_arr_usd_bn'), backlog: metric('contracted_backlog_usd_bn'), gpus: metric('gpus_total'),
+  }
+}
+
+export function buildCards(data, lang = 'ko') {
+  const f = cardFacts(data)
+  const ko = lang === 'ko'
+  // 장면 제목: 캠퍼스 · 주 ('Texas (Fisher County)' 처럼 괄호로 붙은 카운티는 뺌 — 제목은 짧게)
+  const state = (s) => String(s.region).replace(/\s*\(.*\)$/, '')
+  const place = (s) => (ko ? `${s.name_ko ?? s.name} · ${REGION_KO[state(s)] ?? state(s)}` : `${s.name}, ${state(s)}`)
+  // 회사 지표 한 줄 (한국어 '계약 ARR $4bn' · 영어 '$4bn contracted ARR') — 지표가 없으면 그 줄을 뺌
+  const stat = (x, label) => x && (ko ? `${label} ${fmtMetric(x, 'ko')}` : `${fmtMetric(x, 'en')} ${label}`)
+  const gpuText = f.gpus && (ko ? `총 GPU ~${Math.round(f.gpus.value / 1e4)}만` : `~${Math.round(f.gpus.value / 1000)}k GPUs`)
+  return ko ? [
+    { t0: 0.6, t1: 6.3, kind: 'title', title: 'IREN 데이터센터 현황', sub: `비트코인 채굴에서 AI 클라우드로 · ${f.sites}개 사이트 ${f.secured}` },
+    { t0: 9.4, t1: 19.2, kind: 'header', title: place(f.ch), sub: `계통 ${f.chGrid} · 자사 변전소 ${f.chKv}` },
     { t0: 10.6, t1: 13.6, kind: 'caption', tone: 'operating', text: 'Horizon 1 가동 — Microsoft 인도 완료 (2026.08)' },
     { t0: 13.6, t1: 16.6, kind: 'caption', tone: 'commissioning', text: 'Horizon 2~4 — 2026년 4분기 납품 목표 (GB300)' },
-    { t0: 16.6, t1: 19.3, kind: 'caption', tone: 'planned', text: '채굴동 380MW — 2026년 말 폐쇄, AI로 전환' },
-    { t0: 19.9, t1: 27.8, kind: 'header', title: 'Sweetwater 1, Texas', sub: '1.4GW 변전소 통전 완료 (2026.05)' },
+    { t0: 16.6, t1: 19.3, kind: 'caption', tone: 'planned', text: `채굴동 ${f.chMining} — 2026년 말 폐쇄, AI로 전환` },
+    { t0: 19.9, t1: 27.8, kind: 'header', title: place(f.sw), sub: `${f.swGrid} 변전소 통전 완료 (${dotMonth(f.swOn)})` },
     { t0: 21.0, t1: 24.4, kind: 'caption', tone: 'under_construction', text: '1단계 300MW 건설중 — 2027년 4분기 납품 목표' },
-    { t0: 24.4, t1: 27.8, kind: 'caption', tone: 'pending', text: 'Sweetwater 2와 합쳐 2GW 허브 — ERCOT 편입' },
-    { t0: 29.0, t1: DURATION, kind: 'outro', title: '확보 전력 5.6GW', stats: ['계약 ARR $4bn', '수주잔고 $13bn+', '총 GPU ~15만'], url: 'iren-3d.vercel.app', note: '비공식 · 공개자료 기반 · 투자 조언 아님 · 2026.10.06 기준' },
-  ],
-  en: [
-    { t0: 0.6, t1: 6.3, kind: 'title', title: 'IREN Data Center Map', sub: 'From bitcoin mining to AI cloud · 9 sites, 5.6GW' },
-    { t0: 9.4, t1: 19.2, kind: 'header', title: 'Childress, Texas', sub: '750MW grid · own 345kV substation' },
+    { t0: 24.4, t1: 27.8, kind: 'caption', tone: 'pending', text: '스위트워터 2와 합쳐 2GW 허브 — ERCOT 편입' },
+    { t0: 29.0, t1: DURATION, kind: 'outro', title: `확보 전력 ${f.secured}`, stats: [stat(f.arr, '계약 ARR'), stat(f.backlog, '계약 잔액'), gpuText].filter(Boolean), url: 'iren-3d.vercel.app', note: `비공식 · 공개자료 기반 · 투자 조언 아님 · ${f.asOf.replaceAll('-', '.')} 기준` },
+  ] : [
+    { t0: 0.6, t1: 6.3, kind: 'title', title: 'IREN Data Center Map', sub: `From bitcoin mining to AI cloud · ${f.sites} sites, ${f.secured}` },
+    { t0: 9.4, t1: 19.2, kind: 'header', title: place(f.ch), sub: `${f.chGrid} grid · own ${f.chKv} substation` },
     { t0: 10.6, t1: 13.6, kind: 'caption', tone: 'operating', text: 'Horizon 1 live — delivered to Microsoft (Aug 2026)' },
     { t0: 13.6, t1: 16.6, kind: 'caption', tone: 'commissioning', text: 'Horizon 2–4 — Q4 2026 delivery target (GB300)' },
-    { t0: 16.6, t1: 19.3, kind: 'caption', tone: 'planned', text: 'Mining halls 380MW — wound down by end-2026' },
-    { t0: 19.9, t1: 27.8, kind: 'header', title: 'Sweetwater 1, Texas', sub: '1.4GW substation energized (May 2026)' },
+    { t0: 16.6, t1: 19.3, kind: 'caption', tone: 'planned', text: `Mining halls ${f.chMining} — wound down by end-2026` },
+    { t0: 19.9, t1: 27.8, kind: 'header', title: place(f.sw), sub: `${f.swGrid} substation energized (${monthLabel(toMonth(f.swOn.slice(0, 7)), 'en')})` },
     { t0: 21.0, t1: 24.4, kind: 'caption', tone: 'under_construction', text: 'Phase 1, 300MW under construction — Q4 2027' },
     { t0: 24.4, t1: 27.8, kind: 'caption', tone: 'pending', text: '2GW hub with Sweetwater 2 — in ERCOT Batch Zero' },
-    { t0: 29.0, t1: DURATION, kind: 'outro', title: '5.6GW secured power', stats: ['$4bn contracted ARR', '$13bn+ backlog', '~150k GPUs'], url: 'iren-3d.vercel.app', note: 'Unofficial · public sources · not investment advice · as of 2026-10-06' },
-  ],
+    { t0: 29.0, t1: DURATION, kind: 'outro', title: `${f.secured} secured power`, stats: [stat(f.arr, 'contracted ARR'), stat(f.backlog, 'contracted backlog'), gpuText].filter(Boolean), url: 'iren-3d.vercel.app', note: `Unofficial · public sources · not investment advice · as of ${f.asOf}` },
+  ]
+}
+
+// 링크 미리보기(public/og.jpg) 카드 문구 — 사이트 수도 자료에서 (예전엔 '9개 사이트' 고정)
+export function ogCard(data, lang = 'ko') {
+  const { sites } = cardFacts(data)
+  return lang === 'ko'
+    ? { title: 'IREN 데이터센터 3D 현황판', sub: `가동·건설·계획 ${sites}개 사이트 · 2024~2028 타임라인 · 고객 계약`, url: 'iren-3d.vercel.app' }
+    : { title: 'IREN Data Center 3D Map', sub: `${sites} sites: operating, building, planned · 2024–2028 timeline · contracts`, url: 'iren-3d.vercel.app' }
 }
 
 // 내레이션(읽을 문장) — scripts/narrate/narrate.mjs 가 Qwen3-TTS 'Sohee' 목소리로 만들어 영상에 입힘
