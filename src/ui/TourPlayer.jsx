@@ -5,12 +5,22 @@
 // 단계 길이(dur)만큼 기다렸다가 다음으로 넘어가고, 사용자는 이전·다음·일시정지·끝내기를 누를 수 있습니다.
 // 키보드: ← → 이동, 스페이스 일시정지, Esc 끝내기.
 // 투어는 store.tour 가 있을 때만 그려지고(App.jsx), 끝나면 stopTour 가 날짜·하늘을 되돌립니다.
+// 음성 안내(한국어만, 2026-10-28): 단계마다 미리 만든 소리 파일(public/audio/tour — Qwen3-TTS 'Sohee', scripts/narrate/tour.mjs)
+//   기본은 꺼짐 · 스피커 단추로 켜면 이 기기에서 기억(localStorage) · 문장엔 숫자가 없어 자료가 바뀌어도 자막과 어긋나지 않음
 // =============================================================
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight, Pause, Play, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Pause, Play, Volume2, VolumeX, X } from 'lucide-react'
 import { useAppStore } from '../store/useAppStore.js'
 import { useT } from '../i18n/useT.js'
 import { buildTourSteps } from '../tour/tourSteps.js'
+
+// 음성 안내 설정 (이 기기에서 기억 — 저장소를 못 쓰는 창이면 늘 꺼짐으로 시작)
+const VOICE_KEY = 'iren-tour-voice'
+const readVoice = () => { try { return localStorage.getItem(VOICE_KEY) === '1' } catch { return false } }
+const saveVoice = (on) => { try { localStorage.setItem(VOICE_KEY, on ? '1' : '0') } catch { /* 저장 못 해도 이번 투어엔 적용 */ } }
+// 소리 파일 목록 (작은 JSON — 한국어 투어를 열 때 한 번 받음 · 없거나 실패하면 스피커 단추를 숨김)
+let voiceList = null
+const loadVoiceList = () => (voiceList ??= fetch('/audio/tour/manifest.json').then((r) => (r.ok ? r.json() : null)).catch(() => null))
 
 // 한 단계를 화면에 적용
 function applyStep(step) {
@@ -55,6 +65,9 @@ export default function TourPlayer() {
     return buildTourSteps(base ?? data, lang)
   }, [data, lang]) // eslint-disable-line react-hooks/exhaustive-deps
   const [paused, setPaused] = useState(false)
+  const [voice, setVoice] = useState(readVoice)   // 음성 안내 켜짐
+  const [clips, setClips] = useState(null)       // 단계 id → { src, sec }
+  const audio = useRef(null)                     // 소리 재생기 하나를 계속 씀 (브라우저가 한 번 허락한 재생기)
   const [elapsed, setElapsed] = useState(0) // 이 단계에서 지난 시간(ms) — 일시정지 후 이어서 재생하려고 기억
   const index = Math.min(tour?.step ?? 0, steps.length - 1)
   const step = steps[index]
@@ -83,6 +96,29 @@ export default function TourPlayer() {
     return () => clearInterval(id)
   }, [step, index, paused, steps.length]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  // 음성 안내: 한국어면 소리 파일 목록을 받아 둠 (단추를 누르는 순간 바로 재생해야 브라우저가 소리를 허락함)
+  useEffect(() => { if (lang === 'ko') loadVoiceList().then((m) => setClips(m?.clips ?? null)) }, [lang])
+  const speak = (id) => {
+    const a = (audio.current ??= new Audio())
+    const clip = clips?.[id]
+    if (!clip) { a.pause(); return }
+    if (!a.src.endsWith(clip.src)) a.src = clip.src
+    a.currentTime = 0
+    a.play().catch(() => {})   // 브라우저가 막으면(사용자 동작 전) 조용히 넘어감 — 다음 단계나 단추를 누르면 다시 시도
+  }
+  // 단계가 바뀌면 그 단계 문장을 처음부터 (일시정지 중이면 기다림)
+  useEffect(() => {
+    if (voice && lang === 'ko' && clips && step && !paused) speak(step.id)
+    else audio.current?.pause()
+  }, [voice, lang, clips, step?.id, tour?.seq, paused]) // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => audio.current?.pause(), [])   // 투어가 끝나면 소리도 멈춤
+  const toggleVoice = () => {
+    const on = !voice
+    setVoice(on); saveVoice(on)
+    if (on && step && !paused) speak(step.id)   // 누른 순간 재생 (사용자 동작 안에서 시작해야 소리가 허락됨)
+    else audio.current?.pause()
+  }
+
   // 키보드
   useEffect(() => {
     const onKey = (e) => {
@@ -110,6 +146,7 @@ export default function TourPlayer() {
         <button onClick={() => setTourStep(Math.max(index - 1, 0))} disabled={index === 0} aria-label={t.tour.prev} title={t.tour.prev}><ChevronLeft size={16} /></button>
         <button onClick={() => setPaused((p) => !p)} aria-label={paused ? t.tour.resume : t.tour.pause} title={paused ? t.tour.resume : t.tour.pause} aria-pressed={paused}>{paused ? <Play size={15} /> : <Pause size={15} />}</button>
         <button onClick={() => (index + 1 < steps.length ? setTourStep(index + 1) : stopTour())} aria-label={t.tour.next} title={t.tour.next}><ChevronRight size={16} /></button>
+        {lang === 'ko' && clips && <button onClick={toggleVoice} aria-pressed={voice} aria-label={voice ? '음성 안내 끄기' : '음성 안내 켜기'} title={voice ? '음성 안내 끄기' : '음성 안내 켜기 (한국어 · AI 음성)'}>{voice ? <Volume2 size={15} /> : <VolumeX size={15} />}</button>}
         <button className="tour-stop" onClick={stopTour} aria-label={t.tour.stop} title={t.tour.stop}><X size={14} /><span>{t.tour.stop}</span></button>
       </div>
       <div className="tour-hint">{t.tour.hint}</div>

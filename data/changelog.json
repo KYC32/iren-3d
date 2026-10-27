@@ -4,6 +4,14 @@
       "date": "2026-10-28",
       "items": [
         {
+          "ko": "자동 투어에 한국어 음성 안내를 더함(기본은 꺼짐, 투어 카드의 스피커 단추로 켬). Qwen3-TTS 'Sohee'로 미리 만든 소리이고 문장엔 숫자를 넣지 않아 자료가 바뀌어도 자막과 어긋나지 않음",
+          "en": "The guided tour gains optional Korean voice narration (off by default; speaker button on the tour card). The clips are pre-made with Qwen3-TTS 'Sohee' and contain no numbers, so they never drift from the data-driven captions"
+        },
+        {
+          "ko": "실제 지도에 '위성 사진'·'지역 규제' 층을 더함(둘 다 기본 꺼짐). 위성 사진은 캠퍼스 둘레 4km의 최근 Sentinel-2 사진을 겹치고, 지역 규제는 미국 데이터센터 유예·제한 조치 531건을 점으로 보임",
+          "en": "Added 'Satellite' and 'Local rules' layers to the real map (both off by default). Satellite overlays the latest Sentinel-2 image of the 4 km around each campus; Local rules plots 531 US data center moratoria and restrictions"
+        },
+        {
           "ko": "위성 사진을 9곳으로 넓힘: 캐나다 3곳·번디·바다호스를 더해 모두 177장. 칸의 30% 넘게 눈이 덮은 달은 건너뜀(캐나다 겨울 사진이 하얘서 처음 사진과 비교가 안 됐음)",
           "en": "Satellite images now cover 9 sites: adding the three BC campuses, Bundey and Badajoz brings the total to 177. Months with more than 30% snow cover are skipped (BC winter images were white and useless for comparison)"
         },

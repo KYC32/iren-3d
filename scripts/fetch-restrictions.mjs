@@ -5,12 +5,14 @@
 //   늘 같은 판을 쓰려고 판 번호(commit)를 고정함 (REV). 새 판이 나오면 REV 를 바꾸고 다시 돌림
 // 부지가 속한 카운티는 미국 정부(FCC) 지도 서비스로 좌표 → 카운티 번호(FIPS)를 찾음
 // 계산은 src/data/restrictions.js (순수 함수 · 테스트 있음)
+// 지도용 파일도 씀: public/data/restrictions-map.json = 조치마다 [경도, 위도, 관할, 종류, 주, 날짜, 상태] (실제 지도 '지역 규제' 층, 2026-10-28)
+//   CC BY 4.0 자료에서 뽑은 것이라 출처 문구를 파일에 같이 넣고, 지도 아래 출처 표기에도 붙음
 //
 // 사용법: node scripts/fetch-restrictions.mjs   (인터넷 필요 · 받은 CSV 는 저장하지 않고 메모리에서만 읽음)
 // =============================================================
 import { readFileSync, writeFileSync } from 'node:fs'
+import { RestrictionsFile, RestrictionsMapFile } from '../src/data/schema.js'
 import { restrictionsFor, statusOf } from '../src/data/restrictions.js'
-import { RestrictionsFile } from '../src/data/schema.js'
 
 const REPO = 'miklia/us-data-center-moratoria-local-opposition'
 const REV = 'aede5834e0f4add48f3f4eb22a62ec0c429f7396'          // 2026-10-02 판
@@ -67,5 +69,13 @@ const out = RestrictionsFile.parse({
   sites,
 })
 writeFileSync(new URL('../data/restrictions.json', import.meta.url), JSON.stringify(out, null, 2) + '\n')
+// 4) 지도용: 모든 조치의 위치·관할·상태 (자료의 좌표 그대로 — 카운티·도시·부족 정부의 대표 지점)
+const round = (x) => Math.round(x * 1e4) / 1e4
+const map = RestrictionsMapFile.parse({
+  checked: out.checked, source: out.source,
+  columns: ['lng', 'lat', 'jurisdiction', 'type', 'state', 'date', 'status'],
+  points: rows.map((r) => [round(r.lng), round(r.lat), r.jurisdiction, r.type, r.state, r.date, r.status]),
+})
+writeFileSync(new URL('../public/data/restrictions-map.json', import.meta.url), JSON.stringify(map) + '\n')
 console.log(`✅ restrictions.json — 조치 ${rows.length}건에서 부지 ${sites.length}곳 요약`)
 for (const s of sites) console.log(`  ${s.site}: ${s.county} ${s.county_count}건 · ${s.state} ${s.state_count}건(${YEAR}년 ${s.state_count_year}건) · 가장 가까운 곳 ${s.nearest ? `${s.nearest.jurisdiction} ${s.nearest.km}km ${s.nearest.status}` : '없음'}`)

@@ -231,6 +231,7 @@ docs/research-brief.md      참고 사례·코드·데이터 출처 리서치
 - h3-js: 육각 격자 (Uber H3)
 - IM3 Open Source Data Center Atlas v2026.02.09 (ODbL 1.0 · © OpenStreetMap contributors): 실제 지도 '주변 데이터센터' 층(기본 꺼짐)의 미국 기존 데이터센터 1,474곳 — https://huggingface.co/datasets/sarkarghya/im3_open_source_data_center_atlas_v2026.02.09 (판 번호 고정). `node scripts/fetch-im3.mjs` 로 `public/data/im3-datacenters.json` 을 다시 만듭니다. 이 파일은 ODbL 자료에서 만든 파생 데이터베이스라 같은 ODbL 로 공개합니다. 출처 문구는 지도 아래 출처 표기에 자동으로 붙습니다. 층 코드(`src/map/DataCenterLayer.jsx`)는 지도를 띄운 뒤 따로 불러와 지도 묶음 크기 한도에 들지 않습니다.
 
+- 실제 지도 참고 층(`src/map/MapLayers.jsx` — 모두 기본 꺼짐, 지도를 띄운 뒤 따로 불러옴): '주변 데이터센터'(IM3, 아래), '위성 사진'(`SatelliteLayer.jsx` — 부지마다 가장 최근 Sentinel-2 사진을 `satellite.json` 의 네 귀퉁이에 맞춰 지도 글자 층 아래에 깖, 출처는 지도 아래에 자동), '지역 규제'(`RulesLayer.jsx` — Miklian 2026 조치 531건을 점으로, 주황 = 유효 · 회색 = 철회·만료 · 남색 = 영구 규정으로 대체, 자료 `public/data/restrictions-map.json` 은 `node scripts/fetch-restrictions.mjs` 가 판 고정 자료에서 만듦 — CC BY 4.0).
 - OpenStreetMap (ODbL 1.0 · © OpenStreetMap contributors): 본사 3D 화면의 동네 — 55 Market Street 둘레의 건물 윤곽·층수·길·가로수. `node scripts/fetch-hq-osm.mjs` 로 `public/data/hq-city.json` 을 다시 만듭니다(Overpass API). 이 파일은 OSM 에서 만든 파생 데이터베이스라 같은 ODbL 로 공개합니다. 출처는 본사 화면 아래와 약속 카드의 건물 설명에 표기합니다. 배치 계산(`src/scene/hqCity.js`)은 본사 화면에 들어갈 때만 받습니다.
 
 ## 참고한 사례
@@ -259,3 +260,5 @@ docs/research-brief.md      참고 사례·코드·데이터 출처 리서치
 - 지도 배경은 현재 제공 데이터입니다. 타임라인이 과거여도 과거 지형 영상이 아닙니다. 지도 배경에는 위성영상이 없습니다(위성 사진은 캠퍼스 패널 '위성으로 본 변화' 칸에만 있음). 타일 실패 시에도 목록·상세는 독립적으로 동작합니다.
 
 OpenFreeMap / OpenMapTiles / OpenStreetMap 출처 표시는 지도에 유지합니다. 유료 가입·API 키·자동 자료 게시 기능은 없습니다. 녹화 모드는 기존 자료의 시나리오 연출을 유지하며 투자자용 확인 현황과 구별됩니다.
+
+**자동 투어 음성**: 사이트의 자동 투어(상단 바 '투어')도 같은 목소리로 단계마다 한 문장을 읽습니다(한국어만, 기본은 꺼짐 — 투어 카드의 스피커 단추로 켜고 이 기기에서 기억). 문장은 `src/tour/tourNarration.js`(숫자 없음 · 이름은 한글 · 영어는 AI 만 — 자막 숫자는 자료와 함께 바뀌지만 소리는 미리 만든 것이라)이고, `PYTHON=<TTS 가상환경>/bin/python node scripts/narrate/tour.mjs` 가 `public/audio/tour/<단계 id>.m4a`(모노 24kHz 40kbps)와 `manifest.json`(문장 지문·길이)을 씁니다. 문장을 고치고 다시 만들지 않으면 `tourNarration.test.js` 가 지문이 다르다고 실패하고, 소리가 단계 시간보다 길어도 실패합니다.

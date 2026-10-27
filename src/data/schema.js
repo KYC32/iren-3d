@@ -317,6 +317,17 @@ export const RestrictionsFile = z.object({
   }).strict()),
 }).strict()
 
+// 지역 규제 지도용 (public/data/restrictions-map.json) — 조치마다 한 줄, 실제 지도 '지역 규제' 층 (scripts/fetch-restrictions.mjs 가 씀)
+export const RestrictionsMapFile = z.object({
+  checked: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  source: RestrictionsFile.shape.source,
+  columns: z.tuple([z.literal('lng'), z.literal('lat'), z.literal('jurisdiction'), z.literal('type'), z.literal('state'), z.literal('date'), z.literal('status')]),
+  points: z.array(z.tuple([
+    z.number().min(-180).max(180), z.number().min(-90).max(90), z.string(), z.string(), z.string(),
+    z.string(), z.enum(['active', 'rescinded', 'replaced', 'expired', 'unknown']),
+  ])),
+}).strict()
+
 export const InfraFile = z.object({
   schema_version: z.literal(2),
   research: Research.optional(),

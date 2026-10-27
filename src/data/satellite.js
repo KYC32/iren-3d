@@ -15,3 +15,15 @@ export function satelliteAt(manifest, siteId, month) {
 
 // 자동 넘김 한 걸음: 지금 사진 순번 i, 마지막 순번 last → 다음 순번 (마지막이면 null = 멈춤)
 export const nextFrame = (i, last) => (i >= last ? null : i + 1)
+
+// 실제 지도에 겹칠 사진: 부지마다 가장 최근 한 장 (네 귀퉁이 corners 가 있는 것만) → [{ site, img }]
+//   실제 지도는 늘 기준일(지금) 모습이라 타임라인 달과 상관없이 마지막 사진
+export function latestPerSite(manifest) {
+  const last = new Map()
+  for (const img of manifest?.images ?? []) {
+    if (!img.corners) continue
+    const prev = last.get(img.site)
+    if (!prev || img.month > prev.month) last.set(img.site, img)
+  }
+  return [...last.entries()].map(([site, img]) => ({ site, img }))
+}

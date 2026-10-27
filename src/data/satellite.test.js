@@ -1,7 +1,7 @@
 // 위성 사진 목록(public/data/satellite.json)에서 부지·달에 맞는 사진 고르기 시험
 import { describe, it, expect } from 'vitest'
 import { existsSync, readFileSync } from 'node:fs'
-import { satelliteAt, nextFrame } from './satellite.js'
+import { satelliteAt, nextFrame, latestPerSite } from './satellite.js'
 import { toMonth } from './timeline.js'
 
 const man = { images: [
@@ -21,6 +21,19 @@ describe('satelliteAt', () => {
   })
   it('목록 파일이 없으면 빈 목록', () => {
     expect(satelliteAt(null, 'childress', toMonth('2026-10'))).toEqual([])
+  })
+})
+
+describe('latestPerSite (실제 지도에 겹칠 사진)', () => {
+  it('부지마다 가장 최근 한 장 · 네 귀퉁이가 없는 사진은 뺌', () => {
+    const m = { images: [
+      { site: 'a', month: '2025-01', corners: [[0, 1], [1, 1], [1, 0], [0, 0]] },
+      { site: 'a', month: '2026-10', corners: [[0, 1], [1, 1], [1, 0], [0, 0]] },
+      { site: 'b', month: '2026-09', corners: [[0, 1], [1, 1], [1, 0], [0, 0]] },
+      { site: 'b', month: '2026-10' },
+    ] }
+    expect(latestPerSite(m).map((x) => `${x.site}:${x.img.month}`)).toEqual(['a:2026-10', 'b:2026-09'])
+    expect(latestPerSite(null)).toEqual([])
   })
 })
 

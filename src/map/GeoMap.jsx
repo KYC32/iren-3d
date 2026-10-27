@@ -11,7 +11,7 @@ import CampusMarkers from './CampusMarkers.jsx'
 import HqMarker from './HqMarker.jsx' // 시드니 본사 카드 (CEO 사진·새 발언 수, 누르면 본사 3D 화면)
 import ProspectMarkers from './ProspectMarkers.jsx' // '?' 카드: 회사 발표 없이 정황만 있는 지역 (앨버타)
 // '주변 데이터센터' 층(IM3 Atlas, ODbL): 지도를 띄운 뒤 따로 불러옴 → 지도 묶음 크기 한도에 들지 않음
-const DataCenterLayer = lazy(() => import('./DataCenterLayer.jsx'))
+const MapLayers = lazy(() => import('./MapLayers.jsx')) // 참고 층 (주변 데이터센터 · 위성 사진 · 지역 규제) — 지도를 띄운 뒤 따로
 import { applyBasemapLabels } from './basemapStyle.js'
 import { campusPanelLayout } from '../ui/panelLayout.js'
 
@@ -116,7 +116,7 @@ export default function GeoMap() {
     {loaded && mapRef.current && <CampusMarkers map={mapRef.current} data={data} lang={lang} selectedId={site?.id} onGroup={setGroup}/> }
     {loaded && mapRef.current && hq && <HqMarker map={mapRef.current} hq={hq} lang={lang}/>}
     {loaded && mapRef.current && data?.raw?.prospects && <ProspectMarkers map={mapRef.current} prospects={data.raw.prospects} lang={lang}/>}
-    {loaded && mapRef.current && <Suspense fallback={null}><DataCenterLayer map={mapRef.current} lang={lang}/></Suspense>}
+    {loaded && mapRef.current && <Suspense fallback={null}><MapLayers map={mapRef.current} lang={lang}/></Suspense>}
     {error && <div className="map-error" role="status">{lang==='ko'?'지도를 불러오지 못했습니다. 캠퍼스 목록과 상세 정보는 계속 사용할 수 있습니다.':'Map unavailable. Campus list and details remain available.'}</div>}
     {!loaded&&!error&&<div className="map-loading">{lang==='ko'?'실제 지도 불러오는 중…':'Loading map…'}</div>}
     {group&&<div className="map-group panel"><button className="close-small" onClick={()=>setGroup(null)} aria-label={lang==='ko'?'닫기':'Close'}><X size={14} aria-hidden="true"/></button><b>{lang==='ko'?'이 지역의 캠퍼스':'Campuses in this area'}</b>{group.map(s=><button key={s.id} onClick={()=>{useAppStore.getState().enterSite3D(s.id);setGroup(null)}}>{lang==='ko'?s.name_ko:s.name}</button>)}</div>}

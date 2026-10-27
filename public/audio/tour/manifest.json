@@ -1,0 +1,77 @@
+{
+ "voice": "Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice · Sohee",
+ "license": "Apache-2.0",
+ "lang": "ko",
+ "clips": {
+  "intro": {
+   "src": "/audio/tour/intro.m4a",
+   "sec": 4.86,
+   "hash": "63f683f4c76b"
+  },
+  "childress-map": {
+   "src": "/audio/tour/childress-map.m4a",
+   "sec": 4.62,
+   "hash": "dede911ba541"
+  },
+  "childress-3d": {
+   "src": "/audio/tour/childress-3d.m4a",
+   "sec": 6.03,
+   "hash": "13b4a19b72e1"
+  },
+  "childress-microsoft": {
+   "src": "/audio/tour/childress-microsoft.m4a",
+   "sec": 5.99,
+   "hash": "e20576144827"
+  },
+  "childress-horizon-1": {
+   "src": "/audio/tour/childress-horizon-1.m4a",
+   "sec": 5.56,
+   "hash": "b43711e881d0"
+  },
+  "childress-nvidia": {
+   "src": "/audio/tour/childress-nvidia.m4a",
+   "sec": 4.9,
+   "hash": "56d1902f4e98"
+  },
+  "childress-night": {
+   "src": "/audio/tour/childress-night.m4a",
+   "sec": 3.77,
+   "hash": "6108ca048449"
+  },
+  "sweetwater-map": {
+   "src": "/audio/tour/sweetwater-map.m4a",
+   "sec": 4.47,
+   "hash": "5d72d101393e"
+  },
+  "sweetwater-3d": {
+   "src": "/audio/tour/sweetwater-3d.m4a",
+   "sec": 4.43,
+   "hash": "05af75fc48dd"
+  },
+  "bc-map": {
+   "src": "/audio/tour/bc-map.m4a",
+   "sec": 5.14,
+   "hash": "b060808dad68"
+  },
+  "expansion-map": {
+   "src": "/audio/tour/expansion-map.m4a",
+   "sec": 5.61,
+   "hash": "e3b990c12993"
+  },
+  "hq": {
+   "src": "/audio/tour/hq.m4a",
+   "sec": 4.9,
+   "hash": "c1975911b4d5"
+  },
+  "outlook": {
+   "src": "/audio/tour/outlook.m4a",
+   "sec": 4.46,
+   "hash": "ad8e4962e7b7"
+  },
+  "outro": {
+   "src": "/audio/tour/outro.m4a",
+   "sec": 5.22,
+   "hash": "5df4b5e55abd"
+  }
+ }
+}
