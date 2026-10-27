@@ -95,8 +95,18 @@ export const Company = z.object({
     lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180), source: Url,
     tz: z.string().optional(), // 시간대 (본사 3D 화면 하늘 '지금'의 현지 시각, 예 Australia/Sydney)
     // 본사 3D 화면의 건물 (단순화한 모형): 층수 = 건물 소유사 자료, level = 회사가 쓰는 층(위 주소의 Level), 출처 = 층수 자료
-    building: z.object({ floors: z.number().int().positive(), level: z.number().int().nonnegative(), source: Url }).strict()
-      .refine((b) => b.level < b.floors, '쓰는 층(level)이 건물 층수(floors) 안이어야 함').optional(),
+    //   moved_from = 공시 주소의 층이 바뀐 기록 (예전 층 · 지금 층이 처음 보인 공시일 · 그 공시) — 카드의 건물 설명에 씀
+    building: z.object({
+      floors: z.number().int().positive(), level: z.number().int().nonnegative(), source: Url,
+      moved_from: z.object({
+        level: z.number().int().nonnegative(),
+        first_seen: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD (공시일)'),
+        source: Url,
+      }).strict().optional(),
+    }).strict()
+      .refine((b) => b.level < b.floors, '쓰는 층(level)이 건물 층수(floors) 안이어야 함')
+      .refine((b) => !b.moved_from || b.moved_from.level !== b.level, '예전 층(moved_from.level)이 지금 층과 같으면 기록할 이동이 없음')
+      .optional(),
   }).strict().optional(),
   summary_ko: z.string(),
   summary_en: z.string(),

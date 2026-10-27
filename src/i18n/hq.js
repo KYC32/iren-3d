@@ -10,11 +10,13 @@ export const hqText = {
     // 지도 위 시드니 본사 카드 (HqMarker)
     title: 'IREN 본사', sub: '{city} · 경영진 발언 {n}건', newCount: '발언 {n}', open: '본사 건물 · 경영진 발언 보기 (3D)',
     // 본사 3D 화면 (빌딩 옆 'IREN · 5층' 표시 · 카드의 건물 설명)
-    towerFloor: 'IREN · {level}층',
-    modelNote: '건물은 단순화한 모형 · {floors}층(건물 소유사 Mirvac) · IREN {level}층(10-K 주소)', buildingSource: '건물 자료',
+    towerFloor: 'IREN · {level}층', floorTitle: 'IREN 공시 주소의 층 · 층 전체를 쓰는지는 공시에 없음',
+    modelNote: '건물은 단순화한 모형 · {floors}층(건물 소유사 Mirvac) · IREN {level}층은 공시 주소 기준이며 층 전체를 쓰는지는 공시에 없음', buildingSource: '건물 자료',
+    movedNote: '{date} 분기 보고서부터 {level}층 주소 (그 전 보고서엔 {from}층)', filingSource: '공시',
     // 옥상 위 CEO 카드 · 말풍선 (HqParts) — 누르면 가운데 카드 (StatementsCard)
     badgeOpen: '{name}의 약속·발언 보기', statementsN: '발언 {n}', bubbleAll: '약속·발언 보기', bubbleOpen: '약속·발언 카드 열기',
     prev: '이전 발언', next: '다음 발언', signOpen: '약속 타임라인 보기', scoreLine: '약속 {n}건 · 기한 안에 지켜짐 {a}/{b}',
+    scoreCount: '약속 {n}건', scoreKept: '기한 안에 지켜짐 {a}/{b}', // 성적표 글자를 두 조각으로 (휴대폰 가로 카드는 두 줄)
     silentNote: '{names}: 2023-08-29 이후 이름이 붙은 발언을 찾지 못해 화면에서 뺐어요 (찾으면 다시 나타남)',
     personTitle: '{name}의 발언', noStatements: '2023-08-29 AI 전환 뒤 회사 보도자료·실적 발표 콜·X에서 {name} 이름이 붙은 발언을 찾지 못했어요.',
     // ≡ 메뉴 바로가기 (AppMenu) — 경영진 발언(본사 화면) · CEO 약속 타임라인(본사 화면 + 약속 탭)
@@ -52,10 +54,12 @@ export const hqText = {
   },
   en: {
     title: 'IREN HQ', sub: '{city} · {n} management statements', newCount: '{n} new', open: 'See the HQ building and management statements (3D)',
-    towerFloor: 'IREN · Level {level}',
-    modelNote: 'Simplified model · {floors} storeys (building owner Mirvac) · IREN on Level {level} (10-K address)', buildingSource: 'Building data',
+    towerFloor: 'IREN · Level {level}', floorTitle: "Floor in IREN's filing address · filings do not say whether it uses the whole floor",
+    modelNote: "Simplified model · {floors} storeys (building owner Mirvac) · IREN on Level {level} per its filing address — filings do not say whether it uses the whole floor", buildingSource: 'Building data',
+    movedNote: 'Address shows Level {level} from the {date} quarterly report (Level {from} before)', filingSource: 'Filing',
     badgeOpen: 'See promises and statements by {name}', statementsN: '{n} statements', bubbleAll: 'Promises & statements', bubbleOpen: 'Open the promises and statements card',
     prev: 'Previous statement', next: 'Next statement', signOpen: 'See the promise timeline', scoreLine: '{n} promises · kept on time {a}/{b}',
+    scoreCount: '{n} promises', scoreKept: 'kept on time {a}/{b}',
     silentNote: '{names}: no attributed statements found since 2023-08-29, so not shown (will reappear if found)',
     personTitle: 'Statements by {name}', noStatements: 'Since the 2023-08-29 AI pivot we found no statements attributed to {name} in company releases, earnings calls or on X.',
     menuEntry: 'Management statements', menuSub: 'What the co-CEOs said · promises kept?',

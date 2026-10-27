@@ -35,8 +35,21 @@ describe('Company.hq', () => {
     expect(Company.safeParse({ ...company, hq: { ...hq, building: { ...building, level: 20 } } }).success).toBe(false)
     expect(Company.safeParse({ ...company, hq: { ...hq, building: { ...building, floors: 0 } } }).success).toBe(false)
   })
-  it('지금 데이터의 본사 건물: 20층 · IREN 5층 (주소 Level 5 와 같음)', () => {
+  // 공시 주소의 층이 바뀐 기록: 예전 층 · 새 층이 처음 보인 공시일 · 그 공시 — 예전 층이 지금 층과 같으면 기록할 게 없어 거부
+  it('Company.hq.building.moved_from: 예전 층·처음 확인한 공시일(YYYY-MM-DD)·출처만 받음', () => {
+    const hq = { city_ko: '시드니', city_en: 'Sydney', address: 'x', lat: -33.87, lng: 151.21, source: 'https://www.sec.gov/x' }
+    const moved = { level: 6, first_seen: '2026-05-08', source: 'https://www.sec.gov/y' }
+    const building = { floors: 20, level: 5, source: 'https://www.mirvac.com/x', moved_from: moved }
+    const ok = (b) => Company.safeParse({ ...company, hq: { ...hq, building: b } }).success
+    expect(ok(building)).toBe(true)
+    expect(ok({ ...building, moved_from: { ...moved, level: 5 } })).toBe(false)          // 지금 층과 같음
+    expect(ok({ ...building, moved_from: { ...moved, first_seen: '2026-05' } })).toBe(false) // 날짜는 일까지
+    expect(ok({ ...building, moved_from: { ...moved, note: 'x' } })).toBe(false)          // 정해진 칸만
+  })
+  it('지금 데이터의 본사 건물: 20층 · IREN 5층 (주소 Level 5 와 같음) · 2026-05-08 분기 보고서 전엔 6층', () => {
     expect(iren.hq.building).toMatchObject({ floors: 20, level: 5 })
     expect(iren.hq.address).toMatch(/^Level 5,/)
+    expect(iren.hq.building.moved_from).toMatchObject({ level: 6, first_seen: '2026-05-08' })
+    expect(iren.hq.building.moved_from.source).toMatch(/^https:\/\/www\.sec\.gov\//)
   })
 })

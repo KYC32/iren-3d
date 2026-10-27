@@ -14,7 +14,7 @@ import { hqText } from '../i18n/hq.js'
 import { loadStatements, peekStatements } from '../data/loadStatements.js'
 import { scoreboard } from '../data/promises.js'
 import { statementRows, speakers } from '../data/statementRows.js'
-import { Face, ChannelMark, VerdictBadge, ScoreBar, fill } from './statementParts.jsx' // 카드와 같은 그림 조각
+import { Face, ChannelMark, VerdictBadge, ScoreBar, STATUSES, fill } from './statementParts.jsx' // 카드와 같은 그림 조각
 import '../scene/hq.css'
 
 const BUBBLE_COUNT = 6  // 말풍선으로 돌려 보여 줄 최근 발언 수
@@ -45,11 +45,15 @@ export function CeoTop({ file }) {
 
 // CEO 카드 (남색 바탕 · 큰 사진 · 초록 테두리): 발언이 있는 사람만 (speakers — 발언이 없는 공동 CEO 는 뺌)
 //   사람을 누르든 아래 성적표를 누르든 약속 타임라인(약속 탭)이 먼저 — 사람을 누르면 발언 탭에서 그 사람 발언만
+//   휴대폰(767px 이하)은 CSS 가 가로 한 줄로 바꿈: 사진 | 이름·발언 수(.hq-ceo-who) | 성적표 두 줄 (hq.css)
 export function CeoCard({ file }) {
   const { lang, h } = useHqText()
   const openCard = useAppStore((s) => s.openHqCard)
   const sb = scoreboard(file.promises, file.checkedAt)
   const counts = { kept: sb.kept, 'late-kept': sb.lateKept, late: sb.late, withdrawn: sb.withdrawn, pending: sb.pending }
+  const line = fill(h.scoreLine, { n: sb.total, a: sb.kept, b: sb.due })
+  // 막대 칸별 개수 ('지켜짐 4 · 늦게 지켜짐 2 · …') — 마우스를 올리면 색이 무엇인지 보임
+  const breakdown = STATUSES.filter((k) => counts[k] > 0).map((k) => `${h.status[k]} ${counts[k]}`).join(' · ')
   return (
     <div className="hq-ceo statements-panel">
       {speakers(file).map((p) => {
@@ -58,15 +62,18 @@ export function CeoCard({ file }) {
           <button key={p.id} type="button" className="hq-ceo-person" onClick={() => openCard({ tab: 'promises', person: p.id })}
             aria-label={fill(h.badgeOpen, { name: p.name })} title={fill(h.badgeOpen, { name: p.name })}>
             <span className="hq-ceo-photo"><Face person={p} /></span>
-            <b>{p.name}</b>
-            <small>{lang === 'ko' ? p.title_ko : p.title_en}</small>
-            <em>{fill(h.statementsN, { n })}</em>
+            <span className="hq-ceo-who">
+              <b>{p.name}</b>
+              <small>{lang === 'ko' ? p.title_ko : p.title_en}</small>
+              <em>{fill(h.statementsN, { n })}</em>
+            </span>
           </button>
         )
       })}
-      <button type="button" className="hq-ceo-score" onClick={() => openCard({ tab: 'promises' })} title={h.signOpen}
-        aria-label={`${h.signOpen}: ${fill(h.scoreLine, { n: sb.total, a: sb.kept, b: sb.due })}`}>
-        <span>{fill(h.scoreLine, { n: sb.total, a: sb.kept, b: sb.due })}</span>
+      <button type="button" className="hq-ceo-score" onClick={() => openCard({ tab: 'promises' })} title={`${h.signOpen} — ${breakdown}`}
+        aria-label={`${h.signOpen}: ${line} (${breakdown})`}>
+        {/* 두 조각: 넓은 화면은 한 줄('약속 25건 · 기한 안에 지켜짐 4/8'), 휴대폰 가로 카드는 두 줄 */}
+        <span className="hq-score-text"><span>{fill(h.scoreCount, { n: sb.total })}</span><span>{fill(h.scoreKept, { a: sb.kept, b: sb.due })}</span></span>
         <ScoreBar counts={counts} />
       </button>
     </div>
@@ -74,9 +81,10 @@ export function CeoCard({ file }) {
 }
 
 // 'IREN · 5층' 표시 (IREN 층 왼쪽 끝 모서리에 붙음 — 오른쪽 끝이 빌딩)
+//   5층은 공시 주소의 층 — 층 전체를 쓰는지는 공시에 없어서 마우스를 올리면 그 설명 (카드 아래 건물 설명에도 있음)
 export function FloorTag({ level, street }) {
   const { h } = useHqText()
-  return <div className="hq-floor"><span className="dot" aria-hidden="true" /><b>{fill(h.towerFloor, { level })}</b>{street && <small>{street}</small>}</div>
+  return <div className="hq-floor" title={h.floorTitle}><span className="dot" aria-hidden="true" /><b>{fill(h.towerFloor, { level })}</b>{street && <small>{street}</small>}</div>
 }
 
 // 최근 발언 말풍선 — 7초마다 다음 발언 (마우스·초점이 있으면 멈춤, 움직임 줄이기면 자동으로 안 넘김)

@@ -54,5 +54,7 @@ it('hqLabelRoom: 넓은 화면은 위 230 · 오른쪽 말풍선 320+40 · 왼�
 it('hqLabelRoom: 태블릿은 말풍선을 좁게 (260+40), 휴대폰은 위 CEO 카드 자리만 (말풍선은 화면 아래에 붙임)', () => {
   expect(hqLabelRoom(900)).toEqual({ top: 220, right: 300, left: 180 })
   expect(hqLabelRoom(768)).toEqual({ top: 220, right: 300, left: 180 })
-  expect(hqLabelRoom(767)).toEqual({ top: 190, right: 0, left: 0 })
+  // 휴대폰 CEO 카드는 가로 한 줄 (사진 | 이름 | 성적표, 옥상 위 약 83px) → 카메라 상자의 옥상 위 여유(2.5칸, 390×844 에서 약 110px)에
+  //   거의 다 들어가서 위 자리는 조금만 (375×667 작은 휴대폰에서도 카드가 상단 바 밑에 들어오는 값 · 예전 세로 카드는 190)
+  expect(hqLabelRoom(767)).toEqual({ top: 20, right: 0, left: 0 })
 })

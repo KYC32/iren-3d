@@ -7,10 +7,23 @@ const raw = buildInfra()
 const data = viewInfra(raw, asOfMonth(raw.as_of))
 
 describe('자동 투어 대본 (buildTourSteps)', () => {
-  it('지도 → 차일드레스 3D → 계약·건물 → 밤 → 스위트워터 → 캐나다 → 확장 → 전망 → 마무리 순서', () => {
+  it('지도 → 차일드레스 3D → 계약·건물 → 밤 → 스위트워터 → 캐나다 → 확장 → 본사 → 전망 → 마무리 순서', () => {
     const ids = buildTourSteps(data, 'ko').map((s) => s.id)
     expect(ids).toEqual(['intro', 'childress-map', 'childress-3d', 'childress-microsoft', 'childress-horizon-1', 'childress-nvidia', 'childress-night',
-      'sweetwater-map', 'sweetwater-3d', 'bc-map', 'expansion-map', 'outlook', 'outro'])
+      'sweetwater-map', 'sweetwater-3d', 'bc-map', 'expansion-map', 'hq', 'outlook', 'outro'])
+  })
+  // 본사 단계: 시드니 본사 3D 화면(view 'hq')에서 옥상 위 CEO 카드의 약속 성적표를 소개 — 캠퍼스가 아니라 사이트 id 없음
+  it('본사 단계는 본사 3D 화면으로 가고, 성적표 막대 색(타임라인과 같은 색)을 설명', () => {
+    const hq = buildTourSteps(data, 'ko').find((s) => s.id === 'hq')
+    expect(hq.view).toBe('hq')
+    expect(hq.site).toBeUndefined()
+    expect(hq.title).toContain('시드니')
+    expect(hq.text).toMatch(/초록.*주황/)
+    expect(buildTourSteps(data, 'en').find((s) => s.id === 'hq').title).toContain('Sydney')
+  })
+  it('본사 자료가 없는 회사면 본사 단계를 뺌', () => {
+    const noHq = { ...data, companies: data.companies.map(({ hq: _drop, ...c }) => c) }
+    expect(buildTourSteps(noHq, 'ko').some((s) => s.id === 'hq')).toBe(false)
   })
   it('모든 단계에 제목·자막·길이가 있고, 3D 단계는 사이트가 있음', () => {
     for (const s of buildTourSteps(data, 'en')) {

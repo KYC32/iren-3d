@@ -1,6 +1,20 @@
 {
   "entries": [
     {
+      "date": "2026-10-27",
+      "items": [
+        {
+          "ko": "본사 3D 화면 손질. CEO 카드 성적표 막대 색을 약속 타임라인과 같게 맞춤(초록 = 기한 안에 지켜짐 · 주황·초록 빗금 = 늦게 지켜짐 · 주황 = 늦어짐 · 회색 = 기한 전). 휴대폰은 CEO 카드를 가로 한 줄로 바꿔 높이가 186px에서 65px로 줄고 빌딩이 더 크게 보임. 본사 화면 면책 문구는 한 줄로 줄임(긴 문구는 마우스를 올리면 보임). 자동 투어에 본사 단계 추가",
+          "en": "HQ 3D view polish. The CEO card's scorecard bar now uses the promise timeline's colors (green = kept on time · orange/green stripes = kept late · orange = late · grey = not yet due). On phones the CEO card is a single row, so its height drops from 186px to 65px and the building shows larger. The HQ view's disclaimer is cut to one line (hover for the full text). The guided tour gains an HQ step"
+        },
+        {
+          "ko": "본사 카드의 건물 설명을 고침: IREN 5층은 공시 주소 기준이며 층 전체를 쓰는지는 공시에 없음. 주소의 층은 2026-05-08 분기 보고서부터 5층이고 그 전 보고서(2025-08~2026-02)엔 6층",
+          "en": "Fixed the building note on the HQ card: IREN's Level 5 comes from its filing address, and filings do not say whether it uses the whole floor. The address shows Level 5 from the 2026-05-08 quarterly report; earlier reports (Aug 2025–Feb 2026) show Level 6",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000026/iren-20260331.htm"
+        }
+      ]
+    },
+    {
       "date": "2026-10-26",
       "items": [
         {

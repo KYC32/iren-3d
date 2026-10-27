@@ -46,6 +46,7 @@ export default {
   units: { mw: 'MW', gw: 'GW', acres: 'acres' },
   disclaimer:
     'Independent, unofficial project. Not affiliated with, endorsed by, or sponsored by any company shown. All data compiled from public sources; see each item for its source. Not investment advice. Company logos and trademarks belong to their owners and are used only to identify contract counterparties.',
+  disclaimerShort: 'Unofficial · Not affiliated with any company · Not investment advice',
   official: 'Data & sources',
   hintGlobe: 'Click a pin to enter a site · drag to rotate',
   hintSite: 'Drag to rotate · right-drag / two fingers to pan · wheel / pinch to zoom',

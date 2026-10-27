@@ -39,8 +39,10 @@ export function sideCorners(cx, cz) {
 
 // 카메라가 빌딩을 맞출 때 비워 둘 화면 자리(px): 위 = 옥상 위 CEO 카드, 오른쪽 = 그 옆 말풍선, 왼쪽 = 5층 'IREN' 표시
 //   값은 hq.css 의 폭과 맞춤 — 1024px 이상 말풍선 320, 768~1023px 260, 767px 이하는 말풍선을 화면 아래에 붙여 위 자리만
+//   휴대폰 위 자리 20: 가로 한 줄 CEO 카드(옥상 위 약 83px)는 카메라 상자의 옥상 위 여유(hqTower box 의 +2.5칸)에 거의 다 들어감
+//     (2026-10-27: 세로 카드일 땐 190 → 빌딩 자리가 좁았음. 375×667 작은 휴대폰에서도 카드가 상단 바 밑에 오는 값)
 export function hqLabelRoom(width) {
-  if (width < 768) return { top: 190, right: 0, left: 0 }
+  if (width < 768) return { top: 20, right: 0, left: 0 }
   if (width < 1024) return { top: 220, right: 260 + 40, left: 180 }
   return { top: 230, right: 320 + 40, left: 200 }
 }

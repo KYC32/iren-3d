@@ -1,7 +1,7 @@
 // =============================================================
 // TourPlayer — 자동 투어 진행기: 대본(tourSteps.js)을 한 단계씩 화면에 적용하고 자막 카드를 띄움
 // -------------------------------------------------------------
-// 단계가 바뀌면 store 액션으로 화면을 옮깁니다 (지도 이동 / 3D 진입 / 계약 구역 / 건물 / 날짜 / 하늘).
+// 단계가 바뀌면 store 액션으로 화면을 옮깁니다 (지도 이동 / 3D 진입 / 본사 3D / 계약 구역 / 건물 / 날짜 / 하늘).
 // 단계 길이(dur)만큼 기다렸다가 다음으로 넘어가고, 사용자는 이전·다음·일시정지·끝내기를 누를 수 있습니다.
 // 키보드: ← → 이동, 스페이스 일시정지, Esc 끝내기.
 // 투어는 store.tour 가 있을 때만 그려지고(App.jsx), 끝나면 stopTour 가 날짜·하늘을 되돌립니다.
@@ -21,6 +21,12 @@ function applyStep(step) {
   // 페이지 단계(사업 현황): 지도 위에 페이지를 띄움 (투어는 계속). 다음 단계로 가면 페이지를 닫음
   if (step.page) { st.setPage(step.page, null, { fromTour: true }); return }
   if (st.page) st.setPage(null, null, { fromTour: true })
+  // 본사 단계: 시드니 본사 3D 화면 (이미 본사면 카메라만 처음 시점으로, 열린 약속 카드는 닫음)
+  if (step.view === 'hq') {
+    if (st.view === 'hq' && st.surface === '3d') { st.closeHqCard(); st.requestCampusHome() }
+    else st.enterHq3D()
+    return
+  }
   if (step.surface === 'map') {
     if (step.site) st.focusSiteOnMap(step.site)
     else { st.setMapRegion(step.region ?? 'NA'); st.setCampusListOpen(window.innerWidth >= 768) }

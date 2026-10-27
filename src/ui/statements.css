@@ -3,15 +3,15 @@
    공통 조각(사진 · 채널 · 판정 배지 · 성적표 막대)은 옥상 위 CEO 카드·말풍선(HqParts)도 씀 → statementParts.jsx 가 불러옴
    겉 상자는 <dialog class="statements-card"> (가운데, 휴대폰은 아래쪽 넓게) · 색 변수는 .statements-panel
    색: IREN 남색 #0B344F · 초록 #71DA80
-     판정 색 --v-* : 성적표 막대·배지 (남색 CEO 카드 위에서도 보이는 밝은 색)
+     판정 색 --v-* : 성적표 막대·배지 — 타임라인 색(--tl-*)을 그대로 씀 (2026-10-27: CEO 카드 막대만 다른 색이라 같은 판정이 두 색으로 보였음)
      타임라인 색 --tl-* : 흰 바탕 위 막대 (dataviz 색 검사 — 이룬 날 초록·늦은 시간 주황·철회 자주, 2026-10-22)
    ============================================================= */
 .statements-panel {
-  --v-kept: #71da80;       /* 지켜짐 */
-  --v-late-kept: #b9d97a;  /* 늦게 지켜짐 */
-  --v-late: #e8b04a;       /* 늦어짐 */
-  --v-withdrawn: #c4645a;  /* 철회 */
-  --v-pending: #c3ccd3;    /* 기한 전 */
+  --v-kept: var(--tl-met);           /* 지켜짐 = 이룬 날 초록 */
+  --v-late-kept: var(--tl-met);      /* 늦게 지켜짐: 배지는 이룬 초록 (막대 칸은 아래 .st-bar 가 주황+초록 빗금) */
+  --v-late: var(--tl-late);          /* 늦어짐 = 기한 뒤 주황 */
+  --v-withdrawn: var(--tl-withdrawn); /* 철회 = 자주 */
+  --v-pending: var(--tl-future);     /* 기한 전 = 남은 기간 회색 */
   --tl-promised: #7c8d9a;  /* 말한 날 → 기한 (흰 바탕 대비 3.4:1) */
   --tl-future: #cfd7de;    /* 기한 전 약속의 확인일 뒤 (남은 기간) */
   --tl-met: #0f8a6e;       /* 이룬 날 점 */
@@ -53,6 +53,9 @@
 /* 판정 색: 성적표 막대 칸·배지가 같은 변수 */
 .v-kept { --c: var(--v-kept); } .v-late-kept { --c: var(--v-late-kept); } .v-late { --c: var(--v-late); }
 .v-withdrawn { --c: var(--v-withdrawn); } .v-pending { --c: var(--v-pending); }
+/* 막대 칸 모양도 타임라인 거르기 단추(.sw-*)와 같게: 늦게 지켜짐 = 주황·초록 빗금, 기한 전 = 회색 + 얇은 테두리 */
+.st-bar i.v-late-kept { background: repeating-linear-gradient(-45deg, var(--tl-met) 0 3px, var(--tl-late) 3px 6px); }
+.st-bar i.v-pending { box-shadow: inset 0 0 0 1px #b4c0c9; }
 .st-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-size: 10.5px; color: #5a6b78; }
 .st-x { font-size: 11px; font-weight: 800; color: #0b344f; }
 .st-summary { margin: 3px 0 4px; font-size: 12.5px; line-height: 1.45; }

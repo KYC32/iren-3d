@@ -2,11 +2,11 @@
 // tourSteps.js — 자동 투어의 "대본": 어디를 보여 주고 무엇을 말할지 (순수 함수 → tourSteps.test.js)
 // -------------------------------------------------------------
 // 처음 온 투자자가 90초 안에 "IREN 이 어디에 무엇을 갖고 있고, 돈은 어디서 나오며, 다음은 무엇인가"를
-// 알도록 지도 → 주요 캠퍼스 3D → 계약·건물 → 전망 순서로 안내합니다.
+// 알도록 지도 → 주요 캠퍼스 3D → 계약·건물 → 본사(경영진 약속) → 전망 순서로 안내합니다.
 // 자막 숫자는 화면 데이터에서 그때그때 계산하므로 데이터가 갱신되면 투어도 같이 바뀝니다.
 // TourPlayer 가 한 단계씩 store 액션으로 옮기고(지도 이동·3D 진입·구역·건물 선택·날짜·하늘) 자막을 띄웁니다.
 //
-// 단계 모양: { id, surface:'map'|'3d' 또는 page:'portfolio', site?, region?, zone?, building?, sky?, month?, dur(ms), title, text }
+// 단계 모양: { id, surface:'map'|'3d' 또는 page:'portfolio' 또는 view:'hq'(본사 3D), site?, region?, zone?, building?, sky?, month?, dur(ms), title, text }
 // =============================================================
 import { totalsAt, siteMetricsAt } from '../data/timeline.js'
 import { contractProgress } from '../data/contracts.js'
@@ -146,7 +146,19 @@ export function buildTourSteps(data, lang = 'ko') {
     })
   }
 
-  // 6) 전망: 회사 목표대로 진행했을 때 연말 AI 가동
+  // 6) 시드니 본사: 경영진이 기한을 밝힌 약속과 그 성적표 (본사 3D 화면 · 옥상 위 CEO 카드)
+  //   숫자는 카드가 화면에 바로 보여 주므로 자막엔 막대 색만 설명 (색은 약속 타임라인과 같음)
+  if (company?.hq) {
+    steps.push({
+      id: 'hq', view: 'hq', dur: 8 * SEC,
+      title: ko ? `${company.hq.city_ko} 본사 · 경영진 약속` : `${company.hq.city_en} HQ · management promises`,
+      text: ko
+        ? '공동 CEO가 실적 발표·X에서 기한을 밝히고 한 약속을 모았습니다. 옥상 위 카드의 막대가 성적표입니다 — 초록 = 기한 안에 이룸, 주황 = 기한을 넘김, 회색 = 아직 기한 전. 카드를 누르면 약속 타임라인이 열립니다.'
+        : 'Promises with a deadline that the co-CEOs made on earnings calls and on X. The bar on the rooftop card is the scorecard — green = met on time, orange = past the deadline, grey = not yet due. Tap the card for the promise timeline.',
+    })
+  }
+
+  // 7) 전망: 회사 목표대로 진행했을 때 연말 AI 가동
   const last = path.at(-1)
   if (last) {
     const arr = metric(company, 'contracted_arr_usd_bn')
@@ -159,7 +171,7 @@ export function buildTourSteps(data, lang = 'ko') {
     })
   }
 
-  // 7) 마무리
+  // 8) 마무리
   steps.push({
     id: 'outro', surface: 'map', region: 'NA', dur: 7 * SEC,
     title: ko ? '직접 살펴보기' : 'Explore on your own',

@@ -18,6 +18,7 @@
 .hq-ceo::after { content: ''; position: absolute; left: 50%; bottom: -8px; width: 16px; height: 16px; border-radius: 3px; background: #0b344f; transform: translateX(-50%) rotate(45deg); box-shadow: 4px 4px 8px rgba(6, 28, 44, .25); }
 .hq-ceo-person { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 100%; padding: 0; border: 0; background: none; color: inherit; cursor: pointer; font: inherit; }
 .hq-ceo-person:focus-visible { outline: 2px solid #71da80; outline-offset: 4px; border-radius: 12px; }
+.hq-ceo-who { display: flex; flex-direction: column; align-items: center; gap: 2px; } /* 이름 · 직함 · 발언 수 (휴대폰은 사진 오른쪽) */
 .hq-ceo-photo .st-face { width: 88px; height: 88px; border: 3px solid #71da80; box-shadow: 0 0 0 5px rgba(113, 218, 128, .22), 0 8px 18px rgba(0, 0, 0, .4); }
 .hq-ceo-photo .st-face.is-initials { font-size: 26px; }
 .hq-ceo-person:hover .hq-ceo-photo .st-face { box-shadow: 0 0 0 7px rgba(113, 218, 128, .35), 0 8px 18px rgba(0, 0, 0, .4); }
@@ -25,7 +26,12 @@
 .hq-ceo-person small { font-size: 11.5px; color: #b8d0de; }
 .hq-ceo-person em { margin-top: 6px; padding: 2px 10px; border-radius: 999px; background: #71da80; color: #0b344f; font-style: normal; font-size: 11px; font-weight: 800; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5); }
 .hq-ceo-score { display: block; width: 100%; margin-top: 12px; padding: 10px 2px 0; border: 0; border-top: 1px solid rgba(255, 255, 255, .16); background: none; color: #e4f6e8; cursor: pointer; font: inherit; font-size: 11.5px; font-weight: 650; text-align: center; }
-.hq-ceo-score .st-bar { height: 7px; margin-top: 7px; background: rgba(255, 255, 255, .16); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .35); }
+.hq-score-text span + span::before { content: ' · '; } /* 넓은 화면: '약속 25건 · 기한 안에 지켜짐 4/8' 한 줄 */
+/* 성적표 막대: 남색 판에 밝은 홈(음각)을 파고 그 안에 약속 타임라인과 같은 색 칸
+   (타임라인 색은 흰 바탕에 맞춘 색이라 남색 위에 바로 두면 초록 칸이 묻힘 — 2026-10-27 색 통일) */
+.hq-ceo-score .st-bar { height: 12px; margin-top: 7px; padding: 2px; box-sizing: border-box; border-radius: 6px; background: #eef2f5;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, .45), 0 1px 0 rgba(255, 255, 255, .14); }
+.hq-ceo-score .st-bar i { border-radius: 2px; }
 .hq-ceo-score:hover span, .hq-ceo-score:focus-visible span { color: #71da80; }
 .hq-ceo-score:focus-visible { outline: none; }
 
@@ -57,15 +63,25 @@
   .hq-floor small { display: none; }
 }
 
-/* 휴대폰(767px 이하): 옥상 위엔 CEO 카드만, 말풍선은 화면 아래 묶음(ui/HqDock.jsx) */
+/* 휴대폰(767px 이하): 옥상 위엔 CEO 카드만, 말풍선은 화면 아래 묶음(ui/HqDock.jsx)
+   CEO 카드는 가로 한 줄 = 사진 | 이름·발언 수 | 성적표 두 줄 (높이 약 65px — 세로 카드 약 186px 가 빌딩 자리를 먹었음, 2026-10-27)
+   위 자리는 scene/hqTower.js 의 hqLabelRoom(휴대폰 top 20 — 카드가 카메라 상자의 옥상 위 여유에 거의 다 들어감)과 맞춤 */
 .hq-dock { display: none; }
 @media (max-width: 767px) {
-  .hq-top { --ceo-w: 176px; }
+  .hq-top { transform: translateX(-50%); } /* 말풍선이 없어 카드만 → 카드 가운데가 옥상 */
   .hq-top .hq-bubble { display: none; }
-  .hq-ceo { padding: 12px 10px 10px; }
-  .hq-ceo-photo .st-face { width: 64px; height: 64px; }
-  .hq-ceo-person b { font-size: 14px; margin-top: 6px; }
+  .hq-ceo { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; flex: 0 0 auto; width: max-content; max-width: calc(100vw - 24px); padding: 9px 12px 9px 9px; border-radius: 16px; }
+  .hq-ceo-person { flex-direction: row; gap: 9px; width: auto; }
+  .hq-ceo-who { align-items: flex-start; }
+  .hq-ceo-photo .st-face { width: 46px; height: 46px; border-width: 2px; box-shadow: 0 0 0 3px rgba(113, 218, 128, .22), 0 4px 10px rgba(0, 0, 0, .4); }
+  .hq-ceo-photo .st-face.is-initials { font-size: 15px; }
+  .hq-ceo-person b { font-size: 14px; margin-top: 0; white-space: nowrap; }
   .hq-ceo-person small { display: none; }
+  .hq-ceo-person em { margin-top: 3px; }
+  .hq-ceo-score { width: auto; margin-top: 0; padding: 0 0 0 10px; border-top: 0; border-left: 1px solid rgba(255, 255, 255, .16); font-size: 11px; line-height: 1.35; text-align: left; }
+  .hq-score-text span { display: block; white-space: nowrap; }
+  .hq-score-text span + span::before { content: none; }
+  .hq-ceo-score .st-bar { margin-top: 5px; }
   .hq-floor { padding: 5px 9px; font-size: 11px; }
   .hq-floor small { display: none; }
   .hq-dock { display: block; margin: 0 8px 6px; pointer-events: auto; }
