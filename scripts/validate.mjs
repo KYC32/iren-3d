@@ -41,6 +41,13 @@ if (existsSync(stmtUrl)) {
   errors.push(...validateStatements(statements))
   const milestones = new Set(existsSync(researchUrl) ? (JSON.parse(readFileSync(researchUrl, 'utf8')).milestones ?? []).map((m) => m.id) : [])
   for (const p of statements.promises ?? []) if (p.milestone && !milestones.has(p.milestone)) errors.push(`statements: 없는 일정 ${p.milestone} (약속 ${p.id})`)
+  // 약속에 이은 캠퍼스·건물이 실제로 있는지 (약속 줄의 '현장에서 보기' 가 없는 곳으로 가지 않게)
+  for (const p of statements.promises ?? []) {
+    if (!p.site || !infra) continue
+    const site = infra.sites.find((x) => x.id === p.site)
+    if (!site) errors.push(`statements: 없는 캠퍼스 ${p.site} (약속 ${p.id})`)
+    else if (p.building && !site.buildings.some((b) => b.id === p.building)) errors.push(`statements: ${p.site} 에 없는 건물 ${p.building} (약속 ${p.id})`)
+  }
 }
 // 발행 주식 수·희석 (data/shares.json)
 const sharesUrl = new URL('shares.json', DATA)

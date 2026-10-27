@@ -13,8 +13,9 @@ import { useAppStore } from '../store/useAppStore.js'
 import { hqText } from '../i18n/hq.js'
 import { loadStatements, peekStatements } from '../data/loadStatements.js'
 import { scoreboard } from '../data/promises.js'
+import { nextDeadline, fmtSpan } from '../data/promiseTimeline.js' // 성적표 아래 '다음 기한' 한 줄
 import { statementRows, speakers } from '../data/statementRows.js'
-import { Face, ChannelMark, VerdictBadge, ScoreBar, STATUSES, fill } from './statementParts.jsx' // 카드와 같은 그림 조각
+import { Face, ChannelMark, VerdictBadge, ScoreBar, STATUSES, fill, ym } from './statementParts.jsx' // 카드와 같은 그림 조각
 import '../scene/hq.css'
 
 const BUBBLE_COUNT = 6  // 말풍선으로 돌려 보여 줄 최근 발언 수
@@ -54,6 +55,9 @@ export function CeoCard({ file }) {
   const line = fill(h.scoreLine, { n: sb.total, a: sb.kept, b: sb.due })
   // 막대 칸별 개수 ('지켜짐 4 · 늦게 지켜짐 2 · …') — 마우스를 올리면 색이 무엇인지 보임
   const breakdown = STATUSES.filter((k) => counts[k] > 0).map((k) => `${h.status[k]} ${counts[k]}`).join(' · ')
+  // 다음 기한: 기한 전 약속 중 가장 이른 기한 · 그 기한 약속 수 · 확인 기준일부터 남은 기간 ('다음 기한 2026-12 · 10건 · 2개월 남음')
+  const next = useMemo(() => nextDeadline(file), [file])
+  const nextLine = next && fill(h.nextDue, { due: ym(next.deadline), n: next.count, left: fmtSpan(next.daysLeft, lang) })
   return (
     <div className="hq-ceo statements-panel">
       {speakers(file).map((p) => {
@@ -71,10 +75,11 @@ export function CeoCard({ file }) {
         )
       })}
       <button type="button" className="hq-ceo-score" onClick={() => openCard({ tab: 'promises' })} title={`${h.signOpen} — ${breakdown}`}
-        aria-label={`${h.signOpen}: ${line} (${breakdown})`}>
+        aria-label={`${h.signOpen}: ${line} (${breakdown})${nextLine ? ` · ${nextLine}` : ''}`}>
         {/* 두 조각: 넓은 화면은 한 줄('약속 25건 · 기한 안에 지켜짐 4/8'), 휴대폰 가로 카드는 두 줄 */}
         <span className="hq-score-text"><span>{fill(h.scoreCount, { n: sb.total })}</span><span>{fill(h.scoreKept, { a: sb.kept, b: sb.due })}</span></span>
         <ScoreBar counts={counts} />
+        {nextLine && <small className="hq-next">{nextLine}</small>}
       </button>
     </div>
   )

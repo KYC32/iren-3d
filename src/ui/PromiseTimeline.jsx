@@ -9,12 +9,15 @@
 //   주황 고리 = 회사가 기한을 미룬다고 밝힌 날 · 세로 선 = 확인 기준일
 //   판정은 색만으로 알리지 않음: 왼쪽 글자에 아이콘 + 판정 이름 + 결과 (색약·흑백 인쇄에서도 읽히게)
 // 줄을 누르면 아래로 펼침: 판정 근거 + 이 약속을 말한 발언들 · 마우스를 올리면 날짜 풍선, 세로 선이 따라가며 그 자리 날짜
+//   캠퍼스에 걸린 약속(약속의 site)이면 펼친 곳에 '○○ 현장 3D 보기' 단추 → 카드를 닫고 그 캠퍼스 3D (건물이 있으면 그 건물로)
 // 색은 statements.css 의 --tl-* 변수 (검증: dataviz 색 검사 — 초록·주황·자주 3색 통과, 주황은 글자로 보완)
 // =============================================================
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronDown, X, ArrowUpRight } from 'lucide-react'
+import { ChevronDown, X, ArrowUpRight, Box } from 'lucide-react'
+import { useAppStore } from '../store/useAppStore.js'
+import { pickName } from '../i18n/useT.js'
 import { timelineRows, timelineGroups, timelineAxis, pos, fmtSpan } from '../data/promiseTimeline.js'
-import { scoreboard } from '../data/promises.js'
+import { scoreboard, progressPct } from '../data/promises.js'
 import { STATUSES, STATUS_ICON, ym, fill, fmtDay, ChannelMark, Verdict } from './statementParts.jsx'
 
 const pct = (x) => `${x.toFixed(3)}%`
@@ -125,12 +128,14 @@ function Row({ r, axis, grid, lang, h, open, list, onToggle, onTip, onTipOff }) 
 }
 
 // 왼쪽 글자의 결과 한 줄: '2024-03 이룸' · '7개월 늦게 이룸' · '기한 지나 10개월' · '2026-08 철회' · '기한 2026-12'
+//   기한 전 약속에 회사가 밝힌 진행 숫자가 있으면 '기한 2026-12 · 진행 27%'
 function rowResult(r, lang, t) {
   if (r.status === 'kept') return fill(t.kept, { ym: ym(r.achieved) })
   if (r.status === 'late-kept') return fill(t.lateKept, { span: fmtSpan(r.lateDays, lang) })
   if (r.status === 'late') return fill(t.late, { span: fmtSpan(r.lateDays, lang) })
   if (r.status === 'withdrawn') return fill(t.withdrawn, { ym: ym(r.withdrawnOn) })
-  return fill(t.pending, { ym: ym(r.deadline) })
+  const pct = progressPct(r.verdict)
+  return fill(t.pending, { ym: ym(r.deadline) }) + (pct != null ? ` · ${fill(t.progressPct, { pct })}` : '')
 }
 
 // 막대 위 그림들 (모두 축 위치 % 로)
@@ -234,9 +239,18 @@ function Crosshair({ chartRef, trackRef, axis }) {
 // 펼친 내용: 판정 근거 + 회사가 미룬 날 + 이 약속을 말한 발언들 (최신순)
 function Detail({ r, list, lang, h }) {
   const ko = lang === 'ko'
+  const site = useAppStore((s) => (r.promise.site ? s.data?.sites.find((x) => x.id === r.promise.site) : null))
+  // 현장으로: 카드를 닫고 캠퍼스 3D 로 들어간 뒤, 이은 건물이 있으면 그 건물로 카메라를 옮김
+  const goSite = () => {
+    const st = useAppStore.getState()
+    st.closeHqCard()
+    st.enterSite3D(site.id)
+    if (r.promise.building) useAppStore.getState().selectBuilding(r.promise.building, true)
+  }
   return (
     <div className="tl-detail">
       <Verdict v={r.verdict} p={r.promise} lang={lang} h={h} />
+      {site && <button type="button" className="tl-site" onClick={goSite}><Box size={13} aria-hidden="true" />{fill(h.siteOpen, { site: pickName(site, lang) })}</button>}
       {r.postponedOn.length > 0 && <p className="st-note">{fill(h.tl.postponed, { dates: r.postponedOn.join(', ') })}</p>}
       <h5>{fill(h.tl.mentions, { n: list.length })}</h5>
       <ol className="tl-said">

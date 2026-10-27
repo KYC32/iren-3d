@@ -1,6 +1,6 @@
 // 경영진 약속 타임라인 계산 (promiseTimeline.js) — 행(약속마다 한 줄) · 순서 · 묶음 · 축 위치 · 늦은 기간 글자
 import { describe, it, expect } from 'vitest'
-import { timelineRows, timelineGroups, timelineAxis, pos, fmtSpan } from './promiseTimeline.js'
+import { timelineRows, timelineGroups, timelineAxis, pos, fmtSpan, nextDeadline, sitePromises } from './promiseTimeline.js'
 import file from './fixtures/statements.sample.json'
 
 const rows = timelineRows(file)
@@ -90,5 +90,21 @@ describe('기간 글자 (늦은 기간 · 남은 기간)', () => {
     expect(fmtSpan(1, 'en')).toBe('1 day')
     expect(fmtSpan(91, 'ko')).toBe('3개월'); expect(fmtSpan(31, 'en')).toBe('1 month')
     expect(fmtSpan(659, 'ko')).toBe('22개월'); expect(fmtSpan(659, 'en')).toBe('22 months')
+  })
+})
+
+// 옥상 위 CEO 카드의 '다음 기한' 한 줄 · 캠퍼스 패널의 '이 캠퍼스 약속' 목록
+describe('다가오는 기한 · 캠퍼스별 약속', () => {
+  it('nextDeadline: 기한 전 약속 중 가장 이른 기한 · 그 기한의 약속 수 · 기준일부터 남은 날', () => {
+    expect(nextDeadline(file)).toEqual({ deadline: '2026-12-31', count: 1, daysLeft: 71 })
+  })
+  it('nextDeadline: 기한 전 약속이 없으면 null', () => {
+    const none = { ...file, promises: file.promises.filter((p) => timelineRows(file).find((r) => r.id === p.id).status !== 'pending') }
+    expect(nextDeadline(none)).toBeNull()
+  })
+  it('sitePromises: 그 캠퍼스 약속만, 타임라인과 같은 순서', () => {
+    const f2 = { ...file, promises: file.promises.map((p) => (p.id === 'p-sample-kept' || p.id === 'p-sample-repeat' ? { ...p, site: 'childress' } : p)) }
+    expect(sitePromises(f2, 'childress').map((r) => r.id)).toEqual(['p-sample-kept', 'p-sample-repeat'])
+    expect(sitePromises(f2, 'mackenzie')).toEqual([])
   })
 })

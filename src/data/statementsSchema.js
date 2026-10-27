@@ -47,7 +47,9 @@ const PromiseRec = z.object({
   fulfilled: z.object({ ...Ref, date: Day.optional(), period: When.optional(), amount: Amount.optional() }).strict().optional(),
   progress: z.object({ ...Ref, amount: Amount }).strict().optional(),
   milestone: Id.optional(), // research.json 의 같은 건물 일정 id (scripts/validate.mjs 가 있는지 확인)
-}).strict()
+  // 이 약속이 걸린 캠퍼스·건물 (약속 줄의 '현장에서 보기' · 캠퍼스 패널의 '경영진 약속' 칸) — 있는지는 scripts/validate.mjs 가 확인
+  site: Id.optional(), building: Id.optional(),
+}).strict().refine((p) => !p.building || p.site, '건물(building)을 적었으면 캠퍼스(site)도 필요')
 
 export const StatementsFile = z.object({
   checkedAt: Day,          // 판정 기준일 = 원문·근거를 마지막으로 확인한 날

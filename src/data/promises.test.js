@@ -1,7 +1,7 @@
 // 경영진 약속 판정 계산 (promises.js) 테스트
 //   기한은 기간의 끝(회계연도는 7월 시작), '약'·'최대'는 95% 이상, 판정은 오늘이 아니라 마지막 확인일(checkedAt) 기준
 //   설계: docs/superpowers/specs/2026-10-21-ceo-statements-design.md 6장
-import { it, expect } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { deadlineEnd, achievedOn, meetsTarget, verdictOf, scoreboard, recentCount, fmtAmount, evidenceLabel, isCompanyUrl } from './promises.js'
 
 it.each([
@@ -79,4 +79,16 @@ it('evidenceLabel·isCompanyUrl: 회사 자료 호스트만', () => {
   expect(isCompanyUrl('https://investors.iren.com/x')).toBe(true)
   expect(isCompanyUrl('https://x.com/IREN_Ltd/status/1')).toBe(false)
   expect(isCompanyUrl('https://seekingalpha.com/x')).toBe(false)
+})
+
+// 진행률 (기한 전 약속도 회사가 밝힌 진행 숫자로 '진행 n%') — 단위가 같을 때만, 0~100 으로 자름
+describe('progressPct', () => {
+  it('단위가 같으면 반올림한 백분율, 다르면 null, 없으면 null', async () => {
+    const { progressPct } = await import('./promises.js')
+    expect(progressPct({ progress: { done: mw(40), of: mw(480) } })).toBe(8)
+    expect(progressPct({ progress: { done: { value: 1000, unit: 'USDm' }, of: { value: 3700, unit: 'USDm' } } })).toBe(27)
+    expect(progressPct({ progress: { done: mw(40), of: { value: 5, unit: 'GPUs' } } })).toBeNull()
+    expect(progressPct({ status: 'pending' })).toBeNull()
+    expect(progressPct({ progress: { done: mw(900), of: mw(480) } })).toBe(100)
+  })
 })

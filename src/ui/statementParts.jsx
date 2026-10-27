@@ -55,7 +55,7 @@ export function Verdict({ v, p, lang, h }) {
   else if (v.status === 'late-kept') detail = fill(d.lateKept, { due: ym(v.deadline), ym: ym(v.achieved) })
   else if (v.status === 'late') detail = d.late + (v.progress ? ` · ${fill(d.progress, { done: amount(v.progress.done), of: amount(v.progress.of) })}` : '')
   else if (v.status === 'withdrawn') detail = `${ym(p.withdrawn.date)} · ${lang === 'ko' ? p.withdrawn.reason_ko : p.withdrawn.reason_en}`
-  else detail = fill(d.pending, { due: ym(v.deadline) })
+  else detail = fill(d.pending, { due: ym(v.deadline) }) + (v.progress ? ` · ${fill(d.progress, { done: amount(v.progress.done), of: amount(v.progress.of) })}` : '')
   const met = v.status === 'kept' || v.status === 'late-kept'
   const lastPostponed = p.postponed?.at(-1)
   return <div className="st-verdict">
@@ -66,6 +66,8 @@ export function Verdict({ v, p, lang, h }) {
     {p.reduced && <p className="st-note">{d.reduced} <s>{amount(p.target)}</s> → {amount(p.reduced.amount)} {met ? d.reducedDone : d.reducedOnly} · {ev(p.reduced.url)}</p>}
     {lastPostponed && <p className="st-note">{fill(d.postponed, { to: lastPostponed.to })}</p>}
     {met && !p.fulfilled.date && <p className="st-note">{p.fulfilled.period ? fill(d.periodOnly, { period: p.fulfilled.period }) : d.publishedOnly}</p>}
+    {/* 진행 숫자의 근거: 회사 자료 종류 · 발표한 달 (기한 전·늦어짐 약속에 진행 숫자가 있을 때) */}
+    {!met && v.progress && p.progress && <p className="st-note">{fill(d.progressAsOf, { ym: ym(p.progress.published), ev: ev(p.progress.url) })} · <a className="st-src" href={p.progress.url} target="_blank" rel="noreferrer">{h.source}</a></p>}
   </div>
 }
 

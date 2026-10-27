@@ -100,3 +100,14 @@ export function fmtSpan(days, lang) {
   const m = Math.round(days / 30.44)
   return lang === 'ko' ? `${m}개월` : `${m} ${m === 1 ? 'month' : 'months'}`
 }
+
+// 다음 기한 (옥상 위 CEO 카드 한 줄): 기한 전 약속 중 가장 이른 기한 · 그 기한의 약속 수 · 기준일부터 남은 날 (없으면 null)
+export function nextDeadline(file) {
+  const g = timelineGroups(timelineRows(file)).find((x) => x.key.startsWith('pending:'))
+  return g ? { deadline: g.deadline, count: g.rows.length, daysLeft: g.daysLeft } : null
+}
+
+// 한 캠퍼스의 약속만 (캠퍼스 패널 '경영진 약속' 칸) — 약속의 site 칸으로 고름, 순서는 타임라인과 같음
+export function sitePromises(file, siteId) {
+  return timelineRows(file).filter((r) => r.promise.site === siteId)
+}

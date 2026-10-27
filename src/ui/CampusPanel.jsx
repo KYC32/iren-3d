@@ -21,6 +21,7 @@ const FigureButton = lazy(() => import('./FigureButton.jsx')) // 고른 건물�
 const SiteNews = lazy(() => import('./SiteNews.jsx')) // 캠퍼스 최근 소식 목록 (현황 페이지와 같은 조각)
 const SiteRules = lazy(() => import('./SiteRules.jsx')) // 지역 규제 칸 (미국 부지 · 데이터센터 유예·제한, data/restrictions.json)
 const SiteSatellite = lazy(() => import('./SiteSatellite.jsx')) // 위성으로 본 변화 (Sentinel-2 월별 사진, public/data/satellite.json)
+const SitePromises = lazy(() => import('./SitePromises.jsx')) // 경영진 약속 · 이 캠퍼스 (statements.json 의 promise.site)
 const TABS={overview:['현황','Overview'],history:['계획 이력','Plan history'],evidence:['사진·근거','Photos & evidence']}
 export default function CampusPanel(){
   const site=useAppStore(selectSelectedSite), st=useAppStore(), t=useT(), panel=useRef(null)
@@ -89,6 +90,8 @@ export default function CampusPanel(){
       {!zone&&<Suspense fallback={null}><SiteNews key={site.id} items={siteNewsAt(site,month)} lang={lang}
         title={<h3>{ko?'최근 소식':'Recent news'}{month<toMonth(site.as_of)&&(ko?` · ${monthLabel(month,lang)}까지`:` · through ${monthLabel(month,lang)}`)}</h3>}
         empty={ko?'이 시점까지 공개된 소식이 없습니다.':'No news published by this date.'}/></Suspense>}
+      {/* 경영진 약속: 이 캠퍼스에 걸린 약속이 있을 때만 · 누르면 본사 화면 약속 타임라인 */}
+      {!zone&&<Suspense fallback={null}><SitePromises siteId={site.id} lang={lang}/></Suspense>}
       {!zone&&<Suspense fallback={null}><SiteFacts site={site} month={month} lang={lang}/></Suspense>}
       {/* 위성 사진: 목록에 그 부지 사진이 있을 때만 (지금은 미국 부지 4곳) · 보고 있는 달까지 찍힌 것만 */}
       {!zone&&<Suspense fallback={null}><SiteSatellite site={site} month={month} lang={lang}/></Suspense>}

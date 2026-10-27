@@ -91,6 +91,14 @@ export function verdictOf(promise, checkedAt) {
   return done && goal ? { status, reduced, deadline, progress: { done, of: goal } } : { status, reduced, deadline }
 }
 
+// 진행률(%): 판정 결과 v 의 progress(회사가 밝힌 일부 이룬 양 / 목표) — 단위가 같을 때만, 0~100 으로 자름 (없으면 null)
+//   약속 타임라인 줄 글자 '기한 2026-12 · 진행 27%' 와 펼친 곳의 '진행 약 $1bn / 약 $3.7bn' 에 씀
+export function progressPct(v) {
+  const g = v?.progress
+  if (!g || g.done.unit !== g.of.unit || !g.of.value) return null
+  return Math.max(0, Math.min(100, Math.round((g.done.value / g.of.value) * 100)))
+}
+
 // 약속 성적표: 판정별 개수 + 목표 줄임 수 + due(판정이 난 약속 수 = 기한 전만 뺀 수)
 //   "기한 안에 지켜짐 a/b" 의 b 가 due — 기한 전에 미리 지켜진 약속도 넣어 a ≤ b 가 늘 성립
 export function scoreboard(promises, checkedAt) {

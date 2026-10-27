@@ -32,6 +32,7 @@
 .hq-ceo-score .st-bar { height: 12px; margin-top: 7px; padding: 2px; box-sizing: border-box; border-radius: 6px; background: #eef2f5;
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, .45), 0 1px 0 rgba(255, 255, 255, .14); }
 .hq-ceo-score .st-bar i { border-radius: 2px; }
+.hq-next { display: block; margin-top: 7px; font-size: 10.5px; font-weight: 600; color: #b8d0de; } /* 다음 기한 한 줄 */
 .hq-ceo-score:hover span, .hq-ceo-score:focus-visible span { color: #71da80; }
 .hq-ceo-score:focus-visible { outline: none; }
 
@@ -87,6 +88,7 @@
   .hq-score-text span { display: block; white-space: nowrap; }
   .hq-score-text span + span::before { content: none; }
   .hq-ceo-score .st-bar { margin-top: 5px; }
+  .hq-next { display: none; } /* 휴대폰: 다음 기한 줄을 넣으면 카드가 348px 로 넓어져 숨김 (약속 카드 타임라인에 같은 정보) */
   .hq-floor { padding: 5px 9px; font-size: 11px; }
   .hq-floor small { display: none; }
   .hq-dock { display: block; margin: 0 8px 6px; pointer-events: auto; }

@@ -224,3 +224,15 @@
   .fd-month { grid-template-columns: minmax(0, 1fr); }
   .fd-month-head { flex-direction: row; align-items: baseline; gap: 6px; margin-bottom: 6px; }
 }
+
+/* 약속 줄을 펼친 곳의 '○○ 현장 3D 보기' 단추 (캠퍼스에 걸린 약속만) */
+.tl-site { display: inline-flex; align-items: center; gap: 6px; margin: 8px 0 2px; padding: 5px 11px; border: 1px solid #0b344f; border-radius: 999px; background: #fff; color: #0b344f; font: inherit; font-size: 12px; font-weight: 650; cursor: pointer; }
+.tl-site:hover { background: #0b344f; color: #fff; }
+.tl-site:focus-visible { outline: 2px solid #71da80; outline-offset: 2px; }
+/* 캠퍼스 패널 '경영진 약속' 칸: 한 줄 = 판정 배지 + 약속 제목 + 기한 (누르면 본사 화면 약속 타임라인) */
+.site-promises { list-style: none; margin: 6px 0 4px; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.site-promises button { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; width: 100%; padding: 7px 9px; border: 1px solid #e3e8ed; border-radius: 9px; background: #fff; color: #16213a; font: inherit; text-align: left; cursor: pointer; }
+.site-promises button:hover { border-color: #0b344f; }
+.site-promises button:focus-visible { outline: 2px solid #71da80; outline-offset: 1px; }
+.site-promises b { font-size: 12.5px; font-weight: 650; line-height: 1.4; }
+.site-promises small { font-size: 11px; color: #5a6b78; }
