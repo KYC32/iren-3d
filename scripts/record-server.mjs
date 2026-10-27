@@ -49,9 +49,27 @@ const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '
 fs.mkdirSync(VIDEO, { recursive: true })
 const cleared = new Set() // 형식별로 첫 프레임이 올 때 이전 프레임 폴더를 비움
 
-function makeMp4(fmt, lang, then) {
+// 내레이션(scripts/narrate/narrate.mjs 가 만든 video/narration-<언어>.wav)이 있으면 영상에 소리로 넣음
+//   만들 때의 문장(narration-<언어>.json)이 지금 스토리보드와 다르면 옛 소리가 들어가지 않게 빼고 알림
+async function narrationFor(lang) {
+  const wav = path.join(VIDEO, `narration-${lang}.wav`)
+  const made = path.join(VIDEO, `narration-${lang}.json`)
+  if (!fs.existsSync(wav) || !fs.existsSync(made)) return null
+  const { NARRATION } = await import('../src/record/storyboard.js')
+  if (JSON.stringify(JSON.parse(fs.readFileSync(made, 'utf8')).lines) !== JSON.stringify(NARRATION[lang] ?? null)) {
+    console.log(`⚠ 내레이션이 지금 스토리보드와 달라 소리 없이 만듦 — node scripts/narrate/narrate.mjs --lang=${lang} 를 다시 실행하세요`)
+    return null
+  }
+  return wav
+}
+
+async function makeMp4(fmt, lang, then) {
   const out = path.join(VIDEO, `ai-infra-map-${fmt}-${lang}.mp4`)
-  const args = ['-y', '-framerate', '30', '-i', path.join(VIDEO, fmt, '%04d.png'), '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-movflags', '+faststart', out]
+  const voice = await narrationFor(lang)
+  const args = ['-y', '-framerate', '30', '-i', path.join(VIDEO, fmt, '%04d.png'),
+    ...(voice ? ['-i', voice, '-map', '0:v', '-map', '1:a', '-c:a', 'aac', '-b:a', '160k', '-shortest'] : []),
+    '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18', '-movflags', '+faststart', out]
+  if (voice) console.log(`내레이션 넣음: ${path.relative(ROOT, voice)}`)
   console.log('ffmpeg 로 합치는 중…')
   const p = spawn('ffmpeg', args, { stdio: 'ignore' })
   p.on('close', (code) => {

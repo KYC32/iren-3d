@@ -155,7 +155,7 @@ npm run build      # validate → 빌드 (dist/)
 
 ```bash
 npm run build
-node scripts/record-server.mjs all              # 16:9 + 9:16 → video/iren-x-ko.mp4, video/iren-shorts-ko.mp4
+node scripts/record-server.mjs all              # 16:9 + 9:16 → video/ai-infra-map-x-ko.mp4, video/ai-infra-map-shorts-ko.mp4
 node scripts/record-server.mjs x --lang=en      # 영어 자막 16:9
 node scripts/record-server.mjs shorts --only=3,13,25   # 그 시점만 미리보기 PNG (video/preview-*.png)
 node scripts/record-server.mjs og --only=13           # 링크 미리보기 1200×630 → ffmpeg 로 public/og.jpg 저장
@@ -165,6 +165,25 @@ node scripts/record-server.mjs og --only=13           # 링크 미리보기 1200
 - 영상 위 라벨·자막은 `src/record/overlay.js` 가 2D 캔버스에 직접 그립니다 (HTML 라벨은 캡처되지 않음).
 - 렌더 루프를 멈추고 프레임마다 시각을 지정하므로, 컴퓨터 속도와 상관없이 정확히 30fps 로 찍힙니다.
 - 필요 조건: Google Chrome, ffmpeg (`brew install ffmpeg`). 결과물 `video/` 폴더는 git 에 올리지 않습니다.
+
+### 한국어 내레이션 (Qwen3-TTS 'Sohee')
+
+영상에 한국어 목소리를 입힙니다. 모델은 `Qwen/Qwen3-TTS-12Hz-0.6B-CustomVoice`(Apache-2.0, 약 2.5 GB, 판 고정)의 한국어 여성 목소리 'Sohee'입니다. 처음 실행할 때 Hugging Face 에서 받습니다.
+
+```bash
+python3 -m venv ~/.venvs/iren-tts
+~/.venvs/iren-tts/bin/pip install -r scripts/narrate/requirements.txt
+~/.venvs/iren-tts/bin/pip install --no-deps qwen-tts==0.1.1
+PYTHON=~/.venvs/iren-tts/bin/python node scripts/narrate/narrate.mjs   # → video/narration-ko.wav
+node scripts/record-server.mjs all                                     # 영상에 소리가 자동으로 들어감
+```
+
+- 읽을 문장은 `src/record/storyboard.js` 의 `NARRATION` 에 자막과 따로 씁니다. 자막 조각을 그대로 읽으면 어색하기 때문입니다.
+- `narration.test.js` 가 문장을 검사합니다. 그 시간대 화면 자막에 없는 숫자는 쓸 수 없고, 회사·지명은 한글로 씁니다(IREN = 아이렌, Childress = 차일드레스). 영어 글자를 쓰면 TTS 가 낱자로 읽기 때문입니다.
+- `narrate.mjs` 는 문장마다 소리를 만들고, 앞뒤 무음과 0.3초가 넘는 쉼을 줄인 뒤, 각 문장을 `t0` 에 놓습니다. `t1` 을 넘기면 1.15배까지 빠르게 하고, 그래도 넘치면 어느 문장을 줄일지 알려 주고 멈춥니다.
+- 만든 소리는 문장별로 `video/narration/ko/cache/` 에 남습니다. 문장을 고친 줄만 다시 만듭니다(맥북 MPS 기준 한 줄에 약 10초, 모델 불러오기 약 10초).
+- 스토리보드 문장을 고친 뒤 내레이션을 다시 만들지 않으면, 녹화 스크립트가 옛 소리를 넣지 않고 소리 없이 만들며 알려 줍니다.
+- 영어 영상은 아직 소리가 없습니다(`NARRATION.en` 없음).
 
 ## 배포 (Vercel)
 

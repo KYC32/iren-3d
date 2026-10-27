@@ -1,0 +1,12 @@
+# 영상 내레이션(speak.py)에 필요한 패키지 — Qwen3-TTS (qwen-tts 0.1.1, Apache-2.0)
+#   qwen-tts 는 웹 데모용 gradio 까지 끌어와서 따로 --no-deps 로 설치함 (README '영상 만들기' 참고)
+#   transformers·accelerate 는 qwen-tts 가 고정한 판 그대로
+torch
+torchaudio
+transformers==4.57.3
+accelerate==1.12.0
+librosa
+soundfile
+onnxruntime
+einops
+sox
