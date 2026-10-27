@@ -5,6 +5,7 @@ import { localClock } from '../scene/sun.js'
 import { AI_LIGHT, MINER_LIGHT } from '../scene/nightColors.js'
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { useT, pickName } from '../i18n/useT.js'
+import { MENU_EVENT } from './menuEvents.js'
 
 // ≡ 메뉴 서랍은 처음 열 때 불러옴 (첫 화면 번들에 넣지 않음 — 첫 화면 용량 한도가 빠듯함)
 const AppMenu = lazy(() => import('./AppMenu.jsx'))
@@ -87,18 +88,25 @@ export default function TopBar() {
   )
 }
 
-// ≡ 메뉴 단추: 자주 보지 않는 것(지금은 갱신 기록)을 오른쪽 서랍에 숨겨 둠 — AppMenu.jsx
+// ≡ 메뉴 단추: 자주 보지 않는 것(갱신 기록·데이터·출처)을 오른쪽 서랍에 숨겨 둠 — AppMenu.jsx
 //   한 번 연 뒤로는 서랍을 붙여 둔 채 열고 닫기만 함 (다시 불러오지 않음)
+//   화면 아래 '데이터·출처' 링크는 menuEvents.openMenu('sources') 로 서랍을 열고 그 칸을 펼침
 function MenuButton({ t }) {
   const [open, setOpen] = useState(false)
   const [loaded, setLoaded] = useState(false) // 한 번이라도 열었나 (그 전엔 서랍 코드를 받지 않음)
+  const [section, setSection] = useState(null) // 펼쳐 보여 줄 칸 (null = 서랍만)
+  useEffect(() => {
+    const onOpen = (e) => { setLoaded(true); setSection(e.detail ?? null); setOpen(true) }
+    window.addEventListener(MENU_EVENT, onOpen)
+    return () => window.removeEventListener(MENU_EVENT, onOpen)
+  }, [])
   return (
     <>
-      <button className="lang-btn menu-btn" onClick={() => { setLoaded(true); setOpen(true) }}
+      <button className="lang-btn menu-btn" onClick={() => { setLoaded(true); setSection(null); setOpen(true) }}
         aria-label={t.menu.open} title={t.menu.open} aria-haspopup="dialog" aria-expanded={open}>
         <Menu size={15} aria-hidden="true" />
       </button>
-      {loaded && <Suspense fallback={null}><AppMenu open={open} onClose={() => setOpen(false)} /></Suspense>}
+      {loaded && <Suspense fallback={null}><AppMenu open={open} section={section} onClose={() => setOpen(false)} /></Suspense>}
     </>
   )
 }

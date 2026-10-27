@@ -23,6 +23,13 @@ const raw = rawPath && existsSync(rawPath) ? JSON.parse(readFileSync(rawPath, 'u
 const live = new Set(news.press.items.map((i) => i.id))
 const items = Object.fromEntries(Object.entries(prev.items ?? {}).filter(([id]) => live.has(id)))
 const skipped = Object.fromEntries(Object.entries(prev.skipped ?? {}).filter(([id]) => live.has(id)))
+// 검사기를 고치면 예전에 통과한 번역도 다시 검사 — 이제 탈락이면 skipped 로 옮김 (화면엔 원문만 보임)
+//   예: 2026-10-27 고유명사 규칙을 넣자 'IREN 제한회사' 같은 옛 번역이 빠짐
+let dropped = 0
+for (const [id, v] of Object.entries(items)) {
+  const why = checkTranslation(v.src, v.ko)
+  if (why !== 'ok') { delete items[id]; skipped[id] = { src: v.src, why }; dropped++ }
+}
 let ok = 0, bad = 0
 for (const c of raw.items ?? []) {
   const why = checkTranslation(c.src, c.ko)
@@ -38,4 +45,4 @@ const out = NewsKoFile.parse({
   items, skipped,
 })
 const changed = writeJsonIfChanged(koUrl, out, { ignoreKeys: ['fetched_at'] })   // 번역이 그대로면 시각만 바뀌어도 쓰지 않음
-console.log(`✅ news-ko.json — 새 번역 통과 ${ok} · 탈락 ${bad} · 모두 ${Object.keys(items).length}개 번역${changed ? '' : ' (변경 없음)'}`)
+console.log(`✅ news-ko.json — 새 번역 통과 ${ok} · 탈락 ${bad}${dropped ? ` · 다시 검사해 뺀 옛 번역 ${dropped}` : ''} · 모두 ${Object.keys(items).length}개 번역${changed ? '' : ' (변경 없음)'}`)

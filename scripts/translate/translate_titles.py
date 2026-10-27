@@ -23,6 +23,11 @@ REVISION = None  # 받을 때 판 번호를 고정하려면 commit 을 적음
 SYSTEM = ('Translate the English financial news headline into one natural Korean headline. '
           'Copy every number, percentage, currency amount, unit and ticker exactly as it appears in the headline (do not convert units or currencies). '
           'Keep company names in their original Latin spelling. Do not add, remove or guess any information. Output only the Korean headline.')
+# 고유명사 표 (검사기와 같은 파일 src/data/translateNames.json) — 지시문에 "이 이름은 그대로" 목록을 붙임
+#   2026-10-27: 'IREN Limited' → 'IREN 제한회사', 'Applied Digital' → '적용 디지털' 같은 오역이 많아서 넣음
+NAMES = json.loads((ROOT / 'src/data/translateNames.json').read_text())['names']
+SYSTEM += (' Never translate the meaning of a name. Write "IREN Limited" and "IREN Ltd." simply as "IREN". '
+           'Keep these names exactly as written: ' + ', '.join(n['en'] for n in NAMES if not n['en'].startswith('IREN')) + '.')
 
 
 def main():

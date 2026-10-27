@@ -3,6 +3,8 @@
 // -------------------------------------------------------------
 // 맨 위 "경영진 발언" 바로가기 (어느 화면에서든 시드니 본사 3D 화면으로 — useAppStore.showHq, 2026-10-21 사용자 요청)
 //   그 아래 "CEO 약속 타임라인" (본사 화면 + 카드의 약속 탭 — showHq('promises'), 2026-10-22 사용자 요청 "약속만 따로")
+// 그 아래 "데이터·출처"(접힌 칸 — 자료·모델·소재의 라이선스와 쓰는 곳, DataSources.jsx)
+//   화면 아래 '데이터·출처' 링크로 열면 section='sources' → 펼친 채 그 칸으로 스크롤 (2026-10-27)
 // 그 아래 자주 보지 않는 "갱신 기록"(데이터가 바뀔 때마다 남기는 기록)
 //   예전엔 지도 왼쪽 패널의 탭이었음 → 사용자 요청으로 메뉴 안으로 숨김 (2026-10-17)
 // 처음 열 때만 불러옴(TopBar 의 React.lazy) → 이 파일·스타일·ChangeLog 가 첫 화면 번들에 안 들어감
@@ -15,12 +17,15 @@ import { useT } from '../i18n/useT.js'
 import { useAppStore } from '../store/useAppStore.js'
 import { hqText } from '../i18n/hq.js' // '경영진 발언' 바로가기 문구
 import ChangeLog from './ChangeLog.jsx'
+import DataSources from './DataSources.jsx'
 import './appMenu.css'
 
-export default function AppMenu({ open, onClose }) {
+export default function AppMenu({ open, section = null, onClose }) {
   const t = useT()
-  const hq = hqText[useAppStore((s) => s.lang) === 'ko' ? 'ko' : 'en']
+  const lang = useAppStore((s) => s.lang)
+  const hq = hqText[lang === 'ko' ? 'ko' : 'en']
   const dialog = useRef(null)
+  const sources = useRef(null)
   // open 값에 맞춰 서랍을 열고 닫음 (Esc 로 닫히면 onCancel·onClose 로 알려 줌)
   useEffect(() => {
     const d = dialog.current
@@ -28,6 +33,14 @@ export default function AppMenu({ open, onClose }) {
     if (open && !d.open) d.showModal()
     if (!open && d.open) d.close()
   }, [open])
+  // '데이터·출처' 링크로 열었으면 그 칸을 펼치고 보이게 스크롤
+  //   한 프레임 뒤에 함: 같은 순간엔 showModal 전이라 스크롤이 먹지 않음 (StatementsCard 와 같은 함정)
+  useEffect(() => {
+    if (!open || section !== 'sources' || !sources.current) return
+    sources.current.open = true
+    const id = requestAnimationFrame(() => sources.current?.scrollIntoView({ block: 'start' }))
+    return () => cancelAnimationFrame(id)
+  }, [open, section])
   return (
     <dialog
       ref={dialog}
@@ -55,6 +68,8 @@ export default function AppMenu({ open, onClose }) {
           <ChartGantt size={16} aria-hidden="true" />
           <span><b>{hq.menuPromises}</b><small>{hq.menuPromisesSub}</small></span>
         </button>
+        {/* 데이터·출처: 접힌 칸 (자료마다 라이선스·쓰는 곳) */}
+        <DataSources ref={sources} lang={lang} />
         {/* 갱신 기록: 날짜별 변경 내용 + 출처 링크 (data/changelog.json 그대로) */}
         <section className="app-menu-section" aria-labelledby="app-menu-log">
           <h3 id="app-menu-log"><History size={14} aria-hidden="true" />{t.changelog.tab}</h3>

@@ -4,7 +4,7 @@
 .page-error .lang-btn { display: inline-flex; margin-left: 8px; }
 .page-warn { font-size: 12px; color: #8a6400; background: #fbf1d3; border-radius: 8px; padding: 7px 10px; margin: 6px 0 10px; }
 .page-note { font-size: 11.5px; color: var(--text-muted); line-height: 1.5; margin: 14px 0 0; }
-.page-note a, .page-disclaimer a { color: var(--text-muted); }
+.page-note a, .page-disclaimer a, .page-disclaimer .link-btn { color: var(--text-muted); }
 .page-disclaimer { font-size: 10.5px; color: var(--text-muted); margin: 18px 0 0; }
 
 /* ---- 주가 ---- */
@@ -62,7 +62,7 @@
 .news-row a { color: var(--text); text-decoration: none; font-size: 13px; line-height: 1.4; }
 /* 원문 아래 기계 번역 한 줄 — 원문보다 작고 흐리게, 끝에 '기계 번역' 표 (색 칸 없이 글자로만) */
 .news-ko { display: block; margin-top: 2px; font-size: 12px; line-height: 1.4; color: #5a6878; word-break: keep-all; }
-.news-ko em { margin-left: 6px; font-style: normal; font-size: 10px; font-weight: 700; color: #8a95a6; letter-spacing: .02em; }
+.news-ko em { margin-left: 6px; font-style: normal; font-size: 10px; font-weight: 700; color: #8a95a6; letter-spacing: .02em; white-space: nowrap; } /* nowrap: 휴대폰에서 '기계 / 번역' 두 줄로 쪼개졌음 */
 .news-row a:hover { text-decoration: underline; }
 .news-row a svg { vertical-align: -1px; color: var(--text-muted); }
 .news-row small { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; color: var(--text-muted); font-size: 11px; margin-top: 2px; }
@@ -130,3 +130,7 @@
   .portfolio-page .kpis .kpi { min-width: 0; padding: 0 12px; border-left: 0; }
   .portfolio-page .kpis .kpi:nth-child(even) { border-left: 1px solid #e2eae7; }
 }
+
+/* 현황 표: 계통을 아직 확보하지 못한 계획 전력 (레드뱅크 900 MW) — 확보 전력·합계와 섞이지 않게 흐리게, 아래에 까닭 */
+.pf-unsecured { color: #7a8794; }
+.pf-unsecured small { display: block; font-size: 10px; }

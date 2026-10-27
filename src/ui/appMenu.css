@@ -27,6 +27,26 @@
 .app-menu-section { flex: 1; min-height: 0; display: flex; flex-direction: column; padding: 10px 10px 12px; }
 .app-menu-section h3 { display: flex; align-items: center; gap: 6px; margin: 2px 6px 2px; font-size: 13px; font-weight: 700; color: #16213a; }
 
+/* 데이터·출처 (접힌 칸, DataSources.jsx) — 펼치면 목록만 스크롤해서 아래 갱신 기록 자리를 남김 */
+.app-menu-sources { flex-shrink: 0; border-bottom: 1px solid var(--panel-border); }
+.app-menu-sources summary { display: flex; align-items: center; gap: 8px; padding: 12px 18px; color: #0b344f; cursor: pointer; list-style: none; }
+.app-menu-sources summary::-webkit-details-marker { display: none; }
+.app-menu-sources summary:hover, .app-menu-sources summary:focus-visible { background: #f1f8f3; outline: none; }
+.app-menu-sources summary b { font-size: 13px; }
+.app-menu-sources summary small { margin-left: auto; font-size: 11px; color: #5a6b78; }
+.app-menu-sources .src-chev { flex-shrink: 0; transition: transform .15s; }
+.app-menu-sources[open] .src-chev { transform: rotate(180deg); }
+.src-groups { max-height: 52dvh; overflow-y: auto; padding: 0 18px 12px; font-size: 12px; scrollbar-width: thin; }
+.src-groups h4 { margin: 10px 0 5px; font-size: 11.5px; color: #34405e; }
+.src-groups ul { list-style: none; display: flex; flex-direction: column; gap: 7px; }
+.src-groups li { display: flex; flex-direction: column; gap: 1px; line-height: 1.4; }
+.src-groups li > a, .src-groups li > span { font-weight: 650; color: #0b344f; }
+.src-groups li > a svg { margin-left: 2px; vertical-align: -1px; }
+.src-groups li small { font-size: 11px; color: #4f5f6c; }
+.src-groups li .src-where { color: #7a8794; }
+.src-foot { margin-top: 12px; font-size: 11px; color: #5a6b78; }
+@media (prefers-reduced-motion: reduce) { .app-menu-sources .src-chev { transition: none; } }
+
 /* 갱신 기록 목록 (예전엔 왼쪽 패널 탭이라 global.css 에 있었음) */
 .changelog { flex: 1; min-height: 0; overflow-y: auto; padding: 4px 6px 8px; font-size: 12.5px; }
 .changelog h5 { font-size: 11.5px; color: #34405e; margin: 10px 4px 4px; }

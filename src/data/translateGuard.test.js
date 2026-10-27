@@ -33,6 +33,26 @@ describe('checkTranslation', () => {
   it('요일·달 이름을 영어로 남기면 탈락', () => {
     expect(checkTranslation('What’s Going on With IREN Stock on Tuesday?', 'IREN 주식의 Tuesday 상황은 어때?')).toBe('english-left')
   })
+  // 아래 예시는 2026-10-27 검토 때 숫자 검사를 통과해 화면에 나왔던 실제 오역
+  it('회사 이름을 뜻으로 옮기면 탈락 — IREN Limited → 제한회사, Applied Digital → 적용 디지털', () => {
+    expect(checkTranslation('IREN Limited Estimates – NASDAQ:IREN', 'IREN 제한회사, NASDAQ:IREN 예상치 발표')).toBe('name')
+    expect(checkTranslation("Pure-Play AI Cloud vs. Energy-Driven Infrastructure: Nebius Scale Meets IREN Limited's Efficiency", 'AI 클라우드 순수 플레이어 Nebius Scale vs. 에너지 드라이브 인프라스트럭처의 IREN 제한된 효율성')).toBe('name')
+    expect(checkTranslation('Applied Digital vs. IREN: Which Technology Stock Is a Better Buy in 2026?', '애플리케이션 디지털 대 IREN: 2026년 투자 가치가 더 높은 기술주는?')).toBe('name')
+    expect(checkTranslation('TeraWulf Jumps 8% as CEO Says Power Demand Remains Strong', '테라윌프 8% 급등, CEO "전력 수요 여전히 강함"')).toBe('name')
+  })
+  it('매체·사람 이름을 바꾸면 탈락 — The Information → 정보 제공, Jim → 김', () => {
+    expect(checkTranslation('Anthropic has unannounced multiyear cloud deal with IREN: The Information', 'Anthropic, IREN 간 비공개 장기 클라우드 계약 체결: 정보 제공')).toBe('name')
+    expect(checkTranslation('Jim Cramer Skips IREN', '김 크레이머, IREN 참석 취소')).toBe('name')
+  })
+  it('이름은 원문 글자 그대로나 정해 둔 한국어 표기면 통과', () => {
+    expect(checkTranslation('IREN Limited Keeps Falling', 'IREN 계속 하락')).toBe('ok')
+    expect(checkTranslation('Microsoft Accepts IREN\'s First of Four 50MW AI Deployments', '마이크로소프트, IREN의 50MW AI 배치 네 건 중 첫 건 인수')).toBe('ok')
+    expect(checkTranslation('Applied Digital Falls 4%; IREN Slides', '어플라이드 디지털 4% 하락, IREN도 하락')).toBe('ok')
+    expect(checkTranslation('OpenAI Revenue Report Lifts IREN', '오픈AI 매출 보도에 IREN 상승')).toBe('ok')
+  })
+  it('원문에 없는 영어 낱말을 지어내면 탈락 (IREN, Inc.)', () => {
+    expect(checkTranslation('IREN Adds Mirantis, Which Has Served 1,500+ Enterprise Customers', 'IREN, Inc. 추가로 Mirantis 도입... 1,500개 이상의 엔터프라이즈 고객 서비스')).toBe('new-latin')
+  })
   it('빈 번역·지나치게 긴 번역은 탈락', () => {
     expect(checkTranslation('Why Is IREN Stock Falling?', '')).toBe('empty')
     expect(checkTranslation('IREN Rises', `IREN ${'상승 '.repeat(40)}`)).toBe('too-long')

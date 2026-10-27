@@ -66,7 +66,10 @@ export default function PortfolioPage() {
               <td>{m.ai ? fmtMw(m.ai) : '—'}</td>
               <td>{m.mining ? fmtMw(m.mining) : '—'}</td>
               <td>{m.building ? fmtMw(m.building) : '—'}</td>
-              <td>{m.planned ? fmtMw(m.planned) : '—'}</td>
+              {/* 계획 전력: 계통 미확보 계획만 있는 부지(레드뱅크)는 그 규모를 흐리게 (캠퍼스 패널·KPI 판과 같은 표현 — 합계엔 안 넣음) */}
+              <td>{m.planned ? fmtMw(m.planned) : !s.grid_mw && s.planned?.mw
+                ? <span className="pf-unsecured">{fmtMw(s.planned.mw)}<small>{ko ? '계통 미확보' : 'grid not secured'}</small></span>
+                : '—'}</td>
             </tr>
           ))}</tbody>
         </table>

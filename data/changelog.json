@@ -1,6 +1,27 @@
 {
   "entries": [
     {
+      "date": "2026-10-28",
+      "items": [
+        {
+          "ko": "언론 제목 기계 번역에 고유명사 검사를 더함. 'IREN Limited'를 'IREN 제한회사'로, 'Applied Digital'을 '적용 디지털'로 옮긴 것처럼 회사·매체·사람 이름을 뜻으로 옮긴 번역은 이제 원문만 보임. 보이던 번역 122개 중 26개를 뺌",
+          "en": "Machine-translated press headlines now get a proper-name check. Translations that render names by meaning (e.g. 'IREN Limited' as 'IREN 제한회사', 'Applied Digital' as '적용 디지털') now show only the original; 26 of the 122 visible translations were removed"
+        },
+        {
+          "ko": "≡ 메뉴에 '데이터·출처' 칸을 추가함. 이 사이트가 쓰는 자료·모델·3D 소재 19가지의 라이선스와 쓰는 곳을 한곳에 모음. 화면 아래 '데이터·출처' 링크도 GitHub 대신 이 칸을 엶",
+          "en": "Added a 'Data & sources' section to the ≡ menu with the licenses and uses of the 19 datasets, models and 3D assets this site relies on. The 'Data & sources' link at the bottom now opens it instead of GitHub"
+        },
+        {
+          "ko": "데스크톱에서 캠퍼스를 고르면 오른쪽 칸이 지도 출처 표기와 '주변 데이터센터'·확대 단추를 가리던 문제를 고침. 이제 이 단추들은 칸 왼쪽으로 옮겨 감",
+          "en": "Fixed the campus panel covering the map attribution and the 'Nearby data centers' and zoom buttons on desktop; they now sit to the left of the panel"
+        },
+        {
+          "ko": "주가·뉴스·현황 페이지 배경을 불투명하게 해 뒤의 지도가 비치지 않게 함. 휴대폰에서 '기계 번역' 표가 두 줄로 쪼개지던 것과 현황 표 레드뱅크 줄('900 MW · 계통 미확보')도 고침",
+          "en": "Stock, news and portfolio pages now have an opaque background so the map no longer shows through. Also fixed the 'machine translation' tag wrapping on phones and the Redbank row in the portfolio table ('900 MW · grid not secured')"
+        }
+      ]
+    },
+    {
       "date": "2026-10-27",
       "items": [
         {
