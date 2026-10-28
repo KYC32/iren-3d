@@ -31,6 +31,15 @@
       #boot.is-done{opacity:0;pointer-events:none}
       #boot .boot-card{margin:auto;width:min(1120px,100%);background:#fbfbfa;border:1px solid rgba(20,30,60,.08);border-radius:16px;box-shadow:0 6px 24px rgba(30,45,90,.08);padding:14px 18px 12px}
       #boot h1{margin:0;font-size:15px;font-weight:700}
+      /* 제목 줄: 왼쪽 제목 · 오른쪽 큰 "건너뛰기 / 지도 보기" 단추 (화면을 열자마자 보이게, 휴대폰에서도 내리지 않고 누름) */
+      #boot .boot-head{display:flex;align-items:center;gap:12px}
+      #boot .boot-head h1{flex:1;min-width:0}
+      /* IREN 초록으로 채운 단추 + 남색 글자·화살표, 살짝 볼록하게(위 밝은 테·아래 그늘) — 누르면 눌린 듯 */
+      #boot .boot-go{display:inline-flex;align-items:center;gap:8px;flex:none;min-height:44px;padding:0 20px 0 22px;border:0;border-radius:999px;background:#71DA80;color:#0B344F;font:700 15px/1 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;white-space:nowrap;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -2px 0 rgba(11,52,79,.18),0 2px 8px rgba(11,52,79,.18)}
+      #boot .boot-go:hover{background:#5fd070}
+      #boot .boot-go:active{box-shadow:inset 0 2px 4px rgba(11,52,79,.25)}
+      #boot .boot-go:focus-visible{outline:2px solid #0B344F;outline-offset:2px}
+      #boot .boot-go svg{width:18px;height:18px;flex:none}
       #boot .boot-sub{margin:2px 0 10px;font-size:12.5px;color:#5b6581;line-height:1.5}
       #boot .boot-sub b{color:#16213a;font-weight:700}
       #boot .boot-note{margin:8px 0 0;font-size:11px;color:#6b7591;line-height:1.5}
@@ -53,7 +62,11 @@
     </style>
     <div id="boot" aria-live="polite">
       <div class="boot-card">
-        <h1>IREN 3D 현황판</h1>
+        <div class="boot-head">
+          <h1>IREN 3D 현황판</h1>
+          <!-- 언제든 바로 지도로 (지도가 준비되면 글자가 "지도 보기"로 바뀜). 아이콘 = lucide arrow-right -->
+          <button class="boot-go" type="button" data-boot-go><span>건너뛰기</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg></button>
+        </div>
         <p class="boot-sub">AI 데이터센터의 기본 단위부터 — 랙 1대 = GPU 72개 ≈ 130 kW, 그래서 50 MW 홀은 랙 약 350대. 그림이 저절로 부품을 확대해 보여 주고 <b>확대</b> 단추로 직접 살펴볼 수도 있습니다.</p>
         <!-- rack -->
         <div class="boot-bar" aria-hidden="true"><i></i></div>
@@ -97,7 +110,7 @@
         }
         window.__bootReady = function () {
           if (ready) return; ready = true;
-          if (go) go.textContent = '지도 보기 →';
+          if (go) go.querySelector('span').textContent = '지도 보기';   // 글자만 바꿈 (화살표 아이콘은 그대로)
           tryGo();
         };
         timer = setInterval(tryGo, 400);

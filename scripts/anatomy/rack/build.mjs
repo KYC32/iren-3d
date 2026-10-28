@@ -444,10 +444,8 @@ const CSS = `
 .rk-fig .rk-read[data-cap]{color:var(--anatomy-strong)}
 .rk-fig .rk-read b{font-weight:700}
 .rk-fig .rk-read[data-cap]::before{content:"";display:inline-block;width:8px;height:8px;margin:0 8px 0 2px;border-radius:50%;background:#71DA80;box-shadow:0 0 0 2px #0B344F;vertical-align:0}
-@media (max-width:767px){.rk-pair{grid-template-columns:1fr}.rk-ui .rk-hint{display:none}}   /* 좁은 화면: 안내 줄은 위 문구와 같은 내용이라 숨김 (지도 보기 단추가 한 줄에) */
+@media (max-width:767px){.rk-pair{grid-template-columns:1fr}.rk-ui .rk-hint{display:none}}   /* 좁은 화면: 안내 줄은 위 문구와 같은 내용이라 숨김 */
 .rk-ui b{color:var(--anatomy-strong);font-weight:600}
-.rk-ui .rk-go{margin-left:auto;white-space:nowrap;flex:none;border:1px solid var(--anatomy-muted);background:var(--anatomy-face);color:var(--anatomy-strong);border-radius:999px;padding:6px 12px;font:inherit;cursor:pointer}
-.rk-ui .rk-go[disabled]{opacity:.55;cursor:default}
 /* 그림 | 사진 전환: 음각 홈 + 고른 쪽 양각 */
 .rk-view{display:inline-flex;flex:none;padding:2px;border-radius:999px;background:#e8ebf2;box-shadow:inset 0 1px 2px rgba(22,33,58,.18)}
 .rk-view button{display:inline-flex;align-items:center;gap:5px;border:0;border-radius:999px;padding:4px 11px 4px 9px;background:none;color:#5b6581;font:600 12px/1.2 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;cursor:pointer}
@@ -851,7 +849,8 @@ const ASPECT = `.rk-wrap{--rk-a1:${(WIDTH / HEIGHT).toFixed(3)};--rk-a2:${(G2.DA
 const fragment = `<style>${k.ISO_CSS}${CSS}${ASPECT}</style>
 <div class="iso rk-wrap" data-theme="light">
   ${pairHtml(true)}
-  <div class="rk-ui">${VIEW_TOGGLE.replace("__MB__", PHOTO_MB)}<span class="rk-hint">저절로 둘러보며 부품을 확대합니다 · 확대 단추로 직접 살펴보기</span><button class="rk-go" type="button" data-boot-go>건너뛰기 →</button></div>
+  <div class="rk-ui">${VIEW_TOGGLE.replace("__MB__", PHOTO_MB)}<span class="rk-hint">저절로 둘러보며 부품을 확대합니다 · 확대 단추로 직접 살펴보기</span></div>
+  <!-- "건너뛰기 / 지도 보기" 단추는 index.html 의 카드 제목 줄 오른쪽에 (크게, 화면을 열자마자 보이게) -->
 </div>
 <script>(function(){${liveScriptFor(true)}})();</script>`;
 writeFileSync(join(ROOT, "src", "boot", "rack.html"), fragment);
