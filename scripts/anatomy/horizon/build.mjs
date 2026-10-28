@@ -22,7 +22,8 @@ import * as G from "../kit/lathe.mjs";
 import * as A from "../kit/audit.mjs";
 import { tubePieces, tubeSvg } from "../kit/tube.mjs";
 import { workshop, auditAll } from "../rack/shop.mjs";
-import { HORIZON, EST, FLOW, OVERHEAD_MW, WATER, SOURCES, TEMP, tourPlan, stateAt } from "./model.mjs";
+import { HORIZON, EST, FLOW, OVERHEAD_MW, WATER, SOURCES, TEMP, CAMPUS, MSFT, tourPlan, stateAt, scaleLadder } from "./model.mjs";
+import { platesHtml, PLATE_BASIS } from "../shared/tools.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..", "..");
@@ -870,8 +871,15 @@ const VALVE_P = [cduX("b") + PORT.sup, 1.6, YS.z + 1];
 const CDUB_P = [cduX("b") + 5, CDU_FRONT, HALL.floor + 10];
 const PHASE_STOPS = [["warm", THERMO_P], ["chill", CHFAN_P], ["evening", THERMO_P], ["standby", CDUC_P], ["isolate", VALVE_P], ["maint", CDUB_P], ["restore", VALVE_P]]
   .map(([phase, p]) => ({ key: `ph-${phase}`, phase, p, z: p === THERMO_P ? 3.2 : p === CHFAN_P ? 2.6 : 3.2, side: p === CHFAN_P ? undefined : "left" }));   // CDU 장면은 말풍선을 왼쪽에 (오른쪽 CDU B 를 가리지 않게)
-const STOPS = [...PART_STOPS, ...PHASE_STOPS].map((s) => { const [x, y] = at(s.p); return { key: s.key, fx: +(x / WIDTH).toFixed(4), fy: +(y / HEIGHT).toFixed(4), z: s.z, ...(s.side ? { side: s.side } : {}) }; });
-const PHASE_STOP = Object.fromEntries(PHASE_STOPS.map((s, i) => [s.phase, PART_STOPS.length + i]));
+// 규모 사다리 (둘러보기 끝): 줄 끝의 옆판을 뗀 랙 1대를 크게 → 랙 줄 → 정류장 없음 = 전체 보기로 돌아옴 (차일드레스 캠퍼스)
+//   key 를 설명(INFO)에 없는 이름으로 둠 → 말풍선 대신 그림 오른쪽 위 이름표(이름 + 숫자 2개)가 뜸
+//   랙 줄은 넓게 보는 장면이라 조준 링을 끔 (aim: false)
+const SCALE_STOPS = [
+  { key: "scale-rack", phase: "rack", p: [RACK0 + RACKS * RACK_W, RACK_Y + RACK_D / 2, HALL.floor + RACK_H / 2], z: 6.5 },
+  { key: "scale-hall", phase: "hall", p: [RACK0 + (RACKS / 2) * RACK_W, -24, 12], z: 1.7, aim: false },
+];
+const STOPS = [...PART_STOPS, ...PHASE_STOPS, ...SCALE_STOPS].map((s) => { const [x, y] = at(s.p); return { key: s.key, fx: +(x / WIDTH).toFixed(4), fy: +(y / HEIGHT).toFixed(4), z: s.z, ...(s.side ? { side: s.side } : {}), ...(s.aim === false ? { aim: false } : {}) }; });
+const PHASE_STOP = Object.fromEntries([...PHASE_STOPS, ...SCALE_STOPS].map((s, i) => [s.phase, PART_STOPS.length + i]));
 const PLAN = tourPlan(PART_STOPS.length);
 // 더운 공기가 올라가는 자리 (팬 위): 건식 냉각기는 늘, 칠러는 돌 때만
 const PUFFS = {
@@ -881,6 +889,9 @@ const PUFFS = {
 
 // ---------- 글 (한/영) ----------
 const fmt = (n) => Math.round(n).toLocaleString("en-US");
+// 규모 사다리 이름표의 숫자 (model.mjs: 회사 자료 + 사이트의 NVL72 추정 규칙)
+const LADDER = Object.fromEntries(scaleLadder().map((s) => [s.id, s]));
+const PCT = Math.round((HORIZON.grossMw / CAMPUS.mw) * 100);   // Horizon 1 전체 75 MW ÷ 캠퍼스 750 MW
 const L_RACK = fmt(FLOW.rack), L_HALL = fmt(Math.round(FLOW.hall / 1000) * 1000);
 const INFO = {
   base: ["모형 받침 · 앞 모서리 자: 작은 눈금 1 m, 큰 눈금 5 m (실제 비율)", "Model base · edge ruler: 1 m ticks, 5 m majors (true scale)"],
@@ -951,14 +962,20 @@ const PHASE_TEXT = {
   isolate: ["CDU B 떼어 내기 · 위·앞 밸브 4개를 닫음", "Isolating CDU B · its four valves close"],
   maint: ["CDU B 정비 중에도 GPU 냉각은 그대로 · A·C가 담당 (회사: Tier III 수준 동시 유지보수 설계)", "GPUs stay cooled while CDU B is serviced · A and C carry the load (company: Tier III-equivalent concurrent maintainability)"],
   restore: ["CDU B 복귀 · 밸브를 열고 C는 다시 대기", "CDU B back · valves open, C returns to standby"],
+  rack: [`규모 ① 랙 1대 · GB300 NVL72 = GPU ${HORIZON.gpusPerRack}개 (NVIDIA) · 랙 밀도 ${HORIZON.rackKw.join("–")} kW (회사 설계 범위) · 이 그림은 1대 약 ${EST.rackKw} kW로 가정`,
+    `Scale ① one rack · GB300 NVL72 = ${HORIZON.gpusPerRack} GPUs (NVIDIA) · ${HORIZON.rackKw.join("–")} kW per rack (company design range) · this drawing assumes about ${EST.rackKw} kW`],
+  hall: [`규모 ② Horizon 1 · IT ${HORIZON.itMw} MW (회사) ÷ GPU 1개당 약 ${EST.kwPerGpu.toFixed(1)} kW (추정) ≈ GPU ${fmt(LADDER.hall.nums[1].value)}개 · 랙 약 ${fmt(LADDER.hall.racks)}대 · 그림의 홀은 그중 한 토막`,
+    `Scale ② Horizon 1 · ${HORIZON.itMw} MW of IT (company) ÷ about ${EST.kwPerGpu.toFixed(1)} kW per GPU (estimate) ≈ ${fmt(LADDER.hall.nums[1].value)} GPUs in about ${fmt(LADDER.hall.racks)} racks · the hall drawn here is one slice`],
+  site: [`규모 ③ 차일드레스 캠퍼스 · 전력 ${fmt(CAMPUS.mw)} MW · 부지 ${fmt(CAMPUS.acres)} 에이커 (회사) · Horizon 1 전체 ${HORIZON.grossMw} MW는 그중 ${PCT}% · Horizon 1–${MSFT.halls} = IT ${MSFT.halls * HORIZON.itMw} MW · Microsoft ${MSFT.years}년 $${MSFT.usdBn}bn 계약`,
+    `Scale ③ Childress campus · ${fmt(CAMPUS.mw)} MW of power · ${fmt(CAMPUS.acres)} acres (company) · Horizon 1's ${HORIZON.grossMw} MW gross is ${PCT}% of it · Horizon 1–${MSFT.halls} = ${MSFT.halls * HORIZON.itMw} MW of IT · Microsoft ${MSFT.years}-year $${MSFT.usdBn}bn contract`],
 };
 for (const [phase, text] of Object.entries(PHASE_TEXT)) INFO[`ph-${phase}`] = text;
 const ICON_IN = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="11" x2="11" y1="8" y2="14"/><line x1="8" x2="14" y1="11" y2="11"/></svg>';
 const ICON_OUT = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.65" y1="21" y2="16.65"/><line x1="8" x2="14" y1="11" y2="11"/></svg>';
 const zoomText = (ko) => ({
   in: ICON_IN + `<span>${ko ? "확대" : "Zoom"}</span>`, out: ICON_OUT + `<span>${ko ? "전체 보기" : "Full view"}</span>`,
-  aria: ko ? ["Horizon 액체냉각 홀 그림: 전기가 들어오는 길과 냉각수가 도는 길을 저절로 확대해 하나씩 짚고 더운 오후에 칠러가 보태는 모습과 CDU 하나를 정비해도 냉각이 이어지는 모습을 보여 줍니다. + 키나 확대 단추로 직접 확대할 수 있습니다", "확대: 포인터나 화살표 키로 둘러보고 Esc로 전체 보기"]
-    : ["Horizon liquid-cooled hall: an automatic tour zooms along the power path and the coolant loops, then shows the chiller helping on a hot afternoon and a CDU being serviced while cooling carries on. Press + or the zoom button to zoom yourself", "Zoomed: look around with the pointer or arrow keys; Escape for the full view"],
+  aria: ko ? ["Horizon 액체냉각 홀 그림: 전기가 들어오는 길과 냉각수가 도는 길을 저절로 확대해 하나씩 짚고 더운 오후에 칠러가 보태는 모습과 CDU 하나를 정비해도 냉각이 이어지는 모습을 보여 준 뒤 랙 1대에서 Horizon 1, 차일드레스 캠퍼스 전체로 넓혀 가며 규모를 보여 줍니다. + 키나 확대 단추로 직접 확대할 수 있습니다", "확대: 포인터나 화살표 키로 둘러보고 Esc로 전체 보기"]
+    : ["Horizon liquid-cooled hall: an automatic tour zooms along the power path and the coolant loops, then shows the chiller helping on a hot afternoon and a CDU being serviced while cooling carries on, then widens from one rack to Horizon 1 and the whole Childress campus to show the scale. Press + or the zoom button to zoom yourself", "Zoomed: look around with the pointer or arrow keys; Escape for the full view"],
   hint: ko ? "확대 중 · 부품을 가리키거나 탭하면 바로 옆에 설명이 뜹니다" : "zoomed · point at or tap a part to see what it is right beside it",
 });
 
@@ -966,9 +983,27 @@ const zoomText = (ko) => ({
 const ASPECT = (WIDTH / HEIGHT).toFixed(3);
 const CSS = (readFileSync(join(HERE, "..", "power", "power.css"), "utf8") + readFileSync(join(HERE, "horizon.css"), "utf8")).replaceAll("__ASPECT__", ASPECT);
 const LIVE = readFileSync(join(HERE, "..", "shared", "zoomer.js"), "utf8") + readFileSync(join(HERE, "live.js"), "utf8");
-const DATA = { W: WIDTH, H: HEIGHT, zoom: 2.4, focus: at([120, -10, 18]).map(r1), stops: STOPS, parts: PART_STOPS.length, phaseStop: PHASE_STOP, plan: PLAN, puffs: PUFFS, needle: { min: NEEDLE[0], n: NEEDLE.length }, valves: VALVE_FRAMES };
+const DATA = { W: WIDTH, H: HEIGHT, zoom: 2.4, focus: at([120, -10, 18]).map(r1), stops: STOPS, parts: PART_STOPS.length, phaseStop: PHASE_STOP, plan: PLAN, puffs: PUFFS, needle: { min: NEEDLE[0], n: NEEDLE.length }, valves: VALVE_FRAMES, plates: Object.keys(LADDER) };
 const fill = (src, values) => src.replace(/__([A-Z]+)__/g, (all, name) => (name in values ? values[name] : all));
 const a = (href, text) => `<a href="${href}" target="_blank" rel="noreferrer">${text}</a>`;
+
+// ---------- 규모 이름표 (둘러보기 끝: 랙 1대 → Horizon 1 → 차일드레스 캠퍼스) ----------
+// 이름 + 숫자 2개 카드 3장 (만드는 법·모양은 shared/tools.mjs 의 platesHtml · horizon.css 의 .rk-plate — 스위트워터 1 그림과 같음)
+function plates(ko) {
+  const i = ko ? 0 : 1, by = (num) => PLATE_BASIS[num.basis][i];
+  const { rack, hall, site } = LADDER;
+  return platesHtml([
+    ["rack", ko ? "GB300 NVL72 랙 1대" : "One GB300 NVL72 rack", [
+      [fmt(rack.nums[0].value), `GPU · ${by(rack.nums[0])}`],
+      [`${rack.nums[1].range.join("–")} kW`, `${ko ? "랙 밀도" : "rack density"} · ${by(rack.nums[1])}`]]],
+    ["hall", "Horizon 1", [
+      [`${hall.nums[0].value} MW`, `${ko ? "IT 전력" : "IT power"} · ${by(hall.nums[0])}`],
+      [`≈ ${fmt(hall.nums[1].value)}`, ko ? `GPU · 추정 (랙 ≈ ${fmt(hall.racks)}대)` : `GPUs · estimate (≈ ${fmt(hall.racks)} racks)`]]],
+    ["site", ko ? "차일드레스 캠퍼스" : "Childress campus", [
+      [`${fmt(site.nums[0].value)} MW`, `${ko ? "전력 용량" : "power capacity"} · ${by(site.nums[0])}`],
+      [`${fmt(site.nums[1].value)} ${ko ? "에이커" : "acres"}`, `${ko ? "부지" : "site"} · ${by(site.nums[1])}`]]],
+  ]);
+}
 
 function page(ko) {
   const svg = k.figureSvg({ width: WIDTH, height: HEIGHT, label: ko ? "차일드레스 Horizon 액체냉각 홀 한 토막의 모형" : "Model of a slice of a Childress Horizon liquid-cooled hall", body: `<defs>${CLIPS.join("")}</defs>${BASE_SVG}${body}<g class="hz-puffs" aria-hidden="true"></g>`, className: "pw-svg" });
@@ -979,13 +1014,13 @@ function page(ko) {
     ? [["hz-k-cold", "찬물"], ["hz-k-warm", "데워진 물"], ["pw-k-flow", "전류"], ["hz-k-lever", "밸브 손잡이 (움직이는 부분)"], ["pw-k-cut", "잘라 보여 준 면"]]
     : [["hz-k-cold", "cool water"], ["hz-k-warm", "warm water"], ["pw-k-flow", "current"], ["hz-k-lever", "valve levers (the moving part)"], ["pw-k-cut", "cut-away faces"]];
   const caption = ko
-    ? `IREN 발표 기준: Horizon 1 = ${HORIZON.grossMw} MW(IT ${HORIZON.itMw} MW)·랙 밀도 200 kW까지 설계(${a(SOURCES.design, "2025-02 월간 업데이트")}), 랙 ${HORIZON.rackKw[0]}~${HORIZON.rackKw[1]} kW·Tier III 수준 동시 유지보수(${a(SOURCES.tier, "2025-11 계약 발표 자료")}), 냉각 설비 = 패키지 칠러 플랜트·칠러·건식 냉각기·냉각수 분배기(CDU)와 UPS·디젤 발전기 백업(${a(SOURCES.plant, "2025-01 공시")}), Horizon 1은 1차 변전소 6에서 전력을 받고 2026-08-13 Microsoft에 인도(${a(SOURCES.delivered, "8-K")}). 홀 안·바깥 모습은 회사의 ${a(SOURCES.video, "Horizon 1 인도 영상")}(NVL72 랙 줄·노란 광케이블·구리 냉각판·통로의 회색 전기반·건물을 따라가는 굵은 보온 배관·핀 코일 냉각기)을 보고 그림. 배관 방식(냉각기 → 칠러 직렬)·CDU 자리와 대수·변압기 모양·온도는 설명을 위한 그림 표현이고 지붕·벽을 잘라 냈으며 랙은 한 줄 일부만 그림. GPU·랙 수와 유량은 사이트 가정(GPU 1개당 ${EST.kwPerGpu.toFixed(1)} kW, 랙당 ${HORIZON.gpusPerRack}개, 물이 ${WATER.dT} °C 데워짐)으로 계산한 추정. 기온 변화·정비 장면의 시간은 압축해서 보여 줌.`
-    : `Per IREN: Horizon 1 = ${HORIZON.grossMw} MW gross (${HORIZON.itMw} MW IT), designed for up to 200 kW racks (${a(SOURCES.design, "Feb 2025 monthly update")}); ${HORIZON.rackKw[0]}–${HORIZON.rackKw[1]} kW racks and Tier III-equivalent concurrent maintainability (${a(SOURCES.tier, "Nov 2025 contract presentation")}); a packaged chiller plant, chillers, dry coolers and coolant distribution units (CDUs) with UPS and diesel generator back-up (${a(SOURCES.plant, "Jan 2025 filing")}); Horizon 1 is fed from Primary Substation 6 and was delivered to Microsoft on 2026-08-13 (${a(SOURCES.delivered, "8-K")}). The hall and yard are drawn from the company's ${a(SOURCES.video, "Horizon 1 delivery video")} (NVL72 rack rows, yellow fibre, copper cold plates, grey electrical lineups along the aisle, big insulated pipes along the buildings, finned-coil coolers). The piping arrangement (cooler → chiller in series), CDU placement and count, transformer shape and temperatures are illustrative; roof and walls are cut away and only part of one rack row is shown. GPU and rack counts and flow rates are estimates from the site's assumptions (${EST.kwPerGpu.toFixed(1)} kW per GPU, ${HORIZON.gpusPerRack} per rack, a ${WATER.dT} °C water rise). Weather and maintenance timing are compressed.`;
+    ? `IREN 발표 기준: Horizon 1 = ${HORIZON.grossMw} MW(IT ${HORIZON.itMw} MW)·랙 밀도 200 kW까지 설계(${a(SOURCES.design, "2025-02 월간 업데이트")}), 랙 ${HORIZON.rackKw[0]}~${HORIZON.rackKw[1]} kW·Tier III 수준 동시 유지보수(${a(SOURCES.tier, "2025-11 계약 발표 자료")}), 냉각 설비 = 패키지 칠러 플랜트·칠러·건식 냉각기·냉각수 분배기(CDU)와 UPS·디젤 발전기 백업(${a(SOURCES.plant, "2025-01 공시")}), Horizon 1은 1차 변전소 6에서 전력을 받고 2026-08-13 Microsoft에 인도(${a(SOURCES.delivered, "8-K")}). 홀 안·바깥 모습은 회사의 ${a(SOURCES.video, "Horizon 1 인도 영상")}(NVL72 랙 줄·노란 광케이블·구리 냉각판·통로의 회색 전기반·건물을 따라가는 굵은 보온 배관·핀 코일 냉각기)을 보고 그림. 배관 방식(냉각기 → 칠러 직렬)·CDU 자리와 대수·변압기 모양·온도는 설명을 위한 그림 표현이고 지붕·벽을 잘라 냈으며 랙은 한 줄 일부만 그림. GPU·랙 수와 유량은 사이트 가정(GPU 1개당 ${EST.kwPerGpu.toFixed(1)} kW, 랙당 ${HORIZON.gpusPerRack}개, 물이 ${WATER.dT} °C 데워짐)으로 계산한 추정. 둘러보기 끝 규모 이름표의 차일드레스 ${fmt(CAMPUS.mw)} MW·${fmt(CAMPUS.acres)} 에이커는 ${a(SOURCES.campus, "회사 사이트")}, Horizon 1~${MSFT.halls}의 Microsoft ${MSFT.years}년 $${MSFT.usdBn}bn 계약은 ${a(SOURCES.tier, "2025-11 계약 발표 자료")} 기준. 기온 변화·정비 장면의 시간은 압축해서 보여 줌.`
+    : `Per IREN: Horizon 1 = ${HORIZON.grossMw} MW gross (${HORIZON.itMw} MW IT), designed for up to 200 kW racks (${a(SOURCES.design, "Feb 2025 monthly update")}); ${HORIZON.rackKw[0]}–${HORIZON.rackKw[1]} kW racks and Tier III-equivalent concurrent maintainability (${a(SOURCES.tier, "Nov 2025 contract presentation")}); a packaged chiller plant, chillers, dry coolers and coolant distribution units (CDUs) with UPS and diesel generator back-up (${a(SOURCES.plant, "Jan 2025 filing")}); Horizon 1 is fed from Primary Substation 6 and was delivered to Microsoft on 2026-08-13 (${a(SOURCES.delivered, "8-K")}). The hall and yard are drawn from the company's ${a(SOURCES.video, "Horizon 1 delivery video")} (NVL72 rack rows, yellow fibre, copper cold plates, grey electrical lineups along the aisle, big insulated pipes along the buildings, finned-coil coolers). The piping arrangement (cooler → chiller in series), CDU placement and count, transformer shape and temperatures are illustrative; roof and walls are cut away and only part of one rack row is shown. GPU and rack counts and flow rates are estimates from the site's assumptions (${EST.kwPerGpu.toFixed(1)} kW per GPU, ${HORIZON.gpusPerRack} per rack, a ${WATER.dT} °C water rise). In the scale cards at the end of the tour, the Childress ${fmt(CAMPUS.mw)} MW and ${fmt(CAMPUS.acres)} acres are from the ${a(SOURCES.campus, "company website")} and the ${MSFT.years}-year $${MSFT.usdBn}bn Microsoft contract for Horizon 1–${MSFT.halls} from the ${a(SOURCES.tier, "Nov 2025 contract presentation")}. Weather and maintenance timing are compressed.`;
   return `<!doctype html><html lang="${ko ? "ko" : "en"}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${title}</title><style>${k.ISO_CSS}${CSS}</style></head>
 <body class="iso pw-body" data-theme="light"><main class="pw-page">
 <div class="rk-fig pw-fig">
   <div class="rk-head"><h2>${title} <small>${sub}</small></h2><button class="rk-zoom" type="button" data-zoom="hz" data-call aria-pressed="false">${zt.in}</button></div>
-  <div class="rk-stage hz-stage" data-fig="horizon" tabindex="0" role="group" aria-label="${zt.aria[0]}">${svg.replace(/ role="img" aria-label="[^"]*"/, ' aria-hidden="true"')}<span class="rk-aim" aria-hidden="true"></span><div class="rk-tip"><b></b><span></span></div></div>
+  <div class="rk-stage hz-stage" data-fig="horizon" tabindex="0" role="group" aria-label="${zt.aria[0]}">${svg.replace(/ role="img" aria-label="[^"]*"/, ' aria-hidden="true"')}<span class="rk-aim" aria-hidden="true"></span><div class="rk-tip"><b></b><span></span></div>${plates(ko)}</div>
   <div class="rk-read" data-readout="horizon">${PHASE_TEXT.normal[ko ? 0 : 1]}</div>
   <div class="pw-legend">${keys.map(([c, t]) => `<span><i class="${c}"></i>${t}</span>`).join("")}</div>
   <p class="pw-caption">${caption}</p>

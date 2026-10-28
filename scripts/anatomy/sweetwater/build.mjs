@@ -20,7 +20,7 @@ import * as k from "../kit/iso-kit.mjs";
 import * as G from "../kit/lathe.mjs";
 import * as A from "../kit/audit.mjs";
 import { workshop, auditAll } from "../rack/shop.mjs";
-import { figureTools, r1 } from "../shared/tools.mjs";
+import { figureTools, r1, platesHtml, PLATE_BASIS } from "../shared/tools.mjs";
 import { SITE, AMPS, SHARE, WATER, TEMP, SOURCES, DSX, DC_V, NO_CHILLER_MAX, COPPER, RUBIN, coolest, tourPlan, stateAt, scaleLadder } from "./model.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -777,11 +777,9 @@ const fill = (src, values) => src.replace(/__([A-Z]+)__/g, (all, name) => (name 
 const a = (href, text) => `<a href="${href}" target="_blank" rel="noreferrer">${text}</a>`;
 
 // ---------- 규모 이름표 (둘러보기 끝: 랙 1대 → 첫 단계 홀 → 스위트워터 1) ----------
-// NVIDIA DSX POD 소개 영상의 연출을 빌림: 장면마다 이름 + 숫자 2개. 숫자 옆 작은 글에 근거(회사 · NVIDIA 사양 · 추정)를 붙임
-//   그림 오른쪽 위에 3장을 겹쳐 두고, 움직임 코드가 그림 칸의 data-plate 를 바꾸면 CSS 가 그 장만 보여 줌
-const BASIS = { company: ["회사", "company"], nvidia: ["NVIDIA 사양", "NVIDIA spec"], estimate: ["업계 추정", "industry estimate"] };
+// 이름 + 숫자 2개 카드 3장 (만드는 법·모양은 shared/tools.mjs 의 platesHtml · horizon.css 의 .rk-plate)
 function plates(ko) {
-  const i = ko ? 0 : 1, by = (num) => BASIS[num.basis][i];
+  const i = ko ? 0 : 1, by = (num) => PLATE_BASIS[num.basis][i];
   const { rack, hall, site } = LADDER;
   const cards = [
     ["rack", ko ? "Vera Rubin NVL72 랙 1대" : "One Vera Rubin NVL72 rack", [
@@ -794,8 +792,7 @@ function plates(ko) {
       [`${fmt(site.nums[0].value)} MW`, `${ko ? "계통 연결" : "grid connection"} · ${by(site.nums[0])}`],
       [`${fmt(site.nums[1].value)} ${ko ? "에이커" : "acres"}`, `${ko ? "부지" : "site"} · ${by(site.nums[1])}`]]],
   ];
-  return `<div class="sw-plates" aria-hidden="true">${cards.map(([id, name, nums]) =>
-    `<div class="sw-plate" data-for="${id}"><b>${name}</b>${nums.map(([v, t]) => `<p><strong>${nb(v)}</strong><span>${t}</span></p>`).join("")}</div>`).join("")}</div>`;
+  return platesHtml(cards);
 }
 
 function page(ko) {

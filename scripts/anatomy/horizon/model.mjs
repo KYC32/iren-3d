@@ -21,6 +21,7 @@ export const SOURCES = {
   tier: "https://www.sec.gov/Archives/edgar/data/1878848/000114036125040072/ef20058139_ex99-2.htm",          // 130~200 kW · Tier III (2025-11)
   plant: "https://www.sec.gov/Archives/edgar/data/1878848/000114036125001477/ny20037451x2_ex99-1.htm",       // 칠러·건식 냉각기·CDU·UPS·발전기 (2025-01)
   video: "https://x.com/IREN_Ltd/status/2087867677192929349",                                                   // Horizon 1 인도 영상 (2026-08-13)
+  campus: "https://iren.com/data-centers/childress",                                                            // 차일드레스 750 MW · 576 에이커 (회사 사이트)
 };
 
 // Horizon 1 칸 하나 (회사 수치)
@@ -41,6 +42,26 @@ export const EST = (() => {
   return { kwPerGpu: NVL.kwPerGpu, rackKw: NVL.gpusPerRack * NVL.kwPerGpu, gpus, racks: Math.ceil(gpus / NVL.gpusPerRack) };
 })();
 
+// 차일드레스 캠퍼스 (회사 사이트: "Total Capacity 750 MW" · "576-acre freehold site")
+export const CAMPUS = { mw: 750, acres: 576 };
+// Microsoft 계약: Horizon 1~4 (IT 50 MW × 4) · 5년 $9.7bn (2025-11 계약 발표 자료 = SOURCES.tier)
+export const MSFT = { halls: 4, years: 5, usdBn: 9.7 };
+
+// ---------- 규모 사다리: 둘러보기 끝에 랙 1대 → Horizon 1 → 차일드레스 캠퍼스로 넓혀 가며 이름표(이름 + 숫자 2개) ----------
+// 스위트워터 1 그림과 같은 연출 (NVIDIA DSX POD 영상: 랙 → POD → 줄 → 캠퍼스로 넓혀 가며 이름 + 숫자 2개). 숫자는 이 사이트 자료에서만:
+//   · 랙 GPU 72개 = NVIDIA GB300 NVL72 사양 · 랙 밀도 130–200 kW = 회사 설계 범위 (위 HORIZON)
+//   · IT 50 MW = 회사 · GPU·랙 수 = 위 EST (사이트의 NVL72 가정, 그림 제목·랙 설명의 숫자와 같음)
+//   · 750 MW · 576 에이커 = 회사 사이트 (CAMPUS)
+// basis = 숫자의 근거 (company 회사 · nvidia NVIDIA 사양 · estimate 추정) → 그림이 근거를 글로 붙임
+// 단계 id 는 둘러보기 단계 이름과 같음 (stateAt 의 phase)
+export function scaleLadder() {
+  return [
+    { id: "rack", nums: [{ value: HORIZON.gpusPerRack, basis: "nvidia" }, { range: HORIZON.rackKw, basis: "company" }] },
+    { id: "hall", nums: [{ value: HORIZON.itMw, basis: "company" }, { value: EST.gpus, basis: "estimate" }], racks: EST.racks },
+    { id: "site", nums: [{ value: CAMPUS.mw, basis: "company" }, { value: CAMPUS.acres, basis: "company" }] },
+  ];
+}
+
 // ---------- 열 → 물: 냉각수가 얼마나 흘러야 하나 ----------
 // 전기는 결국 모두 열이 됨 → 랙 1대가 쓰는 전력 ≈ 물이 가져가야 할 열
 // 유량(kg/s) = 열(kW) ÷ (물의 비열 4.18 kJ/kg·°C × 데워지는 온도 ΔT)
@@ -58,10 +79,11 @@ export const OVERHEAD_MW = HORIZON.grossMw - HORIZON.itMw;
 // 확대해 부품을 차례로 짚은 뒤(말풍선) 전체로 돌아와
 //   ① 더운 오후: 바깥 기온이 오르면 건식 냉각기만으로는 물이 덜 식어 칠러가 보탬 → 저녁에 멈춤
 //   ② 동시 유지보수: 대기 CDU C 를 켜고 → CDU B 의 밸브를 닫아 떼어 냄 → 정비 중에도 냉각 계속 → 복귀
+//   ③ 규모: 랙 1대 → Horizon 1 → 차일드레스 캠퍼스로 넓혀 가며 이름표 (scaleLadder)
 // (실제 시간은 압축: 기온 변화는 몇 시간, 정비는 몇 시간~며칠)
 export const T = { stopsAt: 3.2, stopLen: 2.6 };
 export const TEMP = { cool: 22, hot: 39 };   // 바깥 기온 예시 (°C): 아침·저녁 / 차일드레스 여름 오후
-export const PHASES = ["normal", "warm", "chill", "evening", "standby", "isolate", "maint", "restore"];
+export const PHASES = ["normal", "warm", "chill", "evening", "standby", "isolate", "maint", "restore", "rack", "hall", "site"];
 
 export function tourPlan(n) {
   const zoomEnd = T.stopsAt + n * T.stopLen;   // 마지막 부품까지
@@ -77,8 +99,12 @@ export function tourPlan(n) {
     restore: warm + 24.0,       // B 밸브 다시 열기
     back: warm + 26.4,          // C 다시 대기
   };
-  at.stop = at.back + 1.6;
-  return { len: at.stop + 3, zoomEnd, stopsAt: T.stopsAt, stopLen: T.stopLen, at };
+  // 규모 사다리: 대기 CDU C 가 다 멈춘 뒤(1초) 랙 1대 → Horizon 1 → 차일드레스 캠퍼스 (장면마다 이름표를 읽을 시간)
+  at.rack = at.back + 1.6;
+  at.hall = at.rack + 3.6;
+  at.site = at.hall + 3.6;
+  at.stop = at.site + 4.4;
+  return { len: at.stop + 2.4, zoomEnd, stopsAt: T.stopsAt, stopLen: T.stopLen, at };
 }
 
 // t 초의 상태: 바깥 기온 · 칠러 0..1 · CDU 펌프(A·B·C) 0..1 · B 밸브 열림 0..1 · 단계 이름 · 흐름
@@ -96,6 +122,7 @@ export function stateAt(t, plan) {
   const valve = t < a.restore ? 1 - ramp(t, a.isolate, a.maint) : ramp(t, a.restore, a.restore + 1.2);   // B 밸브 열림
   const b = Math.min(valve, t < a.restore ? 1 - ramp(t, a.isolate, a.isolate + 0.6) : ramp(t, a.restore + 0.6, a.restore + 1.4));
   const phase = t < a.warm ? "normal" : t < a.chill ? "warm" : t < a.evening ? "chill" : t < a.standby ? "evening"
-    : t < a.isolate ? "standby" : t < a.maint ? "isolate" : t < a.restore ? "maint" : t < a.stop ? "restore" : "normal";
+    : t < a.isolate ? "standby" : t < a.maint ? "isolate" : t < a.restore ? "maint" : t < a.rack ? "restore"
+    : t < a.hall ? "rack" : t < a.site ? "hall" : t < a.stop ? "site" : "normal";
   return { temp, chill, cdu: [1, b, c], valve, phase, flow: { power: true, water: true, cduA: true, cduB: b > 0.5, cduC: c > 0.5, chill: chill > 0.9 } };
 }
