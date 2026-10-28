@@ -4,6 +4,11 @@
       "date": "2026-10-28",
       "items": [
         {
+          "ko": "스위트워터 1 그림 둘러보기 끝에 규모 장면을 더함. 랙 1대 → 첫 단계 홀 → 스위트워터 1 전체로 넓히며 이름과 숫자 2개를 보여 줌(NVIDIA DSX POD 영상 연출). 버스웨이 설명에 NVIDIA의 '구리 45% 적게'를 넣음",
+          "en": "The Sweetwater 1 figure tour now ends with a scale sequence (one rack, the phase 1 hall, then all of Sweetwater 1), each with a name and two numbers, after NVIDIA's DSX POD video. The busway tip adds NVIDIA's '45% less copper' for 800 V DC",
+          "source": "https://developer.nvidia.com/blog/nvidia-800-v-hvdc-architecture-will-power-the-next-generation-of-ai-factories/"
+        },
+        {
           "ko": "차일드레스 Horizon 2~4 인도 이력에 10-K의 Microsoft 계약 유예 기간(2026년 4분기 중반~2027년 2분기 초)을 더함. 10/13 위임장 설명서의 단기 과제 문장도 소식에 넣음",
           "en": "Added the 10-K's Microsoft-agreement grace periods (mid-Q4 2026 to early Q2 2027) to the Childress Horizon 2-4 delivery history, plus the Oct 13 proxy statement line naming Horizon 2-4 completion a near-term priority",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm"

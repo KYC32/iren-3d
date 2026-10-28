@@ -2,7 +2,8 @@
 // live.js — 스위트워터 1 그림의 움직임 (build.mjs 가 자리표를 채워 shared/zoomer.js 뒤에 붙여 넣음)
 //   둘러보기: 확대해 전기가 내려오는 계단(345 → 138 → 34.5 kV → 홀 → 랙) → 열이 나가는 길 순서로 부품을 짚고(말풍선) →
 //             ① 더운 오후: 온도계 바늘이 오르고 냉각기 팬이 빨라지지만 칠러는 없음 → 저녁에 느려짐
-//             ② 다음 단계: 비워 둔 자리에 흐린 변압기가 나타났다 사라짐 → 처음으로
+//             ② 다음 단계: 비워 둔 자리에 흐린 변압기가 나타났다 사라짐
+//             ③ 규모: 랙 1대 → 첫 단계 홀 → 스위트워터 1 전체로 넓혀 가며 오른쪽 위 이름표(이름 + 숫자 2개)를 바꿈 → 처음으로
 //   상태(기온·팬·다음 단계·흐름)는 model.mjs 의 stateAt 을 빌드 때 그대로 넣어 계산 → 그림과 글이 어긋나지 않음
 //   보기: 전체 | 회사 확인 — '회사 확인'은 회사가 밝히지 않아 그린 구역(홀 안·냉각 설비·다음 단계 자리)을 하얗게 (주소 끝 #confirmed 로도 열림)
 // =============================================================
@@ -24,7 +25,7 @@ const still=matchMedia("(prefers-reduced-motion: reduce)");
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const sm=(a,b,x)=>{const q=clamp((x-a)/(b-a),0,1);return q*q*(3-2*q);};
 const PLAN=D.plan, STOPS=D.stops;
-let clock=0,last=0,frame=0,visible=true,lastNeedle=0,lastFan=0,lastFlags="",lastFuture=-1,fanTurn=0,puffClock=0;
+let clock=0,last=0,frame=0,visible=true,lastNeedle=0,lastFan=0,lastFlags="",lastFuture=-1,fanTurn=0,puffClock=0,lastPlate="";
 
 // 그림 아래 줄 쓰기(say)와 확대(zoomer)는 ../shared/zoomer.js (build.mjs 가 이 파일 앞에 붙임)
 const Z=zoomer(stage,{W:D.W,H:D.H,zoom:D.zoom,focus:D.focus,stops:STOPS});
@@ -48,7 +49,8 @@ function tourAt(t){
   const parts=u>=PLAN.stopsAt&&u<PLAN.zoomEnd;                // 부품을 차례로 짚는 구간
   const scene=u>=PLAN.at.warm&&u<PLAN.at.stop;                // 더운 오후 → 다음 단계 장면
   const stop=parts?Math.min(D.parts-1,Math.floor((u-PLAN.stopsAt)/PLAN.stopLen)):scene?(D.phaseStop[s.phase]??-1):-1;
-  return {u,zoomOn:parts||scene,stop,s};
+  // 짚을 곳이 없는 장면(규모 ③ 스위트워터 1)은 확대를 풀어 전체 보기로 → 랙 → 홀 → 전체로 넓어짐
+  return {u,zoomOn:parts||(scene&&stop>=0),stop,s};
 }
 function draw(s,dt){
   // 온도계 바늘: 1 °C 마다 한 장
@@ -67,6 +69,9 @@ function draw(s,dt){
   if(flags!==lastFlags){lastFlags=flags;for(const key of Object.keys(on))stage.toggleAttribute("data-"+key,on[key]);}
   // 데워진 공기: 팬이 빠를수록 자주
   puffClock+=dt;if(puffClock>1.25-.8*(s.fan-.45)/.55){puffClock=0;puff(D.puffs[Math.floor(Math.random()*D.puffs.length)]);}
+  // 규모 이름표: 규모 장면이면 그 장만 보이게 (직접 확대 중·'회사 확인' 보기에선 숨김)
+  const pl=!Z.on&&view==="all"&&D.plates.includes(s.phase)?s.phase:"";
+  if(pl!==lastPlate){lastPlate=pl;if(pl)stage.setAttribute("data-plate",pl);else stage.removeAttribute("data-plate");}
   // 그림 아래 줄: 확대 중 말풍선을 못 띄웠으면 부품 설명, 직접 확대 중엔 쓰는 법, 그 밖엔 지금 장면 ('회사 확인' 보기면 그 보기 안내)
   const cap=Z.caption(), ph=view==="confirmed"?"confirmed":s.phase;
   say(read,cap||(Z.on?ZT.hint:PH[ph][KO?0:1]),!!cap,cap||Z.on?"":ph);
@@ -105,7 +110,7 @@ if(/^#confirmed\b/.test(location.hash))setView("confirmed");   // 주소 끝이 
 run();
 // 검수용: 둘러보기 t 초 장면으로 바로 이동 / 상태 읽기 / 루프 멈춤 / 보기 바꾸기
 window.__swSeek=(t)=>{clock=t;const T=tourAt(t);Z.tour(T.zoomOn,T.stop);Z.k=Z.on||Z.auto?1:0;Z.fx=Z.tfx;Z.fy=Z.tfy;Z.zc=Z.zt;Z.apply();draw(T.s,0);};
-window.__swState=()=>{const T=tourAt(clock);return {clock:+clock.toFixed(2),view,phase:T.s.phase,stop:T.stop,zoom:+Z.k.toFixed(3),flags:lastFlags,temp:+T.s.temp.toFixed(1),fan:+T.s.fan.toFixed(2),future:+T.s.future.toFixed(2),tip:stage.querySelector(".rk-tip").hasAttribute("data-on")?stage.querySelector(".rk-tip").textContent:""};};
+window.__swState=()=>{const T=tourAt(clock);return {clock:+clock.toFixed(2),view,phase:T.s.phase,stop:T.stop,plate:lastPlate,zoom:+Z.k.toFixed(3),flags:lastFlags,temp:+T.s.temp.toFixed(1),fan:+T.s.fan.toFixed(2),future:+T.s.future.toFixed(2),tip:stage.querySelector(".rk-tip").hasAttribute("data-on")?stage.querySelector(".rk-tip").textContent:""};};
 window.__swPlan=PLAN;
 window.__swView=setView;
 window.__swStop=()=>{visible=false;if(frame)cancelAnimationFrame(frame);frame=0;};

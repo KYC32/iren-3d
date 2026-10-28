@@ -310,7 +310,8 @@ function zoomer(st,{W,H,zoom,focus,stops}){
   Z.tour=(on,i)=>{
     if(Z.on)return;Z.auto=on;const s=on&&i>=0?stops[i]:null;
     if(s!==Z.stop){Z.stop=s;
-      if(s){Z.tfx=s.fx;Z.tfy=s.fy;Z.zt=s.z||zoom;Z.autoInfo=INFO[s.key]?INFO[s.key][KO?0:1]:"";aimAt(s.fx,s.fy,"auto");}
+      // 넓게 보는 장면(aim: false)은 조준 링을 띄우지 않음
+      if(s){Z.tfx=s.fx;Z.tfy=s.fy;Z.zt=s.z||zoom;Z.autoInfo=INFO[s.key]?INFO[s.key][KO?0:1]:"";if(s.aim===false)st.removeAttribute("data-aim");else aimAt(s.fx,s.fy,"auto");}
       else{Z.autoInfo="";st.removeAttribute("data-aim");}}};
   Z.caption=()=>tipShown||Z.k<=.6?"":Z.on?Z.info:Z.auto&&Z.stop?Z.autoInfo:"";
   Z.rect=()=>{const s=1+(Z.zc-1)*sm(0,1,Z.k),w=W/s,h=H/s;return [Z.fx*(W-w),Z.fy*(H-h),w,h];};

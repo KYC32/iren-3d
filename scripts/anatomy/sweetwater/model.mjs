@@ -17,6 +17,8 @@
 //   → 그림의 홀 전기 = 정류기(34.5 kV 교류 → 800 V 직류) → 800 V 버스웨이 (추정 — 480 V 교류로 짓는 Vera Rubin 설계도 있음)
 // 홀 안 설계(전기 방식·냉각 설비·대수·배치)는 회사가 밝히지 않음 → 위 사양을 바탕으로 한 그림 표현 (그림 아래에 적음)
 // =============================================================
+// GPU 추정 규칙은 사이트 화면(홀 추정 카드)과 같은 파일에서 가져옴 → 그림 이름표와 화면 숫자가 어긋나지 않음
+import { GPU_PROFILES, roundNice } from "../../../src/data/hallEstimate.js";
 
 export const SOURCES = {
   plant: "https://www.sec.gov/Archives/edgar/data/1878848/000114036125001477/ny20037451x2_ex99-1.htm",   // 345/138 kV · 138/34.5 kV (2025-01 6-K)
@@ -32,7 +34,37 @@ export const SOURCES = {
   podBlog: "https://developer.nvidia.com/blog/achieve-productive-ai-capacity-faster-and-more-predictably-with-nvidia-dsx-pod/",    // "standard input 800 VDC power design" (NVIDIA 기술 블로그, 2026-10-21)
   keynotePod: "https://youtu.be/PvFjbPYEOZI?t=1842",                                                   // 기조연설 30:42 DSX Pod: 랙 7대 · 컨테이너 · "800 volts DC connects to the racks"
   ac480: "https://blog.se.com/datacenter/2026/05/08/nvidia-and-schneider-electric-get-in-sync-at-nvidia-gtc-2026-to-deliver-vera-rubin-ai-factories/", // 슈나이더 Vera Rubin NVL72 검증 설계 = 480 V 교류 (제3자 — 다른 방식도 있다는 근거로만)
+  // 구리 45%: "Row-level 800 VDC busways enable 85% more power transmission through the same conductor size
+  //   while reducing copper requirements by 45% compared to 415 VAC distribution" (NVIDIA 기술 블로그, 2025-05-20)
+  copper: "https://developer.nvidia.com/blog/nvidia-800-v-hvdc-architecture-will-power-the-next-generation-of-ai-factories/",
+  // NVIDIA DSX POD 소개 영상 (@NVIDIAAIInfra, 2026-10-27): 800 VDC Power Center "45% less copper" 이름표
+  //   (영상 위에 'AI 생성·수정 내용 포함' 표시가 있어 숫자의 근거는 위 기술 블로그 글로 삼고 영상은 함께 적기만 함)
+  podVideo: "https://x.com/NVIDIAAIInfra/status/2115129444281037280",
 };
+
+// NVIDIA: 줄 단위 800 V 직류 버스웨이 = 415 V 교류 배전보다 구리 45% 적게 · 같은 굵기 도체로 전력 85% 더 (기술 블로그 2025-05)
+//   → 그림의 버스웨이 말풍선과 그림 아래 설명에 씀 (홀 전기 방식은 회사가 밝히지 않음 — 800 V 직류는 그림 표현)
+export const COPPER = { cut: 0.45, more: 0.85, vsVac: 415 };
+
+// ---------- 규모 사다리: 둘러보기 끝에 랙 1대 → 첫 단계 홀 → 스위트워터 1 전체로 넓혀 가며 이름표(이름 + 숫자 2개) ----------
+// NVIDIA DSX POD 소개 영상의 연출(랙 → POD → 줄 → 캠퍼스로 넓혀 가며 이름 + 숫자 2개)을 빌림. 숫자는 이 사이트 자료에서만:
+//   · 랙 GPU 수·GPU 1개당 전력 = 사이트의 Vera Rubin 추정 규칙 (src/data/hallEstimate.js 의 GPU_PROFILES 'vera-rubin')
+//   · 랙 전력 범위 190–230 kW = 같은 규칙의 근거 (업계 추정: 공급망 조사 Max-Q 190 · Max-P 230 kW / SemiAnalysis 최대 약 220 kW)
+//     NVIDIA 는 Vera Rubin NVL72 랙 전력을 발표하지 않음 → 이름표에 '업계 추정'을 붙임
+//   · IT 200 MW · 1,400 MW · 1,700 에이커 = 회사 자료 (아래 SITE)
+const VR = GPU_PROFILES.find((p) => p.id === "vera-rubin");
+export const RUBIN = { gpusPerRack: VR.gpusPerRack, kwPerGpu: VR.kwPerGpu, rackKw: [190, 230] };
+
+// 이름표 3장. basis = 숫자의 근거 (company 회사 · nvidia NVIDIA 사양 · estimate 추정) → 그림이 '추정'을 글로 붙임
+//   단계 id 는 둘러보기 단계 이름과 같음 (stateAt 의 phase)
+export function scaleLadder() {
+  const gpus = (SITE.phase1It * 1000) / RUBIN.kwPerGpu;          // IT 200 MW ÷ 3.0 kW ≈ 66,667개
+  return [
+    { id: "rack", nums: [{ value: RUBIN.gpusPerRack, basis: "nvidia" }, { range: RUBIN.rackKw, basis: "estimate" }] },
+    { id: "hall", nums: [{ value: SITE.phase1It, basis: "company" }, { value: roundNice(gpus), basis: "estimate" }], racks: roundNice(Math.ceil(gpus / RUBIN.gpusPerRack)) },
+    { id: "site", nums: [{ value: SITE.mw, basis: "company" }, { value: SITE.acres, basis: "company" }] },
+  ];
+}
 
 // NVIDIA DSX 보도자료의 물 계산: 냉각탑(물을 증발시켜 식힘) 대신 건식 냉각기 → 2 GW 규모면 하루 물 5,400만 L 를 아낌 (18만 가구 하루 사용량)
 export const DSX = { gw: 2, litersPerDay: 54e6 };
@@ -78,8 +110,9 @@ export const TEMP = { cool: 24, hot: 39 };                          // 바깥 �
 // ---------- 둘러보기 시간표 (초) ----------
 // 부품을 차례로 짚은 뒤 전체로 돌아와 ① 더운 오후: 바깥 39 °C 여도 건식 냉각기만으로 45 °C 물 → 칠러 없음
 //   ② 다음 단계: 비워 둔 변압기 자리·피더 칸에 다음 단계가 붙는 모습 (규모·시기는 미공개 → 흐린 그림)
+//   ③ 규모: 랙 1대 → 첫 단계 홀 → 스위트워터 1 전체로 넓혀 가며 이름표 (scaleLadder)
 export const T = { stopsAt: 3.2, stopLen: 2.6 };
-export const PHASES = ["normal", "warm", "hot", "evening", "grow", "grown", "settle"];
+export const PHASES = ["normal", "warm", "hot", "evening", "grow", "grown", "settle", "rack", "hall", "site"];
 
 export function tourPlan(n) {
   const zoomEnd = T.stopsAt + n * T.stopLen;
@@ -92,8 +125,12 @@ export function tourPlan(n) {
     grown: warm + 15.0,       // 다 나타남
     settle: warm + 21.0,      // 다시 사라짐
   };
-  at.stop = at.settle + 1.6;
-  return { len: at.stop + 3, zoomEnd, stopsAt: T.stopsAt, stopLen: T.stopLen, at };
+  // 규모 사다리: 흐린 그림이 다 사라진 뒤(1.4초) 랙 1대 → 첫 단계 홀 → 스위트워터 1 전체 (장면마다 이름표를 읽을 시간)
+  at.rack = at.settle + 2.4;
+  at.hall = at.rack + 3.6;
+  at.site = at.hall + 3.6;
+  at.stop = at.site + 4.4;
+  return { len: at.stop + 2.4, zoomEnd, stopsAt: T.stopsAt, stopLen: T.stopLen, at };
 }
 
 // t 초의 상태: 바깥 기온 · 냉각기 팬 0..1 · 다음 단계 그림 0..1 · 단계 이름 · 흐름
@@ -106,6 +143,7 @@ export function stateAt(t, plan) {
   const fan = 0.45 + 0.55 * hot;                                   // 더울수록 팬을 빨리
   const future = t < a.settle ? ease(ramp(t, a.grow, a.grown)) : 1 - ease(ramp(t, a.settle, a.settle + 1.4));
   const phase = t < a.warm ? "normal" : t < a.hot ? "warm" : t < a.evening ? "hot" : t < a.grow ? "evening"
-    : t < a.grown ? "grow" : t < a.settle ? "grown" : t < a.stop ? "settle" : "normal";
+    : t < a.grown ? "grow" : t < a.settle ? "grown" : t < a.rack ? "settle"
+    : t < a.hall ? "rack" : t < a.site ? "hall" : t < a.stop ? "site" : "normal";
   return { temp, fan, future, phase, flow: { power: true, water: true, future: future > 0.6 } };
 }
