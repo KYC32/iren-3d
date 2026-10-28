@@ -471,6 +471,18 @@
           "event": "FY26 실적: Horizon 2 커미셔닝, Horizon 3~4 후기 공사 (Q4 납품 목표)",
           "event_en": "FY26 results: Horizon 2 commissioning, Horizon 3-4 late-stage (Q4 delivery target)",
           "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+        },
+        {
+          "date": "2026-08-27",
+          "event": "10-K: Horizon 2~4는 2026년 4분기에 단계별 인도 목표 · Microsoft 계약상 인도 유예 기간은 2026년 4분기 중반부터 2027년 2분기 초까지",
+          "event_en": "10-K: Horizon 2-4 targeted for phased delivery in calendar Q4 2026; grace periods under the Microsoft agreement run from mid-Q4 2026 to the beginning of Q2 2027",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm"
+        },
+        {
+          "date": "2026-10-13",
+          "event": "위임장 설명서(DEF 14A): 남은 Horizon 2~4 배치 완료를 단기 우선 과제로 꼽음 · 차일드레스 추가 확장도 진행 중",
+          "event_en": "Proxy statement (DEF 14A): completing the remaining Horizon 2-4 deployments is a near-term priority; further expansion at Childress is progressing",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036126039451/ny20078226x1_def14a.htm"
         }
       ],
       "estimates": [

@@ -70,7 +70,7 @@
       "url": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm",
       "published": "2026-08-27",
       "publisher": "IREN",
-      "reviewedAt": "2026-10-17"
+      "reviewedAt": "2026-10-27"
     },
     {
       "id": "fy25-10k",
@@ -1134,6 +1134,12 @@
           "sourceId": "fy26-results",
           "note_ko": "잔여 배치의 인도 목표 구체화.",
           "note_en": "Delivery window narrowed for remaining deployments."
+        },
+        {
+          "target": "2026-Q4",
+          "sourceId": "fy26-10k",
+          "note_ko": "4분기에 단계별 인도 목표. Microsoft 계약상 인도 유예 기간은 2026년 4분기 중반부터 2027년 2분기 초까지.",
+          "note_en": "Phased delivery targeted in calendar Q4 2026; grace periods under the Microsoft agreement extend from mid-Q4 2026 to the beginning of Q2 2027."
         }
       ]
     },
@@ -1157,6 +1163,12 @@
           "sourceId": "fy26-results",
           "note_ko": "잔여 배치의 인도 목표 구체화.",
           "note_en": "Delivery window narrowed for remaining deployments."
+        },
+        {
+          "target": "2026-Q4",
+          "sourceId": "fy26-10k",
+          "note_ko": "4분기에 단계별 인도 목표. Microsoft 계약상 인도 유예 기간은 2026년 4분기 중반부터 2027년 2분기 초까지.",
+          "note_en": "Phased delivery targeted in calendar Q4 2026; grace periods under the Microsoft agreement extend from mid-Q4 2026 to the beginning of Q2 2027."
         }
       ]
     },
@@ -1180,6 +1192,12 @@
           "sourceId": "fy26-results",
           "note_ko": "잔여 배치의 인도 목표 구체화.",
           "note_en": "Delivery window narrowed for remaining deployments."
+        },
+        {
+          "target": "2026-Q4",
+          "sourceId": "fy26-10k",
+          "note_ko": "4분기에 단계별 인도 목표. Microsoft 계약상 인도 유예 기간은 2026년 4분기 중반부터 2027년 2분기 초까지.",
+          "note_en": "Phased delivery targeted in calendar Q4 2026; grace periods under the Microsoft agreement extend from mid-Q4 2026 to the beginning of Q2 2027."
         }
       ]
     },
@@ -1472,5 +1490,5 @@
       "building": "cf-miners"
     }
   ],
-  "assessedThrough": "2026-10-07"
+  "assessedThrough": "2026-10-28"
 }
