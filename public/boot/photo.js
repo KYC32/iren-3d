@@ -171,6 +171,12 @@
       if (photoBtn && my === turn) photoBtn.removeAttribute("data-wait");
     }
     if (my !== turn || !want) return;
+    // 그림은 영상을 기다리는 동안 시계를 멈추고 있음 (처음 열 땐 3초까지). 그 한도가 지나 그림이 먼저 움직여 버렸으면
+    // 영상과 순간이 어긋나 사진이 뜰 때 부품이 뒤로 튐 → 이번엔 그림으로 둠 (고른 것은 저장 안 함, 다음 방문에 다시 시도)
+    if (!api.still.matches && api.waiting && !api.waiting() && Math.abs(gap(api.phase(), P[0].base.currentTime)) > 0.25) {
+      fail();
+      return;
+    }
     // 확대 사진은 영상이 돈 뒤에 천천히 받아 둠 (직접 확대를 누르면 바로 보이게)
     for (const p of P) {
       if (!p.near.getAttribute("src")) {
@@ -213,7 +219,9 @@
     want = false;
     stop();
     if (photoBtn) photoBtn.removeAttribute("data-wait");
-    for (const b of document.querySelectorAll(".rk-view button")) b.setAttribute("aria-pressed", String(b.dataset.view === "draw"));
+    // 단추를 그림으로 + 그림의 시계 멈춤을 풂 (그림 코드가 맡음 — 예전 그림 코드면 단추만 직접)
+    if (api.drawn) api.drawn();
+    else for (const b of document.querySelectorAll(".rk-view button")) b.setAttribute("aria-pressed", String(b.dataset.view === "draw"));
     turn++;
     api.hook(null);
     for (const p of P) {
@@ -223,6 +231,14 @@
       p.nearOk = false;
     }
     built = false;
+  }
+
+  // 두 둘러보기 시각의 차이 a − b (초): 반복 이음매를 건너 가장 가까운 쪽으로 (-TOUR/2 … TOUR/2)
+  function gap(a, b) {
+    let d = a - b;
+    if (d > TOUR / 2) d -= TOUR;
+    else if (d < -TOUR / 2) d += TOUR;
+    return d;
   }
 
   // 그림 코드가 프레임마다 물음: 이번 프레임에 흐른 영상 시간 (랙 영상이 기준)

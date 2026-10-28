@@ -22,6 +22,7 @@ import * as A from "../kit/audit.mjs";
 import { glCamera } from "../kit/gl.mjs";
 import { gpuFigure, GPU, LAYOUT as GPU_LAYOUT } from "./gpu.mjs";
 import { workshop, auditAll } from "./shop.mjs";
+import { TOUR, PLAN, STOPS } from "./tour.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..", "..");
@@ -363,6 +364,8 @@ const CSS = `
 .rk-tip{position:absolute;left:0;top:0;z-index:1;width:0;height:0;--d:24px;--w:120px;--mw:240px;pointer-events:none;opacity:0;transition:opacity .25s}
 .rk-tip[data-on]{opacity:1}
 .rk-tip[data-glide]{transition:opacity .25s,left .6s ease,top .6s ease}   /* 짚는 점과 같은 속도로 함께 옮겨 감 */
+/* 둘러보기가 다음 부품으로 옮겨 갈 때: 돋보기가 옮겨 가는 시간(--rk-glide = tour.mjs STOPS 의 glide, 이동마다 다름)에 맞춰, 천천히 출발해 천천히 멈춤 */
+.rk-stage[data-aim=auto] .rk-aim,.rk-stage[data-aim=auto] .rk-tip[data-glide]{transition:opacity .25s,left var(--rk-glide,.8s) cubic-bezier(.45,0,.55,1),top var(--rk-glide,.8s) cubic-bezier(.45,0,.55,1)}
 .rk-tip::before,.rk-tip::after{content:"";position:absolute;height:1.8px;margin-top:-.9px;border-radius:1px;background:#0B344F;box-shadow:0 0 0 1.4px rgba(255,255,255,.95)}
 .rk-tip::before{left:0;top:0;width:calc(var(--d) * 1.4142);transform-origin:0 50%}
 .rk-tip[data-side=ru]::before{transform:rotate(-45deg)}
@@ -571,6 +574,8 @@ const zoomText = (ko) => ({
 
 // 살아 움직이는 부분 (kit 없이 동작: 이동 벡터·좌표는 빌드 때 계산해 둠). 두 그림을 한 루프로
 //   랙: 트레이 당김(pull) · 부하(load)   GPU 모듈: 냉각판 들림(lift) · 같은 부하
+// 둘러보기 28초 일정 (tour.mjs): 그림 스크립트에 글을 그대로 끼워 넣음 (export 만 지움) — 시험(tour.test.mjs)과 같은 코드가 돎
+const TOUR_JS = readFileSync(join(HERE, "tour.mjs"), "utf8").replace(/^export\s+(const|function)/gm, "$1");
 const LIVE = `
 const D=__DATA__, D2=__DATA2__, KO=__KO__, INFO=__INFO__, ZT=__ZOOM__;
 const stage=document.querySelector(".rk-stage[data-fig=rack]"), stage2=document.querySelector(".rk-stage[data-fig=gpu]");
@@ -582,21 +587,19 @@ const layer=glLayer({canvas:stage.querySelector("canvas.rk-gl"),fragment:${JSON.
 const layer2=glLayer({canvas:stage2.querySelector("canvas.rk-gl"),fragment:${JSON.stringify(G2.FRAGMENT)},view:[D2.W,D2.H],camera:D2.camera,uniforms:["uLoad","uFirst"]});
 if(layer)stage.setAttribute("data-gl","");if(layer2)stage2.setAttribute("data-gl","");
 const R=D.rack, G=D2.gpu, perTrayKw=R.kw/R.computeTrays;
-let lastLv="",pull=0,target=0,lift=0,liftTarget=0,load={x:0,v:0},first={x:0,v:0},clock=0,time=0,last=0,frame=0,visible=true,touring=!still.matches;
+// heatR·heatG = 랙 트레이·GPU 다이의 열 (부하 0..1, 그림마다 따로 → 수치 줄의 kW 도 그림마다 제 이야기만)
+let lastLv="",pull=0,target=0,lift=0,liftTarget=0,heatR={x:0,v:0},heatG={x:0,v:0},first={x:0,v:0},clock=0,time=0,last=0,frame=0,visible=true,touring=!still.matches;
+let exact=true;   // 둘러보기 일정 값을 그대로 쓰는 중 (직접 확대를 끝내고 둘러보기로 돌아오는 동안만 false → 따라가며 합류)
+let waitTill=0;   // 이 시각(performance.now, ms)까지 둘러보기 시계를 멈춤 — 사진 영상이 재생되기를 기다리는 동안 (영상과 같은 순간에서 함께 출발)
 let pace=null,hook=null,quiet=false;   // 사진 모드 고리 (public/boot/photo.js)
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
 const sm=(a,b,x)=>{const q=clamp((x-a)/(b-a),0,1);return q*q*(3-2*q);};
 // GPU 그림의 들림 0..1 → 냉각판 높이 mm (먼저 0~0.65) · 뚜껑 진행 0..1 (나중 0.35~1)
 const plateOf=(u)=>D2.plateMax*sm(0,.65,u), lidOf=(u)=>sm(.35,1,u);
-// 둘러보기 28초 (랙 → GPU 차례로, 확대까지 저절로):
-//   랙  0~2.5s 트레이 꺼냄 · 2s~ 열 · 3~11.6s 트레이 확대(부품 4곳을 2.15초씩 짚으며 설명) · 12.5~14.5s 트레이 넣음
-//   GPU 14.5~17s 냉각판·뚜껑 들림 · 16s~ 열 · 17.3~25.3s 기판 확대(4곳을 2초씩) · 25.6~27.6s 내려앉음
-const TOUR=28;
+// ---------- 둘러보기 28초 일정 (scripts/anatomy/rack/tour.mjs 를 그대로 끼워 넣음 — Blender 사진 렌더도 같은 일정) ----------
+${TOUR_JS}
+const tourNow=(t)=>tourAt(t,D.stops,D2.stops);   // t 초의 모습: 트레이·냉각판·열·확대 정도·돋보기 중심·짚는 부품
 window.__rackCycle=TOUR*1000;   // 부팅 화면이 최소 한 바퀴는 보여 주도록 알려 줌
-function tourAt(t){const u=t%TOUR;const ramp=(a,b)=>clamp((u-a)/(b-a),0,1);
-  const rz=u>=3&&u<11.6, gz=u>=17.3&&u<25.3;
-  return {pull:D.stroke*(ramp(0,2.5)-ramp(12.5,14.5)),lift:ramp(14.5,17)-ramp(25.6,27.6),load:(u>2&&u<12.5)||(u>16&&u<25.6)?1:0,
-    rz,rs:rz?Math.min(3,Math.floor((u-3)/2.15)):-1,gz,gs:gz?Math.min(3,Math.floor((u-17.3)/2)):-1};}
 // 그림 아래 줄 쓰기 (cap = 부품 설명: 이름을 굵게)
 const say=(el,text,cap)=>{if(!el||el._t===text)return;el._t=text;
   if(cap){const i=text.indexOf(" · "),b=document.createElement("b");b.textContent=i<0?text:text.slice(0,i);el.replaceChildren(b,i<0?"":text.slice(i));el.setAttribute("data-cap","");}
@@ -649,12 +652,18 @@ function zoomer(st,{W,H,zoom,focus,btn,labels,hide,stops}){
   const Z={on:false,auto:false,stop:null,autoInfo:"",k:0,fx:.5,fy:.5,tfx:.5,tfy:.5,info:"",box:"",px:null,py:null,keys:false,moved:true,shown:false};
   // 조준 원 자리 (kind: "" = 키보드 조준, "auto" = 둘러보기가 짚는 부품 표시)
   const aimAt=(fx,fy,kind)=>{if(!aimEl)return;aimEl.style.left=(fx*100).toFixed(1)+"%";aimEl.style.top=(fy*100).toFixed(1)+"%";st.setAttribute("data-aim",kind);};
-  // 둘러보기가 매 프레임 부름: 확대할지 + 짚을 부품 번호. 직접 확대 중이면 쉼
-  Z.tour=(on,i)=>{
+  // 둘러보기가 매 프레임 부름: 짚을 부품 번호 (말풍선·초록 점), 그 부품으로 옮겨 가는 시간 glide (초). 직접 확대 중이면 쉼
+  //   확대 정도·돋보기 중심은 place(일정 그대로)·follow(합류 중) 가 따로 정함
+  Z.tour=(on,i,glide)=>{
     if(Z.on)return;Z.auto=on;const s=on&&i>=0?stops[i]:null;
     if(s!==Z.stop){Z.stop=s;
-      if(s){Z.tfx=s.fx;Z.tfy=s.fy;Z.autoInfo=INFO[s.key]?INFO[s.key][KO?0:1]:"";aimAt(s.fx,s.fy,"auto");}
+      if(s){Z.autoInfo=INFO[s.key]?INFO[s.key][KO?0:1]:"";if(glide)st.style.setProperty("--rk-glide",glide+"s");aimAt(s.fx,s.fy,"auto");}
       else{Z.autoInfo="";st.removeAttribute("data-aim");}}};
+  // 둘러보기 일정(tour.mjs)이 정한 확대 정도 k 와 돋보기 중심을 그대로 씀
+  Z.place=(k,fx,fy)=>{Z.k=k;Z.fx=Z.tfx=fx;Z.fy=Z.tfy=fy;};
+  // 직접 확대를 끝낸 뒤 둘러보기로 돌아올 때: 지금 자리에서 일정 값 쪽으로 a(0..1) 만큼 다가감 · 다 왔는지
+  Z.follow=(k,fx,fy,a)=>{Z.k+=(k-Z.k)*a;Z.fx+=(fx-Z.fx)*a;Z.fy+=(fy-Z.fy)*a;Z.tfx=fx;Z.tfy=fy;};
+  Z.near=(k,fx,fy)=>Math.abs(Z.k-k)<.002&&Math.abs(Z.fx-fx)<.002&&Math.abs(Z.fy-fy)<.002;
   // 그림 아래 줄에 쓸 부품 설명: 확대돼 있는데 칸이 좁아 말풍선을 못 띄웠을 때만 ("" = 없음)
   Z.caption=()=>tipShown||Z.k<=.6?"":Z.on?Z.info:Z.auto&&Z.stop?Z.autoInfo:"";
   Z.rect=()=>{const s=1+(zoom-1)*sm(0,1,Z.k),w=W/s,h=H/s;return [Z.fx*(W-w),Z.fy*(H-h),w,h];};
@@ -709,12 +718,12 @@ function draw(){
   const pl=plateOf(lift), ld=lidOf(lift);
   const mv=(el,dx,dy)=>{if(Math.abs(dx)+Math.abs(dy)>.01)el.setAttribute("transform","translate("+dx.toFixed(2)+" "+dy.toFixed(2)+")");else el.removeAttribute("transform");};
   mv(plate,D2.up[0]*pl,D2.up[1]*pl);mv(lidG,D2.lidVec[0]*ld,D2.lidVec[1]*ld);
-  const lv=load.x.toFixed(2);if(lv!==lastLv){lastLv=lv;if(!layer)stage.style.setProperty("--rk-load",lv);if(!layer2)stage2.style.setProperty("--rk-load",lv);} // WebGL 없을 때만 CSS 색으로
+  const lv=heatR.x.toFixed(2)+" "+heatG.x.toFixed(2);if(lv!==lastLv){lastLv=lv;if(!layer)stage.style.setProperty("--rk-load",heatR.x.toFixed(2));if(!layer2)stage2.style.setProperty("--rk-load",heatG.x.toFixed(2));} // WebGL 없을 때만 CSS 색으로
   const t=still.matches?0.8:time;
   const r1=Z1.apply(), r2=Z2.apply();   // 확대: 지금 보이는 범위 [x, y, 폭, 높이]
-  if(layer){(!quiet&&load.x>1e-3&&pull>.5)?layer.draw({uLoad:load.x,uPull:pull,uFirst:first.x,...zoomGl(r1,D.camera)},t):layer.clear();}
+  if(layer){(!quiet&&heatR.x>1e-3&&pull>.5)?layer.draw({uLoad:heatR.x,uPull:pull,uFirst:first.x,...zoomGl(r1,D.camera)},t):layer.clear();}
   // 다이는 뚜껑이 비켜난 뒤(또는 기판 확대 중)에만 보임
-  if(layer2){(!quiet&&load.x>1e-3&&(ld>.05||Z2.k>.5))?layer2.draw({uLoad:load.x,uFirst:first.x,...zoomGl(r2,D2.camera)},t):layer2.clear();}
+  if(layer2){(!quiet&&heatG.x>1e-3&&(ld>.05||Z2.k>.5))?layer2.draw({uLoad:heatG.x,uFirst:first.x,...zoomGl(r2,D2.camera)},t):layer2.clear();}
   const out=pull/D.stroke, pOut=Math.round(out*100), pPl=Math.round(pl/D2.plateMax*100);
   // 수치 줄: 트레이가 얼마나 나왔는지 / 냉각판이 얼마나 들렸는지 + 지금 부하의 전력 (KO 면 한국어)
   const trayText=KO?(out<.05?"트레이 "+D.tray+" · 장착됨":out<.98?"트레이 "+D.tray+" · "+pOut+"% 빠짐":"트레이 "+D.tray+" · 열림 · GPU "+R.gpuPerTray+" · CPU "+R.cpuPerTray)
@@ -723,21 +732,38 @@ function draw(){
     :(lift<.02?"cold plate on":ld<.03?"lifting plate "+pPl+"%":lift<.98?"lifting lid":"plate and lid off · "+G.dies+" dies · "+G.hbm+" HBM3e "+G.hbmGb+" GB");
   // 부품 설명은 짚는 곳 옆 말풍선이 맡음 (칸이 좁아 못 띄웠으면 이 줄에). 직접 확대 중엔 쓰는 법 안내
   const c1=Z1.caption(), c2=Z2.caption();
-  say(read1,c1||(Z1.on?ZT.hint:trayText+" · "+(perTrayKw*load.x).toFixed(1)+" kW"),!!c1);
-  say(read2,c2||(Z2.on?ZT.hint:plateText+" · "+(G.kw*load.x).toFixed(2)+" kW"),!!c2);
+  say(read1,c1||(Z1.on?ZT.hint:trayText+" · "+(perTrayKw*heatR.x).toFixed(1)+" kW"),!!c1);
+  say(read2,c2||(Z2.on?ZT.hint:plateText+" · "+(G.kw*heatG.x).toFixed(2)+" kW"),!!c2);
 }
 // 따라가는 값들을 dt 초만큼 (둘러보기 중이면 시계도). tick·warm이 같이 씀
 function advance(dt,calm){
   // 그림은 저절로 움직임(28초 둘러보기, 마우스로 조작하지 않음). 확대해 보는 동안만 그 자리에서 멈췄다가, 끝나면 멈춘 곳부터 이어짐
   const zoomed=Z1.on||Z2.on;touring=!calm&&!zoomed;
-  let wantLoad=1;   // 확대 중·움직임 줄이기 설정에선 칩이 데워진 모습
-  if(touring){clock+=dt;const t=tourAt(clock);target=t.pull;liftTarget=t.lift;wantLoad=t.load;Z1.tour(t.rz,t.rs);Z2.tour(t.gz,t.gs);}
-  else{Z1.tour(false,-1);Z2.tour(false,-1);}   // 직접 확대 중이거나 움직임 줄이기: 둘러보기 확대는 쉼
+  if(touring){
+    if(performance.now()>=waitTill)clock+=dt;   // 사진 영상을 기다리는 동안은 시계를 멈춤 (영상이 뜨면 같은 순간에서 함께 출발)
+    const t=tourNow(clock);
+    Z1.tour(t.rs>=0,t.rs,t.rg);Z2.tour(t.gs>=0,t.gs,t.gg);   // 짚는 부품 (말풍선·초록 점) + 옮겨 가는 시간
+    target=D.stroke*t.pull;liftTarget=t.lift;
+    if(exact){   // 평소: 일정 값을 그대로 (사진 영상도 같은 일정으로 렌더 → 그림과 사진이 늘 같은 모습)
+      pull=target;lift=liftTarget;heatR.x=t.rheat;heatG.x=t.gheat;heatR.v=heatG.v=0;
+      Z1.place(t.rk,t.rfx,t.rfy);Z2.place(t.gk,t.gfx,t.gfy);return;}
+    // 직접 확대를 끝낸 직후: 지금 모습에서 일정 값 쪽으로 부드럽게 따라가다가 거의 같아지면 다시 그대로 쓰기로
+    const a=1-Math.exp(-dt/.35),f=(v,w)=>v+(w-v)*a;
+    pull=f(pull,target);lift=f(lift,liftTarget);heatR.x=f(heatR.x,t.rheat);heatG.x=f(heatG.x,t.gheat);heatR.v=heatG.v=0;
+    Z1.follow(t.rk,t.rfx,t.rfy,a);Z2.follow(t.gk,t.gfx,t.gfy,a);
+    exact=Math.abs(pull-target)<.05&&Math.abs(lift-liftTarget)<.002&&Math.abs(heatR.x-t.rheat)<.002&&Math.abs(heatG.x-t.gheat)<.002&&Z1.near(t.rk,t.rfx,t.rfy)&&Z2.near(t.gk,t.gfx,t.gfy);
+    return;
+  }
+  // 직접 확대 중이거나 움직임 줄이기: 둘러보기 확대는 쉬고, 부품은 목표로 따라감 (둘러보기로 돌아올 땐 합류부터)
+  exact=false;
+  Z1.tour(false,-1);Z2.tour(false,-1);
   if(Z1.on)target=D.stroke;   // 트레이 확대 중엔 트레이를 끝까지 꺼내 둠
   pull=calm?target:pull+(target-pull)*(1-Math.exp(-dt/.6));if(Math.abs(target-pull)<.05)pull=target;
   lift=calm?liftTarget:lift+(liftTarget-lift)*(1-Math.exp(-dt/.6));if(Math.abs(liftTarget-lift)<.002)lift=liftTarget;
   Z1.step(dt,calm);Z2.step(dt,calm);
-  settle(load,wantLoad,dt,1.8,calm);
+  // 열: 움직임 줄이기면 둘 다 데워진 모습, 직접 확대 중이면 확대한 그림만 데움 (다른 그림은 멈춘 순간 그대로)
+  const t=tourNow(clock);
+  settle(heatR,calm||Z1.on?1:t.rheat,dt,1.8,calm);settle(heatG,calm||Z2.on?1:t.gheat,dt,1.8,calm);
 }
 function tick(now){
   const dt=last?Math.min((now-last)/1000,1/30):1/60;last=now;time+=dt;const calm=still.matches;
@@ -752,27 +778,39 @@ const hold=()=>run();   // 확대·포인터 조작 뒤 루프를 깨움
 for(const ev of ["pointermove","pointerdown"]){stage.addEventListener(ev,Z1.pointer);stage2.addEventListener(ev,Z2.pointer);}
 stage.addEventListener("keydown",Z1.key);stage2.addEventListener("keydown",Z2.key);
 document.addEventListener("visibilitychange",()=>{visible=!document.hidden;if(visible)run();});
-if(still.matches){touring=false;target=pull=D.stroke;liftTarget=lift=1;load.x=1;first.x=(layer||layer2)?1:0;}   // 움직임 줄이기: 다 열린 정지 그림
+if(still.matches){touring=false;target=pull=D.stroke;liftTarget=lift=1;heatR.x=heatG.x=1;first.x=(layer||layer2)?1:0;}   // 움직임 줄이기: 다 열린 정지 그림
 draw();run();
 window.__rackBusy=()=>Z1.on||Z2.on;   // 확대해 보는 중이면 부팅 화면이 저절로 넘어가지 않음
 window.__rackLoops=()=>still.matches?1:clock/TOUR;   // 둘러보기를 몇 바퀴 돌았나 (느린 기기에서도 한 바퀴는 다 보여 주려고)
-window.__rackState=()=>({clock:+clock.toFixed(2),load:+load.x.toFixed(3),pull:+pull.toFixed(1),zoom:[+Z1.k.toFixed(3),+Z2.k.toFixed(3)],on:[Z1.on,Z2.on],touring,info:[Z1.info||Z1.autoInfo,Z2.info||Z2.autoInfo],tip:[stage,stage2].map((s)=>{const t=s.querySelector(".rk-tip");return t&&t.hasAttribute("data-on")?t.textContent:"";})});   // 검수용 상태 읽기
+window.__rackState=()=>({clock:+clock.toFixed(2),heat:[+heatR.x.toFixed(3),+heatG.x.toFixed(3)],exact,pull:+pull.toFixed(1),zoom:[+Z1.k.toFixed(3),+Z2.k.toFixed(3)],on:[Z1.on,Z2.on],touring,info:[Z1.info||Z1.autoInfo,Z2.info||Z2.autoInfo],tip:[stage,stage2].map((s)=>{const t=s.querySelector(".rk-tip");return t&&t.hasAttribute("data-on")?t.textContent:"";})});   // 검수용 상태 읽기
 window.__rackStop=()=>{visible=false;if(frame)cancelAnimationFrame(frame);frame=0;};
-// 검수용: 둘러보기의 t 초 장면으로 바로 이동 (따라가는 값들을 목표에 붙여서 그 순간을 그림)
-window.__rackSeek=(t)=>{clock=t;const s=tourAt(t);pull=target=s.pull;lift=liftTarget=s.lift;load.x=s.load;first.x=1;
-  Z1.tour(s.rz,s.rs);Z2.tour(s.gz,s.gs);for(const Z of [Z1,Z2]){Z.k=Z.on||Z.auto?1:0;Z.fx=Z.tfx;Z.fy=Z.tfy;}draw();};
+// 둘러보기의 t 초 모습으로 바로 (일정 값을 그대로 씀 — 따라가는 중이던 값도 버림)
+const jump=(t)=>{clock=t;exact=true;waitTill=0;advance(0,false);};
+// 검수용: 둘러보기의 t 초 장면으로 바로 이동
+window.__rackSeek=(t)=>{jump(t);first.x=1;draw();};
 // 사진 모드 고리: 영상이 시계를 이끌고(pace) 그림은 투명하게 남아 말풍선·부품 찾기를 맡음
-//   warm = 한 바퀴를 조용히 돌려 영상(두 번째 바퀴)과 같은 상태로 · seek = 영상 시각으로 (바퀴 수는 그대로)
-const warm=()=>{const c=clock;for(let i=0;i<TOUR*30;i++)advance(1/30,false);clock=c;};
+//   seek = 영상 시각으로 (바퀴 수는 그대로). 둘러보기는 시간만으로 정해지므로 영상의 같은 시각과 늘 같은 모습
+//   wait = ms 동안 시계를 멈춤 (0 = 풂) · waiting = 멈춰 있나 · drawn = 사진을 못 틀어 그림으로 돌아감 (단추도 그림으로)
 window.__rackView={stages:[stage,stage2],zoom:[Z1,Z2],size:[[D.W,D.H],[D2.W,D2.H]],still,TOUR,phase:()=>clock%TOUR,
-  seek:(t)=>{let c=Math.floor(clock/TOUR)*TOUR+t;if(c-clock>TOUR/2&&c>=TOUR)c-=TOUR;else if(clock-c>TOUR/2)c+=TOUR;clock=c;warm();draw();},   // 지금 시계에 가장 가까운 같은 시각 (음수는 안 됨)
+  seek:(t)=>{let c=Math.floor(clock/TOUR)*TOUR+t;if(c-clock>TOUR/2&&c>=TOUR)c-=TOUR;else if(clock-c>TOUR/2)c+=TOUR;jump(c);draw();},   // 지금 시계에 가장 가까운 같은 시각 (음수는 안 됨)
+  wait:(ms)=>{waitTill=ms?performance.now()+ms:0;},waiting:()=>performance.now()<waitTill,
+  drawn:()=>drawn(),
   pace:(f)=>{pace=f;},hook:(f)=>{hook=f;run();},quiet:(q)=>{quiet=q;draw();}};
 // 그림 | 사진 전환 (사진 코드·영상은 사진일 때만 받음, 고른 것은 기억)
 const views=[...document.querySelectorAll(".rk-view button")];
+let shown=false;   // 지금 사진 보기를 고른 상태인가
+// 사진을 못 틀어 그림으로 돌아감: 단추를 그림으로, 시계 멈춤을 풂 (고른 것은 저장하지 않음 — 다음 방문에 다시 시도)
+const drawn=()=>{shown=false;waitTill=0;for(const b of views)b.setAttribute("aria-pressed",String(b.dataset.view==="draw"));};
 const view=(photo,save)=>{for(const b of views)b.setAttribute("aria-pressed",String((b.dataset.view==="photo")===photo));
   if(save)try{localStorage.setItem("rk-view",photo?"photo":"draw");}catch(e){}
+  if(photo===shown)return;shown=photo;
+  // 사진으로 바꿀 땐 영상이 재생될 때까지 그림의 시계를 멈춤 → 영상이 뜨는 순간 그림과 같은 모습이라 튀지 않음
+  //   처음 열 때(고르지 않았는데 사진)는 3초까지만 기다림 — 늦으면 photo.js 가 그림으로 남김. 단추로 고르면 영상 재생 한도(20초)까지
+  waitTill=photo&&!still.matches?performance.now()+(save?20000:3000):0;
   if(window.__rackPhoto)window.__rackPhoto(photo);
-  else if(photo&&!document.querySelector("script[data-rk-photo]")){const s=document.createElement("script");s.src="/boot/photo.js";s.setAttribute("data-rk-photo","");document.head.appendChild(s);}};
+  else if(photo&&!document.querySelector("script[data-rk-photo]")){const s=document.createElement("script");s.src="/boot/photo.js";s.setAttribute("data-rk-photo","");
+    s.onerror=()=>{s.remove();drawn();};   // 사진 코드를 못 받으면 그림으로 (다시 고르면 새로 받음)
+    document.head.appendChild(s);}};
 for(const b of views)b.addEventListener("click",()=>view(b.dataset.view==="photo",true));
 // 처음 보기: 고른 적이 있으면 그대로, 없으면 사진 — 움직임 줄이기·데이터 절약·아주 느린 연결(2G)이면 그림
 //   영상이 재생될 때까지는 그림이 보이다가 겹쳐 바뀜 (그림과 사진이 같은 자리라 그림이 사진으로 바뀌는 것처럼, 빈 화면 없음)
@@ -829,7 +867,9 @@ const LAYOUT = {
     zoom: DATA.zoom, focus: DATA.focus, stops: DATA.stops,
   },
   gpu: { ...GPU_LAYOUT, zoom: G2.DATA.zoom, focus: G2.DATA.focus, stops: G2.DATA.stops },
-  tour: 28,   // 아래 LIVE 의 TOUR 와 같은 값 (둘러보기 한 바퀴 초)
+  tour: TOUR,          // 둘러보기 한 바퀴 (초) — tour.mjs
+  plan: PLAN,          // 움직임 일정 [시작, 끝, 방향] — boot-photos.py 가 그림과 같은 식으로 계산
+  stopsPlan: STOPS,    // 확대 중 짚는 부품 차례 (from·to·moves·glide)
 };
 writeFileSync(join(ROOT, "scripts", "blender", "boot-layout.json"), JSON.stringify(LAYOUT));
 

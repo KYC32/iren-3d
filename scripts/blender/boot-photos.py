@@ -4,10 +4,10 @@
 # 그림(scripts/anatomy/rack/build.mjs · gpu.mjs)과 같은 숫자로 3D 장면을 세우고, 그림과 같은 투영(정사영)으로 찍어
 # 사진이 그림과 픽셀 단위로 겹치게 합니다 → 웹은 그림을 투명하게 영상 위에 깔아 말풍선 자리·부품 찾기를 그대로 씀
 #   숫자·투영: boot-layout.json (build.mjs 가 그림을 만들 때 함께 씀). 그림 안에 직접 적힌 작은 부품 숫자는 아래에 같은 값으로
-#   움직임: 그림의 28초 둘러보기(build.mjs LIVE 의 tourAt·zoomer·settle)를 Python 으로 똑같이 흉내 냄
-#     랙  0~14.5초: 트레이 꺼냄 → 돋보기 확대로 부품 4곳 → 넣음   GPU 14.5~28초: 냉각판·뚜껑 들림 → 기판 4곳 → 내려앉음
-#     꼬리(트레이가 천천히 들어가고 냉각판이 다음 바퀴 초반까지 내려앉음)까지 맞추려고 두 바퀴를 흉내 내고 두 번째 바퀴를 찍음
-#   열: 그림의 열 잉크 대신 GPU 냉각판 윗면·다이에 부하만큼 주황 빛 (같은 부하 곡선)
+#   움직임: 그림과 같은 28초 둘러보기 일정 (scripts/anatomy/rack/tour.mjs → Python 판 boot_tour.py, 숫자는 boot-layout.json)
+#     랙  0~14.5초: 트레이 꺼냄 → 돋보기 확대로 부품 4곳 → 넣음   GPU 14.5~27.8초: 냉각판·뚜껑 들림 → 기판 4곳 → 내려앉음
+#     움직임마다 시작·끝 시각이 정해져 있어(천천히 출발·천천히 멈춤) 한 바퀴 끝엔 모두 제자리 → 한 바퀴만 찍으면 반복이 매끄러움
+#   열: 그림의 열 잉크 대신 GPU 냉각판 윗면·다이에 부하만큼 주황 빛 (같은 일정의 열 곡선 — 랙·GPU 따로)
 # 실행 (터미널, 백그라운드 Blender — 사용자의 Blender 창은 건드리지 않음):
 #   Blender -b --factory-startup -P scripts/blender/boot-photos.py -- <rack|gpu> <frames|still|test> <저장 폴더> [가로 px] [샘플]
 #     frames = 둘러보기 한 바퀴의 프레임(PNG, 장면이 그대로면 앞 프레임 복사), still = 다 연 정지 사진, test = 확인용 몇 장
@@ -41,6 +41,8 @@ LIST = {int(n) for n in os.environ.get("BOOT_LIST", "").split(",") if n.strip()}
 REST = float(os.environ.get("BOOT_REST", "0"))
 FPS = 24
 LAY = json.load(open(os.path.join(HERE, "boot-layout.json"), encoding="utf-8"))
+sys.path.insert(0, HERE)
+from boot_tour import tour_at   # 둘러보기 일정 (그림과 같은 식)
 L = LAY[PANEL]
 TOUR = LAY["tour"]
 S = 0.005 if PANEL == "rack" else 0.001    # 그림 1 단위 = 몇 m
@@ -827,92 +829,30 @@ def render_setup(res_x, samples):
 
 
 # =============================================================
-# 5) 둘러보기 흉내 (build.mjs LIVE 의 tourAt · zoomer(둘러보기 부분) · settle 와 같은 식, 같은 시간 상수)
+# 5) 둘러보기 (그림과 같은 일정 — boot_tour.py = scripts/anatomy/rack/tour.mjs 의 Python 판)
 # =============================================================
 def sm(a, b, x):
     q = min(1.0, max(0.0, (x - a) / (b - a)))
     return q * q * (3 - 2 * q)
 
 
-def tour_at(t):
-    u = t % TOUR
-    ramp = lambda a, b: min(1.0, max(0.0, (u - a) / (b - a)))
-    rz, gz = 3 <= u < 11.6, 17.3 <= u < 25.3
-    return {
-        'pull': LAY['rack']['STROKE'] * (ramp(0, 2.5) - ramp(12.5, 14.5)),
-        'lift': ramp(14.5, 17) - ramp(25.6, 27.6),
-        'load': 1.0 if (2 < u < 12.5) or (16 < u < 25.6) else 0.0,
-        'rz': rz, 'rs': min(3, int((u - 3) // 2.15)) if rz else -1,
-        'gz': gz, 'gs': min(3, int((u - 17.3) // 2)) if gz else -1,
-    }
-
-
-class Zoom:
-    """돋보기 확대 (zoomer 의 둘러보기 부분): 짚는 부품 자리(fx, fy)가 확대돼도 화면의 같은 자리에 오게"""
-    def __init__(self, lay):
-        self.W, self.H, self.zoom, self.stops = lay['W'], lay['H'], lay['zoom'], lay['stops']
-        self.auto, self.stop, self.k = False, None, 0.0
-        self.fx = self.fy = self.tfx = self.tfy = 0.5
-
-    def tour(self, on, i):
-        self.auto = on
-        s = self.stops[i] if on and i >= 0 else None
-        if s is not self.stop:
-            self.stop = s
-            if s:
-                self.tfx, self.tfy = s['fx'], s['fy']
-
-    def step(self, dt):
-        zk = 1.0 if self.auto else 0.0
-        self.k += (zk - self.k) * (1 - math.exp(-dt / 0.3))
-        if abs(zk - self.k) < 0.002:
-            self.k = zk
-        zf = 1 - math.exp(-dt / 0.35)
-        self.fx += (self.tfx - self.fx) * zf
-        self.fy += (self.tfy - self.fy) * zf
-
-    def rect(self):
-        s = 1 + (self.zoom - 1) * sm(0, 1, self.k)
-        w, h = self.W / s, self.H / s
-        return (self.fx * (self.W - w), self.fy * (self.H - h), w, h)
-
-
-def settle(st, target, dt, seconds):
-    w = 1 / seconds
-    for _ in range(4):
-        h = dt / 4
-        st['v'] += (w * w * (target - st['x']) - 2 * w * st['v']) * h
-        st['x'] += st['v'] * h
-    if abs(target - st['x']) < 1e-4 and abs(st['v']) < 1e-4:
-        st['x'], st['v'] = target, 0.0
-
-
 def simulate():
-    """두 바퀴를 흉내 내고 두 번째 바퀴의 프레임 상태를 돌려줌 (꼬리까지 이어져 반복 이음매가 매끄러움)
-    프레임 f = 둘러보기 시계 u = f / FPS 초의 상태 (JS 처럼 시계를 먼저 올린 뒤 따라가는 값들을 갱신)"""
-    dt, n = 1 / FPS, int(round(TOUR * FPS))
-    pull = lift = 0.0
-    load = {'x': 0.0, 'v': 0.0}
-    clock = 0.0
-    Z = Zoom(L)
+    """한 바퀴의 프레임마다 상태 (프레임 f = 둘러보기 u = f / FPS 초)
+    둘러보기는 시간만으로 정해지고 한 바퀴 끝에 모두 제자리로 돌아오므로, 몇 바퀴째든 같은 모습 (반복 이음매가 매끄러움)
+    확대 범위 = 그림 zoomer 의 rect 와 같은 식: 배율 1 + (zoom − 1)·smoothstep(k), 돋보기 중심 (fx, fy) 이 화면의 같은 비율 자리에 옴"""
+    n = int(round(TOUR * FPS))
+    W, H, zoom = L['W'], L['H'], L['zoom']
     out = []
-    for i in range(2 * n):
-        clock += dt
-        t = tour_at(clock)
+    for f in range(n):
+        t = tour_at(f / FPS, LAY)
         if PANEL == 'rack':
-            Z.tour(t['rz'], t['rs'])
+            k, fx, fy, load = t['rk'], t['rfx'], t['rfy'], t['rheat']
         else:
-            Z.tour(t['gz'], t['gs'])
-        pull += (t['pull'] - pull) * (1 - math.exp(-dt / 0.6))
-        if abs(t['pull'] - pull) < 0.05:
-            pull = t['pull']
-        lift += (t['lift'] - lift) * (1 - math.exp(-dt / 0.6))
-        if abs(t['lift'] - lift) < 0.002:
-            lift = t['lift']
-        Z.step(dt)
-        settle(load, t['load'], dt, 1.8)
-        if n - 1 <= i < 2 * n - 1:      # 시계 = TOUR + f·dt (f = 0 … n−1)
-            out.append({'pull': pull, 'lift': lift, 'load': load['x'], 'rect': Z.rect(), 'k': Z.k})
+            k, fx, fy, load = t['gk'], t['gfx'], t['gfy'], t['gheat']
+        s = 1 + (zoom - 1) * sm(0, 1, k)
+        w, h = W / s, H / s
+        out.append({'pull': LAY['rack']['STROKE'] * t['pull'], 'lift': t['lift'], 'load': load,
+                    'rect': (fx * (W - w), fy * (H - h), w, h), 'k': k})
     return out
 
 
