@@ -14,10 +14,10 @@ import { tubePieces, tubeSvg } from "../kit/tube.mjs";
 
 export const r1 = (n) => Math.round(n * 10) / 10;
 
-// ---------- 규모 이름표 (둘러보기 끝: 랙 1대 → 홀 → 캠퍼스, 스위트워터 1·Horizon 그림) ----------
-// NVIDIA DSX POD 소개 영상의 연출을 빌림: 장면마다 이름 + 숫자 2개, 숫자 옆 작은 글에 근거(회사 · NVIDIA 사양 · 추정)
-//   그림 오른쪽 위에 여러 장을 겹쳐 두고, 움직임 코드가 그림 칸의 data-plate 를 바꾸면 CSS(horizon.css)가 그 장만 보여 줌
-export const PLATE_BASIS = { company: ["회사", "company"], nvidia: ["NVIDIA 사양", "NVIDIA spec"], estimate: ["업계 추정", "industry estimate"] };
+// ---------- 규모 이름표 (둘러보기 끝: 랙 1대 → 홀·블록 → 캠퍼스, 스위트워터 1·Horizon·전력 블록 그림) ----------
+// NVIDIA DSX POD 소개 영상의 연출을 빌림: 장면마다 이름 + 숫자 2개, 숫자 옆 작은 글에 근거(회사 · NVIDIA 사양 · 제3자 관찰 · 추정)
+//   그림 오른쪽 위에 여러 장을 겹쳐 두고, 움직임 코드가 그림 칸의 data-plate 를 바꾸면 CSS(power.css)가 그 장만 보여 줌
+export const PLATE_BASIS = { company: ["회사", "company"], nvidia: ["NVIDIA 사양", "NVIDIA spec"], observed: ["제3자 관찰", "third-party"], estimate: ["업계 추정", "industry estimate"] };
 // cards = [[단계 id, 이름, [[숫자, 설명], [숫자, 설명]]], …] · 숫자와 단위 사이는 줄이 바뀌지 않는 빈칸으로 바꿈
 export function platesHtml(cards) {
   const keep = (v) => v.replace(/(\d만?) (?=[A-Za-z%°가-힣])/g, "$1\u00a0");

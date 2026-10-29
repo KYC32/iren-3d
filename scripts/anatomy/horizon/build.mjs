@@ -988,7 +988,7 @@ const fill = (src, values) => src.replace(/__([A-Z]+)__/g, (all, name) => (name 
 const a = (href, text) => `<a href="${href}" target="_blank" rel="noreferrer">${text}</a>`;
 
 // ---------- 규모 이름표 (둘러보기 끝: 랙 1대 → Horizon 1 → 차일드레스 캠퍼스) ----------
-// 이름 + 숫자 2개 카드 3장 (만드는 법·모양은 shared/tools.mjs 의 platesHtml · horizon.css 의 .rk-plate — 스위트워터 1 그림과 같음)
+// 이름 + 숫자 2개 카드 3장 (만드는 법·모양은 shared/tools.mjs 의 platesHtml · power.css 의 .rk-plate — 스위트워터 1·전력 블록 그림과 같음)
 function plates(ko) {
   const i = ko ? 0 : 1, by = (num) => PLATE_BASIS[num.basis][i];
   const { rack, hall, site } = LADDER;

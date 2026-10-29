@@ -142,3 +142,21 @@
 .pw-cords .iso-wire-end{fill:var(--fx-cord,#1d2026)}
 .pw-k-cold{background:#d9e8fa;box-shadow:inset 0 0 0 1px #9fbde4}
 .pw-k-hot{background:#fae3d0;box-shadow:inset 0 0 0 1px #e2b48c}
+/* ---- 규모 이름표 (둘러보기 끝: 랙 1대 → 홀·블록 → 캠퍼스 — 전력 블록·Horizon·스위트워터 1 그림이 같이 씀) ----
+   이름 + 숫자 2개 (NVIDIA DSX POD 영상의 이름표 연출) · 사이트 지도 캠퍼스 카드와 같은 연한 초록 양각 카드 + IREN 남색 글
+   여러 장을 오른쪽 위에 겹쳐 두고, 움직임 코드가 그림 칸에 data-plate="rack|hall|site" 를 붙이면 그 장만 나타남 */
+.rk-plates{position:absolute;right:14px;top:14px;z-index:1;pointer-events:none}
+.rk-plate{position:absolute;right:0;top:0;width:max-content;max-width:250px;padding:10px 14px 11px;border:1px solid #b5dec0;border-radius:12px;background:linear-gradient(180deg,#f4fbf6,#e5f5e9);box-shadow:inset 0 1px 0 #ffffffd9,inset 0 -1px 0 #0b344f10,0 1px 1px #0b344f1f,0 3px 7px #0b344f1a,0 12px 24px #0b344f24;color:#0b344f;font:500 12px/1.35 ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;opacity:0;transform:translateY(4px);transition:opacity .45s,transform .45s}
+.rk-plate b{display:block;font-size:13px;font-weight:700;letter-spacing:-.01em;margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid #b5dec0;word-break:keep-all}
+.rk-plate p{display:flex;align-items:baseline;gap:8px;margin:0}
+.rk-plate p+p{margin-top:2px}
+.rk-plate strong{font-size:20px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rk-plate span{font-size:11px;color:#4b6656;word-break:keep-all}
+.rk-stage[data-plate=rack] .rk-plate[data-for=rack],.rk-stage[data-plate=hall] .rk-plate[data-for=hall],.rk-stage[data-plate=site] .rk-plate[data-for=site]{opacity:1;transform:none}
+/* 휴대폰: 그림 칸이 작아(높이 약 240px) 이름표를 작게 — 근거(회사·추정) 글은 남김 */
+@media (max-width:767px){.rk-plates{right:6px;top:6px}.rk-plate{max-width:168px;padding:5px 8px 6px;border-radius:9px}.rk-plate b{font-size:11px;margin-bottom:3px;padding-bottom:3px}.rk-plate p{gap:5px}.rk-plate p+p{margin-top:0}.rk-plate strong{font-size:13px}.rk-plate span{font-size:9px;line-height:1.25}}
+@media (prefers-reduced-motion:reduce){.rk-plate{transition:none}}
+/* 아래 줄 단계 점: 규모 장면 = IREN 남색 */
+.rk-read[data-phase=rack]:not([data-cap])::before,.rk-read[data-phase=hall]:not([data-cap])::before,.rk-read[data-phase=site]:not([data-cap])::before{background:#0b344f}
+/* 9/23 관찰 보기에서는 규모 이름표를 숨김 (규모 장면은 완공 후 보기의 둘러보기에만 있음) */
+.pw-fig[data-view=obs] .rk-plates{display:none}

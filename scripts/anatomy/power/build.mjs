@@ -19,7 +19,8 @@ import * as G from "../kit/lathe.mjs";
 import * as A from "../kit/audit.mjs";
 import { tubePieces, tubeSvg } from "../kit/tube.mjs";
 import { workshop, auditAll } from "../rack/shop.mjs";
-import { BLOCK, AMPS, PHASE_V, EST, SOURCE, SITE, T as TIMES, tourPlan, stateAt, obsTotals, looksInstalled, hallCounts } from "./model.mjs";
+import { BLOCK, AMPS, PHASE_V, EST, SOURCE, SITE, CAMPUS, T as TIMES, tourPlan, stateAt, obsTotals, looksInstalled, hallCounts, scaleLadder } from "./model.mjs";
+import { platesHtml, PLATE_BASIS } from "../shared/tools.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..", "..");
@@ -723,9 +724,17 @@ const OBS_STOPS = [
   { key: "obs-mer", kind: "mer", p: [MER.x + 30, MER.y + MER.d, SLAB + 16], z: 2.2 },
   { key: "obs-hall", p: [186, -26, 12], z: 1.8 },
 ];
-const STOPS = [...PART_STOPS, ...PHASE_STOPS, ...OBS_STOPS].map((s) => { const [x, y] = at(s.p); return { key: s.key, fx: +(x / WIDTH).toFixed(4), fy: +(y / HEIGHT).toFixed(4), z: s.z, ...(s.side ? { side: s.side } : {}) }; });
+// 규모 장면 (둘러보기 끝): 랙 1대(옆판을 뗀 마지막 랙) → 전력 블록 1칸(홀 안 랙 줄) → 매켄지 캠퍼스(짚을 곳 없음 = 전체 보기)
+//   INFO 에 없는 이름이라 말풍선이 뜨지 않고, 오른쪽 위 이름표(이름 + 숫자 2개)가 설명을 맡음 · aim: false = 조준 원도 띄우지 않음
+const SCALE_STOPS = [
+  { key: "scale-rack", phase: "rack", p: [RACK0 + (RACKS - 0.5) * RACK_W, RACK_Y + RACK_D / 2, HALL.floor + RACK_H / 2], z: 6 },
+  { key: "scale-hall", phase: "hall", p: [RACK0 + (RACKS / 2) * RACK_W, -24, 12], z: 1.7, aim: false },
+];
+// 9/23 짚을 곳 뒤에 규모 짚을 곳을 붙임 (OBS_FIRST 가 바뀌지 않게)
+const STOPS = [...PART_STOPS, ...PHASE_STOPS, ...OBS_STOPS, ...SCALE_STOPS].map((s) => { const [x, y] = at(s.p); return { key: s.key, fx: +(x / WIDTH).toFixed(4), fy: +(y / HEIGHT).toFixed(4), z: s.z, ...(s.side ? { side: s.side } : {}), ...(s.aim === false ? { aim: false } : {}) }; });
 const OBS_FIRST = PART_STOPS.length + PHASE_STOPS.length;   // STOPS 안에서 9/23 짚을 곳이 시작하는 번호
-const PHASE_STOP = Object.fromEntries(PHASE_STOPS.map((s, i) => [s.phase, PART_STOPS.length + i]));   // 단계 이름 → 짚을 곳 번호
+const SCALE_FIRST = OBS_FIRST + OBS_STOPS.length;             // STOPS 안에서 규모 짚을 곳이 시작하는 번호
+const PHASE_STOP = Object.fromEntries([...PHASE_STOPS.map((s, i) => [s.phase, PART_STOPS.length + i]), ...SCALE_STOPS.map((s, i) => [s.phase, SCALE_FIRST + i])]);   // 단계 이름 → 짚을 곳 번호
 const PLAN = tourPlan(PART_STOPS.length);
 const puffAt = at(STACK_TOP);
 
@@ -733,6 +742,8 @@ const puffAt = at(STACK_TOP);
 const fmt = (n) => Math.round(n).toLocaleString("en-US");
 const A_HV = Math.round(AMPS.hv), A_LV = Math.round(AMPS.lv / 100) * 100, V_PH = Math.round(PHASE_V);
 const RATIO = Math.round((BLOCK.hvKv * 1000) / BLOCK.lvV);   // 34,500 ÷ 480 ≈ 72 (전압비 = 전류비의 역수)
+const SCALE = Object.fromEntries(scaleLadder().map((s) => [s.id, s]));   // 규모 이름표 3장 (rack · hall · site)
+const BLOCKS = CAMPUS.halls * BLOCK.perHall;                              // 매켄지 블록 수 = 홀 4개 × 8칸 = 32
 const INFO = {
   base: ["모형 받침 · 앞 모서리 자: 작은 눈금 1 m, 큰 눈금 5 m (실제 비율)", "Model base · edge ruler: 1 m ticks, 5 m majors (true scale)"],
   pad: ["세그먼트 패드 · 장비를 받치는 콘크리트, 아래로 콘듀잇이 지나감", "Segment pad · concrete under the gear; conduits run beneath it"],
@@ -788,6 +799,13 @@ const PHASE_TEXT = {
   restore: ["복전 · 계통이 안정될 때까지 발전기로 버팀 (실제로는 몇 분)", "Utility back · stays on the generator until it is stable (minutes in practice)"],
   retransfer: ["되돌림 · 접점이 다시 계통(N)으로", "Retransfer · contacts back to the utility (N)"],
   cooldown: ["발전기 무부하 냉각 후 정지", "Generator cools down unloaded, then stops"],
+  // 규모 장면 (이름표와 같은 숫자 — 모두 model.mjs 의 scaleLadder·EST·CAMPUS 에서)
+  rack: [`규모 ① 공랭 B300 랙 1대 · 서버 ${EST.serversPerRack}대 × GPU 8개 = ${EST.gpusPerRack}개 (사이트 가정) · 회사가 밝힌 최대 랙 밀도 ${SITE.rackMaxKw} kW · 이 그림은 1대 약 ${EST.rackKw} kW로 가정`,
+    `Scale ① one air-cooled B300 rack · ${EST.serversPerRack} servers × 8 GPUs = ${EST.gpusPerRack} (site assumption) · the company's stated maximum rack density is ${SITE.rackMaxKw} kW · this drawing assumes about ${EST.rackKw} kW per rack`],
+  hall: [`규모 ② 전력 블록 1칸 · ${BLOCK.mw} MW (제3자 관찰) ÷ GPU 1개당 약 ${EST.kwPerGpu.toFixed(1)} kW (추정) ≈ GPU ${fmt(SCALE.hall.nums[1].value)}개 · 랙 약 ${SCALE.hall.racks}대 · 그림의 랙 줄은 그중 ${RACKS}대`,
+    `Scale ② one power block · ${BLOCK.mw} MW (third-party observation) ÷ about ${EST.kwPerGpu.toFixed(1)} kW per GPU (estimate) ≈ ${fmt(SCALE.hall.nums[1].value)} GPUs in about ${SCALE.hall.racks} racks · the row drawn here shows ${RACKS} of them`],
+  site: [`규모 ③ 매켄지 캠퍼스 · 전력 ${CAMPUS.mw} MW · 부지 ${CAMPUS.acres} 에이커 (회사) · 홀 ${CAMPUS.halls}개 × ${BLOCK.perHall}칸 × ${BLOCK.mw} MW = ${CAMPUS.halls * BLOCK.perHall * BLOCK.mw} MW로 제3자 관찰과 맞음 · 이 블록은 ${BLOCKS}칸 중 1칸`,
+    `Scale ③ Mackenzie campus · ${CAMPUS.mw} MW of power · ${CAMPUS.acres} acres (company) · ${CAMPUS.halls} halls × ${BLOCK.perHall} blocks × ${BLOCK.mw} MW = ${CAMPUS.halls * BLOCK.perHall * BLOCK.mw} MW, matching the third-party count · this block is 1 of ${BLOCKS}`],
 };
 for (const [phase, text] of Object.entries(PHASE_TEXT)) INFO[`ph-${phase}`] = text;
 
@@ -847,8 +865,8 @@ const ICON_ZAP = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><p
 const ICON_DRONE = '<svg class="rk-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 10 7 7"/><path d="m10 14-3 3"/><path d="m14 10 3-3"/><path d="m14 14 3 3"/><path d="M14.205 4.139a4 4 0 1 1 5.439 5.863"/><path d="M19.637 14a4 4 0 1 1-5.432 5.868"/><path d="M4.367 10a4 4 0 1 1 5.438-5.862"/><path d="M9.795 19.862a4 4 0 1 1-5.429-5.873"/><rect x="10" y="8" width="4" height="8" rx="1"/></svg>';
 const zoomText = (ko) => ({
   in: ICON_IN + `<span>${ko ? "확대" : "Zoom"}</span>`, out: ICON_OUT + `<span>${ko ? "전체 보기" : "Full view"}</span>`,
-  aria: ko ? ["전력 블록 그림: 변전소에서 GPU 서버까지 전기가 흐르는 길을 저절로 확대해 하나씩 짚고 정전 때 ATS가 발전기로 넘어가는 모습을 보여 줍니다. + 키나 확대 단추로 직접 확대할 수 있습니다", "확대: 포인터나 화살표 키로 둘러보고 Esc로 전체 보기"]
-    : ["Power block: an automatic tour zooms along the path from the substation to the GPU servers, then shows the ATS moving to the generator during an outage. Press + or the zoom button to zoom yourself", "Zoomed: look around with the pointer or arrow keys; Escape for the full view"],
+  aria: ko ? ["전력 블록 그림: 변전소에서 GPU 서버까지 전기가 흐르는 길을 저절로 확대해 하나씩 짚고 정전 때 ATS가 발전기로 넘어가는 모습을 보여 줍니다. 끝에는 랙 1대에서 전력 블록 1칸, 매켄지 캠퍼스 전체로 넓혀 가며 규모를 보여 줍니다. + 키나 확대 단추로 직접 확대할 수 있습니다", "확대: 포인터나 화살표 키로 둘러보고 Esc로 전체 보기"]
+    : ["Power block: an automatic tour zooms along the path from the substation to the GPU servers, then shows the ATS moving to the generator during an outage. It ends by widening from one rack to one power block and the whole Mackenzie campus to show scale. Press + or the zoom button to zoom yourself", "Zoomed: look around with the pointer or arrow keys; Escape for the full view"],
   hint: ko ? "확대 중 · 부품을 가리키거나 탭하면 바로 옆에 설명이 뜹니다" : "zoomed · point at or tap a part to see what it is right beside it",
 });
 
@@ -867,9 +885,26 @@ const CSS = readFileSync(join(HERE, "power.css"), "utf8").replaceAll("__ASPECT__
   .replace(/--anatomy-([a-z0-9-]+):([^;}]+)/g, (all, name, color) => `--anatomy-${name}:var(--fx-${name},${color})`) + FADE_CSS;
 // 움직임 코드 = 공용 확대·말풍선(shared/zoomer.js) + 이 그림의 움직임(live.js)
 const LIVE = readFileSync(join(HERE, "..", "shared", "zoomer.js"), "utf8") + readFileSync(join(HERE, "live.js"), "utf8");
-const DATA = { W: WIDTH, H: HEIGHT, zoom: 2.4, focus: at([90, 10, 20]).map(r1), stops: STOPS, parts: PART_STOPS.length, phaseStop: PHASE_STOP, plan: PLAN, puff: puffAt.map(r1),
+const DATA = { W: WIDTH, H: HEIGHT, zoom: 2.4, focus: at([90, 10, 20]).map(r1), stops: STOPS, parts: PART_STOPS.length, phaseStop: PHASE_STOP, plan: PLAN, puff: puffAt.map(r1), plates: Object.keys(SCALE),
   obs: { first: OBS_FIRST, n: OBS_STOPS.length, stopsAt: TIMES.obsStopsAt, stopLen: TIMES.obsStopLen, hold: TIMES.obsHold } };   // 9/23 보기 둘러보기
 
+
+// 규모 이름표: 이름 + 숫자 2개 카드 3장 (만드는 법·모양은 shared/tools.mjs 의 platesHtml · power.css 의 .rk-plate — Horizon·스위트워터 1 그림과 같음)
+function plates(ko) {
+  const i = ko ? 0 : 1, by = (num) => PLATE_BASIS[num.basis][i];
+  const { rack, hall, site } = SCALE;
+  return platesHtml([
+    ["rack", ko ? "공랭 B300 랙 1대" : "One air-cooled B300 rack", [
+      [fmt(rack.nums[0].value), `GPU · ${by(rack.nums[0])}`],
+      [`${ko ? "최대" : "max"} ${rack.nums[1].value} kW`, `${ko ? "랙 밀도" : "rack density"} · ${by(rack.nums[1])}`]]],
+    ["hall", ko ? "전력 블록 1칸" : "One power block", [
+      [`${hall.nums[0].value} MW`, `${ko ? "블록 전력" : "block power"} · ${by(hall.nums[0])}`],
+      [`≈ ${fmt(hall.nums[1].value)}`, ko ? `GPU · 추정 (랙 ≈ ${hall.racks}대)` : `GPUs · estimate (≈ ${hall.racks} racks)`]]],
+    ["site", ko ? "매켄지 캠퍼스" : "Mackenzie campus", [
+      [`${site.nums[0].value} MW`, `${ko ? "전력 용량" : "power capacity"} · ${by(site.nums[0])}`],
+      [`${site.nums[1].value} ${ko ? "에이커" : "acres"}`, `${ko ? "부지" : "site"} · ${by(site.nums[1])}`]]],
+  ]);
+}
 
 // 자리표(__이름__) 채우기: 함수로 바꿔 넣어야 값 속의 $ 기호가 특수 문자로 해석되지 않음
 const fill = (src, values) => src.replace(/__([A-Z]+)__/g, (all, name) => (name in values ? values[name] : all));
@@ -883,8 +918,8 @@ function page(ko) {
     ? [["pw-k-flow", "전류가 흐르는 길"], ["pw-k-lit", "ATS 전환 접점 (움직이는 부분)"], ["pw-k-cold", "찬 통로 (서버 앞)"], ["pw-k-hot", "뜨거운 통로 (서버 뒤)"], ["pw-k-cut", "잘라 보여 준 면"]]
     : [["pw-k-flow", "current flowing"], ["pw-k-lit", "ATS contacts (the moving part)"], ["pw-k-cold", "cold aisle (server fronts)"], ["pw-k-hot", "hot aisle (server backs)"], ["pw-k-cut", "cut-away faces"]];
   const caption = ko
-    ? `배치·전압·발전기 2.5 MW·콘듀잇 ${BLOCK.genConduits}개·MER은 매켄지 현장을 분석한 제3자 스레드(<a href="${SOURCE.url}" target="_blank" rel="noreferrer">${SOURCE.by}, ${SOURCE.posted}</a>, ${SOURCE.filmed} 드론 영상) 기준이며 회사가 확인한 내용이 아닙니다. 홀 안은 IREN 홈페이지의 <a href="${SITE.pages[0]}" target="_blank" rel="noreferrer">매켄지</a>·<a href="${SITE.pages[1]}" target="_blank" rel="noreferrer">프린스조지</a> 공랭 홀 사진을 보고 그림(흡기 → 찬 통로 → 랙 앞면 → 뜨거운 통로 → 배기 팬 벽, 평균 PUE ${SITE.pue}·최대 랙 밀도 ${SITE.rackMaxKw} kW는 같은 페이지). 설명을 위해 지붕·벽을 잘라 냈고 랙은 한 줄 일부만, 통로 바닥 색·케이블 가닥 수·홀 배전반과 트레이 모양은 그림 표현. GPU·랙 수는 사이트 가정(GPU 1개당 ${EST.kwPerGpu.toFixed(1)} kW, 랙당 ${EST.gpusPerRack}개)으로 계산한 추정. 정전·전환 시간은 압축해서 보여 줌. ${SOURCE.filmed} 영상 기준 이 칸들은 장비 설치·케이블 당김까지 — 다음은 종단 → 시험 → 로드뱅크 시운전 → 가동.`
-    : `Layout, voltages, the 2.5 MW generator, the ${BLOCK.genConduits} conduits and the MER follow a third-party analysis of the Mackenzie site (<a href="${SOURCE.url}" target="_blank" rel="noreferrer">${SOURCE.by}, ${SOURCE.posted}</a>, drone footage of ${SOURCE.filmed}); not company-confirmed. The hall interior is drawn from IREN's own <a href="${SITE.pages[0]}" target="_blank" rel="noreferrer">Mackenzie</a> and <a href="${SITE.pages[1]}" target="_blank" rel="noreferrer">Prince George</a> air-cooled hall photos (intake → cold aisle → rack fronts → hot aisle → exhaust fan wall; average PUE ${SITE.pue} and ${SITE.rackMaxKw} kW maximum rack density from the same pages). Roof and walls are cut away for explanation, only part of one rack row is shown, and aisle floor colours, cable counts, the hall panel and trays are illustrative. GPU and rack counts are estimates from the site's assumptions (${EST.kwPerGpu.toFixed(1)} kW per GPU, ${EST.gpusPerRack} per rack). Outage timing is compressed. As of the ${SOURCE.filmed} footage these segments had gear set and cables pulled — next: termination → testing → load-bank commissioning → live.`;
+    ? `배치·전압·발전기 2.5 MW·콘듀잇 ${BLOCK.genConduits}개·MER은 매켄지 현장을 분석한 제3자 스레드(<a href="${SOURCE.url}" target="_blank" rel="noreferrer">${SOURCE.by}, ${SOURCE.posted}</a>, ${SOURCE.filmed} 드론 영상) 기준이며 회사가 확인한 내용이 아닙니다. 홀 안은 IREN 홈페이지의 <a href="${SITE.pages[0]}" target="_blank" rel="noreferrer">매켄지</a>·<a href="${SITE.pages[1]}" target="_blank" rel="noreferrer">프린스조지</a> 공랭 홀 사진을 보고 그림(흡기 → 찬 통로 → 랙 앞면 → 뜨거운 통로 → 배기 팬 벽, 평균 PUE ${SITE.pue}·최대 랙 밀도 ${SITE.rackMaxKw} kW는 같은 페이지). 설명을 위해 지붕·벽을 잘라 냈고 랙은 한 줄 일부만, 통로 바닥 색·케이블 가닥 수·홀 배전반과 트레이 모양은 그림 표현. GPU·랙 수는 사이트 가정(GPU 1개당 ${EST.kwPerGpu.toFixed(1)} kW, 랙당 ${EST.gpusPerRack}개)으로 계산한 추정. 정전·전환 시간은 압축해서 보여 줌. 둘러보기 끝의 규모 장면에서 매켄지 캠퍼스 전력 ${CAMPUS.mw} MW·부지 ${CAMPUS.acres} 에이커는 <a href="${SITE.pages[0]}" target="_blank" rel="noreferrer">회사 홈페이지</a>, 블록 ${BLOCK.mw} MW와 홀 ${CAMPUS.halls}개는 위 제3자 관찰, GPU·랙 수는 추정. ${SOURCE.filmed} 영상 기준 이 칸들은 장비 설치·케이블 당김까지 — 다음은 종단 → 시험 → 로드뱅크 시운전 → 가동.`
+    : `Layout, voltages, the 2.5 MW generator, the ${BLOCK.genConduits} conduits and the MER follow a third-party analysis of the Mackenzie site (<a href="${SOURCE.url}" target="_blank" rel="noreferrer">${SOURCE.by}, ${SOURCE.posted}</a>, drone footage of ${SOURCE.filmed}); not company-confirmed. The hall interior is drawn from IREN's own <a href="${SITE.pages[0]}" target="_blank" rel="noreferrer">Mackenzie</a> and <a href="${SITE.pages[1]}" target="_blank" rel="noreferrer">Prince George</a> air-cooled hall photos (intake → cold aisle → rack fronts → hot aisle → exhaust fan wall; average PUE ${SITE.pue} and ${SITE.rackMaxKw} kW maximum rack density from the same pages). Roof and walls are cut away for explanation, only part of one rack row is shown, and aisle floor colours, cable counts, the hall panel and trays are illustrative. GPU and rack counts are estimates from the site's assumptions (${EST.kwPerGpu.toFixed(1)} kW per GPU, ${EST.gpusPerRack} per rack). Outage timing is compressed. In the scale scenes at the end of the tour, the Mackenzie campus's ${CAMPUS.mw} MW and ${CAMPUS.acres} acres come from the <a href="${SITE.pages[0]}" target="_blank" rel="noreferrer">company website</a>, the ${BLOCK.mw} MW block and ${CAMPUS.halls} halls from the third-party analysis above, and GPU and rack counts are estimates. As of the ${SOURCE.filmed} footage these segments had gear set and cables pulled — next: termination → testing → load-bank commissioning → live.`;
   // 9/23 보기: 제목 아래 줄·범례·설명 (보기를 바꾸면 CSS 가 완공 후 글과 바꿔 보여 줌)
   const d = obsDay(ko), miss = missNames(ko), part = partial.map((kind) => OBS_NAME[kind][ko ? 3 : 4]);
   const subObs = ko ? `${d} 드론 관찰 · ${OT.segments}칸(홀 ${OT.halls}개 × ${OBS.segments_per_hall}칸) 중 대부분의 모습 · 진하게 = 설치됨` : `${d} drone view · what most of the ${OT.segments} segments (${OT.halls} halls × ${OBS.segments_per_hall}) looked like · solid = installed`;
@@ -902,7 +937,7 @@ function page(ko) {
   <div class="rk-head"><h2>${title} <small class="pw-only-built">${sub}</small><small class="pw-only-obs">${subObs}</small></h2>
     <div class="pw-view" role="group" aria-label="${ko ? "보기" : "View"}">${viewBtn("built", ICON_ZAP, ko ? "완공 후" : "Complete")}${viewBtn("obs", ICON_DRONE, ko ? `${d} 관찰` : `${d} observed`)}</div>
     <button class="rk-zoom" type="button" data-zoom="pw" data-call aria-pressed="false">${zt.in}</button></div>
-  <div class="rk-stage pw-stage" data-fig="power" tabindex="0" role="group" aria-label="${zt.aria[0]}">${svg.replace(/ role="img" aria-label="[^"]*"/, ' aria-hidden="true"')}<span class="rk-aim" aria-hidden="true"></span><div class="rk-tip"><b></b><span></span></div></div>
+  <div class="rk-stage pw-stage" data-fig="power" tabindex="0" role="group" aria-label="${zt.aria[0]}">${svg.replace(/ role="img" aria-label="[^"]*"/, ' aria-hidden="true"')}<span class="rk-aim" aria-hidden="true"></span><div class="rk-tip"><b></b><span></span></div>${plates(ko)}</div>
   <div class="rk-read" data-readout="power">${PHASE_TEXT.normal[ko ? 0 : 1]}</div>
   <div class="pw-chips pw-only-obs" role="group" aria-label="${ko ? `${d} 설치 개수 · 누르면 그 장비로 확대` : `${d} counts · press to zoom to that gear`}">${obsChips(ko)}</div>
   <div class="pw-legend pw-only-built">${keys.map(([c, t]) => `<span><i class="${c}"></i>${t}</span>`).join("")}</div>

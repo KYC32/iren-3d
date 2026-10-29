@@ -25,6 +25,9 @@ export const SITE = {
   pue: 1.1,
   rackMaxKw: 70,
 };
+// 매켄지 캠퍼스 (회사 홈페이지 매켄지 페이지: 전력 용량 80 MW · 부지 11 에이커) · 홀 수 4 는 제3자 관찰
+//   홀 4개 × 8칸 × 2.5 MW = 80 MW → 제3자가 센 블록 크기가 회사가 밝힌 용량과 맞음
+export const CAMPUS = { mw: 80, acres: 11, halls: 4 };
 
 export const BLOCK = {
   mw: 2.5,              // 세그먼트 1칸 = 2.5 MW 전력 블록
@@ -52,6 +55,17 @@ export const EST = (() => {
   const gpus = Math.round((BLOCK.mw * 1000) / HGX.kwPerGpu);
   return { kwPerGpu: HGX.kwPerGpu, gpusPerRack: HGX.gpusPerRack, serversPerRack: HGX.gpusPerRack / 8, rackKw: HGX.gpusPerRack * HGX.kwPerGpu, gpus, racks: Math.ceil(gpus / HGX.gpusPerRack) };
 })();
+
+// ---------- 규모 사다리 (둘러보기 끝: 랙 1대 → 전력 블록 1칸 → 매켄지 캠퍼스) ----------
+// 오른쪽 위 이름표 3장에 들어가는 숫자. 숫자마다 근거(basis)를 붙임 → 이름표에 작게 "회사 / 제3자 관찰 / 추정" 표시
+//   company = 회사 홈페이지 · observed = 제3자 현장 관찰(위 SOURCE) · estimate = 사이트 가정으로 계산한 추정
+export function scaleLadder() {
+  return [
+    { id: "rack", nums: [{ value: EST.gpusPerRack, basis: "estimate" }, { value: SITE.rackMaxKw, basis: "company" }] },
+    { id: "hall", nums: [{ value: BLOCK.mw, basis: "observed" }, { value: EST.gpus, basis: "estimate" }], racks: EST.racks },
+    { id: "site", nums: [{ value: CAMPUS.mw, basis: "company" }, { value: CAMPUS.acres, basis: "company" }] },
+  ];
+}
 
 // ---------- 9/23 관찰 (data/observations.json 의 진척 항목: 홀마다 센 장비 개수) ----------
 // 홀 4개 × 8칸 = 32칸을 캠퍼스 전체로 더함 → 그림의 진하게/흐리게와 말풍선 숫자가 여기서 나옴
@@ -81,9 +95,10 @@ export const T = {
   obsStopLen: 3.4,   // 9/23 보기: 장비 한 곳 (개수까지 읽을 시간이라 조금 김)
   obsHold: 5,        // 9/23 보기: 다 짚은 뒤 전체 보기로 쉬는 시간
 };
-export const PHASES = ["normal", "outage", "crank", "transfer", "gen", "restore", "retransfer", "cooldown"];
+export const PHASES = ["normal", "outage", "crank", "transfer", "gen", "restore", "retransfer", "cooldown", "rack", "hall", "site"];
 
-// 둘러보기 계획: 짚을 곳 수(n)를 받아 시간표를 만듦 → { len, zoomEnd, at: { outage, crank, ready, back, retransfer, stop } }
+// 둘러보기 계획: 짚을 곳 수(n)를 받아 시간표를 만듦 → { len, zoomEnd, at: { outage, crank, ready, back, retransfer, stop, rack, hall, site, end } }
+//   발전기가 멈춘 뒤에는 규모 장면 3개: 랙 1대(확대) → 전력 블록 1칸(홀 안) → 매켄지 캠퍼스(전체 보기)
 export function tourPlan(n) {
   const zoomEnd = T.stopsAt + n * T.stopLen;          // 마지막 부품까지
   const outage = zoomEnd + 2.2;                        // 전체 보기로 돌아온 뒤 정전
@@ -96,7 +111,11 @@ export function tourPlan(n) {
     retransfer: outage + 14.5,  // 복전이 안정된 걸 확인하고 되돌림
     stop: outage + 18,          // 무부하 냉각 뒤 정지
   };
-  return { len: at.stop + 4, zoomEnd, stopsAt: T.stopsAt, stopLen: T.stopLen, at };
+  at.rack = at.stop + 1.5;      // 규모 ① 랙 1대 (발전기가 다 멈춘 뒤)
+  at.hall = at.rack + 3.6;      // 규모 ② 전력 블록 1칸
+  at.site = at.hall + 3.6;      // 규모 ③ 매켄지 캠퍼스 (전체 보기)
+  at.end = at.site + 4.4;       // 규모 장면 끝 → 잠깐 평소 모습 뒤 처음으로
+  return { len: at.end + 2.4, zoomEnd, stopsAt: T.stopsAt, stopLen: T.stopLen, at };
 }
 
 // t 초의 상태 (계통 있음? · 발전기 회전 0..1 · 전환 접점 +1=계통(N) / −1=발전기(E) · 단계 이름)
@@ -109,7 +128,8 @@ export function stateAt(t, plan) {
   // 전환 접점: 계통(+1) → 발전기(−1) → 계통(+1)
   const blade = t < a.ready ? 1 : t < a.retransfer ? 1 - 2 * ramp(t, a.ready, a.ready + a.xfer) : -1 + 2 * ramp(t, a.retransfer, a.retransfer + a.xfer);
   const phase = t < a.outage ? "normal" : t < a.crank ? "outage" : t < a.ready ? "crank" : t < a.ready + a.xfer ? "transfer"
-    : t < a.back ? "gen" : t < a.retransfer ? "restore" : t < a.retransfer + a.xfer ? "retransfer" : t < a.stop + 1.5 ? "cooldown" : "normal";
+    : t < a.back ? "gen" : t < a.retransfer ? "restore" : t < a.retransfer + a.xfer ? "retransfer" : t < a.rack ? "cooldown"
+    : t < a.hall ? "rack" : t < a.site ? "hall" : t < a.end ? "site" : "normal";
   // 전류가 흐르는 길: 계통 쪽(34.5 kV·래더)은 접점이 N 이고 계통이 있을 때, 발전기 콘듀잇은 접점이 E 이고 발전기가 돌 때
   const onN = blade > 0.98 && grid, onE = blade < -0.98 && gen > 0.98;
   return { grid, gen, blade, phase, flow: { hv: onN, lv: onN, gen: onE, load: onN || onE } };
