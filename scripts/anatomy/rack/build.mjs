@@ -23,6 +23,7 @@ import { glCamera } from "../kit/gl.mjs";
 import { gpuFigure, GPU, LAYOUT as GPU_LAYOUT } from "./gpu.mjs";
 import { workshop, auditAll } from "./shop.mjs";
 import { TOUR, PLAN, STOPS } from "./tour.mjs";
+import { trayReadout, gpuReadout } from "./power.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(HERE, "..", "..", "..");
@@ -304,7 +305,7 @@ const CLIP = hull(k.boxCorners({ x: TX0 - 1, y: Y1 - 0.2, w: TW + 2, d: STROKE +
 const clipPath = k.pathOf(CLIP, true);
 
 // ---------- 5) 합치기 ----------
-const LABEL = `${RACK.name} GPU rack: ${RACK.computeTrays} compute trays, ${RACK.switchTrays} NVLink switch trays and power shelves in a 19-inch rack. One compute tray slides out to show its ${RACK.gpuPerTray} GPUs, ${RACK.cpuPerTray} CPUs and liquid cold plates; heat on the GPUs rises with load.`;
+const LABEL = `${RACK.name} GPU rack: ${RACK.computeTrays} compute trays, ${RACK.switchTrays} NVLink switch trays and power shelves in a 19-inch rack. One compute tray slides out to show its ${RACK.gpuPerTray} GPUs, ${RACK.cpuPerTray} CPUs and liquid cold plates; orange marks where the GPUs heat up while running (a pulled tray is unplugged, 0 kW).`;
 // 색: 랙 골격·스위치·전원 앞판은 검정(.rk-metal), 컴퓨트 트레이 앞판·판금은 은색(.rk-silver), 빈 슬롯은 더 어둡게(.rk-cavity)
 // 층 나누기 (아래 → 위): 정지한 랙(back) → 움직이는 트레이 몸통(tray, 작은 SVG) → 열 잉크(canvas) → 핀 줄·트레이 앞판(front)
 //   움직이는 부분을 작은 SVG 로 떼어 두면, 트레이가 움직일 때 1,000개 넘는 랙 경로를 매 프레임 다시 그리지 않음
@@ -574,6 +575,8 @@ const zoomText = (ko) => ({
 //   랙: 트레이 당김(pull) · 부하(load)   GPU 모듈: 냉각판 들림(lift) · 같은 부하
 // 둘러보기 28초 일정 (tour.mjs): 그림 스크립트에 글을 그대로 끼워 넣음 (export 만 지움) — 시험(tour.test.mjs)과 같은 코드가 돎
 const TOUR_JS = readFileSync(join(HERE, "tour.mjs"), "utf8").replace(/^export\s+(const|function)/gm, "$1");
+// 수치 줄 문구 (power.mjs): 같은 방식으로 끼워 넣음 — 꽂힌 트레이·덮인 GPU 만 kW, 빼거나 들면 0 kW (시험 power.test.mjs)
+const POWER_JS = readFileSync(join(HERE, "power.mjs"), "utf8").replace(/^export\s+(const|function)/gm, "$1");
 const LIVE = `
 const D=__DATA__, D2=__DATA2__, KO=__KO__, INFO=__INFO__, ZT=__ZOOM__;
 const stage=document.querySelector(".rk-stage[data-fig=rack]"), stage2=document.querySelector(".rk-stage[data-fig=gpu]");
@@ -585,7 +588,7 @@ const layer=glLayer({canvas:stage.querySelector("canvas.rk-gl"),fragment:${JSON.
 const layer2=glLayer({canvas:stage2.querySelector("canvas.rk-gl"),fragment:${JSON.stringify(G2.FRAGMENT)},view:[D2.W,D2.H],camera:D2.camera,uniforms:["uLoad","uFirst"]});
 if(layer)stage.setAttribute("data-gl","");if(layer2)stage2.setAttribute("data-gl","");
 const R=D.rack, G=D2.gpu, perTrayKw=R.kw/R.computeTrays;
-// heatR·heatG = 랙 트레이·GPU 다이의 열 (부하 0..1, 그림마다 따로 → 수치 줄의 kW 도 그림마다 제 이야기만)
+// heatR·heatG = 랙 트레이·GPU 다이에 칠하는 열 색 (0..1, 그림마다 따로). 수치 줄의 kW 는 열 색이 아니라 꽂혔는지·덮였는지로 정함 (power.mjs)
 let lastLv="",pull=0,target=0,lift=0,liftTarget=0,heatR={x:0,v:0},heatG={x:0,v:0},first={x:0,v:0},clock=0,time=0,last=0,frame=0,visible=true,touring=!still.matches;
 let exact=true;   // 둘러보기 일정 값을 그대로 쓰는 중 (직접 확대를 끝내고 둘러보기로 돌아오는 동안만 false → 따라가며 합류)
 let waitTill=0;   // 이 시각(performance.now, ms)까지 둘러보기 시계를 멈춤 — 사진 영상이 재생되기를 기다리는 동안 (영상과 같은 순간에서 함께 출발)
@@ -596,6 +599,8 @@ const sm=(a,b,x)=>{const q=clamp((x-a)/(b-a),0,1);return q*q*(3-2*q);};
 const plateOf=(u)=>D2.plateMax*sm(0,.65,u), lidOf=(u)=>sm(.35,1,u);
 // ---------- 둘러보기 28초 일정 (scripts/anatomy/rack/tour.mjs 를 그대로 끼워 넣음 — Blender 사진 렌더도 같은 일정) ----------
 ${TOUR_JS}
+// ---------- 수치 줄 문구 (scripts/anatomy/rack/power.mjs 를 그대로 끼워 넣음) ----------
+${POWER_JS}
 const tourNow=(t)=>tourAt(t,D.stops,D2.stops);   // t 초의 모습: 트레이·냉각판·열·확대 정도·돋보기 중심·짚는 부품
 window.__rackCycle=TOUR*1000;   // 부팅 화면이 최소 한 바퀴는 보여 주도록 알려 줌
 // 그림 아래 줄 쓰기 (cap = 부품 설명: 이름을 굵게)
@@ -722,16 +727,14 @@ function draw(){
   if(layer){(!quiet&&heatR.x>1e-3&&pull>.5)?layer.draw({uLoad:heatR.x,uPull:pull,uFirst:first.x,...zoomGl(r1,D.camera)},t):layer.clear();}
   // 다이는 뚜껑이 비켜난 뒤(또는 기판 확대 중)에만 보임
   if(layer2){(!quiet&&heatG.x>1e-3&&(ld>.05||Z2.k>.5))?layer2.draw({uLoad:heatG.x,uFirst:first.x,...zoomGl(r2,D2.camera)},t):layer2.clear();}
-  const out=pull/D.stroke, pOut=Math.round(out*100), pPl=Math.round(pl/D2.plateMax*100);
-  // 수치 줄: 트레이가 얼마나 나왔는지 / 냉각판이 얼마나 들렸는지 + 지금 부하의 전력 (KO 면 한국어)
-  const trayText=KO?(out<.05?"트레이 "+D.tray+" · 장착됨":out<.98?"트레이 "+D.tray+" · "+pOut+"% 빠짐":"트레이 "+D.tray+" · 열림 · GPU "+R.gpuPerTray+" · CPU "+R.cpuPerTray)
-    :(out<.05?"tray "+D.tray+" seated":out<.98?"tray "+D.tray+" · "+pOut+"% out":"tray "+D.tray+" open · "+R.gpuPerTray+" GPU · "+R.cpuPerTray+" CPU");
-  const plateText=KO?(lift<.02?"냉각판 덮임":ld<.03?"냉각판 "+pPl+"% 들림":lift<.98?"뚜껑 들리는 중":"냉각판·뚜껑 들림 · 다이 "+G.dies+" · HBM3e "+G.hbm+" ("+G.hbmGb+" GB)")
-    :(lift<.02?"cold plate on":ld<.03?"lifting plate "+pPl+"%":lift<.98?"lifting lid":"plate and lid off · "+G.dies+" dies · "+G.hbm+" HBM3e "+G.hbmGb+" GB");
+  const out=pull/D.stroke, pPl=Math.round(pl/D2.plateMax*100);
+  // 수치 줄: 트레이가 얼마나 나왔는지 / 냉각판이 얼마나 들렸는지 + 실제 전력 (꽂혀 있을 때만 가동, 빼거나 들면 전원을 끊어 0 kW)
+  const trayText=trayReadout({out,ko:KO,tray:D.tray,gpus:R.gpuPerTray,cpus:R.cpuPerTray,kw:perTrayKw});
+  const plateText=gpuReadout({lift,plate:pPl,lid:ld,ko:KO,dies:G.dies,hbm:G.hbm,hbmGb:G.hbmGb,kw:G.kw});
   // 부품 설명은 짚는 곳 옆 말풍선이 맡음 (칸이 좁아 못 띄웠으면 이 줄에). 직접 확대 중엔 쓰는 법 안내
   const c1=Z1.caption(), c2=Z2.caption();
-  say(read1,c1||(Z1.on?ZT.hint:trayText+" · "+(perTrayKw*heatR.x).toFixed(1)+" kW"),!!c1);
-  say(read2,c2||(Z2.on?ZT.hint:plateText+" · "+(G.kw*heatG.x).toFixed(2)+" kW"),!!c2);
+  say(read1,c1||(Z1.on?ZT.hint:trayText),!!c1);
+  say(read2,c2||(Z2.on?ZT.hint:plateText),!!c2);
 }
 // 따라가는 값들을 dt 초만큼 (둘러보기 중이면 시계도). tick·warm이 같이 씀
 function advance(dt,calm){
@@ -825,8 +828,8 @@ const stage2Html = (ko) => `<div class="rk-stage" data-fig="gpu" tabindex="0" ro
 // 확대 단추: 눈에 띄게 채운 단추 + 처음 몇 번 깜빡이는 안내(data-call, 한 번 쓰면 멈춤)
 const zoomButton = (fig, ko) => `<button class="rk-zoom" type="button" data-zoom="${fig}" data-call aria-pressed="false">${zoomText(ko)[fig].in}</button>`;
 const pairHtml = (ko) => `<div class="rk-pair">
-  <div class="rk-fig"><div class="rk-head"><h2>${ko ? "랙" : "Rack"} · ${RACK.name} <small>${ko ? `GPU ${RACK.gpus}개 ≈ ${RACK.kw} kW` : `${RACK.gpus} GPUs ≈ ${RACK.kw} kW`}</small></h2>${zoomButton("rack", ko)}</div>${stageHtml(ko)}<div class="rk-read" data-readout="rack">${ko ? `트레이 ${PULLED.index} · 장착됨` : `tray ${PULLED.index} seated`} · 0.0 kW</div></div>
-  <div class="rk-fig"><div class="rk-head"><h2>GPU · ${GPU.name} <small>${ko ? `트레이 속 GPU 1개 확대 · 다이 ${GPU.dies} · HBM3e ${GPU.hbm} (${GPU.hbmGb} GB) · ≈${GPU.kw} kW` : `one GPU from the tray · ${GPU.dies} dies · ${GPU.hbm} HBM3e (${GPU.hbmGb} GB) · ≈${GPU.kw} kW`}</small></h2>${zoomButton("gpu", ko)}</div>${stage2Html(ko)}<div class="rk-read" data-readout="gpu">${ko ? "냉각판 덮임" : "cold plate on"} · 0.00 kW</div></div>
+  <div class="rk-fig"><div class="rk-head"><h2>${ko ? "랙" : "Rack"} · ${RACK.name} <small>${ko ? `GPU ${RACK.gpus}개 ≈ ${RACK.kw} kW` : `${RACK.gpus} GPUs ≈ ${RACK.kw} kW`}</small></h2>${zoomButton("rack", ko)}</div>${stageHtml(ko)}<div class="rk-read" data-readout="rack">${trayReadout({ out: 0, ko, tray: PULLED.index, gpus: RACK.gpuPerTray, cpus: RACK.cpuPerTray, kw: RACK.kw / RACK.computeTrays })}</div></div>
+  <div class="rk-fig"><div class="rk-head"><h2>GPU · ${GPU.name} <small>${ko ? `트레이 속 GPU 1개 확대 · 다이 ${GPU.dies} · HBM3e ${GPU.hbm} (${GPU.hbmGb} GB) · ≈${GPU.kw} kW` : `one GPU from the tray · ${GPU.dies} dies · ${GPU.hbm} HBM3e (${GPU.hbmGb} GB) · ≈${GPU.kw} kW`}</small></h2>${zoomButton("gpu", ko)}</div>${stage2Html(ko)}<div class="rk-read" data-readout="gpu">${gpuReadout({ lift: 0, plate: 0, lid: 0, ko, dies: GPU.dies, hbm: GPU.hbm, hbmGb: GPU.hbmGb, kw: GPU.kw })}</div></div>
 </div>`;
 
 const gl = readFileSync(join(HERE, "..", "kit", "gl.mjs"), "utf8").replace(/^export\s+(const|function)/gm, "$1").replace(/^export\s*\{[^}]*\};?\s*$/gm, "");
