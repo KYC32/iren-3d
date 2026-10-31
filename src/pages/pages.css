@@ -97,6 +97,32 @@
 .dilution-table td i { font-style: normal; color: #7a889c; margin-left: 1px; }
 .shares-line.is-tail { stroke-dasharray: 4 4; opacity: .7; }            /* 마지막 공시 뒤 — 새 공시 전 */
 
+/* ---- 주가 페이지: 증권사 투자의견 (AnalystSection) ---- */
+.analysts { margin-top: 22px; padding-top: 14px; border-top: 1px solid #e3eaf3; }
+.analysts h3 { margin: 0 0 10px; font-size: 14px; color: #1f3550; }
+/* 목표가 막대: 음각 홈 + 범위 띠 + 증권사 점 · 평균·종가 표시 */
+.target-bar { margin: 6px 8px 14px; }
+.target-track { position: relative; height: 12px; border-radius: 999px; background: #e8ebf2; box-shadow: inset 0 1px 2px rgba(22, 33, 58, .18); }
+.target-track i { position: absolute; display: block; }
+.target-span { top: 0; bottom: 0; border-radius: 999px; background: #71da80; box-shadow: inset 0 1px 2px rgba(11, 52, 79, .25); }
+.target-dot { top: 3px; width: 6px; height: 6px; margin-left: -3px; border-radius: 50%; background: #0b344f; box-shadow: 0 0 0 1px #fff; }
+.target-mean { top: -3px; bottom: -3px; width: 2px; margin-left: -1px; background: #0b344f; }
+.target-price { top: -4px; bottom: -4px; width: 3px; margin-left: -1.5px; border-radius: 2px; background: #b23a3a; box-shadow: 0 0 0 1px #fff; }
+.target-labels { position: relative; height: 18px; margin-top: 6px; font-size: 11px; color: #1f3550; font-variant-numeric: tabular-nums; }
+.target-labels span { position: absolute; transform: translateX(-50%); white-space: nowrap; font-weight: 600; }
+.target-labels .is-price { color: #b23a3a; transform: none; }   /* 막대 왼쪽 끝에 붙으므로 칸 밖으로 안 나가게 */
+.analyst-table-wrap { overflow-x: auto; }
+.analyst-table { min-width: 340px; }
+.analyst-table .is-date { white-space: nowrap; }
+@media (max-width: 767px) { .analyst-table .is-action { display: none; } }   /* 좁은 화면: 변경 칸을 빼서 목표가까지 옆으로 밀지 않고 보임 */
+.analyst-table td b { font-weight: 600; color: #1f3550; }
+.analyst-table tr.is-stale td { opacity: .55; }
+/* 의견 표시: 파스텔 칸 대신 IREN 초록·남색 + 볼록한 그늘 */
+.rating { display: inline-block; padding: 1px 7px; border-radius: 999px; font-size: 10.5px; font-weight: 700; line-height: 1.5; box-shadow: 0 1px 1px rgba(11, 52, 79, .25), inset 0 1px 0 rgba(255, 255, 255, .35); }
+.rating-buy { background: #71da80; color: #0b344f; }
+.rating-hold { background: #e8ebf2; color: #34405e; }
+.rating-sell { background: #0b344f; color: #fff; }
+
 /* ---------- 사업 현황 페이지 (PortfolioPage) ---------- */
 /* KPI 판: 지도 위 띠와 같은 카드를 페이지 폭에 맞춰 여러 줄로 (가로 스크롤 대신 줄바꿈) */
 .portfolio-page .kpis { box-shadow: none; flex-wrap: wrap; }

@@ -87,3 +87,15 @@ describe('sharesInterp (차트: 공시 사이는 직선으로 이음)', () => {
     expect(sharesInterp(pts, '2023-12-31')).toBeNull()
   })
 })
+
+describe('장비 담보 금융 (loans)', () => {
+  it('Wingspire $363M 가 들어 있고 금리는 비공개로 적힘', () => {
+    const w = file.loans.find((l) => l.id === 'wingspire-2026-10')
+    expect(w.amount_usd).toBe(363000000)
+    expect(w.rate_ko).toMatch(/비공개/)
+  })
+  it('날짜 순서대로', () => {
+    const d = file.loans.map((l) => l.date)
+    expect(d).toEqual([...d].sort())
+  })
+})

@@ -1,5 +1,5 @@
 {
-  "checked": "2026-10-16",
+  "checked": "2026-10-31",
   "note_ko": "SEC 공시(424B4·20-F·10-K·10-Q 표지와 본문)에서 옮긴 수치. 주식 수는 공시마다 대출형 주식(LFS) 포함 여부 표기가 다를 수 있음. 새 10-Q·10-K 표지 수치는 매일 갱신 스크립트(scripts/fetch-shares.mjs)가 SEC XBRL에서 덧붙임. ATM·전환사채는 공시 본문에서 사람이 옮김.",
   "note_en": "Figures copied from SEC filings (424B4, 20-F, 10-K and 10-Q cover pages and text). Filings may differ on whether loan-funded shares are included. New 10-Q/10-K cover counts are appended daily from SEC XBRL by scripts/fetch-shares.mjs; ATM and convertible details are copied from filing text by hand.",
   "points": [
@@ -207,6 +207,46 @@
       "conversion_price_usd": 73.07,
       "as_of": "2026-06-30",
       "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm"
+    }
+  ],
+  "loans": [
+    {
+      "id": "gpu-financing-2026-05",
+      "label_ko": "Microsoft 계약용 GPU 금융",
+      "label_en": "GPU financing for the Microsoft contract",
+      "date": "2026-05",
+      "amount_usd": 3600000000,
+      "about": true,
+      "rate_ko": "평균 6.0% (은행 대출 SOFR+2.25% · 사모 채권 고정 5.96%)",
+      "rate_en": "6.0% average (bank loan SOFR+2.25% · private notes fixed 5.96%)",
+      "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm",
+      "note_ko": "투자등급 · 은행 대출 약 $1.5bn + 사모 채권 $2.1bn · Microsoft 인도 단계에 맞춰 나눠서 받음",
+      "note_en": "Investment grade · ~$1.5bn bank loan + $2.1bn private notes · drawn in step with Microsoft deliveries"
+    },
+    {
+      "id": "mackenzie-2026-08",
+      "label_ko": "매켄지 공랭 확장 GPU 금융",
+      "label_en": "GPU financing for the Mackenzie air-cooled expansion",
+      "date": "2026-08-25",
+      "amount_usd": 2400000000,
+      "about": true,
+      "rate_ko": "고정 9.0%",
+      "rate_en": "9.0% fixed",
+      "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html",
+      "note_ko": "Blue Owl·PIMCO 주도 · 관련 GPU 설비투자의 90%",
+      "note_en": "Led by Blue Owl and PIMCO · funds 90% of the related GPU capex"
+    },
+    {
+      "id": "wingspire-2026-10",
+      "label_ko": "Wingspire 장비 재융자",
+      "label_en": "Wingspire equipment refinancing",
+      "date": "2026-10-28",
+      "amount_usd": 363000000,
+      "rate_ko": "금리·만기 비공개",
+      "rate_en": "Rate and maturity undisclosed",
+      "source": "https://www.businesswire.com/news/home/20261028683272/en/IREN-and-Wingspire-Equipment-Finance-Complete-%24363-Million-Financing-for-High-Density-AI-Compute-Assets",
+      "note_ko": "이미 가동 중인 GPU 서버·네트워크 장비 담보 · 대주 6곳(Eldridge·Silver Point 주도) · 8월에 밝힌 GPU 금융 $2.8bn에 포함되는지는 미확인",
+      "note_en": "Secured on GPU servers and network gear already in service · six lenders, led by Eldridge and Silver Point · unconfirmed whether it is part of the $2.8bn of GPU financings disclosed in August"
     }
   ]
 }

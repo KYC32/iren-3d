@@ -80,5 +80,35 @@
         "status": "active"
       }
     }
+  ],
+  "stateActions": [
+    {
+      "state": "TX",
+      "date": "2026-06-10",
+      "ko": "주지사 지시: 데이터센터가 전력 설비 비용을 스스로 부담하게 함",
+      "en": "Governor's directive: data centers must fund the power infrastructure they need",
+      "source": "https://gov.texas.gov/news/post/governor-abbott-directs-puc-and-ercot-to-shield-texans-from-data-center-infrastructure-costs"
+    },
+    {
+      "state": "TX",
+      "date": "2026-08-03",
+      "ko": "주지사 지시: ERCOT 연결 절차의 데이터센터 전수 감사, 끝날 때까지 진행 중단. 부적합이면 연결 거부",
+      "en": "Governor's directive: audit every data center in ERCOT's interconnection process; no project advances until it ends, and non-compliant projects are denied connection",
+      "source": "https://gov.texas.gov/news/post/governor-abbott-directs-comprehensive-data-center-audit"
+    },
+    {
+      "state": "TX",
+      "date": "2026-09-14",
+      "ko": "주지사 지시: 수자원개발위원회(TWDB)가 데이터센터 물 사용 보고를 강제",
+      "en": "Governor's directive: the Texas Water Development Board must enforce water-use reporting by data centers",
+      "source": "https://gov.texas.gov/news/post/governor-abbott-directs-tceq-to-halt-data-center-permits"
+    },
+    {
+      "state": "TX",
+      "date": "2026-09-21",
+      "ko": "주지사 지시: TCEQ 데이터센터 허가 전면 중단, ERCOT 감사가 끝날 때까지 주 기관 승인도 멈춤",
+      "en": "Governor's directive: TCEQ halts all data center permits, and no state agency moves on approvals until the ERCOT audit ends",
+      "source": "https://gov.texas.gov/news/post/governor-abbott-directs-tceq-to-halt-data-center-permits"
+    }
   ]
 }

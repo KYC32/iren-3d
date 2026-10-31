@@ -4,6 +4,7 @@
 //   → 주식 수 차트(주가 차트와 같은 기간·같은 가로축이라 날짜가 위아래로 맞음)
 //   → 주식으로 조달한 돈 표 → 전환사채 표
 // 데이터: public/data/shares.json (data/shares.json 에서 빌드, 새 10-Q·10-K 표지 수치는 매일 갱신 스크립트가 덧붙임)
+//   + 장비 담보 금융 표 (주식이 늘지 않는 조달)
 // 모든 숫자는 SEC 공시 원문 링크와 함께. 전환 시 주식 수는 최초 전환가 단순 계산(추정)이라고 화면에 밝힘
 // =============================================================
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -55,6 +56,16 @@ export default function DilutionSection({ file, series, lang }) {
             <td>≈ {n(c.shares)}</td>
           </tr>)}</tbody>
         </table>
+        {file.loans?.length > 0 && <table className="dilution-table">
+          <caption>{ko ? '장비 담보 금융 · 주식이 늘지 않는 조달 (주요 건만)' : 'Equipment-backed financing · raises no new shares (major deals only)'}</caption>
+          <thead><tr><th>{ko ? '구분' : 'Deal'}</th><th>{ko ? '날짜' : 'Date'}</th><th>{ko ? '금액' : 'Amount'}</th><th>{ko ? '금리' : 'Rate'}</th></tr></thead>
+          <tbody>{[...file.loans].reverse().map((l) => <tr key={l.id}>
+            <td><a href={l.source} target="_blank" rel="noreferrer">{ko ? l.label_ko : l.label_en}<ArrowUpRight size={10} aria-hidden="true" /></a><small>{ko ? l.note_ko : l.note_en}</small></td>
+            <td>{l.date}</td>
+            <td>{l.about ? '≈ ' : ''}{fmtUsd(l.amount_usd)}</td>
+            <td>{ko ? l.rate_ko : l.rate_en}</td>
+          </tr>)}</tbody>
+        </table>}
       </div>
       <p className="page-note">
         {ko

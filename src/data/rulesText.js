@@ -13,6 +13,11 @@ export const RULE_STATUS = {
 }
 const COUNTY_KO = { 'Childress County': '차일드레스 카운티', 'Fisher County': '피셔 카운티', 'Pittsburg County': '피츠버그 카운티' }
 
+// 주 정부 조치 (data/restrictions.json 의 stateActions) 중 그 주의 것만 최근 순으로. 카운티 집계와 달리 주지사실 등 원문 출처
+export function stateActionsFor(actions, state) {
+  return (actions ?? []).filter((a) => a.state === state).sort((a, b) => b.date.localeCompare(a.date))
+}
+
 // r: restrictions.sites 한 줄 → { main: 카운티·주 건수 한 줄, nearest: 같은 주에서 가장 가까운 조치 한 줄(없으면 null) }
 export function rulesLine(r, lang) {
   const ko = lang === 'ko', i = ko ? 0 : 1

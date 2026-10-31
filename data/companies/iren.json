@@ -1,6 +1,6 @@
 {
   "company_id": "iren",
-  "as_of": "2026-10-23",
+  "as_of": "2026-10-31",
   "sites": [
     {
       "id": "childress",
@@ -467,6 +467,12 @@
           "source": "https://www.globenewswire.com/news-release/2026/08/13/3344413/0/en/iren-delivers-horizon-1-to-microsoft-and-achieves-nvidia-exemplar-cloud-status-on-gb300-nvl72.html"
         },
         {
+          "date": "2026-08-13",
+          "event": "상시 일자리 200개 이상 · 마을에서 수 마일 밖 입지, 계통 보강비 자체 부담, 지역 상수도에 기대지 않는 냉각 (회사 글)",
+          "event_en": "Over 200 permanent jobs · sited miles from town, grid upgrades self-funded, cooling that does not rely on the local water supply (company post)",
+          "source": "https://iren.com/resources/news/responsible-data-center-growth-how-iren-builds-in-texas"
+        },
+        {
           "date": "2026-08-27",
           "event": "FY26 실적: Horizon 2 커미셔닝, Horizon 3~4 후기 공사 (Q4 납품 목표)",
           "event_en": "FY26 results: Horizon 2 commissioning, Horizon 3-4 late-stage (Q4 delivery target)",
@@ -626,6 +632,12 @@
           "source": "https://x.com/IREN_Ltd/status/2061376124102623451"
         },
         {
+          "date": "2026-08-03",
+          "event": "텍사스 주지사, ERCOT 연결 절차의 데이터센터 전수 감사 지시 · 끝날 때까지 진행 중단 (이 부지 영향은 회사 미공개)",
+          "event_en": "Texas governor orders an audit of data centers in ERCOT's interconnection process; none advance until it ends (impact on this site not disclosed)",
+          "source": "https://gov.texas.gov/news/post/governor-abbott-directs-comprehensive-data-center-audit"
+        },
+        {
           "date": "2026-09-08",
           "event": "2GW Sweetwater 허브 ERCOT Batch Zero 'Base Load' 편입, 300MW 1단계 건설 중",
           "event_en": "2GW Sweetwater hub included as Base Load in ERCOT Batch Zero; 300MW Phase 1 under construction",
@@ -636,6 +648,12 @@
           "event": "텍사스 PUC, 75MW 이상 대형 부하의 ERCOT 접속 규칙 채택 (10/8 발효 · 연구비 $10만 · 보증금 MW당 $5만)",
           "event_en": "Texas PUC adopts ERCOT large-load (75 MW+) interconnection rule (effective Oct 8 · $100k study fee · $50k/MW security)",
           "source": "https://interchange.puc.texas.gov/Documents/58481_218_1684654.PDF"
+        },
+        {
+          "date": "2026-09-21",
+          "event": "텍사스 주지사, TCEQ 데이터센터 허가 전면 중단 지시 (이 부지 영향은 회사 미공개)",
+          "event_en": "Texas governor orders TCEQ to halt all data center permits (impact on this site not disclosed)",
+          "source": "https://gov.texas.gov/news/post/governor-abbott-directs-tceq-to-halt-data-center-permits"
         }
       ],
       "estimates": [
@@ -716,10 +734,22 @@
           "source": "https://www.globenewswire.com/news-release/2025/03/17/3043594/0/en/IREN-Secures-2-75GW-for-Data-Centers-in-West-Texas-with-New-600MW-Grid-Connection-Agreement.html"
         },
         {
+          "date": "2026-08-03",
+          "event": "텍사스 주지사, ERCOT 연결 절차의 데이터센터 전수 감사 지시 · 끝날 때까지 진행 중단 (이 부지 영향은 회사 미공개)",
+          "event_en": "Texas governor orders an audit of data centers in ERCOT's interconnection process; none advance until it ends (impact on this site not disclosed)",
+          "source": "https://gov.texas.gov/news/post/governor-abbott-directs-comprehensive-data-center-audit"
+        },
+        {
           "date": "2026-09-08",
           "event": "ERCOT Batch Zero Base Load 편입",
           "event_en": "Included in ERCOT Batch Zero as Base Load",
           "source": "https://www.globenewswire.com/news-release/2026/09/08/3357498/0/en/iren-s-2gw-sweetwater-hub-included-as-base-load-in-ercot-batch-zero.html"
+        },
+        {
+          "date": "2026-09-21",
+          "event": "텍사스 주지사, TCEQ 데이터센터 허가 전면 중단 지시 (이 부지 영향은 회사 미공개)",
+          "event_en": "Texas governor orders TCEQ to halt all data center permits (impact on this site not disclosed)",
+          "source": "https://gov.texas.gov/news/post/governor-abbott-directs-tceq-to-halt-data-center-permits"
         }
       ],
       "estimates": [],
@@ -1585,7 +1615,7 @@
       ],
       "detail": "lite",
       "announced": "2026-05",
-      "acres": null,
+      "acres": 75,
       "grid_operator": "REE",
       "cooling": "closed-loop",
       "summary_ko": "Nostrum Group 인수(2026-06 완료)로 확보한 유럽 첫 거점. Badajoz ~300MW 계획(계통 연결·토목 공사 허가 확보), Nostrum 전체 490MW 계통 확보. 폐쇄 루프 액체 냉각, NVIDIA DSX 호환 설계. 2028 첫 가동 목표. 유럽 사업 지주회사 IREN Europe 설립(2026-10).",
@@ -1627,6 +1657,12 @@
           "event": "바다호스 캠퍼스 토목 공사 허가 확보, IREN Europe 설립 (이사회 의장 Ángel Corcóstegui) — GTC Berlin 발표",
           "event_en": "Badajoz campus civil works license secured; IREN Europe established (board chaired by Ángel Corcóstegui) — announced at GTC Berlin",
           "source": "https://www.globenewswire.com/news-release/2026/10/21/3385423/0/en/iren-to-advance-europe-s-sovereign-ai-ambitions-with-300mw-spanish-campus.html"
+        },
+        {
+          "date": "2026-10-21",
+          "event": "받은 것은 부지 정리 허가(cota cero)이고 건물 건축 허가는 아직. 착공은 2026년 말에서 2027년 초 예상 (스페인 언론의 소식통 전언, 회사 확인 아님)",
+          "event_en": "The license covers site preparation (cota cero), with no building permit yet. Construction expected late 2026 to early 2027 (Spanish press citing sources, not confirmed by the company)",
+          "source": "https://www.europapress.es/economia/noticia-iren-comenzara-construir-centro-datos-300-mw-badajoz-finales-2026-principios-2027-20261021182354.html"
         }
       ],
       "estimates": [
@@ -1638,7 +1674,9 @@
       ],
       "sources": [
         "https://www.sec.gov/Archives/edgar/data/0001878848/000187884826000052/iren-20260630.htm",
-        "https://www.globenewswire.com/news-release/2026/10/21/3385423/0/en/iren-to-advance-europe-s-sovereign-ai-ambitions-with-300mw-spanish-campus.html"
+        "https://www.globenewswire.com/news-release/2026/10/21/3385423/0/en/iren-to-advance-europe-s-sovereign-ai-ambitions-with-300mw-spanish-campus.html",
+        "https://iren.com/data-centers/badajoz",
+        "https://www.europapress.es/economia/noticia-iren-comenzara-construir-centro-datos-300-mw-badajoz-finales-2026-principios-2027-20261021182354.html"
       ],
       "confidence": "medium"
     },

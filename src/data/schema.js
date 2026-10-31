@@ -315,6 +315,11 @@ export const RestrictionsFile = z.object({
       status: z.enum(['active', 'rescinded', 'replaced', 'expired', 'unknown']),   // replaced = 영구 규정으로 대체
     }).strict().nullable(),
   }).strict()),
+  // 주 전체에 걸린 정부 조치 — 위 연구 자료(카운티·시 단위)에 없어서 사람이 원문을 보고 옮김 (scripts/fetch-restrictions.mjs 가 그대로 둠)
+  stateActions: z.array(z.object({
+    state: z.string().regex(/^[A-Z]{2}$/), date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+    ko: z.string(), en: z.string(), source: Url,
+  }).strict()).optional(),
 }).strict()
 
 // 지역 규제 지도용 (public/data/restrictions-map.json) — 조치마다 한 줄, 실제 지도 '지역 규제' 층 (scripts/fetch-restrictions.mjs 가 씀)

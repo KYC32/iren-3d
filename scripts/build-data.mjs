@@ -12,6 +12,7 @@ import { SourceDatesFile, HiringFile, ProspectsFile, RestrictionsFile } from '..
 import { validateObservations } from '../src/data/observationsSchema.js'
 import { validateStatements } from '../src/data/statementsSchema.js'
 import { validateShares } from '../src/data/sharesSchema.js'
+import { validateAnalysts } from '../src/data/analystsSchema.js'
 import { fileURLToPath } from 'node:url'
 
 // DATA_DIR=data-fake 처럼 지정하면 다른 폴더의 데이터로 빌드 (성능 시험용 가짜 데이터 등)
@@ -89,6 +90,15 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     if (errors.length) throw new Error(errors.join('\n'))
     writeFileSync(new URL('../public/data/shares.json', import.meta.url), JSON.stringify(shares) + '\n')
     console.log(`✅ shares.json — 공시 ${shares.points.length}건, 조달 ${shares.raises.length}건, 전환사채 ${shares.converts.length}건`)
+  }
+  // 증권사 투자의견 (data/analysts.json → 주가 페이지가 불러옴)
+  const analystsUrl = new URL('analysts.json', DATA)
+  if (existsSync(analystsUrl)) {
+    const analysts = JSON.parse(readFileSync(analystsUrl, 'utf8'))
+    const errors = validateAnalysts(analysts)
+    if (errors.length) throw new Error(errors.join('\n'))
+    writeFileSync(new URL('../public/data/analysts.json', import.meta.url), JSON.stringify(analysts) + '\n')
+    console.log(`✅ analysts.json — 증권사 ${analysts.firms.length}곳, 평균 목표가 $${analysts.consensus.mean}`)
   }
   const observations = buildObservations(infra.sites)
   if (observations) {

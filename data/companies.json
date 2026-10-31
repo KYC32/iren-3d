@@ -19,8 +19,16 @@
         "lng": 151.2081,
         "tz": "Australia/Sydney",
         "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000052/iren-20260630.htm",
-        "building": { "floors": 20, "level": 5, "source": "https://www.mirvac.com/office-and-industrial/office/nsw/55-market-street",
-          "moved_from": { "level": 6, "first_seen": "2026-05-08", "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000026/iren-20260331.htm" } }
+        "building": {
+          "floors": 20,
+          "level": 5,
+          "source": "https://www.mirvac.com/office-and-industrial/office/nsw/55-market-street",
+          "moved_from": {
+            "level": 6,
+            "first_seen": "2026-05-08",
+            "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000026/iren-20260331.htm"
+          }
+        }
       },
       "summary_ko": "호주 시드니 본사. 비트코인 채굴에서 AI 클라우드로 전환 중이며 Microsoft·NVIDIA 등과 GPU 클라우드 계약을 맺었다.",
       "summary_en": "Sydney-based. Transitioning from bitcoin mining to AI cloud with GPU contracts from Microsoft, NVIDIA and others.",
@@ -115,12 +123,52 @@
       ],
       "events": [
         {
+          "date": "2026-08-03",
+          "kind": "other",
+          "title_ko": "텍사스 주지사, ERCOT 연결 절차의 데이터센터 전수 감사 지시 · 끝날 때까지 진행 중단",
+          "title_en": "Texas governor orders an audit of all data centers in ERCOT's interconnection process; none advance until it ends",
+          "basis": "reported",
+          "source": "https://gov.texas.gov/news/post/governor-abbott-directs-comprehensive-data-center-audit"
+        },
+        {
+          "date": "2026-08-13",
+          "kind": "other",
+          "title_ko": "Daniel Roberts 글: Fort Worth를 글로벌 운영 거점으로 소개 · 차일드레스 상시 일자리 200개 이상",
+          "title_en": "Daniel Roberts post: Fort Worth named the global operations hub · over 200 permanent jobs at Childress",
+          "basis": "reported",
+          "source": "https://iren.com/resources/news/responsible-data-center-growth-how-iren-builds-in-texas"
+        },
+        {
+          "date": "2026-09-21",
+          "kind": "other",
+          "title_ko": "텍사스 주지사, TCEQ에 데이터센터 허가 전면 중단 지시 (ERCOT 감사가 끝날 때까지)",
+          "title_en": "Texas governor orders TCEQ to halt all data center permits until the ERCOT audit ends",
+          "basis": "reported",
+          "source": "https://gov.texas.gov/news/post/governor-abbott-directs-tceq-to-halt-data-center-permits"
+        },
+        {
           "date": "2026-10-21",
           "kind": "other",
           "title_ko": "NVIDIA 발표(GTC Berlin): DSX MaxLPS(전력 배분 소프트웨어)와 DSX OS 새 구성 요소를 검토하는 회사에 IREN 포함",
           "title_en": "NVIDIA at GTC Berlin: IREN named among companies exploring DSX MaxLPS (power-allocation software) and new DSX OS components",
           "basis": "reported",
           "source": "https://nvidianews.nvidia.com/news/european-ecosystem-builds-worlds-most-efficient-ai-factories-with-nvidia-dsx"
+        },
+        {
+          "date": "2026-10-28",
+          "kind": "financing",
+          "title_ko": "Wingspire 장비 재융자 $363M 완료 · 가동 중인 GPU 담보, 대주 6곳",
+          "title_en": "$363M Wingspire equipment refinancing closed · backed by GPUs in service, six lenders",
+          "basis": "reported",
+          "source": "https://www.businesswire.com/news/home/20261028683272/en/IREN-and-Wingspire-Equipment-Finance-Complete-%24363-Million-Financing-for-High-Density-AI-Compute-Assets"
+        },
+        {
+          "date": "2026-10-30",
+          "kind": "other",
+          "title_ko": "Perplexity 다년 계약 세부 공개 (회사 블로그) · Blackwell Ultra GPU, 캠퍼스는 미공개",
+          "title_en": "Perplexity multi-year deal detailed on the company blog · Blackwell Ultra GPUs, campus undisclosed",
+          "basis": "reported",
+          "source": "https://iren.com/resources/blog/perplexity-and-iren-powering-fast-trustworthy-ai-at-scale"
         },
         {
           "date": "2026-11-05",
@@ -145,6 +193,14 @@
           "title_en": "~0.3 GW (IT) cumulative delivery (2026)",
           "basis": "target",
           "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+        },
+        {
+          "date": "2026-12-10",
+          "kind": "other",
+          "title_ko": "ERCOT 감사 결과 PUC 제출 목표 · Batch Zero 최종 분류가 여기에 달림, 연구 일정은 미정",
+          "title_en": "ERCOT aims to file its audit results with the PUC · final Batch Zero classes depend on it, study date not set",
+          "basis": "target",
+          "source": "https://mgrid.org/2026/09/05/ercot-december-10-abbott-data-center-audit-batch-zero-april-2027/"
         },
         {
           "date": "2027-12",
@@ -219,8 +275,8 @@
           "it_mw": null,
           "sites": [],
           "color": "#9b6dd6",
-          "note_ko": "Perplexity·Figure AI·Together AI·Fluidstack 등 다년 계약(가중평균 약 4년), 배치 사이트는 회사 미공개",
-          "note_en": "Perplexity, Figure AI, Together AI, Fluidstack and others; multi-year (weighted avg ~4 yrs); sites not disclosed",
+          "note_ko": "Perplexity·Figure AI·Together AI·Fluidstack 등 다년 계약(가중평균 약 4년), 배치 사이트는 회사 미공개. Perplexity는 Blackwell Ultra GPU 사용(회사 블로그 2026-10-30)",
+          "note_en": "Perplexity, Figure AI, Together AI, Fluidstack and others; multi-year (weighted avg ~4 yrs); sites not disclosed. Perplexity uses Blackwell Ultra GPUs (company blog, 2026-10-30)",
           "source": "https://www.globenewswire.com/news-release/2026/07/20/3329624/0/en/iren-signs-2-8bn-in-new-customer-contracts-with-leading-ai-developers-raises-2026-arr-target-to-over-4bn.html"
         },
         {

@@ -4,7 +4,7 @@
 #      다음 날 낮엔 들어와 있음) → 장 마감 직후에만 돌면 사이트 주가가 늘 1~2 거래일 늦고, 금요일 종가는 월요일 밤에야 들어왔음
 #   ② 장 마감 직후 (월~금 22:30 UTC = 뉴욕 17:30 EST / 18:30 EDT): 그날 회사 공시·언론 (그날 종가는 ①이 다음 날 받음)
 #   GitHub 예약 실행은 붐비면 1~3시간 늦게 돌기도 함 (실제 22:30 예약이 00:37~01:20 UTC 에 돎)
-# scripts/fetch-stock.mjs, fetch-news.mjs, fetch-shares.mjs 가 public/data/stock.json·news.json·shares.json(+ data/shares.json) 을 고치고,
+# scripts/fetch-stock.mjs, fetch-news.mjs, fetch-shares.mjs, fetch-analysts.mjs 가 public/data/stock.json·news.json·shares.json·analysts.json(+ data/shares.json·analysts.json) 을 고치고,
 # 바뀐 게 있으면 커밋·푸시 → Vercel 이 자동 배포. 소스가 막히면 스크립트가 기존 파일을 그대로 두고 0 으로 끝남.
 # 같은 날 두 번 돌아도 바뀐 게 없으면 커밋하지 않음 (증분 병합이라 결과가 같음)
 # 언론 제목 기계 번역(Kanana 1.5 · CPU): 새 제목만 번역 (회사 발표 헤드라인은 오역 위험으로 번역하지 않음)
@@ -37,6 +37,7 @@ jobs:
       - run: node scripts/fetch-stock.mjs
       - run: node scripts/fetch-news.mjs --max=60
       - run: node scripts/fetch-shares.mjs   # 새 10-Q·10-K 표지 주식 수를 SEC XBRL 에서 덧붙임
+      - run: node scripts/fetch-analysts.mjs   # Nasdaq 합의 의견·평균 목표가 (증권사별 표는 사람이 옮김)
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -83,7 +84,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/stock.json public/data/news.json public/data/news-ko.json data/shares.json public/data/shares.json public/data/asof-check.json
+          git add public/data/stock.json public/data/news.json public/data/news-ko.json data/shares.json public/data/shares.json data/analysts.json public/data/analysts.json public/data/asof-check.json
           if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
           git commit -m "data: 주가·뉴스·주식 수 자동 갱신 $(date -u +%F)"
           git pull --rebase origin main

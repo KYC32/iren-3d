@@ -57,6 +57,7 @@ for (const s of iren.sites.filter((x) => x.country === 'US')) {
 }
 
 // 3) 쓰기 (스키마 검사 뒤)
+const previous = JSON.parse(readFileSync(new URL('../data/restrictions.json', import.meta.url), 'utf8'))
 const out = RestrictionsFile.parse({
   checked: new Date().toISOString().slice(0, 10),
   source: {
@@ -67,6 +68,8 @@ const out = RestrictionsFile.parse({
     coverage: '2017-01 ~ 2026-08',
   },
   sites,
+  // 주 정부 조치는 사람이 옮긴 칸 → 다시 받아도 그대로 둠
+  ...(previous.stateActions ? { stateActions: previous.stateActions } : {}),
 })
 writeFileSync(new URL('../data/restrictions.json', import.meta.url), JSON.stringify(out, null, 2) + '\n')
 // 4) 지도용: 모든 조치의 위치·관할·상태 (자료의 좌표 그대로 — 카운티·도시·부족 정부의 대표 지점)

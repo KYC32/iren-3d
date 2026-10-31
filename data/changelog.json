@@ -1,6 +1,36 @@
 {
   "entries": [
     {
+      "date": "2026-10-31",
+      "items": [
+        {
+          "ko": "주가 페이지에 증권사 투자의견 칸 추가. Nasdaq 합의 의견·평균 목표가는 매일 갱신하고 증권사별 최근 의견표는 MarketBeat에서 옮겨 회사 IR 명단 19곳과 대조함",
+          "en": "The stock page gains a broker ratings section. Nasdaq consensus and mean target refresh daily; the broker table is copied from MarketBeat and checked against the 19 firms on the company list",
+          "source": "https://iren.com/investors/analysts"
+        },
+        {
+          "ko": "텍사스 주지사의 데이터센터 조치를 일정과 캠퍼스 패널에 추가: 8/3 ERCOT 전수 감사·진행 중단, 9/21 TCEQ 허가 중단. 12/10 감사 결과 제출 목표도 일정에 넣음",
+          "en": "Texas governor's data center actions added to the schedule and campus panel: Aug 3 ERCOT audit and pause, Sep 21 TCEQ permit halt. The Dec 10 audit filing target is on the schedule too",
+          "source": "https://gov.texas.gov/news/post/governor-abbott-directs-tceq-to-halt-data-center-permits"
+        },
+        {
+          "ko": "주가 페이지 희석 칸에 장비 담보 금융 표 추가. Wingspire $363M 재융자(10/28)를 일정에도 넣음",
+          "en": "Equipment-backed financing table added to the dilution section. The $363M Wingspire refinancing (Oct 28) is also on the schedule",
+          "source": "https://www.businesswire.com/news/home/20261028683272/en/IREN-and-Wingspire-Equipment-Finance-Complete-%24363-Million-Financing-for-High-Density-AI-Compute-Assets"
+        },
+        {
+          "ko": "Perplexity 계약에 Blackwell Ultra GPU 사용을 적음. 바다호스 면적 75에이커 추가, 허가는 부지 정리까지이고 건축 허가는 아직이라는 현지 보도를 표시함",
+          "en": "Perplexity contract notes Blackwell Ultra GPUs. Badajoz gains its 75-acre area, and local reports that the license covers site preparation only are shown",
+          "source": "https://iren.com/data-centers/badajoz"
+        },
+        {
+          "ko": "채용 공고 수를 10/31 기준으로 갱신(전체 292개). 차일드레스 상시 일자리 200개 이상과 Fort Worth 운영 거점을 추가함",
+          "en": "Job posting counts updated to Oct 31 (292 in total). Childress's 200-plus permanent jobs and the Fort Worth operations hub added",
+          "source": "https://iren.com/resources/news/responsible-data-center-growth-how-iren-builds-in-texas"
+        }
+      ]
+    },
+    {
       "date": "2026-10-29",
       "items": [
         {

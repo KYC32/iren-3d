@@ -101,7 +101,7 @@ export default function CampusPanel(){
       {/* 위성 사진: 목록에 그 부지 사진이 있을 때만 (지금은 미국 부지 4곳) · 보고 있는 달까지 찍힌 것만 */}
       {!zone&&<Suspense fallback={null}><SiteSatellite site={site} month={month} lang={lang}/></Suspense>}
       {/* 지역 규제: 자료가 있는 미국 부지만 (자료 기간이 2026-08 까지라 지난 날짜를 봐도 같은 요약) */}
-      {!zone&&rules&&<Suspense fallback={null}><SiteRules rules={rules} source={st.data.raw.restrictions.source} lang={lang}/></Suspense>}
+      {!zone&&rules&&<Suspense fallback={null}><SiteRules rules={rules} source={st.data.raw.restrictions.source} actions={st.data.raw.restrictions.stateActions} lang={lang}/></Suspense>}
       <h3>{ko?'현장 자료':'Site imagery'}</h3><PhotoGallery site={site} buildingId={selectedBuildingId} buildingIds={zone?.buildings.map(b=>b.id)} research={research} month={month} lang={lang} compact/>
       <h3>{ko?'위치 근거':'Location evidence'}</h3><p className="research-note">{ko?location.note_ko:location.note_en}</p><a href={location.source??site.sources[0]} target="_blank" rel="noreferrer">{ko?'위치 관련 원문':'Location source'}<ArrowUpRight size={12} aria-hidden="true"/></a>
     </>}

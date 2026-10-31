@@ -7,12 +7,14 @@
 // 어떤 실패든(차단·형식 변경) 기존 파일을 그대로 두고 0 으로 끝남 → 사이트는 마지막 데이터로 계속 동작
 // 사용법: node scripts/fetch-shares.mjs
 // =============================================================
+import { fileURLToPath } from 'node:url'
 import { fetchWithUa, readJsonOr, writeJsonIfChanged } from './lib/fetch-util.mjs'
 import { mergeXbrlPoints } from '../src/data/shares.js'
 import { validateShares } from '../src/data/sharesSchema.js'
 
-const SRC = new URL('../data/shares.json', import.meta.url)
-const OUT = new URL('../public/data/shares.json', import.meta.url)
+// writeJsonIfChanged 가 dirname 을 쓰므로 URL 이 아니라 문자열 경로로 넘김
+const SRC = fileURLToPath(new URL('../data/shares.json', import.meta.url))
+const OUT = fileURLToPath(new URL('../public/data/shares.json', import.meta.url))
 const FACTS = 'https://data.sec.gov/api/xbrl/companyfacts/CIK0001878848.json'
 
 try {

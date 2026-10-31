@@ -1,5 +1,5 @@
 {
-  "checked": "2026-10-09",
+  "checked": "2026-10-31",
   "sources": [
     {
       "url": "https://x.com/IREN_Ltd/status/1890039564724850788",
@@ -106,6 +106,54 @@
       "published": "2026-09-18",
       "method": "page-date",
       "note": "PUC Interchange Project 58481 Item 218 (16 TAC §25.194 채택 명령) 문서 머리의 Filing Receipt 접수일 2026-09-18 13:19. PUC 사이트가 이 컴퓨터 접속을 막아(Cloudflare) 원문은 직접 열지 못했고 colocationscout·Cutrer Labs 요약으로 날짜(채택 9/18·발효 10/8)와 금액을 대조 (2026-10-16)"
+    },
+    {
+      "url": "https://gov.texas.gov/news/post/governor-abbott-directs-comprehensive-data-center-audit",
+      "published": "2026-08-03",
+      "method": "page-date",
+      "note": "텍사스 주지사실 보도자료"
+    },
+    {
+      "url": "https://gov.texas.gov/news/post/governor-abbott-directs-tceq-to-halt-data-center-permits",
+      "published": "2026-09-21",
+      "method": "page-date",
+      "note": "텍사스 주지사실 보도자료"
+    },
+    {
+      "url": "https://gov.texas.gov/news/post/governor-abbott-directs-puc-and-ercot-to-shield-texans-from-data-center-infrastructure-costs",
+      "published": "2026-06-10",
+      "method": "page-date",
+      "note": "텍사스 주지사실 보도자료"
+    },
+    {
+      "url": "https://www.businesswire.com/news/home/20261028683272/en/IREN-and-Wingspire-Equipment-Finance-Complete-%24363-Million-Financing-for-High-Density-AI-Compute-Assets",
+      "published": "2026-10-28",
+      "method": "url-date",
+      "note": "Business Wire, IREN·Wingspire 공동 발표. SEC 8-K로는 제출되지 않음"
+    },
+    {
+      "url": "https://iren.com/resources/blog/perplexity-and-iren-powering-fast-trustworthy-ai-at-scale",
+      "published": "2026-10-30",
+      "method": "page-date",
+      "note": "회사 블로그, 보도자료·SEC 공시 없음"
+    },
+    {
+      "url": "https://iren.com/resources/news/responsible-data-center-growth-how-iren-builds-in-texas",
+      "published": "2026-08-13",
+      "method": "page-date",
+      "note": "회사 사이트 글, Daniel Roberts 이름"
+    },
+    {
+      "url": "https://www.europapress.es/economia/noticia-iren-comenzara-construir-centro-datos-300-mw-badajoz-finales-2026-principios-2027-20261021182354.html",
+      "published": "2026-10-21",
+      "method": "url-date",
+      "note": "스페인 언론, 소식통 전언"
+    },
+    {
+      "url": "https://mgrid.org/2026/09/05/ercot-december-10-abbott-data-center-audit-batch-zero-april-2027/",
+      "published": "2026-09-05",
+      "method": "url-date",
+      "note": "2차 자료. ERCOT이 8/20 PUC 회의에서 밝힌 일정을 옮김, ERCOT 원문은 못 찾음"
     }
   ]
 }
