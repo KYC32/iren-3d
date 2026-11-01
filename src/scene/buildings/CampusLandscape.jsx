@@ -1,14 +1,16 @@
 import { useMemo, useEffect, memo } from 'react'
 import { Instances, Instance } from '@react-three/drei'
-import { PlaneGeometry, Float32BufferAttribute, Color } from 'three'
-import { landscapePlants, terrainHeight } from '../campusLandscape.js'
+import { BufferGeometry, PlaneGeometry, Float32BufferAttribute, Color } from 'three'
+import { REAL_TERRAIN_MARGIN, contourSegments, landscapePlants, terrainHeight } from '../campusLandscape.js'
 import Kangaroos from './Kangaroos.jsx'
 import Longhorns from './Longhorns.jsx'
 import TexasVegetation from './TexasVegetation.jsx'
 
 function LandscapeGround({ side, profile }) {
   const geometry = useMemo(() => {
-    const geo = new PlaneGeometry(side * 2.7, side * 2.7, 48, 48)
+    // 실측 지형은 도랑·둔덕이 보이도록 격자를 2배로 촘촘하게
+    const segments = profile.realTerrain ? 96 : 48
+    const geo = new PlaneGeometry(side * 2.7, side * 2.7, segments, segments)
     geo.rotateX(-Math.PI / 2)
     const positions = geo.attributes.position, colors = []
     const earth = new Color(profile.soil), field = new Color(profile.field), bg = new Color(profile.background)
@@ -22,10 +24,44 @@ function LandscapeGround({ side, profile }) {
     }
     geo.setAttribute('color', new Float32BufferAttribute(colors, 4))
     geo.computeVertexNormals()
+    if (profile.realTerrain) {
+      // 음영기복: 북서쪽에서 빛이 온다고 보고 경사면 색을 밝게·어둡게 (완만한 땅의 굴곡을 읽게 함)
+      const normals = geo.attributes.normal, tint = geo.attributes.color
+      for (let i = 0; i < normals.count; i++) {
+        const lit = -normals.getX(i) * .6 - normals.getZ(i) * .6 + normals.getY(i) * .53
+        const shade = 1 + Math.max(-.1, Math.min(.1, (lit - .53) * 2))
+        tint.setXYZ(i, tint.getX(i) * shade, tint.getY(i) * shade, tint.getZ(i) * shade)
+      }
+    }
     return geo
   }, [side, profile])
   useEffect(() => () => geometry.dispose(), [geometry])
   return <mesh geometry={geometry} receiveShadow><meshStandardMaterial vertexColors transparent depthWrite={false} roughness={1}/></mesh>
+}
+
+// 실측 등고선: 부지 밖 땅 위에 얇은 선으로 그림. 가장자리로 갈수록 땅처럼 사라짐
+function Contours({ side, profile }) {
+  const geometry = useMemo(() => {
+    const points = [], colors = []
+    const line = new Color('#6a5c44')
+    const put = (x, z) => {
+      const fade = Math.min(1, Math.max(0, (Math.hypot(x, z) / side - .8) / .3))
+      const near = Math.min(1, Math.max(0, (Math.max(Math.abs(x), Math.abs(z)) - side / 2 - REAL_TERRAIN_MARGIN) / 3))  // 부지 경계 근처에선 안 보이게
+      points.push(x, terrainHeight(x, z, side, profile.relief) + .03, z)
+      // 네 번째 값 = 투명도. 땅과 같은 방식으로 사라져서 낮·밤 배경색이 달라도 선이 튀지 않음
+      colors.push(line.r, line.g, line.b, (1 - fade) * near * .8)
+    }
+    for (const [x1, z1, x2, z2] of contourSegments(profile.realTerrain, 2.5)) {
+      if (Math.max(Math.abs(x1), Math.abs(z1)) < side / 2 + REAL_TERRAIN_MARGIN || Math.hypot(x1, z1) > side * 1.15) continue
+      put(x1, z1); put(x2, z2)
+    }
+    const geo = new BufferGeometry()
+    geo.setAttribute('position', new Float32BufferAttribute(points, 3))
+    geo.setAttribute('color', new Float32BufferAttribute(colors, 4))
+    return geo
+  }, [side, profile])
+  useEffect(() => () => geometry.dispose(), [geometry])
+  return <lineSegments geometry={geometry}><lineBasicMaterial vertexColors transparent depthWrite={false}/></lineSegments>
 }
 
 function Vegetation({ plants, profile }) {
@@ -92,6 +128,7 @@ function CampusLandscape({ siteId, layout, profile }) {
   const plants = useMemo(() => landscapePlants(siteId, side, road.z, powerLine.from[1], profile), [siteId,side,road.z,powerLine.from[1],profile])
   return <group name="regional-landscape">
     <LandscapeGround side={side} profile={profile}/>
+    {profile.realTerrain && <Contours side={side} profile={profile}/>}
     <Vegetation plants={plants} profile={profile}/>
     {profile.kangaroos && <Kangaroos side={side} relief={profile.relief}/>}
     {profile.longhorns && <Longhorns side={side} relief={profile.relief}/>}

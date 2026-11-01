@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { CAMPUS_LANDSCAPES, inKangarooHabitat, inLonghornPasture, landscapePlants, terrainHeight } from './campusLandscape.js'
+import { CAMPUS_LANDSCAPES, contourSegments, inKangarooHabitat, inLonghornPasture, landscapePlants, realRelief, terrainHeight } from './campusLandscape.js'
+import { withRealTerrain } from './campusTerrain.js'
 import { kangarooPose } from './kangarooMotion.js'
 import { longhornPose } from './longhornMotion.js'
 import { layoutCampus } from './layoutCampus.js'
@@ -87,5 +88,42 @@ describe('사진 참고 경관의 배치', () => {
       expect(Math.sin(before.heading)).toBeCloseTo(Math.sin(after.heading),3)
       expect(Math.cos(before.heading)).toBeCloseTo(Math.cos(after.heading),3)
     }
+  })
+})
+
+describe('실측 지형 격자', () => {
+  // 2×2 격자: 왼쪽 0 m, 오른쪽 10 m (dm 단위 0·100), 한 변 200 m, 1칸 = 10 m → 장면 좌표 -10 ~ 10
+  const slope = { cols: 2, half_m: 100, m_per_unit: 10, dm: [0, 100, 0, 100] }
+  it('realRelief: 미터 높이를 칸으로 바꾸고 배율을 곱함 · 사이 값은 보간', () => {
+    const relief = realRelief(slope, 2)
+    expect(relief(-10, 0)).toBeCloseTo(0)
+    expect(relief(10, 0)).toBeCloseTo(2)    // 10 m ÷ 10 m/칸 × 2배
+    expect(relief(0, 0)).toBeCloseTo(1)     // 가운데 = 5 m
+  })
+  it('realRelief: 격자 밖 좌표는 가장자리 값으로 고정', () => {
+    expect(realRelief(slope, 1)(99, 0)).toBeCloseTo(1)
+    expect(realRelief(slope, 1)(-99, 0)).toBeCloseTo(0)
+  })
+  it('contourSegments: 5 m 등고선은 격자 가운데를 남북으로 가로지름', () => {
+    const lines = contourSegments({ ...slope, dm: [20, 80, 20, 80] }, 5)   // 왼쪽 2 m, 오른쪽 8 m
+    expect(lines).toHaveLength(1)
+    const [x1, z1, x2, z2, h] = lines[0]
+    expect(h).toBe(5)
+    expect(x1).toBeCloseTo(0)
+    expect(x2).toBeCloseTo(0)
+    expect(Math.abs(z2 - z1)).toBeCloseTo(20)
+  })
+  it('contourSegments: 평평한 땅엔 등고선이 없음', () => {
+    expect(contourSegments({ ...slope, dm: [12, 12, 12, 12] }, 5)).toHaveLength(0)
+  })
+  it('Childress: 부지 안은 평평하고 부지 밖만 실측 높이로 솟음', () => {
+    const layout = layoutCampus(sites.find(s => s.id === 'childress')), { relief } = withRealTerrain('childress', CAMPUS_LANDSCAPES.childress)
+    expect(terrainHeight(0, 0, layout.side, relief)).toBeCloseTo(-.28)
+    expect(terrainHeight(layout.gate.x + 6, layout.road.z, layout.side, relief)).toBeCloseTo(-.28)   // 트럭 출발점·도로 끝
+    expect(terrainHeight(layout.powerLine.from[0], layout.powerLine.from[1], layout.side, relief)).toBeLessThan(.3)   // 첫 송전탑
+    let highest = -Infinity
+    for (let x = -50; x <= 50; x += 2) for (let z = -50; z <= 50; z += 2) highest = Math.max(highest, terrainHeight(x, z, layout.side, relief))
+    expect(highest).toBeGreaterThan(.5)
+    expect(highest).toBeLessThan(2)   // 고도 차 31 m × 2배 ÷ 38.9 m/칸
   })
 })

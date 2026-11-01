@@ -19,6 +19,7 @@ import { Crane, Truck, ReceivingBay, FlowDots, Trees } from './buildings/Infrast
 import GridConnection from './buildings/GridConnection.jsx'
 import { campusAppearance } from './campusAppearance.js'
 import { campusLandscape } from './campusLandscape.js'
+import { withRealTerrain } from './campusTerrain.js'
 import CampusLandscape from './buildings/CampusLandscape.jsx'
 import ZoneCallouts from './ZoneCallouts.jsx'
 import { contentBox } from './campusCamera.js'
@@ -36,7 +37,7 @@ const CampusProps = lazy(() => import('./buildings/CampusProps.jsx'))
 
 export default function SiteView({ site }) {
   const appearance = campusAppearance(site.id)
-  const landscape = campusLandscape(site.id)
+  const landscape = withRealTerrain(site.id, campusLandscape(site.id))
   const t = useT()
   const lang = useAppStore((s) => s.lang)
   const hoverId = useAppStore((s) => s.hoverId)

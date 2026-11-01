@@ -24,6 +24,8 @@ export const CAMPUS_LANDSCAPES = {
     ...texas, source: official('childress'),
     notes_ko: '차일드레스 항공사진의 평탄한 흙빛 부지와 마른 초지, 낮은 수목 군락을 반영했습니다.',
     notes_en: 'Flat earth-toned terrain, dry grassland and clusters of low trees follow Childress aerial imagery.',
+    terrain_ko: '부지 밖 땅의 높낮이와 등고선(2.5 m 간격)은 실측 지형 자료(Mapterhorn, 미국 USGS 3DEP)로 그렸습니다. 높이는 2배로 키웠습니다.',
+    terrain_en: 'Ground height and 2.5 m contours outside the site use measured terrain (Mapterhorn, USGS 3DEP), with height doubled for legibility.',
   },
   'sweetwater-1': {
     ...texas, trees: 18, turbines: true, source: official('sweetwater'),
@@ -96,8 +98,55 @@ export function inLonghornPasture(x, z, side) {
   })
 }
 
+// 실측 고도 격자(scripts/bake-terrain.py) → 장면 좌표 (x, z) 의 높이를 돌려주는 함수
+//   x = 동쪽, z = 남쪽. exaggeration 은 높이만 키우는 배율 (평평한 땅은 실제 축척이면 거의 안 보임)
+export function realRelief(grid, exaggeration = 2) {
+  const { cols, half_m, m_per_unit, dm } = grid
+  const last = cols - 1
+  const toCell = (units) => Math.min(last - 1e-6, Math.max(0, (units * m_per_unit + half_m) / (half_m * 2) * last))
+  return (x, z) => {
+    const u = toCell(x), v = toCell(z), i = Math.floor(u), j = Math.floor(v), fu = u - i, fv = v - j
+    const at = (a, b) => dm[b * cols + a]
+    // 네 꼭짓점의 고도를 거리 비율로 섞음 (양선형 보간)
+    const dmHeight = (at(i, j) * (1 - fu) + at(i + 1, j) * fu) * (1 - fv) + (at(i, j + 1) * (1 - fu) + at(i + 1, j + 1) * fu) * fv
+    return dmHeight / 10 / m_per_unit * exaggeration
+  }
+}
+
+// 등고선: 격자 네모 칸마다 "이 높이가 지나가는 선분"을 찾아 모음 (마칭 스퀘어)
+//   돌려주는 값 = 선분 목록 [[x1, z1, x2, z2, 고도m], ...] · 장면 좌표(칸)
+export function contourSegments(grid, stepM = 5) {
+  const { cols, half_m, m_per_unit, dm } = grid
+  const pos = (i) => (i / (cols - 1) * 2 - 1) * half_m / m_per_unit
+  const lines = []
+  for (let j = 0; j < cols - 1; j++) for (let i = 0; i < cols - 1; i++) {
+    // 칸의 네 꼭짓점: 왼위, 오른위, 오른아래, 왼아래 (고도 m)
+    const c = [[i, j], [i + 1, j], [i + 1, j + 1], [i, j + 1]].map(([a, b]) => [a, b, dm[b * cols + a] / 10])
+    const heights = c.map((p) => p[2])
+    const lo = Math.ceil(Math.min(...heights) / stepM), hi = Math.floor(Math.max(...heights) / stepM)
+    for (let k = lo; k <= hi; k++) {
+      const h = k * stepM
+      // 칸의 네 변 중 높이 h 를 가로지르는 변에서 교차점을 비율로 계산
+      const cross = []
+      for (let e = 0; e < 4; e++) {
+        const [ax, ay, ah] = c[e], [bx, by, bh] = c[(e + 1) % 4]
+        if ((ah < h) === (bh < h)) continue
+        const t = (h - ah) / (bh - ah)
+        cross.push([pos(ax + (bx - ax) * t), pos(ay + (by - ay) * t)])
+      }
+      // 교차점 2개 = 선분 1개 · 4개(안장 모양) = 선분 2개
+      for (let p = 0; p + 1 < cross.length; p += 2) lines.push([...cross[p], ...cross[p + 1], h])
+    }
+  }
+  return lines
+}
+
+export const REAL_TERRAIN_MARGIN = 8
+
 export function terrainHeight(x, z, side, relief) {
   const edge = Math.max(Math.abs(x), Math.abs(z))
+  // 실측 지형은 더 높이 솟으므로 도로 끝·트럭 출발점·첫 송전탑이 묻히지 않게 부지 경계에서 더 떨어져 시작
+  if (typeof relief === 'function') return -.28 + Math.min(1, Math.max(0, (edge - side / 2 - REAL_TERRAIN_MARGIN) / 6)) * relief(x, z)
   const rise = Math.min(1, Math.max(0, (edge - side / 2 - 2) / 6))
   return -.28 + rise * relief * (.48 + Math.sin(x * .17) * .22 + Math.cos(z * .23) * .2)
 }
