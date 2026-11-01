@@ -36,7 +36,7 @@ function LandscapeGround({ side, profile }) {
     return geo
   }, [side, profile])
   useEffect(() => () => geometry.dispose(), [geometry])
-  return <mesh geometry={geometry} receiveShadow><meshStandardMaterial vertexColors transparent depthWrite={false} roughness={1}/></mesh>
+  return <mesh geometry={geometry} receiveShadow userData={{ aoReceiver: true }}><meshStandardMaterial vertexColors transparent depthWrite={false} roughness={1}/></mesh>
 }
 
 // 실측 등고선: 부지 밖 땅 위에 얇은 선으로 그림. 가장자리로 갈수록 땅처럼 사라짐

@@ -15,11 +15,14 @@ const SiteView = lazy(() => import('./SiteView.jsx'))
 const HqView = lazy(() => import('./HqView.jsx')) // 시드니 본사 사무 빌딩 (view 'hq')
 import { PLOT as HQ_PLOT } from './hqTower.js'
 import { layoutCampus } from './layoutCampus.js'
+import { aoAllowed } from './aoPolicy.js'
 import CameraRig from './CameraRig.jsx'
 import SkyRig from './SkyRig.jsx'
 import { campusAppearance } from './campusAppearance.js'
 import { campusLandscape } from './campusLandscape.js'
 const RecordDirector = lazy(() => import('../record/RecordDirector.jsx'))
+const AoLayer = lazy(() => import('./AoLayer.jsx')) // 틈새 그늘: 켤 때만 불러옴 (첫 화면 번들에 들어가지 않음)
+const AO_FORCED = new URLSearchParams(window.location.search).get('fx') === 'ao' // 확인용 주소 ?fx=ao
 import FigureLayer from '../ui/FigureLayer.jsx' // 건물을 눌러 연 그림 대화상자 (캔버스 밖 DOM)
 
 const BG = '#eceffa' // 배경 = 안개 색 (지평선이 자연스럽게 사라짐)
@@ -30,6 +33,7 @@ export default function Scene({ record = false }) {
   const hq = useAppStore((s) => s.data?.companies?.[0]?.hq) // 본사 화면의 하늘(해 위치)은 시드니 좌표로
   // 성능이 떨어지면 해상도(DPR)를 자동으로 낮춥니다
   const [dpr, setDpr] = useState(1.5)
+  const [aoDeclined, setAoDeclined] = useState(false) // 한 번 끊기면 이번 방문에선 그늘을 다시 켜지 않음 (켰다 껐다 깜빡임 방지)
   const isHq = view === 'hq'
   const campusSide = useMemo(() => isHq ? HQ_PLOT : site ? layoutCampus(site._raw).side : 32, [site?._raw, isHq])
   const campus = view === 'site' || isHq // 캠퍼스·본사 화면은 하늘 모드 조명 (지구본은 고정 조명)
@@ -44,6 +48,8 @@ export default function Scene({ record = false }) {
     window.addEventListener('iren:viewer3d', onViewer)
     return () => window.removeEventListener('iren:viewer3d', onViewer)
   }, [])
+
+  const showAo = aoAllowed({ width: window.innerWidth, coarse: window.matchMedia?.('(pointer: coarse)').matches, campus, record, declined: aoDeclined, forced: AO_FORCED })
 
   return (<>
     <Canvas
@@ -61,7 +67,7 @@ export default function Scene({ record = false }) {
       }}
       onPointerMissed={() => useAppStore.getState().setHover(null)}
     >
-      {!record && <PerformanceMonitor onDecline={() => setDpr(1)} onIncline={() => setDpr(1.5)} />}
+      {!record && <PerformanceMonitor onDecline={() => { setDpr(1); setAoDeclined(true) }} onIncline={() => setDpr(1.5)} />}
       <color attach="background" args={[background]} />
       {campus && <fog attach="fog" args={[background, campusSide * 12, campusSide * 22]} />}
 
@@ -95,6 +101,7 @@ export default function Scene({ record = false }) {
         {view === 'site' && site && <SiteView key={site.id} site={site} />}
         {isHq && <HqView />}
       </Suspense>
+      {showAo && <Suspense fallback={null}><AoLayer side={campusSide} /></Suspense>}
       {record ? (
         <Suspense fallback={null}>
           <RecordDirector />

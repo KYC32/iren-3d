@@ -4,6 +4,11 @@
       "date": "2026-11-02",
       "items": [
         {
+          "ko": "3D 화면에 틈새 그늘을 추가해 건물과 장비가 바닥에 붙어 보임. 데스크톱에서만 켜고 프레임이 떨어지면 자동으로 끔",
+          "en": "3D views gain ambient occlusion so buildings and equipment sit on the ground. It runs on desktop only and turns off automatically if the frame rate drops",
+          "source": "https://github.com/N8python/n8ao"
+        },
+        {
           "ko": "Childress 3D 주변 땅을 실측 고도로 바꾸고 2.5 m 간격 등고선을 추가. 높이는 2배로 키웠고 건물·도로는 구성도 그대로임",
           "en": "The land around the Childress 3D campus now follows measured elevation with 2.5 m contour lines. Height is exaggerated 2x; buildings and roads remain schematic",
           "source": "https://mapterhorn.com/attribution"
