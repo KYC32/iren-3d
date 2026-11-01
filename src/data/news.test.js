@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { itemLabels, parseRss, rssItemId, classifyFiling, recentFilings, pickExhibit, headlineFromHtml, filingTitle, sortNews, domainOf, decodeEntities, filingFolder, INCLUDE_FORMS, filingsAfter } from './news.js'
+import { itemLabels, parseRss, rssItemId, classifyFiling, recentFilings, pickExhibit, headlineFromHtml, filingTitle, sortNews, domainOf, decodeEntities, filingFolder, INCLUDE_FORMS, filingsAfter, parseIrenPosts } from './news.js'
 
 const rss = readFileSync(new URL('./fixtures/google-news.rss.xml', import.meta.url), 'utf8')
 const submissions = JSON.parse(readFileSync(new URL('./fixtures/edgar-submissions.sample.json', import.meta.url), 'utf8'))
@@ -102,4 +102,27 @@ describe('기준일 뒤 회사 공시 (사이트 숫자에 아직 반영 전)', 
     expect(filingsAfter(items, null)).toEqual([])
     expect(filingsAfter(undefined, '2026-10-06')).toEqual([])
   })
+})
+
+describe('parseIrenPosts (iren.com 자료실 글 → 회사 발표 항목)', () => {
+  // Next.js 가 페이지에 조각내어 심어 둔 글 목록 — 문자열 안의 ] 와 따옴표도 제대로 건너뛰어야 함
+  const posts = [
+    { id: 1, title: 'Deploying "Sovereign" AI [EU]', type: 'blog', slug: 'sovereign', publishedAt: '2026-10-30T20:58:21.466Z' },
+    { id: 2, title: 'GTC wrap-up', type: 'video', slug: 'gtc', publishedAt: '2026-04-02T21:30:40.000Z' },
+    { id: 3, title: 'Mistral Voxtral: What You Need to Know', type: 'blog', slug: 'voxtral', publishedAt: '2025-08-01T00:00:00.000Z' },
+    { id: 4, title: 'Exemplar', type: 'news', slug: 'exemplar', publishedAt: '2026-10-08T07:29:22.315Z' },
+  ]
+  const payload = JSON.stringify(`3f:["$","article",null,{"posts":${JSON.stringify(posts)},"x":1}]`)
+  const mid = Math.floor(payload.length / 2)
+  // 조각 경계가 문자열 중간에 와도 합쳐서 읽는지 보려고 둘로 나눔 (이스케이프 문자 앞뒤는 피함)
+  let cut = mid; while (payload[cut] === '\\' || payload[cut - 1] === '\\') cut++
+  const html = `<script>self.__next_f.push([1,${payload.slice(0, cut)}"])</script><script>self.__next_f.push([1,"${payload.slice(cut)}])</script>`
+
+  it('글·뉴스만 항목으로 (영상·모델 해설 글 제외)', () => {
+    expect(parseIrenPosts(html).map((x) => x.id)).toEqual(['iren:sovereign', 'iren:exemplar'])
+  })
+  it('항목 형식과 주소', () => {
+    expect(parseIrenPosts(html)[0]).toMatchObject({ date: '2026-10-30', form: 'WEB', kind: 'press', title: 'Deploying "Sovereign" AI [EU]', title_from: 'site', url: 'https://iren.com/resources/blog/sovereign', report_date: null, items: [] })
+  })
+  it('목록이 없으면 빈 배열', () => { expect(parseIrenPosts('<html></html>')).toEqual([]) })
 })

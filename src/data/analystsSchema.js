@@ -4,7 +4,8 @@
 //   consensus : Nasdaq 합의 의견·목표가 (scripts/fetch-analysts.mjs 가 매일 바꿈)
 //   firms     : 증권사별 최근 의견 한 줄씩 (MarketBeat 표를 사람이 옮김 — firms_source)
 //   coverage  : 회사 IR 페이지의 담당 증권사 명단 (회사 표기 그대로)
-//   earnings  : 다음 실적 매출 예상 (날짜가 지나면 화면에서 숨김)
+//   earnings  : 다음 실적 매출 예상과 확인할 항목 watch (날짜가 지나면 화면에서 숨김)
+//   eps       : Nasdaq EPS 예상·지난 결과 (scripts/fetch-analysts.mjs 가 매일 바꿈)
 // 애널리스트 개인 이름은 넣지 않음 — 회사 이름만 (strict 라 다른 칸은 스키마가 거절)
 // 주가 페이지(나중에 불러오는 코드)·데이터 빌드·시험만 씀 → 첫 화면 번들에 들어가지 않음
 // =============================================================
@@ -44,7 +45,15 @@ export const AnalystsFile = z.object({
   }).strict(),
   firms_source: Link,
   coverage: z.object({ checked: Day, source: Url, firms: z.array(z.string()) }).strict(),
-  earnings: z.object({ date: Day, revenue_usd: Usd, source_name: z.string(), source: Url }).strict().optional(),
+  earnings: z.object({
+    date: Day, revenue_usd: Usd, source_name: z.string(), source: Url,
+    // 이번 발표에서 확인할 것 — 사람이 적음. 사실과 미확인을 나눠 쓰고 전망은 적지 않음
+    watch: z.array(z.object({ ko: z.string().max(140), en: z.string(), source: Url.optional() }).strict()).optional(),
+  }).strict().optional(),
+  eps: z.object({
+    next: z.object({ quarter: z.string(), eps: z.number().nullable(), high: z.number().nullable(), low: z.number().nullable(), estimates: z.number().nullable() }).strict(),
+    history: z.array(z.object({ quarter: z.string(), date: Day, eps: z.number(), forecast: z.number() }).strict()),
+  }).strict().optional(),
   firms: z.array(Firm),
 }).strict()
 

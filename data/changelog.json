@@ -1,6 +1,41 @@
 {
   "entries": [
     {
+      "date": "2026-11-01",
+      "items": [
+        {
+          "ko": "주가 페이지에 최근 하락 구간 칸 추가. 고점 이후 큰 변동일마다 당시 보도가 든 까닭과 출처를 적고 같은 기간 다른 회사 수익률을 함께 보여 줌",
+          "en": "The stock page gains a recent decline section: big-move days since the high with the reasons coverage cited and their sources, plus peer returns over the same period",
+          "source": "https://www.benzinga.com/trading-ideas/movers/26/10/62752783/why-is-iren-stock-falling-on-friday-2"
+        },
+        {
+          "ko": "주가 페이지에 공매도 잔고 칸과 11/5 실적 확인 칸 추가. 공매도·EPS 값은 Nasdaq에서 매일 갱신하고 확인할 항목은 사람이 적음",
+          "en": "Short interest and a Nov 5 earnings checklist added to the stock page. Short interest and EPS figures refresh daily from Nasdaq; the checklist is written by hand",
+          "source": "https://www.nasdaq.com/market-activity/stocks/iren/short-interest"
+        },
+        {
+          "ko": "뉴스 페이지 회사 발표 탭에 iren.com 글을 자동으로 더함. 8-K 없이 회사 누리집에만 올라온 소식도 이제 빠지지 않음",
+          "en": "The news page company tab now adds iren.com posts automatically, so items published only on the company website are no longer missed",
+          "source": "https://iren.com/resources"
+        },
+        {
+          "ko": "프린스조지·매켄지에 SemiAnalysis의 10/7 안정성 지적을 제3자 평가로 추가. 회사가 확인한 내용이 아니라 공식 상태는 그대로임",
+          "en": "SemiAnalysis's Oct 7 reliability claims are added to Prince George and Mackenzie as a third-party assessment. The company has not confirmed them, so official statuses are unchanged",
+          "source": "https://www.tradingview.com/news/stocktwits:eb0ac2094094b:0-iren-dips-further-after-semianalysis-flags-issues-with-legacy-british-columbia-data-centers-retail-mood-drops/"
+        },
+        {
+          "ko": "키오와 지역 안내 사이트의 일자리·세수·용수 수치를 추가. Bundey 연방 환경 심사 결과와 바다호스 DSX 호환 설계도 소식에 넣음",
+          "en": "Jobs, tax and water figures from the Kiowa project site added, along with the Bundey federal environmental decision and Badajoz's DSX-compatible design",
+          "source": "https://kiowadatacenter.com/"
+        },
+        {
+          "ko": "프런티어 AI 연구소 계약 메모에 The Information의 Anthropic 보도를 적음. 양쪽 모두 확인하지 않았고 같은 계약인지도 알 수 없음",
+          "en": "The frontier AI lab contract note mentions The Information's Anthropic report. Neither side confirmed it, and it may not be the same contract",
+          "source": "https://cryptonews.com.au/news/australian-bitcoin-miner-iren-reportedly-signs-multiyear-ai-cloud-deal-with-anthropic-135189/"
+        }
+      ]
+    },
+    {
       "date": "2026-10-31",
       "items": [
         {

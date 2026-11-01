@@ -1,6 +1,6 @@
 {
   "company_id": "iren",
-  "as_of": "2026-10-31",
+  "as_of": "2026-11-01",
   "sites": [
     {
       "id": "childress",
@@ -1505,6 +1505,18 @@
           "event": "1.6GW 오클라호마 캠퍼스 발표",
           "event_en": "1.6GW Oklahoma campus announced",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000014/a991irenreportsq2fy26res.htm"
+        },
+        {
+          "date": "2026-10-19",
+          "event": "지역 안내 사이트 공개: 2027년 착공 예상, 건설 일자리 1,000개 이상, 상시 일자리 100개 이상, 2028년 통전 예상. 완공 뒤 지방세 연 $3,000만 이상·25년 $6억 이상 예상, 지역 환원금 연 최대 $500만",
+          "event_en": "Local project site published: construction expected from 2027, 1,000+ construction and 100+ permanent jobs, energization from 2028. At least $30M a year in local tax at full build-out, $600M+ over 25 years, and up to $5M a year in community payments",
+          "source": "https://kiowadatacenter.com/"
+        },
+        {
+          "date": "2026-10-19",
+          "event": "같은 사이트: PSO와 계약해 계통 연결비 100%를 IREN이 부담. 물은 폐쇄 순환이고 첫 충전에 약 2,500만 갤런을 쓰며 건물은 부지의 약 10%",
+          "event_en": "Same site: under its PSO agreement IREN pays 100% of grid connection costs. Cooling is closed loop with an initial fill of about 25M gallons, and buildings take about 10% of the site",
+          "source": "https://kiowadatacenter.com/"
         }
       ],
       "estimates": [
@@ -1577,6 +1589,12 @@
           "event": "800MW Bundey 캠퍼스 발표, ElectraNet 접속 계약",
           "event_en": "800MW Bundey campus announced; ElectraNet connection agreement",
           "source": "https://www.globenewswire.com/news-release/2026/06/03/3305925/0/en/iren-announces-first-australian-data-center-campus-800mw-in-south-australia.html"
+        },
+        {
+          "date": "2026-09-23",
+          "event": "연방 환경 심사 결과 EPBC법 승인이 필요 없다고 결정 (건설 전문 매체 전언). 계획은 홀 3개·홀당 IT 최대 200MW, 투자 약 A$10bn, 공사 6-8년",
+          "event_en": "Federal environmental review decided no EPBC Act approval is needed (per a construction trade outlet). Plans show three halls of up to 200MW IT each, about A$10bn, and six to eight years of construction",
+          "source": "https://constructionreviewonline.com/10bn-bundey-data-centre-project-drives-australias-first-100-net-renewable-grid-build/"
         }
       ],
       "estimates": [
@@ -1663,6 +1681,12 @@
           "event": "받은 것은 부지 정리 허가(cota cero)이고 건물 건축 허가는 아직. 착공은 2026년 말에서 2027년 초 예상 (스페인 언론의 소식통 전언, 회사 확인 아님)",
           "event_en": "The license covers site preparation (cota cero), with no building permit yet. Construction expected late 2026 to early 2027 (Spanish press citing sources, not confirmed by the company)",
           "source": "https://www.europapress.es/economia/noticia-iren-comenzara-construir-centro-datos-300-mw-badajoz-finales-2026-principios-2027-20261021182354.html"
+        },
+        {
+          "date": "2026-10-30",
+          "event": "회사 글: 캠퍼스를 NVIDIA DSX 구조와 호환되게 설계 중. 유럽 인력은 60명을 넘음",
+          "event_en": "Company post: the campus is being designed for compatibility with NVIDIA DSX architecture, and the European team now exceeds 60 people",
+          "source": "https://iren.com/resources/blog/deploying-sovereign-ai-in-the-eu-australia-and-beyond"
         }
       ],
       "estimates": [

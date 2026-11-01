@@ -13,6 +13,7 @@ import { validateObservations } from '../src/data/observationsSchema.js'
 import { validateStatements } from '../src/data/statementsSchema.js'
 import { validateShares } from '../src/data/sharesSchema.js'
 import { validateAnalysts } from '../src/data/analystsSchema.js'
+import { validateMoves } from '../src/data/marketSchema.js'
 import { fileURLToPath } from 'node:url'
 
 // DATA_DIR=data-fake 처럼 지정하면 다른 폴더의 데이터로 빌드 (성능 시험용 가짜 데이터 등)
@@ -90,6 +91,15 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     if (errors.length) throw new Error(errors.join('\n'))
     writeFileSync(new URL('../public/data/shares.json', import.meta.url), JSON.stringify(shares) + '\n')
     console.log(`✅ shares.json — 공시 ${shares.points.length}건, 조달 ${shares.raises.length}건, 전환사채 ${shares.converts.length}건`)
+  }
+  // 큰 변동일의 까닭 (data/stock-moves.json → 주가 페이지가 불러옴)
+  const movesUrl = new URL('stock-moves.json', DATA)
+  if (existsSync(movesUrl)) {
+    const moves = JSON.parse(readFileSync(movesUrl, 'utf8'))
+    const errors = validateMoves(moves)
+    if (errors.length) { console.error(`❌ stock-moves.json\n  ${errors.join('\n  ')}`); process.exit(1) }
+    writeFileSync(new URL('../public/data/moves.json', import.meta.url), JSON.stringify(moves) + '\n')
+    console.log(`✅ moves.json — 까닭 ${moves.notes.length}건`)
   }
   // 증권사 투자의견 (data/analysts.json → 주가 페이지가 불러옴)
   const analystsUrl = new URL('analysts.json', DATA)

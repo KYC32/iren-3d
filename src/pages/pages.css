@@ -172,3 +172,37 @@
 .pf-rules svg { flex-shrink: 0; margin-top: 3px; color: #56675f; }
 .pf-rules small { display: block; font-size: 10.5px; color: #6a7884; }
 .pf-observe-none { display: flex; gap: 4px; align-items: center; margin: 0; font-size: 11px; color: #7a8794; }
+
+/* 최근 하락 구간 · 공매도 · 다음 실적 칸 (MovesSection·ShortSection·EarningsSection) */
+.analysts h4 { margin: 14px 0 8px; font-size: 12.5px; color: #34405e; }
+.moves-head { margin: 0 0 4px; font-size: 13px; color: #1f3550; font-variant-numeric: tabular-nums; }
+.moves-head b { font-size: 20px; color: #b23a3a; margin-right: 6px; }
+.peer-bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; }
+.peer-bars li { display: grid; grid-template-columns: 118px 1fr 60px; align-items: center; gap: 8px; font-size: 12px; color: #34405e; }
+.peer-bars li.is-iren { color: #0b344f; font-weight: 700; }
+.peer-track { position: relative; height: 12px; border-radius: 3px; background: #e8ebf2; box-shadow: inset 0 1px 2px rgba(22, 33, 58, .16); overflow: hidden; }
+.peer-track::after { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: #8a97ad; }
+.peer-track i { position: absolute; top: 0; bottom: 0; background: #8a97ad; }
+.is-iren .peer-track i { background: #0b344f; }
+.peer-pct { text-align: right; font-variant-numeric: tabular-nums; }
+.move-list { list-style: none; margin: 0; padding: 0; }
+.move-list li { display: grid; grid-template-columns: 62px 1fr; gap: 10px; padding: 8px 0; border-top: 1px solid #edf1f7; }
+.move-list li:first-child { border-top: 0; }
+.move-when { display: flex; flex-direction: column; gap: 2px; font-size: 11.5px; color: #5a6b85; font-variant-numeric: tabular-nums; }
+.move-when b { font-size: 13.5px; }
+.move-when .is-up { color: #0f8a6e; }
+.move-when .is-down { color: #b23a3a; }
+.move-list p { margin: 0; font-size: 13px; line-height: 1.5; color: #1f3550; }
+.move-list p.is-empty { color: #5a6b85; }
+.move-list a { white-space: nowrap; font-size: 11.5px; }
+.move-scope { display: inline-block; margin-right: 6px; padding: 1px 6px; border-radius: 4px; font-size: 10.5px; font-weight: 700; }
+.move-scope.is-company { background: #0b344f; color: #fff; }
+.move-scope.is-sector { background: #e8ebf2; color: #34405e; }
+.short-bars { display: flex; align-items: flex-end; gap: 3px; height: 72px; margin: 6px 0 2px; }
+.short-bars i { flex: 1; min-width: 0; border-radius: 2px 2px 0 0; background: #0b344f; }
+.short-axis { display: flex; justify-content: space-between; font-size: 11px; color: #5a6b85; font-variant-numeric: tabular-nums; }
+.earn-watch { margin: 0 0 10px; padding-left: 20px; font-size: 13px; line-height: 1.5; color: #1f3550; }
+.earn-watch li { margin-bottom: 4px; }
+@media (max-width: 767px) {
+  .peer-bars li { grid-template-columns: 96px 1fr 52px; gap: 6px; }
+}

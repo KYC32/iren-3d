@@ -29,8 +29,10 @@ export function siteReleases(raw, edgar = []) {
   }
   for (const s of raw.sites ?? []) for (const t of s.timeline ?? []) add(t.source, t.date, t.event, t.event_en)
   for (const c of raw.companies ?? []) for (const e of c.events ?? []) if (e.basis === 'reported') add(e.source, e.date, e.title_ko, e.title_en)
-  const filed = edgar.filter((i) => i.kind === 'press' || i.kind === 'earnings')
+  // iren.com 글(WEB)은 8-K 가 아니므로 날짜로 겹침을 판단하지 않고 같은 주소만 뺌 (같은 날 다른 발표가 가려지지 않게)
+  const filed = edgar.filter((i) => i.form !== 'WEB' && (i.kind === 'press' || i.kind === 'earnings'))
+  const posted = new Set(edgar.filter((i) => i.form === 'WEB').map((i) => i.url))
   return [...seen.values()]
-    .filter((r) => !filed.some((i) => dayDiff(i.date, r.date) <= 1))
+    .filter((r) => !posted.has(r.url) && !filed.some((i) => dayDiff(i.date, r.date) <= 1))
     .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
 }

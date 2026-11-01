@@ -218,6 +218,28 @@
       "source": "https://x.com/AceKicker13/status/2110365360784314620",
       "note_ko": "열화상: 데이터홀 4개와 변전소 변압기 2대 모두 전력을 쓰는 중 · 4번 홀은 2개 구역만 뚜렷한 열 (비 때문에 일부 왜곡). 이 사이트는 홀·세그먼트 용량이 회사 발표(50MW)와 맞춰지지 않아 칸 그림은 그리지 않음",
       "note_en": "Thermal: all four data halls and both substation transformers drawing significant power · in Hall 4 only two zones show strong heat (rain distorted parts). Hall/segment capacity here does not reconcile with the reported 50MW, so no segment grid is drawn"
+    },
+    {
+      "id": "prince-george-2026-10-07-semianalysis",
+      "site": "prince-george",
+      "method": "report",
+      "date": "2026-10-07",
+      "published": "2026-10-07",
+      "by": "SemiAnalysis (X 글, Stocktwits 보도로 확인)",
+      "source": "https://www.tradingview.com/news/stocktwits:eb0ac2094094b:0-iren-dips-further-after-semianalysis-flags-issues-with-legacy-british-columbia-data-centers-retail-mood-drops/",
+      "note_ko": "SemiAnalysis가 고객·이용자 제보를 근거로 프린스조지·매켄지에서 며칠에 걸친 정전, 네트워크 교체, 저장장치 장애, 공기질 문제로 인한 네트워크 끊김이 있었다고 게시. 회사가 확인한 내용이 아니며 공식 상태는 바꾸지 않음. 같은 글에서 차일드레스·스위트워터는 이중화를 갖춰 훨씬 낫다고 구분함",
+      "note_en": "SemiAnalysis, citing customers and users, posted about multi-day power outages, network upgrades, storage failures and air-quality issues causing link flaps at Prince George and Mackenzie. The company has not confirmed this, and official statuses are unchanged. The same posts say Childress and Sweetwater look much better, with redundancy"
+    },
+    {
+      "id": "mackenzie-2026-10-07-semianalysis",
+      "site": "mackenzie",
+      "method": "report",
+      "date": "2026-10-07",
+      "published": "2026-10-07",
+      "by": "SemiAnalysis (X 글, Stocktwits 보도로 확인)",
+      "source": "https://www.tradingview.com/news/stocktwits:eb0ac2094094b:0-iren-dips-further-after-semianalysis-flags-issues-with-legacy-british-columbia-data-centers-retail-mood-drops/",
+      "note_ko": "SemiAnalysis가 고객·이용자 제보를 근거로 프린스조지·매켄지에서 며칠에 걸친 정전, 네트워크 교체, 저장장치 장애, 공기질 문제로 인한 네트워크 끊김이 있었다고 게시. 회사가 확인한 내용이 아니며 공식 상태는 바꾸지 않음. 같은 글에서 차일드레스·스위트워터는 이중화를 갖춰 훨씬 낫다고 구분함",
+      "note_en": "SemiAnalysis, citing customers and users, posted about multi-day power outages, network upgrades, storage failures and air-quality issues causing link flaps at Prince George and Mackenzie. The company has not confirmed this, and official statuses are unchanged. The same posts say Childress and Sweetwater look much better, with redundancy"
     }
   ]
 }

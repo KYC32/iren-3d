@@ -27,7 +27,7 @@ const Block = (item) => z.object({
 export const CompanyItem = z.object({
   id: z.string(), date: Iso, report_date: Iso.nullable(), form: z.string(), items: z.array(z.string()),
   kind: z.enum(['press', 'earnings', 'filing', 'insider']),
-  title: z.string(), title_from: z.enum(['exhibit', 'form']),
+  title: z.string(), title_from: z.enum(['exhibit', 'form', 'site']),   // site = iren.com 글 제목 (form 'WEB')
   url: Url, filing_url: Url,
 }).strict()
 export const PressItem = z.object({ id: z.string(), date: Iso, title: z.string(), link: Url, source: z.string(), source_url: z.string() }).strict()

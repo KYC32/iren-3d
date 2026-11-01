@@ -57,3 +57,11 @@ describe('실제 자료 (infra.json + news.json)', () => {
     expect(out.some((r) => r.date === '2026-08-27')).toBe(false)
   })
 })
+
+describe('iren.com 글(WEB)과 사이트 기록의 관계', () => {
+  const raw = { sites: [{ timeline: [{ date: '2026-10-30', event: '가', event_en: 'a', source: 'https://iren.com/resources/blog/a' }, { date: '2026-10-30', event: '나', event_en: 'b', source: 'https://www.globenewswire.com/news-release/2026/10/30/1/0/en/b.html' }] }] }
+  const web = { id: 'iren:a', date: '2026-10-30', kind: 'press', form: 'WEB', url: 'https://iren.com/resources/blog/a' }
+  it('같은 주소의 기록은 빼고 같은 날의 다른 발표는 남김', () => {
+    expect(siteReleases(raw, [web]).map((r) => r.url)).toEqual(['https://www.globenewswire.com/news-release/2026/10/30/1/0/en/b.html'])
+  })
+})

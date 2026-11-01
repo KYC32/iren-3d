@@ -1,6 +1,7 @@
 // =============================================================
 // fetch-news.mjs — IREN 뉴스를 받아 public/data/news.json 에 저장
 //   [회사 발표] SEC EDGAR 제출 목록 → 8-K/6-K 는 첨부 보도자료(ex99-1)에서 헤드라인을 뽑음
+//               + iren.com 자료실 글 (8-K 없이 회사 누리집에만 올라오는 소식)
 //   [언론]     Google 뉴스 RSS ("IREN" NASDAQ 검색)
 // 사용법: node scripts/fetch-news.mjs [--max=40] [--retry-titles]
 //   --max          이번 실행에서 첨부 헤드라인을 새로 조회할 최대 건수 (SEC 예의: 초당 ≤4회)
@@ -10,13 +11,14 @@
 // 어떤 경우에도 종료 코드 0 (자동 갱신 실패가 배포를 막지 않게).
 // =============================================================
 import { fileURLToPath } from 'node:url'
-import { fetchWithUa, readJsonOr, writeJsonIfChanged, sleep } from './lib/fetch-util.mjs'
-import { parseRss, rssItemId, recentFilings, classifyFiling, pickExhibit, headlineFromHtml, filingTitle, filingFolder, sortNews, INCLUDE_FORMS, CIK } from '../src/data/news.js'
+import { fetchWithUa, readJsonOr, writeJsonIfChanged, sleep, BROWSER_UA } from './lib/fetch-util.mjs'
+import { parseRss, rssItemId, recentFilings, classifyFiling, pickExhibit, headlineFromHtml, filingTitle, filingFolder, sortNews, parseIrenPosts, INCLUDE_FORMS, CIK } from '../src/data/news.js'
 import { NewsFile } from '../src/data/feedSchema.js'
 
 const OUT = fileURLToPath(new URL('../public/data/news.json', import.meta.url))
 const EDGAR_URL = `https://data.sec.gov/submissions/CIK${CIK}.json`
 const RSS_URL = 'https://news.google.com/rss/search?q=%22IREN%22+NASDAQ&hl=en-US&gl=US&ceid=US:en'
+const IREN_URL = 'https://iren.com/resources'   // 회사 뉴스·블로그 목록 (글이 페이지 안에 들어 있음)
 const MAX_PRESS = 400 // 언론 보도 보관 상한 (RSS 는 최근 ~100건만 주므로 누적 보관)
 const EDGAR_HEADERS = { Accept: 'application/json', 'Accept-Encoding': 'gzip, deflate' }
 
@@ -76,6 +78,17 @@ async function fetchPress(prev) {
   return block
 }
 
+// ---- iren.com 자료실 → 회사 발표 칸에 더함 (실패하면 지난 항목 유지, 나머지 갱신은 그대로) ----
+async function addIrenPosts(block) {
+  const html = await fetchWithUa(IREN_URL, { headers: { 'User-Agent': BROWSER_UA, Accept: 'text/html' }, timeoutMs: 30000 })
+  const posts = parseIrenPosts(html)
+  if (!posts.length) throw new Error('글 0건 (페이지 형식 변경?)')
+  const known = new Map(block.items.map((i) => [i.id, i]))
+  for (const p of posts) known.set(p.id, p)
+  console.log(`✅ iren.com 글: ${posts.length}건`)
+  return { ...block, items: sortNews([...known.values()]) }
+}
+
 export async function fetchNews({ max = 40, retryTitles = false } = {}) {
   const prev = readJsonOr(OUT, null)
   const file = { schema_version: 1, fetched_at: now(), company: prev?.company ?? emptyBlock({ name: 'SEC EDGAR', cik: CIK, url: 'https://www.sec.gov/' }), press: prev?.press ?? emptyBlock({ name: 'Google News', url: RSS_URL }) }
@@ -84,6 +97,8 @@ export async function fetchNews({ max = 40, retryTitles = false } = {}) {
     try { file[key] = await fn() }
     catch (e) { file[key] = { ...file[key], ok: false, error: `${e.message} (${now().slice(0, 10)})` }; console.warn(`⚠️ ${key} 갱신 실패 — 기존 항목 유지: ${e.message}`) }
   }
+  try { file.company = await addIrenPosts(file.company) }
+  catch (e) { console.warn(`⚠️ iren.com 글 갱신 실패 — 기존 항목 유지: ${e.message}`) }
   const parsed = NewsFile.parse(file)
   const changed = writeJsonIfChanged(OUT, parsed, { ignoreKeys: ['fetched_at'] })
   console.log(changed ? '✅ 저장 news.json' : '＝ 변경 없음 news.json')

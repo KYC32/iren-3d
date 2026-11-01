@@ -163,3 +163,41 @@ export function filingsAfter(items, asOf) {
   if (!asOf || !items) return []
   return items.filter((it) => it.date > asOf && it.kind !== 'insider')
 }
+
+// ---- iren.com 자료실 (회사 뉴스·블로그) ----
+// 8-K 없이 회사 누리집에만 올라오는 글이 있음 (2026-10-08 Exemplar, 2026-10-30 Perplexity·소버린 AI)
+// 페이지가 글 목록을 Next.js 조각(self.__next_f.push)으로 심어 두므로 조각을 이어 붙여 "posts" 배열을 읽음
+const IREN_TYPES = new Set(['news', 'blog', 'case-studies'])   // 영상은 뺌
+const IREN_NOISE = /What You Need to Know/i                    // 공개 모델 해설 글은 회사 소식이 아님
+
+// s 의 start 위치 '[' 와 짝이 맞는 ']' 까지 잘라 JSON 으로 읽음 (문자열 안의 괄호는 건너뜀)
+function jsonArrayAt(s, start) {
+  let depth = 0, inStr = false
+  for (let i = start; i < s.length; i++) {
+    const c = s[i]
+    if (inStr) {
+      if (c === '\\') i++
+      else if (c === '"') inStr = false
+    } else if (c === '"') inStr = true
+    else if (c === '[') depth++
+    else if (c === ']' && --depth === 0) return JSON.parse(s.slice(start, i + 1))
+  }
+  return null
+}
+
+// iren.com/resources HTML → 회사 발표 항목 (읽지 못하면 빈 배열 — 호출한 쪽이 기존 항목을 유지)
+export function parseIrenPosts(html) {
+  const chunks = [...String(html).matchAll(/self\.__next_f\.push\(\[1,"((?:[^"\\]|\\.)*)"\]\)/g)]
+  let text = ''
+  try { for (const m of chunks) text += JSON.parse(`"${m[1]}"`) } catch { return [] }
+  const at = text.indexOf('"posts":[')
+  if (at < 0) return []
+  let posts
+  try { posts = jsonArrayAt(text, at + 8) } catch { return [] }
+  return (posts ?? [])
+    .filter((p) => IREN_TYPES.has(p.type) && p.slug && p.publishedAt && !IREN_NOISE.test(p.title ?? ''))
+    .map((p) => {
+      const url = `https://iren.com/resources/${p.type}/${p.slug}`
+      return { id: `iren:${p.slug}`, date: p.publishedAt.slice(0, 10), report_date: null, form: 'WEB', items: [], kind: 'press', title: p.title.trim(), title_from: 'site', url, filing_url: url }
+    })
+}

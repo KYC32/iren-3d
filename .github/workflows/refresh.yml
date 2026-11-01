@@ -37,7 +37,8 @@ jobs:
       - run: node scripts/fetch-stock.mjs
       - run: node scripts/fetch-news.mjs --max=60
       - run: node scripts/fetch-shares.mjs   # 새 10-Q·10-K 표지 주식 수를 SEC XBRL 에서 덧붙임
-      - run: node scripts/fetch-analysts.mjs   # Nasdaq 합의 의견·평균 목표가 (증권사별 표는 사람이 옮김)
+      - run: node scripts/fetch-analysts.mjs   # Nasdaq 합의 의견·평균 목표가·EPS (증권사별 표는 사람이 옮김)
+      - run: node scripts/fetch-market.mjs     # 다른 회사 종가·공매도 잔고
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
@@ -84,7 +85,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/stock.json public/data/news.json public/data/news-ko.json data/shares.json public/data/shares.json data/analysts.json public/data/analysts.json public/data/asof-check.json
+          git add public/data/stock.json public/data/news.json public/data/news-ko.json data/shares.json public/data/shares.json data/analysts.json public/data/analysts.json public/data/peers.json public/data/short.json public/data/asof-check.json
           if git diff --cached --quiet; then echo "변경 없음"; exit 0; fi
           git commit -m "data: 주가·뉴스·주식 수 자동 갱신 $(date -u +%F)"
           git pull --rebase origin main

@@ -1,5 +1,5 @@
 {
-  "checked": "2026-10-31",
+  "checked": "2026-11-01",
   "sources": [
     {
       "url": "https://x.com/IREN_Ltd/status/1890039564724850788",
@@ -154,6 +154,24 @@
       "published": "2026-09-05",
       "method": "url-date",
       "note": "2차 자료. ERCOT이 8/20 PUC 회의에서 밝힌 일정을 옮김, ERCOT 원문은 못 찾음"
+    },
+    {
+      "url": "https://kiowadatacenter.com/",
+      "published": "2026-10-19",
+      "method": "page-date",
+      "note": "IREN이 운영하는 키오와 안내 사이트. 페이지에 날짜가 없어 McAlester News-Capital 2026-10-19 기사('이번 주 공개')의 날짜를 씀"
+    },
+    {
+      "url": "https://constructionreviewonline.com/10bn-bundey-data-centre-project-drives-australias-first-100-net-renewable-grid-build/",
+      "published": "2026-10-05",
+      "method": "page-date",
+      "note": "2차 자료. 연방 EPBC 결정(2026-09-23)을 옮김, 정부 원문은 확인하지 못함"
+    },
+    {
+      "url": "https://iren.com/resources/blog/deploying-sovereign-ai-in-the-eu-australia-and-beyond",
+      "published": "2026-10-30",
+      "method": "page-date",
+      "note": "iren.com 자료실 글의 게시일"
     }
   ]
 }

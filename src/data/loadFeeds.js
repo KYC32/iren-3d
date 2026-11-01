@@ -2,6 +2,7 @@
 import { StockFile, NewsFile } from './feedSchema.js'
 import { SharesFile } from './sharesSchema.js'
 import { AnalystsFile } from './analystsSchema.js'
+import { MovesFile, PeersFile, ShortFile } from './marketSchema.js'
 
 async function loadJson(path, schema) {
   const res = await fetch(path, { cache: 'no-cache' })
@@ -17,3 +18,6 @@ export const loadStock = () => loadJson('/data/stock.json', StockFile)
 export const loadNews = () => loadJson('/data/news.json', NewsFile)
 export const loadAnalysts = () => loadJson('/data/analysts.json', AnalystsFile) // 증권사 투자의견 (data/analysts.json 에서 빌드)
 export const loadShares = () => loadJson('/data/shares.json', SharesFile) // 발행 주식 수·희석 (data/shares.json 에서 빌드)
+export const loadMoves = () => loadJson('/data/moves.json', MovesFile) // 큰 변동일의 까닭 (data/stock-moves.json 에서 빌드)
+export const loadPeers = () => loadJson('/data/peers.json', PeersFile) // 다른 회사 종가 (scripts/fetch-market.mjs)
+export const loadShort = () => loadJson('/data/short.json', ShortFile) // 공매도 잔고 (scripts/fetch-market.mjs)

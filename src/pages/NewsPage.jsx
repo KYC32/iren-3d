@@ -1,6 +1,6 @@
 // =============================================================
 // NewsPage — IREN 뉴스 (#page=news): [회사 발표 | 언론 보도] 탭 + 종류/매체 칩 + 날짜별 목록
-//   회사 발표 = SEC EDGAR 제출(보도자료·실적·공시·내부자) + SEC 에 내지 않은 회사 공식 발표(사이트 기록 — companyNews.siteReleases)
+//   회사 발표 = SEC EDGAR 제출(보도자료·실적·공시·내부자) + iren.com 자료실 글(form 'WEB', 자동) + SEC 에 내지 않은 회사 공식 발표(사이트 기록 — companyNews.siteReleases)
 //   언론 = Google 뉴스 검색 결과
 //   데이터: public/data/news.json (GitHub Action 이 매일 갱신). 제목은 영문 원문이 기준
 //   한국어 화면은 원문 아래에 기계 번역 한 줄 (public/data/news-ko.json — 숫자·금액·티커·고유명사 검사를 통과한 것만)
@@ -98,7 +98,7 @@ export default function NewsPage() {
             <h5>{g.date}</h5>
             {g.items.map((it) => (
               <div key={it.id} className="news-row">
-                {tab === 'company' ? <span className={`basis kind-${it.kind}`}>{KIND_LABEL[it.kind][ko ? 'ko' : 'en']}</span> : <span className="basis kind-press-media">{it.source}</span>}
+                {tab === 'company' ? <span className={`basis kind-${it.kind}`}>{it.form === 'WEB' ? (ko ? '회사 글' : 'Company post') : KIND_LABEL[it.kind][ko ? 'ko' : 'en']}</span> : <span className="basis kind-press-media">{it.source}</span>}
                 <div className="news-body">
                   {/* 제목: 원문 헤드라인 그대로 · 서식 이름으로 만든 제목(title_from 'form')만 한국어 화면에서 한국어 이름 */}
                   {/*   사이트 기록의 회사 발표(from 'site')는 공식 헤드라인이 없어 이 사이트가 정리한 문구 (아래 작은 줄에 그렇게 적음) */}
@@ -108,6 +108,8 @@ export default function NewsPage() {
                   <small>
                     {it.from === 'site'
                       ? <>{domainOf(it.url)} · {ko ? '회사 발표 · SEC 제출 없음 · 제목은 이 사이트가 정리' : 'company release · not filed with the SEC · summary by this site'}</>
+                      : it.form === 'WEB'
+                      ? <>iren.com · {ko ? '회사 누리집 글 · SEC 제출 없음' : 'company website post · not filed with the SEC'}</>
                       : tab === 'company'
                       ? <>sec.gov · {it.form}{it.title_from === 'form' && itemLabels(it.items, ko ? 'ko' : 'en').length > 0 && <> · {itemLabels(it.items, ko ? 'ko' : 'en').join(' · ')}</>}{it.title_from === 'exhibit' && ' · Exhibit 99.1'}</>
                       : domainOf(it.source_url || it.link)}
