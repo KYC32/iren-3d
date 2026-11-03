@@ -19,7 +19,7 @@ import { Crane, Truck, ReceivingBay, FlowDots, Trees } from './buildings/Infrast
 import GridConnection from './buildings/GridConnection.jsx'
 import { campusAppearance } from './campusAppearance.js'
 import { campusLandscape } from './campusLandscape.js'
-import { withRealTerrain } from './campusTerrain.js'
+import { groundY, withRealTerrain } from './campusTerrain.js'
 import CampusLandscape from './buildings/CampusLandscape.jsx'
 import ZoneCallouts from './ZoneCallouts.jsx'
 import { contentBox } from './campusCamera.js'
@@ -63,6 +63,9 @@ export default function SiteView({ site }) {
   const allById = useMemo(() => Object.fromEntries(site._raw.buildings.map((b) => [b.id, b])), [site._raw])
   const half = L.side / 2
   const detail = useCampusDetail(L.side)
+  // 실측 지형 부지: 장면 바닥을 낮추고, 송전탑은 그 자리 땅 위에 세움
+  const floorY = landscape?.floorY ?? -0.32
+  const groundAt = useMemo(() => (landscape?.realTerrain ? (x, z) => groundY(x, z, layout.side, landscape.relief) : undefined), [landscape, layout.side])
 
   // 선택한 데이터홀의 추정 랙 수 → 그 건물 블록들에 나눠 그림 (Block 이 완성된 홀일 때만 속을 엶)
   // 사람이 건물을 누를 때: 고르고(새 건물이면 카메라가 다가감), 그 건물에 그림이 있으면 그림 대화상자를 엶
@@ -86,8 +89,8 @@ export default function SiteView({ site }) {
     <group name={`site-${site.id}`}>
       <CampusLabelLayout />
       {/* 넓은 바닥 (그림자 받기) */}
-      <SkyGround radius={L.side * 3} color={landscape?.background ?? appearance?.background ?? '#eceffa'} />
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.31, 0]} receiveShadow>
+      <SkyGround radius={L.side * 3} y={floorY} color={landscape?.background ?? appearance?.background ?? '#eceffa'} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, floorY + 0.01, 0]} receiveShadow>
         <circleGeometry args={[L.side * 3, 48]} />
         <shadowMaterial transparent opacity={0.2} />
       </mesh>
@@ -95,20 +98,20 @@ export default function SiteView({ site }) {
       <RoundedBox args={[L.side, 0.5, L.side]} radius={0.25} position={[0, -0.25, 0]} receiveShadow>
         <meshStandardMaterial color={landscape?.ground ?? appearance?.ground ?? '#e5e5dd'} roughness={0.95} />
       </RoundedBox>
-      {/* 도로 */}
-      <mesh position={[0, 0.01, L.road.z]} receiveShadow>
+      {/* 도로 (실측 지형 부지는 CampusLandscape 가 땅을 따라 그림) */}
+      {!landscape?.realTerrain && <mesh position={[0, 0.01, L.road.z]} receiveShadow>
         <boxGeometry args={[L.side + 14, 0.04, L.road.depth]} />
         <meshStandardMaterial color={landscape?.road ?? appearance?.road ?? '#8997a9'} roughness={1} />
-      </mesh>
+      </mesh>}
       {/* 도로 중앙 점선 */}
-      {Array.from({ length: Math.floor((L.side + 14) / 2.4) }, (_, i) => (
+      {!landscape?.realTerrain && Array.from({ length: Math.floor((L.side + 14) / 2.4) }, (_, i) => (
         <mesh key={i} position={[-half - 7 + 1.2 + i * 2.4, 0.04, L.road.z]}>
           <boxGeometry args={[1.1, 0.01, 0.12]} />
           <meshBasicMaterial color="#ffffff" />
         </mesh>
       ))}
 
-      <GridConnection line={L.powerLine} sub={L.substation} t={t} showLabel={detail || site.buildings.length === 0} />
+      <GridConnection line={L.powerLine} sub={L.substation} t={t} showLabel={detail || site.buildings.length === 0} groundAt={groundAt} />
       {L.powerLine.flowActive && flowTargets.length > 0 && (
         <FlowDots from={[L.substation.x, L.substation.z]} targets={flowTargets} />
       )}
@@ -251,11 +254,11 @@ function DevMilestones({ site, month, lang, side }) {
 
 // ---------- 넓은 바닥 ----------
 // 배경과 같은 색이라 지평선이 자연스럽게 사라짐. 밤·노을엔 SkyRig 가 바꾼 배경색(SKY.bg)을 따라감
-function SkyGround({ radius, color }) {
+function SkyGround({ radius, color, y }) {
   const mat = useRef()
   useFrame(() => { if (mat.current && SKY.bg) mat.current.color.copy(SKY.bg) })
   return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.32, 0]} receiveShadow>
+    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, y, 0]} receiveShadow>
       <circleGeometry args={[radius, 48]} />
       <meshBasicMaterial ref={mat} color={color} toneMapped={false} />
     </mesh>

@@ -29,6 +29,8 @@ export const CAMPUS_LANDSCAPES = {
   },
   'sweetwater-1': {
     ...texas, trees: 18, turbines: true, source: official('sweetwater'),
+    terrain_ko: '부지 밖 땅의 높낮이와 등고선(5 m 간격)은 실측 지형 자료(Mapterhorn, 미국 USGS 3DEP)로 그렸습니다. 높이는 2배로 키웠고 부지 둘레 평균 고도를 기준으로 맞췄습니다.',
+    terrain_en: 'Ground height and 5 m contours outside the site use measured terrain (Mapterhorn, USGS 3DEP), with height doubled and aligned to the average elevation around the site.',
     notes_ko: '스위트워터 공식 사진의 넓은 초지와 관목, 멀리 보이는 풍력발전기를 반영했습니다. 풍력발전기는 주변 경관이며 캠퍼스 전력 공급원을 뜻하지 않습니다.',
     notes_en: 'Open grassland, scrub and distant turbines follow official Sweetwater photos. Turbines depict the surroundings, not a campus power supply.',
   },
@@ -73,7 +75,7 @@ export const CAMPUS_LANDSCAPES = {
     decoration_en: 'Kangaroos outside the site are decorative animation.',
   },
 }
-CAMPUS_LANDSCAPES['sweetwater-2'] = { ...CAMPUS_LANDSCAPES['sweetwater-1'], turbines: false,
+CAMPUS_LANDSCAPES['sweetwater-2'] = { ...CAMPUS_LANDSCAPES['sweetwater-1'], turbines: false, terrain_ko: undefined, terrain_en: undefined,
   notes_ko: '스위트워터 지역의 건조한 초지와 낮은 관목을 반영했습니다. 2번 부지의 정확한 주변 배치는 미확인입니다.',
   notes_en: 'Dry grassland and low scrub reflect the Sweetwater region; the precise surroundings of site 2 remain unverified.' }
 
@@ -101,7 +103,7 @@ export function inLonghornPasture(x, z, side) {
 // 실측 고도 격자(scripts/bake-terrain.py) → 장면 좌표 (x, z) 의 높이를 돌려주는 함수
 //   x = 동쪽, z = 남쪽. exaggeration 은 높이만 키우는 배율 (평평한 땅은 실제 축척이면 거의 안 보임)
 export function realRelief(grid, exaggeration = 2) {
-  const { cols, half_m, m_per_unit, dm } = grid
+  const { cols, half_m, m_per_unit, dm, pad_dm = 0 } = grid
   const last = cols - 1
   const toCell = (units) => Math.min(last - 1e-6, Math.max(0, (units * m_per_unit + half_m) / (half_m * 2) * last))
   return (x, z) => {
@@ -109,7 +111,8 @@ export function realRelief(grid, exaggeration = 2) {
     const at = (a, b) => dm[b * cols + a]
     // 네 꼭짓점의 고도를 거리 비율로 섞음 (양선형 보간)
     const dmHeight = (at(i, j) * (1 - fu) + at(i + 1, j) * fu) * (1 - fv) + (at(i, j + 1) * (1 - fu) + at(i + 1, j + 1) * fu) * fv
-    return dmHeight / 10 / m_per_unit * exaggeration
+    // pad_dm 이 있으면 부지 둘레 평균 고도가 0 → 그보다 낮은 땅은 음수로 내려감
+    return (dmHeight - pad_dm) / 10 / m_per_unit * exaggeration
   }
 }
 
@@ -142,7 +145,6 @@ export function contourSegments(grid, stepM = 5) {
 }
 
 export const REAL_TERRAIN_MARGIN = 8
-
 export function terrainHeight(x, z, side, relief) {
   const edge = Math.max(Math.abs(x), Math.abs(z))
   // 실측 지형은 더 높이 솟으므로 도로 끝·트럭 출발점·첫 송전탑이 묻히지 않게 부지 경계에서 더 떨어져 시작

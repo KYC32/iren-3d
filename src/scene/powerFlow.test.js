@@ -24,6 +24,16 @@ describe('송전선 전력 흐름',()=>{
     expect(pointOnTransmission(wire,wire.length+1,{})).toEqual(pointOnTransmission(wire,wire.length,{}))
   })
 
+  it('땅 높이를 주면 탑과 전선이 그 땅 위에 서고 변전소 인입점은 그대로다',()=>{
+    const wire=transmissionPath([-28.6,-13.6],[-14,-13.6],(x)=>x<-25?-1:0)
+    expect(wire.towers[0][2]).toBe(-1)
+    expect(wire.towers[1][2]).toBe(0)
+    expect(wire.points[0][1]).toBeCloseTo(2.4)
+    expect(wire.points[8][1]).toBeCloseTo(3.4)
+    expect(wire.points[4][1]).toBeCloseTo(2.4)   // 절반 높이 -.5 + 처짐 -.5
+    expect(wire.points.at(-1)[1]).toBe(2.8)
+  })
+
   it('전력 용량과 무관하게 인입 방향으로 일정한 거리만큼 이동한다',()=>{
     for (let i=0;i<POWER_PACKET_COUNT;i++) {
       const before=powerPacketDistance(0,i,path.length)

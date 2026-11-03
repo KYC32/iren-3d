@@ -2,6 +2,7 @@ import { useMemo, useEffect, memo } from 'react'
 import { Instances, Instance } from '@react-three/drei'
 import { BufferGeometry, PlaneGeometry, Float32BufferAttribute, Color } from 'three'
 import { REAL_TERRAIN_MARGIN, contourSegments, landscapePlants, terrainHeight } from '../campusLandscape.js'
+import { landFade, roadStrip } from '../campusTerrain.js'
 import Kangaroos from './Kangaroos.jsx'
 import Longhorns from './Longhorns.jsx'
 import TexasVegetation from './TexasVegetation.jsx'
@@ -17,7 +18,7 @@ function LandscapeGround({ side, profile }) {
     for (let i = 0; i < positions.count; i++) {
       const x = positions.getX(i), z = positions.getZ(i)
       const noise = .5 + Math.sin(x * .14 + Math.cos(z * .18)) * .25 + Math.cos(z * .19 - x * .08) * .2
-      const fade = Math.min(1, Math.max(0, (Math.hypot(x, z) / side - .87) / .38))
+      const fade = landFade(x, z, side)
       positions.setY(i, terrainHeight(x, z, side, profile.relief))
       const color = earth.clone().lerp(field, noise).lerp(bg, fade)
       colors.push(color.r, color.g, color.b, 1 - fade * fade * (3 - 2 * fade))
@@ -51,7 +52,7 @@ function Contours({ side, profile }) {
       // 네 번째 값 = 투명도. 땅과 같은 방식으로 사라져서 낮·밤 배경색이 달라도 선이 튀지 않음
       colors.push(line.r, line.g, line.b, (1 - fade) * near * .8)
     }
-    for (const [x1, z1, x2, z2] of contourSegments(profile.realTerrain, 2.5)) {
+    for (const [x1, z1, x2, z2] of contourSegments(profile.realTerrain, profile.contourM)) {
       if (Math.max(Math.abs(x1), Math.abs(z1)) < side / 2 + REAL_TERRAIN_MARGIN || Math.hypot(x1, z1) > side * 1.15) continue
       put(x1, z1); put(x2, z2)
     }
@@ -62,6 +63,44 @@ function Contours({ side, profile }) {
   }, [side, profile])
   useEffect(() => () => geometry.dispose(), [geometry])
   return <lineSegments geometry={geometry}><lineBasicMaterial vertexColors transparent depthWrite={false}/></lineSegments>
+}
+
+// 점 4개(왼뒤·오른뒤·오른앞·왼앞)로 이루어진 네모들을 삼각형 2개씩으로 묶은 도형을 만듦
+function quadGeometry(points, colors) {
+  const geo = new BufferGeometry(), index = []
+  for (let i = 0; i < points.length / 3; i += 4) index.push(i, i + 3, i + 1, i + 1, i + 3, i + 2)
+  geo.setAttribute('position', new Float32BufferAttribute(points, 3))
+  geo.setAttribute('color', new Float32BufferAttribute(colors, 4))
+  geo.setIndex(index)
+  geo.computeVertexNormals()
+  return geo
+}
+
+// 실측 지형 부지의 도로: 부지 밖으로 이어져 땅을 타고 오르내리다 가장자리에서 사라짐
+function TerrainRoad({ side, road, profile }) {
+  const { surface, dashes } = useMemo(() => {
+    const strip = roadStrip(side, road.z, road.depth, profile.relief)
+    const color = new Color(profile.road), north = road.z - road.depth / 2, south = road.z + road.depth / 2
+    const points = [], colors = []
+    strip.rows.slice(0, -1).forEach((a, i) => {
+      const b = strip.rows[i + 1]
+      points.push(a.x, a.north, north, b.x, b.north, north, b.x, b.south, south, a.x, a.south, south)
+      for (const alpha of [a.alpha, b.alpha, b.alpha, a.alpha]) colors.push(color.r, color.g, color.b, alpha)
+    })
+    const dashPoints = [], dashColors = []
+    for (const d of strip.dashes) {
+      dashPoints.push(d.x0, d.y0, road.z - .06, d.x1, d.y1, road.z - .06, d.x1, d.y1, road.z + .06, d.x0, d.y0, road.z + .06)
+      for (let i = 0; i < 4; i++) dashColors.push(1, 1, 1, d.alpha)
+    }
+    return { surface: quadGeometry(points, colors), dashes: quadGeometry(dashPoints, dashColors) }
+  }, [side, road.z, road.depth, profile])
+  useEffect(() => () => { surface.dispose(); dashes.dispose() }, [surface, dashes])
+  // 땅·등고선이 깊이를 기록하지 않으므로 그리는 순서만 뒤로 미룸
+  // aoReceiver: 틈새 그늘이 도로 밑의 부지 턱을 보고 도로 위에 어두운 띠를 그리지 않게 함
+  return <group name="terrain-road">
+    <mesh geometry={surface} receiveShadow renderOrder={1} userData={{ aoReceiver: true }}><meshStandardMaterial vertexColors transparent depthWrite={false} roughness={1}/></mesh>
+    <mesh geometry={dashes} renderOrder={2}><meshBasicMaterial vertexColors transparent depthWrite={false}/></mesh>
+  </group>
 }
 
 function Vegetation({ plants, profile }) {
@@ -129,6 +168,7 @@ function CampusLandscape({ siteId, layout, profile }) {
   return <group name="regional-landscape">
     <LandscapeGround side={side} profile={profile}/>
     {profile.realTerrain && <Contours side={side} profile={profile}/>}
+    {profile.realTerrain && <TerrainRoad side={side} road={road} profile={profile}/>}
     <Vegetation plants={plants} profile={profile}/>
     {profile.kangaroos && <Kangaroos side={side} relief={profile.relief}/>}
     {profile.longhorns && <Longhorns side={side} relief={profile.relief}/>}
@@ -137,7 +177,7 @@ function CampusLandscape({ siteId, layout, profile }) {
       <mesh position={[s*(side/2+.65),-.16,0]} receiveShadow><boxGeometry args={[1.3,.1,side]}/><meshStandardMaterial color={profile.ground} roughness={1}/></mesh>
       <mesh position={[0,-.16,s*(side/2+.65)]} receiveShadow><boxGeometry args={[side+2.6,.1,1.3]}/><meshStandardMaterial color={profile.ground} roughness={1}/></mesh>
     </group>)}
-    {profile.turbines && [-1,0,1].map((v,i)=><WindTurbine key={i} position={[v*side*.47,0,-side*.96]} scale={.85+i*.1}/>)}
+    {profile.turbines && [-1,0,1].map((v,i)=><WindTurbine key={i} position={[v*side*.47,profile.realTerrain?terrainHeight(v*side*.47,-side*.96,side,profile.relief):0,-side*.96]} scale={.85+i*.1}/>)}
     {profile.ridges && [-1,0,1].map((v,i)=><mesh key={i} position={[v*side*.52,-1.5,-side*1.2]} scale={[side*.42,side*(.09+i*.025),side*.22]}>
       <icosahedronGeometry args={[1,1]}/><meshStandardMaterial color={['#9bab9d','#a9b9ad','#b6c3b7'][i]} roughness={1} flatShading/>
     </mesh>)}

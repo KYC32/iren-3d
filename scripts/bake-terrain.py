@@ -6,6 +6,9 @@
 #   필요: python3 + Pillow + numpy
 #   사용: python3 scripts/bake-terrain.py childress 34.38532 -100.04734 38.9 2100 src/scene/terrain/childress.json
 #         (이름 위도 경도 칸당_미터 반폭_미터 출력파일)
+#         고도 차가 큰 부지는 끝에 부지_반폭_미터를 더 줍니다. 부지 둘레 평균 고도를 pad_dm 으로 저장해서
+#         장면의 땅이 부지보다 높은 곳은 솟고 낮은 곳은 내려가게 합니다.
+#         python3 scripts/bake-terrain.py sweetwater-1 32.63963 -100.56003 59.6 3600 src/scene/terrain/sweetwater-1.json 1311
 # =============================================================
 import io, json, math, sys, urllib.request
 import numpy as np
@@ -15,6 +18,7 @@ UA = 'iren-3d research bot (github.com/KYC32/iren-3d)'
 ZOOM, TILE, COLS = 13, 512, 65   # 원본 화소 약 8 m · 격자 65칸 (장면 지형 1칸 약 65 m)
 
 name, lat, lng, m_per_unit, half_m, out = sys.argv[1], *map(float, sys.argv[2:6]), sys.argv[6]
+pad_half_m = float(sys.argv[7]) if len(sys.argv) > 7 else None
 
 # 위도·경도 → 타일 번호 (소수까지)
 n = 2 ** ZOOM
@@ -41,8 +45,12 @@ grid = np.array(Image.fromarray(mosaic, mode='F').resize((COLS, COLS), Image.BOX
 
 # 가장 낮은 곳을 0 으로 (장면 바닥보다 땅이 내려가면 가려지므로 위로만 솟게) · 0.1 m 단위 정수로 저장
 low = float(grid.min())
-json.dump({
-    'site': name, 'cols': COLS, 'half_m': half_m, 'm_per_unit': m_per_unit,
-    'base_m': round(low, 1), 'dm': [round((v - low) * 10) for v in grid.ravel().tolist()],
-}, open(out, 'w'), separators=(',', ':'))
+result = {'site': name, 'cols': COLS, 'half_m': half_m, 'm_per_unit': m_per_unit, 'base_m': round(low, 1)}
+if pad_half_m:
+    # 부지 경계에서 바깥쪽으로 부지 반폭의 35% 안에 있는 격자 칸만 골라 평균을 냄
+    axis = np.linspace(-half_m, half_m, COLS)
+    edge = np.maximum(*np.abs(np.meshgrid(axis, axis)))
+    result['pad_dm'] = round((float(grid[(edge >= pad_half_m) & (edge <= pad_half_m * 1.35)].mean()) - low) * 10)
+result['dm'] = [round((v - low) * 10) for v in grid.ravel().tolist()]
+json.dump(result, open(out, 'w'), separators=(',', ':'))
 print(f'{name}: 고도 {low:.1f}-{float(grid.max()):.1f} m → {out}')

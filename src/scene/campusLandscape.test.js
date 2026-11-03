@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { CAMPUS_LANDSCAPES, contourSegments, inKangarooHabitat, inLonghornPasture, landscapePlants, realRelief, terrainHeight } from './campusLandscape.js'
-import { withRealTerrain } from './campusTerrain.js'
+import { groundY, reliefFloorY, roadStrip, roadY, withRealTerrain } from './campusTerrain.js'
 import { kangarooPose } from './kangarooMotion.js'
 import { longhornPose } from './longhornMotion.js'
 import { layoutCampus } from './layoutCampus.js'
@@ -115,6 +115,58 @@ describe('실측 지형 격자', () => {
   })
   it('contourSegments: 평평한 땅엔 등고선이 없음', () => {
     expect(contourSegments({ ...slope, dm: [12, 12, 12, 12] }, 5)).toHaveLength(0)
+  })
+  it('realRelief: pad_dm 이 있으면 부지 둘레를 0 으로 두고 더 낮은 땅은 음수', () => {
+    const relief = realRelief({ ...slope, pad_dm: 50 }, 2)
+    expect(relief(-10, 0)).toBeCloseTo(-1)
+    expect(relief(10, 0)).toBeCloseTo(1)
+  })
+  it('reliefFloorY: 장면 바닥은 가장 낮은 땅보다 아래에 둠', () => {
+    expect(reliefFloorY(slope, 2)).toBeCloseTo(-.32)   // 내려가는 땅이 없으면 기본 높이
+    expect(reliefFloorY({ ...slope, pad_dm: 50 }, 2)).toBeCloseTo(-1.32)
+  })
+  it('groundY: 부지 판 위는 0, 밖은 지형 높이', () => {
+    const relief = () => 1
+    expect(groundY(0, 0, 40, relief)).toBe(0)
+    expect(groundY(40, 0, 40, relief)).toBeCloseTo(.72)
+  })
+  it('roadY: 트럭 출발점까지 평평하고 멀어지면 지형 위로 내려앉음', () => {
+    const relief = () => -1
+    expect(roadY(0, 0, 40, relief)).toBeCloseTo(.03)
+    expect(roadY(27, 0, 40, relief)).toBeCloseTo(.03)     // 부지 끝 + 7칸
+    expect(roadY(-40, 0, 40, relief)).toBeCloseTo(-1.28 + .05)
+    expect(roadY(30, 0, 40, relief)).toBeLessThan(.03)
+    expect(roadY(30, 0, 40, relief)).toBeGreaterThan(-1.23)
+  })
+  it('roadStrip: 도로 띠와 점선은 부지 앞을 지나고 가장자리에서 사라짐', () => {
+    const { rows, dashes } = roadStrip(40, 17, 3, () => 0)
+    expect(rows[0].x).toBeLessThan(-40)
+    expect(rows.at(-1).x).toBeGreaterThan(40)
+    expect(rows.find(r => r.x === 0).alpha).toBe(1)
+    expect(rows[0].alpha).toBeLessThan(.5)
+    expect(dashes.length).toBeGreaterThan(30)
+    for (const r of rows) expect(r.north).toBeCloseTo(roadY(r.x, 15.5, 40, () => 0))
+  })
+  it('Sweetwater 1: 부지 둘레 기준 높이로 오르내리고 도로 끝·첫 송전탑이 묻히지 않음', () => {
+    const layout = layoutCampus(sites.find(s => s.id === 'sweetwater-1'))
+    const profile = withRealTerrain('sweetwater-1', CAMPUS_LANDSCAPES['sweetwater-1'])
+    const { side, road, powerLine } = layout, { relief } = profile
+    expect(terrainHeight(layout.gate.x + 6, road.z, side, relief)).toBeCloseTo(-.28)
+    let lowest = Infinity, highest = -Infinity
+    for (let x = -60; x <= 60; x += 2) for (let z = -60; z <= 60; z += 2) {
+      const y = terrainHeight(x, z, side, relief)
+      lowest = Math.min(lowest, y); highest = Math.max(highest, y)
+    }
+    expect(lowest).toBeLessThan(-.6)                    // 동남쪽은 실제로 부지보다 낮음
+    expect(highest).toBeGreaterThan(.6)
+    expect(lowest).toBeGreaterThan(profile.floorY)      // 바닥이 땅을 가리면 안 됨
+    const tower = groundY(powerLine.from[0], powerLine.from[1], side, relief)
+    expect(tower).toBeCloseTo(terrainHeight(powerLine.from[0], powerLine.from[1], side, relief))
+  })
+  it('Sweetwater 2 는 Sweetwater 1 의 실측 지형 문구를 물려받지 않음', () => {
+    expect(CAMPUS_LANDSCAPES['sweetwater-1'].terrain_ko).toContain('5 m')
+    expect(CAMPUS_LANDSCAPES['sweetwater-2'].terrain_ko).toBeUndefined()
+    expect(withRealTerrain('sweetwater-2', CAMPUS_LANDSCAPES['sweetwater-2']).realTerrain).toBeUndefined()
   })
   it('Childress: 부지 안은 평평하고 부지 밖만 실측 높이로 솟음', () => {
     const layout = layoutCampus(sites.find(s => s.id === 'childress')), { relief } = withRealTerrain('childress', CAMPUS_LANDSCAPES.childress)

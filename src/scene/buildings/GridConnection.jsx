@@ -86,15 +86,15 @@ function SubstationSignal({ active, length, reducedMotion }) {
 
 // line: 송전선 정보 (from·to 좌표, energized: 통전 완료, flowActive: 통전이 보도로 확인됨)
 // sub: 변전소 정보, t: 번역 문구 묶음(Substation 에 그대로 전달), showLabel: 변전소 이름표 표시 여부
-export default function GridConnection({ line, sub, t, showLabel }) {
+export default function GridConnection({ line, sub, t, showLabel, groundAt }) {
   const [fx,fz]=line.from, [tx,tz]=line.to
   // 좌표 숫자가 바뀔 때만 송전탑·전선 경로를 다시 계산
-  const path=useMemo(()=>transmissionPath([fx,fz],[tx,tz]),[fx,fz,tx,tz])
+  const path=useMemo(()=>transmissionPath([fx,fz],[tx,tz],groundAt),[fx,fz,tx,tz,groundAt])
   const reducedMotion=useReducedMotion()
   const active=line.flowActive
   return <group name="grid-connection">
     {/* 송전탑: 위로 갈수록 가늘어지는 기둥 + 가로대 */}
-    {path.towers.map(([x,z],i)=><group key={i} position={[x,0,z]}>
+    {path.towers.map(([x,z,y],i)=><group key={i} position={[x,y,z]}>
       <mesh position={[0,1.8,0]} castShadow><cylinderGeometry args={[.08,.22,3.6,4]}/><meshStandardMaterial color="#8f99b3"/></mesh>
       <mesh position={[0,3.45,0]}><boxGeometry args={[.1,.1,1.4]}/><meshStandardMaterial color="#8f99b3"/></mesh>
     </group>)}

@@ -14,18 +14,23 @@ export const POWER_FLOW_SPEED = 3.2
 export const POWER_PACKET_COUNT = 3
 
 // from: 전력망 쪽 시작점 [x, z], to: 변전소 쪽 끝점 [x, z]
-export function transmissionPath(from, to) {
+// groundAt: (x, z) → 그 자리 땅 높이. 탑과 전선이 땅을 따라 오르내림 (없으면 평평한 0)
+export function transmissionPath(from, to, groundAt = () => 0) {
   const [fx,fz] = from, [tx,tz] = to
   // 송전탑 3개: 시작점, 중간, 끝 근처. x 방향은 85% 까지만 가서 마지막 탑이 변전소와 겹치지 않게
-  const towers = [0,.5,1].map(k=>[fx+(tx-fx)*k*.85,fz+(tz-fz)*k])
+  // 탑 하나 = [x, z, 땅 높이]
+  const towers = [0,.5,1].map(k=>{
+    const x=fx+(tx-fx)*k*.85, z=fz+(tz-fz)*k
+    return [x,z,groundAt(x,z)]
+  })
   const points = []
   // 탑과 탑 사이를 8칸으로 나눠 점을 찍음. 높이는 3.4 에서 가운데가 최대 .5 처지게 (sin 으로 0 → 1 → 0)
   for (let i=0;i<towers.length-1;i++) {
-    const [ax,az]=towers[i], [bx,bz]=towers[i+1]
+    const [ax,az,ay]=towers[i], [bx,bz,by]=towers[i+1]
     // 두 번째 구간부터는 s=1 에서 시작 → 탑 위치 점이 두 번 들어가지 않게
     for (let s=i===0?0:1;s<=8;s++) {
       const k=s/8
-      points.push([ax+(bx-ax)*k,3.4-Math.sin(Math.PI*k)*.5,az+(bz-az)*k])
+      points.push([ax+(bx-ax)*k,ay+(by-ay)*k+3.4-Math.sin(Math.PI*k)*.5,az+(bz-az)*k])
     }
   }
   // 마지막 점: 끝점(to)에서 x 로 +1.2, 높이 2.8 인 곳 — 변전소 위 신호등 쪽으로 전선을 이어 붙임
