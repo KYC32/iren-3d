@@ -163,6 +163,23 @@ describe('실측 지형 격자', () => {
     const tower = groundY(powerLine.from[0], powerLine.from[1], side, relief)
     expect(tower).toBeCloseTo(terrainHeight(powerLine.from[0], powerLine.from[1], side, relief))
   })
+  it('Kiowa: 언덕은 솟고 도로 끝·첫 송전탑은 땅 위에 있으며 등고선은 5 m 간격', () => {
+    const layout = layoutCampus(sites.find(s => s.id === 'kiowa'))
+    const profile = withRealTerrain('kiowa', CAMPUS_LANDSCAPES.kiowa)
+    const { side, road, powerLine } = layout, { relief } = profile
+    expect(profile.contourM).toBe(5)
+    expect(CAMPUS_LANDSCAPES.kiowa.terrain_ko).toContain('5 m')
+    expect(terrainHeight(layout.gate.x + 6, road.z, side, relief)).toBeCloseTo(-.28)
+    let lowest = Infinity, highest = -Infinity
+    for (let x = -60; x <= 60; x += 2) for (let z = -60; z <= 60; z += 2) {
+      const y = terrainHeight(x, z, side, relief)
+      lowest = Math.min(lowest, y); highest = Math.max(highest, y)
+    }
+    expect(highest).toBeGreaterThan(1.5)                // 언덕이 부지보다 확실히 높음
+    expect(lowest).toBeGreaterThan(profile.floorY)      // 바닥이 땅을 가리면 안 됨
+    const tower = groundY(powerLine.from[0], powerLine.from[1], side, relief)
+    expect(tower).toBeCloseTo(terrainHeight(powerLine.from[0], powerLine.from[1], side, relief))
+  })
   it('Sweetwater 2 는 Sweetwater 1 의 실측 지형 문구를 물려받지 않음', () => {
     expect(CAMPUS_LANDSCAPES['sweetwater-1'].terrain_ko).toContain('5 m')
     expect(CAMPUS_LANDSCAPES['sweetwater-2'].terrain_ko).toBeUndefined()

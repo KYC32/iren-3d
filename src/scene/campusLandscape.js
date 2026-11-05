@@ -64,6 +64,8 @@ export const CAMPUS_LANDSCAPES = {
     foliage: ['#64805b', '#7c9468', '#8e9f70'], source: official('oklahoma'),
     notes_ko: '공식 오클라호마 소개 이미지와 피츠버그 카운티 지역 사진의 초지·활엽수 군락을 참고했습니다. 현장 주변 배치는 미확인입니다.',
     notes_en: 'Meadows and broadleaf clusters reference the official Oklahoma introduction and Pittsburg County photographs. The actual site surroundings are unverified.',
+    terrain_ko: '부지 밖 땅의 높낮이와 등고선(5 m 간격)은 실측 지형 자료(Mapterhorn, 미국 USGS 3DEP)로 그렸습니다. 높이는 2배로 키웠고 부지 둘레 평균 고도를 기준으로 맞췄습니다.',
+    terrain_en: 'Ground height and 5 m contours outside the site use measured terrain (Mapterhorn, USGS 3DEP), with height doubled and aligned to the average elevation around the site.',
   },
   // Redbank: iren.com 캠퍼스 페이지가 아직 없어 IREN 이 운영하는 지역 안내 사이트(redbankdatacentre.com.au)의 렌더를 참고
   redbank: {

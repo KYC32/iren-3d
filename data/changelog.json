@@ -1,6 +1,16 @@
 {
   "entries": [
     {
+      "date": "2026-11-05",
+      "items": [
+        {
+          "ko": "Kiowa 3D 주변 땅을 실측 고도로 바꾸고 5 m 간격 등고선을 추가. 도로·송전탑이 땅을 따라가며 높이는 2배로 키움",
+          "en": "The land around the Kiowa 3D campus now follows measured elevation with 5 m contour lines. Roads and towers follow the ground, with height exaggerated 2x",
+          "source": "https://mapterhorn.com/attribution"
+        }
+      ]
+    },
+    {
       "date": "2026-11-03",
       "items": [
         {

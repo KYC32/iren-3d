@@ -1,11 +1,12 @@
 // 실측 지형을 쓰는 캠퍼스 목록. 패널도 campusLandscape.js 를 부르므로 격자 파일은 여기(3D 묶음)에만 둠
 import childress from './terrain/childress.json'
 import sweetwater1 from './terrain/sweetwater-1.json'
+import kiowa from './terrain/kiowa.json'
 import { realRelief, terrainHeight } from './campusLandscape.js'
 
-const GRIDS = { childress, 'sweetwater-1': sweetwater1 }
+const GRIDS = { childress, 'sweetwater-1': sweetwater1, kiowa }
 // 등고선 간격(m). 땅이 평평할수록 촘촘해야 읽힘
-const CONTOUR_M = { childress: 2.5, 'sweetwater-1': 5 }
+const CONTOUR_M = { childress: 2.5, 'sweetwater-1': 5, kiowa: 5 }
 const cache = new Map()
 
 // 경관 설정에 실측 높이를 더해 돌려줌. 같은 객체를 다시 쓰므로 식생을 매번 다시 계산하지 않음
