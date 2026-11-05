@@ -5,5 +5,12 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.jsx'
 import './styles/global.css'
+import { reloadOnce } from './chunkReload.js'
+
+// 조각 불러오기 실패(Vite 가 알려 줌) → 한 번만 새로고침. import.meta.url 은 이 빌드의 index-해시.js 주소
+//   새로고침할 때만 기본 동작(오류 던지기)을 막음
+addEventListener('vite:preloadError', (e) => {
+  if (reloadOnce(sessionStorage, import.meta.url, () => location.reload())) e.preventDefault()
+})
 
 createRoot(document.getElementById('root')).render(<App />)
