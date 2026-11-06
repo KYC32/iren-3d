@@ -1,6 +1,46 @@
 {
   "entries": [
     {
+      "date": "2026-11-06",
+      "items": [
+        {
+          "ko": "Q1 FY27 실적 반영: 매출 $228M, AI 클라우드 $200M, 계약 잔액 $20.3bn. 분기 뒤 맺은 5년·단기 계약 가격과 프런티어 AI 연구소 계약 확대를 계약 탭에 넣음",
+          "en": "Q1 FY27 results added: revenue $228M, AI Cloud $200M, backlog $20.3bn. Post-quarter 5-year and short-term deal pricing and the expanded frontier AI lab contract are on the contracts tab",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
+        },
+        {
+          "ko": "Horizon 2-4 가동 목표를 2027년 1월로 바꿈. Microsoft 요청 네트워크 설계 변경 때문이고 지연 보상은 없음. 누적 0.3GW 인도 일정도 2027년 1월로 옮김",
+          "en": "Horizon 2-4 operating targets moved to January 2027 after a Microsoft-requested network design change, with no delay credits. The 0.3GW cumulative delivery milestone moves to January 2027 too",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000066/iren-20260930.htm"
+        },
+        {
+          "ko": "약속 장부에 ARR $4bn 이상 목표를 2027년 1월(2월까지 가능)로 미룬 것을 기록하고 새 약속으로 추가. 원래 기한 전이라 판정은 그대로임",
+          "en": "The promise ledger records the $4bn+ ARR target moving to January 2027 (possibly February) and adds it as a new promise. Verdicts are unchanged because the original deadline has not passed",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
+        },
+        {
+          "ko": "매켄지 100MW 부지 새 액체냉각 홀 착공과 10/24 열화상 관찰, 매켄지·프린스조지 지역 보조금 $50만, 커낼플랫츠 확장 보도(제목만 확인)를 캠퍼스 소식에 넣음",
+          "en": "Campus news adds the new liquid-cooled halls at the 100MW Mackenzie site, the Oct 24 thermal observation, $500K in Mackenzie and Prince George grants, and the Canal Flats expansion report (headline only)",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
+        },
+        {
+          "ko": "텍사스 주지사 당선인 Hinojosa의 데이터센터 중단 발언을 주 정부 조치 칸에 넣음. 취임 전이라 아직 효력 있는 조치는 아님",
+          "en": "Texas governor-elect Hinojosa's pledge to pause data centers is added to the state actions list. She has not taken office, so nothing is in force yet",
+          "source": "https://www.usatoday.com/story/news/nation/2026/11/05/texas-is-done-with-data-centers-until-further-notice-new-governor-says/92634485007/"
+        },
+        {
+          "ko": "주식 수·희석 칸을 10-Q로 갱신. 10/30 발행 주식 4억 2,436만 주, ATM $6bn 중 약 $3.7bn 판매, GPU 금융 실행액을 반영함",
+          "en": "Share count and dilution updated from the 10-Q: 424.36M shares on Oct 30, about $3.7bn sold under the $6bn ATM, and GPU financing draws",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000066/iren-20260930.htm"
+        },
+        {
+          "ko": "11/2-11/5 큰 변동일의 까닭을 추가. 증권사 표는 실적 뒤 바뀐 의견이 아직 없어 그대로 두고 지난 실적 칸은 지움",
+          "en": "Reasons added for the Nov 2-5 big moves. The broker table is unchanged because no ratings had moved yet after earnings, and the past earnings box is removed",
+          "source": "https://www.reuters.com/business/microsoft-tightens-oversight-neocloud-data-center-projects-bloomberg-news-2026-11-05/"
+        }
+      ]
+    },
+    {
       "date": "2026-11-05",
       "items": [
         {

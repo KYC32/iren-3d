@@ -109,6 +109,13 @@
       "ko": "주지사 지시: TCEQ 데이터센터 허가 전면 중단, ERCOT 감사가 끝날 때까지 주 기관 승인도 멈춤",
       "en": "Governor's directive: TCEQ halts all data center permits, and no state agency moves on approvals until the ERCOT audit ends",
       "source": "https://gov.texas.gov/news/post/governor-abbott-directs-tceq-to-halt-data-center-permits"
+    },
+    {
+      "state": "TX",
+      "date": "2026-11-05",
+      "ko": "주지사 당선인 Gina Hinojosa: 주민 보호 법이 생길 때까지 데이터센터를 멈추겠다고 발언. 취임 전이라 아직 효력 있는 조치는 아님",
+      "en": "Governor-elect Gina Hinojosa says data centers will stop until laws protecting residents are in place. She has not taken office, so no order is in force yet",
+      "source": "https://www.usatoday.com/story/news/nation/2026/11/05/texas-is-done-with-data-centers-until-further-notice-new-governor-says/92634485007/"
     }
   ]
 }

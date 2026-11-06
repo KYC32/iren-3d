@@ -111,6 +111,22 @@
       "published": "2026-09-08",
       "publisher": "IREN",
       "reviewedAt": "2026-10-17"
+    },
+    {
+      "id": "q1fy27-results",
+      "title": "Q1 FY27 results press release (8-K Ex. 99.1)",
+      "url": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm",
+      "published": "2026-11-05",
+      "publisher": "IREN",
+      "reviewedAt": "2026-11-06"
+    },
+    {
+      "id": "q1fy27-10q",
+      "title": "Form 10-Q, quarter ended September 30, 2026",
+      "url": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000066/iren-20260930.htm",
+      "published": "2026-11-05",
+      "publisher": "IREN",
+      "reviewedAt": "2026-11-06"
     }
   ],
   "claims": [
@@ -1140,6 +1156,12 @@
           "sourceId": "fy26-10k",
           "note_ko": "4분기에 단계별 인도 목표. Microsoft 계약상 인도 유예 기간은 2026년 4분기 중반부터 2027년 2분기 초까지.",
           "note_en": "Phased delivery targeted in calendar Q4 2026; grace periods under the Microsoft agreement extend from mid-Q4 2026 to the beginning of Q2 2027."
+        },
+        {
+          "target": "2027-01",
+          "sourceId": "q1fy27-results",
+          "note_ko": "ARR $4bn 이상 목표가 2026년 말에서 2027년 1월로 바뀜(2월까지 늦어질 수 있음). Microsoft 요청 네트워크 설계 변경과 공급사 일정 때문이며 지연 보상은 없음(10-Q).",
+          "note_en": "The $4bn+ ARR target moved from end-2026 to January 2027 (may slip to February) after a Microsoft-requested network design change and supplier timing; no delay credits apply (10-Q)."
         }
       ]
     },
@@ -1169,6 +1191,12 @@
           "sourceId": "fy26-10k",
           "note_ko": "4분기에 단계별 인도 목표. Microsoft 계약상 인도 유예 기간은 2026년 4분기 중반부터 2027년 2분기 초까지.",
           "note_en": "Phased delivery targeted in calendar Q4 2026; grace periods under the Microsoft agreement extend from mid-Q4 2026 to the beginning of Q2 2027."
+        },
+        {
+          "target": "2027-01",
+          "sourceId": "q1fy27-results",
+          "note_ko": "ARR $4bn 이상 목표가 2026년 말에서 2027년 1월로 바뀜(2월까지 늦어질 수 있음). Microsoft 요청 네트워크 설계 변경과 공급사 일정 때문이며 지연 보상은 없음(10-Q).",
+          "note_en": "The $4bn+ ARR target moved from end-2026 to January 2027 (may slip to February) after a Microsoft-requested network design change and supplier timing; no delay credits apply (10-Q)."
         }
       ]
     },
@@ -1198,6 +1226,12 @@
           "sourceId": "fy26-10k",
           "note_ko": "4분기에 단계별 인도 목표. Microsoft 계약상 인도 유예 기간은 2026년 4분기 중반부터 2027년 2분기 초까지.",
           "note_en": "Phased delivery targeted in calendar Q4 2026; grace periods under the Microsoft agreement extend from mid-Q4 2026 to the beginning of Q2 2027."
+        },
+        {
+          "target": "2027-01",
+          "sourceId": "q1fy27-results",
+          "note_ko": "ARR $4bn 이상 목표가 2026년 말에서 2027년 1월로 바뀜(2월까지 늦어질 수 있음). Microsoft 요청 네트워크 설계 변경과 공급사 일정 때문이며 지연 보상은 없음(10-Q).",
+          "note_en": "The $4bn+ ARR target moved from end-2026 to January 2027 (may slip to February) after a Microsoft-requested network design change and supplier timing; no delay credits apply (10-Q)."
         }
       ]
     },

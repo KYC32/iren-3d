@@ -1,6 +1,6 @@
 {
   "company_id": "iren",
-  "as_of": "2026-11-01",
+  "as_of": "2026-11-06",
   "sites": [
     {
       "id": "childress",
@@ -101,7 +101,8 @@
             "count": null
           },
           "sources": [
-            "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+            "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html",
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
           ],
           "mw_basis": "gross",
           "phases": [
@@ -125,9 +126,9 @@
             },
             {
               "status": "operating",
-              "from": "2026-Q4",
+              "from": "2027-01",
               "basis": "target",
-              "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
             }
           ]
         },
@@ -146,7 +147,8 @@
           },
           "sources": [
             "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html",
-            "https://x.com/FransBakker9812/status/2010714039698313308"
+            "https://x.com/FransBakker9812/status/2010714039698313308",
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
           ],
           "mw_basis": "gross",
           "phases": [
@@ -164,9 +166,9 @@
             },
             {
               "status": "operating",
-              "from": "2026-Q4",
+              "from": "2027-01",
               "basis": "target",
-              "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
             }
           ]
         },
@@ -184,7 +186,8 @@
             "count": null
           },
           "sources": [
-            "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+            "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html",
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
           ],
           "mw_basis": "gross",
           "phases": [
@@ -202,9 +205,9 @@
             },
             {
               "status": "operating",
-              "from": "2026-Q4",
+              "from": "2027-01",
               "basis": "target",
-              "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
             }
           ]
         },
@@ -489,6 +492,18 @@
           "event": "위임장 설명서(DEF 14A): 남은 Horizon 2~4 배치 완료를 단기 우선 과제로 꼽음 · 차일드레스 추가 확장도 진행 중",
           "event_en": "Proxy statement (DEF 14A): completing the remaining Horizon 2-4 deployments is a near-term priority; further expansion at Childress is progressing",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036126039451/ny20078226x1_def14a.htm"
+        },
+        {
+          "date": "2026-11-05",
+          "event": "Q1 FY27: Microsoft 요청으로 Horizon 전체의 네트워크 설계를 바꾸는 중. 계약상 인도일은 지연 보상 없이 늦춰짐 (10-Q)",
+          "event_en": "Q1 FY27: a Microsoft-requested network design change is being made across the Horizon deployments. Delivery dates extend without delay credits under the contract (10-Q)",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000066/iren-20260930.htm"
+        },
+        {
+          "date": "2026-11-05",
+          "event": "Horizon 2-4는 공사 후반. ARR $4bn 이상 목표가 연말에서 2027년 1월로 바뀌었고 2월까지 늦어질 수 있음",
+          "event_en": "Horizon 2-4 in late-stage construction. The $4bn+ ARR target moved from year-end to January 2027 and may slip to February",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
         }
       ],
       "estimates": [
@@ -654,6 +669,12 @@
           "event": "텍사스 주지사, TCEQ 데이터센터 허가 전면 중단 지시 (이 부지 영향은 회사 미공개)",
           "event_en": "Texas governor orders TCEQ to halt all data center permits (impact on this site not disclosed)",
           "source": "https://gov.texas.gov/news/post/governor-abbott-directs-tceq-to-halt-data-center-permits"
+        },
+        {
+          "date": "2026-11-05",
+          "event": "Q1 FY27: 액체냉각 데이터센터 공사가 한창 진행 중",
+          "event_en": "Q1 FY27: liquid-cooled data center construction well underway",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
         }
       ],
       "estimates": [
@@ -750,6 +771,12 @@
           "event": "텍사스 주지사, TCEQ 데이터센터 허가 전면 중단 지시 (이 부지 영향은 회사 미공개)",
           "event_en": "Texas governor orders TCEQ to halt all data center permits (impact on this site not disclosed)",
           "source": "https://gov.texas.gov/news/post/governor-abbott-directs-tceq-to-halt-data-center-permits"
+        },
+        {
+          "date": "2026-11-05",
+          "event": "Q1 FY27: 초기 개발 단계 작업 진행",
+          "event_en": "Q1 FY27: early-stage development work underway",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
         }
       ],
       "estimates": [],
@@ -1019,6 +1046,18 @@
           "event": "2027 액체냉각 신규 배치 계획 발표",
           "event_en": "2027 liquid-cooled deployment planned",
           "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+        },
+        {
+          "date": "2026-11-05",
+          "event": "H100을 이전 프린스조지 계약 가격의 두 배로 새로 계약 (Q1 FY27, 분기 뒤 계약)",
+          "event_en": "New H100 contract at double the prior Prince George contract price (Q1 FY27, signed after quarter-end)",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
+        },
+        {
+          "date": "2026-11-05",
+          "event": "매켄지·프린스조지 지역 단체 49곳에 지역 보조금 $50만 지급",
+          "event_en": "$500,000 in community grants awarded to 49 projects in Mackenzie and Prince George",
+          "source": "https://iren.com/resources/news/iren-awards-500k-in-community-grants-to-49-projects-in-mackenzie-and-prince-george"
         }
       ],
       "estimates": [
@@ -1152,7 +1191,8 @@
           "kind": "datahall_liquid",
           "replaces": "mk-air",
           "sources": [
-            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm",
+            "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
           ],
           "mw_basis": "gross",
           "phases": [
@@ -1163,12 +1203,19 @@
               "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
             },
             {
+              "status": "under_construction",
+              "from": "2026-11",
+              "basis": "reported",
+              "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
+            },
+            {
               "status": "operating",
               "from": "2027",
               "basis": "target",
               "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
             }
-          ]
+          ],
+          "progress": 0.05
         },
         {
           "id": "mk-miners",
@@ -1246,6 +1293,18 @@
           "event": "Blue Owl·PIMCO 주도 $2.4bn GPU 금융 (9.0% 고정, 매켄지 공랭 확장 GPU 설비투자의 90%)",
           "event_en": "$2.4bn GPU financing led by Blue Owl and PIMCO (9.0% fixed; funds 90% of GPU capex for the Mackenzie air-cooled expansion)",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000051/irenreportsfy26results.htm"
+        },
+        {
+          "date": "2026-11-05",
+          "event": "Q1 FY27: 100MW 매켄지 부지에서 새 액체냉각 데이터센터 착공. 공랭 개조도 계속 진행",
+          "event_en": "Q1 FY27: new liquid-cooled data centers began construction at the 100MW Mackenzie site, while air-cooled retrofits continue",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
+        },
+        {
+          "date": "2026-11-05",
+          "event": "매켄지·프린스조지 지역 단체 49곳에 지역 보조금 $50만 지급",
+          "event_en": "$500,000 in community grants awarded to 49 projects in Mackenzie and Prince George",
+          "source": "https://iren.com/resources/news/iren-awards-500k-in-community-grants-to-49-projects-in-mackenzie-and-prince-george"
         }
       ],
       "estimates": [
@@ -1427,6 +1486,12 @@
           "event": "2027 액체냉각(GB300) 전환 계획",
           "event_en": "2027 liquid-cooled (GB300) conversion plan",
           "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+        },
+        {
+          "date": "2026-11-05",
+          "event": "지역 신문이 커낼플랫츠 확장과 주민 설명회 계획을 보도. 원문은 이 사이트에서 열리지 않아 제목만 확인했고 규모는 모름",
+          "event_en": "Local paper reports a Canal Flats expansion and an open house. The article could not be opened here, so only the headline is confirmed and the scale is unknown",
+          "source": "https://www.columbiavalleypioneer.com/iren-to-expand-hold-open-house/"
         }
       ],
       "estimates": [
@@ -1517,6 +1582,12 @@
           "event": "같은 사이트: PSO와 계약해 계통 연결비 100%를 IREN이 부담. 물은 폐쇄 순환이고 첫 충전에 약 2,500만 갤런을 쓰며 건물은 부지의 약 10%",
           "event_en": "Same site: under its PSO agreement IREN pays 100% of grid connection costs. Cooling is closed loop with an initial fill of about 25M gallons, and buildings take about 10% of the site",
           "source": "https://kiowadatacenter.com/"
+        },
+        {
+          "date": "2026-11-05",
+          "event": "Q1 FY27: 초기 개발 단계 작업 진행",
+          "event_en": "Q1 FY27: early-stage development work underway",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
         }
       ],
       "estimates": [
@@ -1595,6 +1666,12 @@
           "event": "연방 환경 심사 결과 EPBC법 승인이 필요 없다고 결정 (건설 전문 매체 전언). 계획은 홀 3개·홀당 IT 최대 200MW, 투자 약 A$10bn, 공사 6-8년",
           "event_en": "Federal environmental review decided no EPBC Act approval is needed (per a construction trade outlet). Plans show three halls of up to 200MW IT each, about A$10bn, and six to eight years of construction",
           "source": "https://constructionreviewonline.com/10bn-bundey-data-centre-project-drives-australias-first-100-net-renewable-grid-build/"
+        },
+        {
+          "date": "2026-11-05",
+          "event": "Q1 FY27: 초기 개발 단계 작업 진행",
+          "event_en": "Q1 FY27: early-stage development work underway",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
         }
       ],
       "estimates": [

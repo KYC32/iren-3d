@@ -1,7 +1,7 @@
 {
-  "checked": "2026-10-31",
-  "note_ko": "firms 는 MarketBeat 표를 사람이 옮긴 것. 정량 평가사(Weiss Ratings·Zacks Research)는 증권사가 아니라서 뺌. MarketBeat의 Morgan Stanley 2026-09-02 줄은 '하향'인데 의견이 Buy라 앞뒤가 맞지 않고 회사 명단에도 없어 뺌.",
-  "note_en": "firms are copied by hand from the MarketBeat table. Quant raters (Weiss Ratings, Zacks Research) are left out because they are not brokers. MarketBeat's Morgan Stanley row of 2026-09-02 says 'downgrade' with a Buy rating, which is inconsistent, and the firm is not on the company list, so it is left out.",
+  "checked": "2026-11-06",
+  "note_ko": "firms 는 MarketBeat 표를 사람이 옮긴 것. 정량 평가사(Weiss Ratings·Zacks Research)는 증권사가 아니라서 뺌. MarketBeat의 Morgan Stanley 2026-09-02 줄은 '하향'인데 의견이 Buy라 앞뒤가 맞지 않고 회사 명단에도 없어 뺌. 2026-11-06 확인 때 MarketBeat 표의 가장 최근 줄은 B. Riley 2026-10-30이고 11/5 실적 발표 뒤 의견 변경은 아직 올라오지 않음.",
+  "note_en": "firms are copied by hand from the MarketBeat table. Quant raters (Weiss Ratings, Zacks Research) are left out because they are not brokers. MarketBeat's Morgan Stanley row of 2026-09-02 says 'downgrade' with a Buy rating, which is inconsistent, and the firm is not on the company list, so it is left out. On the 2026-11-06 check the latest MarketBeat row was B. Riley on 2026-10-30; no rating changes after the Nov 5 earnings report had been posted yet.",
   "consensus": {
     "source": {
       "name": "Nasdaq",
@@ -21,7 +21,7 @@
     "url": "https://www.marketbeat.com/stocks/NASDAQ/IREN/forecast/"
   },
   "coverage": {
-    "checked": "2026-10-31",
+    "checked": "2026-11-06",
     "source": "https://iren.com/investors/analysts",
     "firms": [
       "Arete Research",
@@ -43,39 +43,6 @@
       "Needham",
       "Northland",
       "Rothchild & Co"
-    ]
-  },
-  "earnings": {
-    "date": "2026-11-05",
-    "revenue_usd": 229810000,
-    "source_name": "MarketBeat",
-    "source": "https://www.marketbeat.com/instant-alerts/upcoming-iren-iren-projected-to-post-earnings-on-thursday-2026-10-29/",
-    "watch": [
-      {
-        "ko": "Horizon 2-4 인도 일정. 회사 목표는 2026년 4분기, 계약 유예 기간은 2027년 2분기 초까지. Horizon 2 지연 소문은 공시·보도자료에 언급 없음",
-        "en": "Horizon 2-4 delivery. Target is Q4 2026, with contract grace periods to early Q2 2027. The Horizon 2 delay rumor is not addressed in filings or releases",
-        "source": "https://finance.yahoo.com/video/iren-childress-delivery-microsoft-track-215655357.html"
-      },
-      {
-        "ko": "프런티어 AI 연구소 고객의 이름. Anthropic 다년 계약 보도가 있으나 양쪽 모두 확인하지 않았고 같은 계약인지도 알 수 없음",
-        "en": "The frontier AI lab's name. A multi-year Anthropic deal was reported, but neither side confirmed it and it may not be the same contract",
-        "source": "https://cryptonews.com.au/news/australian-bitcoin-miner-iren-reportedly-signs-multiyear-ai-cloud-deal-with-anthropic-135189/"
-      },
-      {
-        "ko": "BC 현장 안정성. SemiAnalysis가 제기한 정전·네트워크 장애에 대한 회사 설명",
-        "en": "British Columbia reliability. The company's account of the outage and network issues raised by SemiAnalysis",
-        "source": "https://www.tradingview.com/news/stocktwits:eb0ac2094094b:0-iren-dips-further-after-semianalysis-flags-issues-with-legacy-british-columbia-data-centers-retail-mood-drops/"
-      },
-      {
-        "ko": "자금 조달. FY27 자본지출 계획 $25-30bn 가운데 보도 기준 약 $14bn 확보, 약 $8bn 추진 중인 나머지를 어떻게 채우는지",
-        "en": "Funding. Reports put about $14bn secured and about $8bn targeted against the $25-30bn FY27 capex plan; how the rest is filled",
-        "source": "https://www.benzinga.com/markets/prediction-markets/26/10/62115985/iren-stock-ai-spending-financing"
-      },
-      {
-        "ko": "Sweetwater 일정. ERCOT Batch Zero 조건부 포함과 텍사스 주 정부 조치가 일정에 미치는 영향은 회사가 밝힌 적 없음",
-        "en": "Sweetwater timing. The company has not said how conditional ERCOT Batch Zero inclusion or the Texas state actions affect it",
-        "source": "https://www.globenewswire.com/news-release/2026/09/08/3357498/0/en/iren-s-2gw-sweetwater-hub-included-as-base-load-in-ercot-batch-zero.html"
-      }
     ]
   },
   "firms": [

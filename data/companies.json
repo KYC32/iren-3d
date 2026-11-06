@@ -113,6 +113,65 @@
           "as_of": "2026-08",
           "show": "contracts",
           "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
+        },
+        {
+          "key": "contracted_arr_usd_bn",
+          "value": 4,
+          "qualifier": "over",
+          "unit": "USD bn",
+          "label_ko": "계약 ARR",
+          "label_en": "Contracted ARR",
+          "as_of": "2026-11",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
+        },
+        {
+          "key": "operating_arr_usd_bn",
+          "value": 1,
+          "unit": "USD bn",
+          "label_ko": "운영 ARR",
+          "label_en": "Operating ARR",
+          "as_of": "2026-11",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
+        },
+        {
+          "key": "contracted_backlog_usd_bn",
+          "value": 20.3,
+          "unit": "USD bn",
+          "label_ko": "계약 잔액(RPO+리스)",
+          "label_en": "Contracted backlog (RPO + leases)",
+          "as_of": "2026-09",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
+        },
+        {
+          "key": "five_year_rev_per_mw_usd_m",
+          "value": 22,
+          "qualifier": "about",
+          "unit": "USD m",
+          "label_ko": "새 5년 계약 · MW(IT)당 매출",
+          "label_en": "New 5-yr deal · revenue per MW (IT)",
+          "as_of": "2026-11",
+          "show": "contracts",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
+        },
+        {
+          "key": "short_term_rev_per_mw_usd_m",
+          "value": 40,
+          "unit": "USD m",
+          "label_ko": "새 단기 계약 · MW(IT)당 매출",
+          "label_en": "New short-term deal · revenue per MW (IT)",
+          "as_of": "2026-11",
+          "show": "contracts",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
+        },
+        {
+          "key": "five_year_prepayment_pct_gpu_capex",
+          "value": 90,
+          "unit": "%",
+          "label_ko": "새 5년 계약 선급금 (GPU 투자 대비)",
+          "label_en": "New 5-yr deal prepayment (% of GPU capex)",
+          "as_of": "2026-11",
+          "show": "contracts",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
         }
       ],
       "sources": [
@@ -179,6 +238,22 @@
           "source": "https://www.globenewswire.com/news-release/2026/10/22/3386871/0/en/iren-to-release-q1-fy27-results-on-november-5-2026.html"
         },
         {
+          "date": "2026-11-05",
+          "kind": "earnings",
+          "title_ko": "Q1 FY27 실적: 매출 $228M(직전 분기 대비 +66%), AI 클라우드 $200M, 순손실 $263M, 계약 잔액 $20.3bn",
+          "title_en": "Q1 FY27 results: revenue $228M (+66% q/q), AI Cloud $200M, net loss $263M, backlog $20.3bn",
+          "basis": "reported",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
+        },
+        {
+          "date": "2026-11-05",
+          "kind": "other",
+          "title_ko": "분기 뒤 계약: 프런티어 AI 연구소 계약 확대, 5년 계약 MW당 약 $22M(GPU 투자 90% 선급), 단기 계약 MW당 $40M",
+          "title_en": "Post-quarter deals: expanded frontier AI lab contract, 5-yr deal at ~$22M per MW (90% GPU capex prepaid), short-term deal at $40M per MW",
+          "basis": "reported",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
+        },
+        {
           "date": "2026-11-24",
           "kind": "other",
           "title_ko": "2026 정기 주주총회 (온라인, 한국 11/25 오전 6:30) · 자사주 매입 승인 등 안건 6개",
@@ -187,20 +262,20 @@
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000114036126039451/ny20078226x1_def14a.htm"
         },
         {
-          "date": "2026-12",
-          "kind": "other",
-          "title_ko": "누적 약 0.3GW(IT) 인도 (2026년)",
-          "title_en": "~0.3 GW (IT) cumulative delivery (2026)",
-          "basis": "target",
-          "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
-        },
-        {
           "date": "2026-12-10",
           "kind": "other",
           "title_ko": "ERCOT 감사 결과 PUC 제출 목표 · Batch Zero 최종 분류가 여기에 달림, 연구 일정은 미정",
           "title_en": "ERCOT aims to file its audit results with the PUC · final Batch Zero classes depend on it, study date not set",
           "basis": "target",
           "source": "https://mgrid.org/2026/09/05/ercot-december-10-abbott-data-center-audit-batch-zero-april-2027/"
+        },
+        {
+          "date": "2027-01",
+          "kind": "other",
+          "title_ko": "누적 약 0.3GW(IT) 인도 · ARR $4bn 이상 목표 (2026년 말에서 2027년 1월로 바뀜, 2월까지 늦어질 수 있음)",
+          "title_en": "~0.3 GW (IT) cumulative delivery · $4bn+ ARR target (moved from end-2026 to January 2027, may slip to February)",
+          "basis": "target",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
         },
         {
           "date": "2027-12",
@@ -289,8 +364,8 @@
           "it_mw": null,
           "sites": [],
           "color": "#d6336c",
-          "note_ko": "FY26 실적 발표(2026-08-27)에서 공개된 다년 AI 클라우드 계약. 고객 이름·금액·기간·용량·배치 사이트는 회사 미공개 (날짜는 발표한 달). 같은 발표에 최근 다른 계약 고객으로 Cohere·Prometheus·Perplexity·Figure AI·Fal AI·Higgsfield AI 언급. 2026-10-11 The Information이 Anthropic 다년 계약을 보도했으나 양쪽 모두 확인하지 않았고 이 계약과 같은 것인지도 알 수 없음",
-          "note_en": "Multi-year AI Cloud contract disclosed with FY26 results (2026-08-27). Customer, value, term, capacity and sites not disclosed (date = announcement month). The same release lists Cohere, Prometheus, Perplexity, Figure AI, Fal AI and Higgsfield AI among other recent signings. On 2026-10-11 The Information reported a multi-year Anthropic deal; neither side confirmed it and it may not be this contract",
+          "note_ko": "FY26 실적 발표(2026-08-27)에서 공개된 다년 AI 클라우드 계약. 고객 이름·금액·기간·용량·배치 사이트는 회사 미공개 (날짜는 발표한 달). 같은 발표에 최근 다른 계약 고객으로 Cohere·Prometheus·Perplexity·Figure AI·Fal AI·Higgsfield AI 언급. 2026-10-11 The Information이 Anthropic 다년 계약을 보도했으나 양쪽 모두 확인하지 않았고 이 계약과 같은 것인지도 알 수 없음. 2026-11-05 실적 발표: 분기 뒤 계약 확대 (규모 미공개)",
+          "note_en": "Multi-year AI Cloud contract disclosed with FY26 results (2026-08-27). Customer, value, term, capacity and sites not disclosed (date = announcement month). The same release lists Cohere, Prometheus, Perplexity, Figure AI, Fal AI and Higgsfield AI among other recent signings. On 2026-10-11 The Information reported a multi-year Anthropic deal; neither side confirmed it and it may not be this contract. 2026-11-05 results: expanded after quarter-end (size not disclosed)",
           "source": "https://www.globenewswire.com/news-release/2026/08/27/3352401/0/en/iren-reports-fy26-results.html"
         }
       ]

@@ -162,7 +162,14 @@ describe('location and media integrity',()=>{
    expect(sig.overdue.map(m=>m.id)).not.toContain('horizon-1-shell') // Horizon 1 은 이미 고객 인수
    const r=structuredClone(raw.research)
    const h2=r.milestones.find(m=>m.id==='horizon-2-customer-delivery')
-   h2.revisions.push({...h2.revisions.at(-1),target:'2027-Q2'}) // 같은 출처로 목표를 뒤로 미룸
+   // 10월 화면에서도 보이는 출처(10-K, 2026-08 공개)로 목표를 뒤로 미룬 경우를 흉내 냄
+   h2.revisions.push({...h2.revisions.find(x=>x.sourceId==='fy26-10k'),target:'2027-Q2'})
    expect(scheduleSignals(r,site,M('2026-10')).delayed.map(m=>m.id)).toContain('horizon-2-customer-delivery')
+ })
+ it('Q1 FY27 발표(2026-11-05) 뒤에는 실제 자료만으로 Horizon 2 인도가 늦어짐으로 잡힘',()=>{
+   const before=scheduleSignals(raw.research,childress('2026-10'),M('2026-10')).delayed.map(m=>m.id)
+   const after=scheduleSignals(raw.research,childress('2026-11'),M('2026-11')).delayed.map(m=>m.id)
+   expect(before).not.toContain('horizon-2-customer-delivery')   // 발표 전 달에는 아직 모름
+   expect(after).toContain('horizon-2-customer-delivery')
  })
 })
