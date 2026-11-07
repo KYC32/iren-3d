@@ -7,13 +7,13 @@
       "name": "Nasdaq",
       "url": "https://www.nasdaq.com/market-activity/stocks/iren/analyst-research"
     },
-    "fetched_at": "2026-11-04T18:45:28.129Z",
+    "fetched_at": "2026-11-07T02:14:22.608Z",
     "mean_rating": "Buy",
-    "low": 40,
+    "low": 30,
     "high": 99,
-    "mean": 72.78,
+    "mean": 60,
     "buy": 8,
-    "hold": 2,
+    "hold": 3,
     "sell": 0
   },
   "firms_source": {
