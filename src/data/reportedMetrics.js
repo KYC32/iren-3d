@@ -17,3 +17,16 @@ export function reportedMetricsAt(metrics, month, place = 'kpi') {
   }
   return [...latest.values()].map(({ metric }) => metric)
 }
+
+// 같은 지표(key)의 이력 중 as_of 가 가장 늦은 값 하나를 돌려줍니다.
+//   companies.json 의 metrics[] 는 이력이 쌓여 같은 key 가 여러 번 나옵니다(옛 값 → 새 값).
+//   영상 자막·투어처럼 "지금 기준" 값만 필요한 곳은 배열 첫 값(find)이 아니라 이걸 씁니다.
+//   as_of 는 '2026-08'·'2026-09'·'2026-Q4' 처럼 섞여 있어 기간 끝 달(toMonth 'end')로 비교합니다.
+export function latestMetric(metrics, key) {
+  let best
+  for (const metric of metrics ?? []) {
+    if (metric.key !== key) continue
+    if (!best || toMonth(metric.as_of, 'end') > toMonth(best.as_of, 'end')) best = metric
+  }
+  return best
+}

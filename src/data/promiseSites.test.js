@@ -25,8 +25,8 @@ it('스키마: building 만 있고 site 가 없으면 거부', () => {
   const bad = { ...statements, promises: [{ ...p, site: undefined, building: 'horizon-1' }] }
   expect(StatementsFile.safeParse(bad).success).toBe(false)
 })
-it('2026년 AI 클라우드 480MW 약속의 진행 = FY26 10-K 의 운영 용량 약 40MW (2026-06-30 기준, 8/27 공시)', () => {
+it('2026년 AI 클라우드 480MW 약속의 진행 = Q1 FY27 10-Q 의 운영 용량 약 93MW (2026-09-30 기준, 11/5 공시)', () => {
   const p = statements.promises.find((x) => x.id === 'p-ai-cloud-480mw-2026')
-  expect(p.progress).toMatchObject({ published: '2026-08-27', amount: { value: 40, unit: 'MW', qualifier: 'about' } })
+  expect(p.progress).toMatchObject({ published: '2026-11-05', amount: { value: 93, unit: 'MW', qualifier: 'about' } })
   expect(p.progress.url).toMatch(/^https:\/\/www\.sec\.gov\/Archives\/edgar\/data\/1878848\//)
 })

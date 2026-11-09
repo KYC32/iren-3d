@@ -7,6 +7,7 @@
 import { totalsAt, powerAt, siteMetricsAt, monthLabel, toMonth } from '../data/timeline.js'
 import { asOfMonth } from '../data/view.js'
 import { fmtMw, fmtMetric } from '../data/format.js'
+import { latestMetric } from '../data/reportedMetrics.js'
 
 export const DURATION = 34 // 전체 길이(초)
 
@@ -43,7 +44,7 @@ function cardFacts(data) {
   const site = (id) => raw.sites.find((s) => s.id === id)
   const ch = site('childress'), sw = site('sweetwater-1')
   const metrics = data.companies[0]?.metrics ?? []
-  const metric = (key) => metrics.find((x) => x.key === key)
+  const metric = (key) => latestMetric(metrics, key)   // 이력 중 가장 최근 값 (옛 값이 앞에 있어도)
   return {
     asOf: raw.as_of, sites: total.sites, secured: gw(total.secured),
     ch, chGrid: gw(powerAt(ch, m)?.secured ?? 0), chKv: ch.substation?.voltage, chMining: gw(siteMetricsAt(ch, m).mining),

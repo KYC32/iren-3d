@@ -1,6 +1,21 @@
 {
   "entries": [
     {
+      "date": "2026-11-09",
+      "items": [
+        {
+          "ko": "약속 장부: 2026년 AI 클라우드 480MW 약속의 진행값을 10-Q 기준 약 93MW(9/30)로, ARR 약속 3건의 진행 출처를 Q1 FY27 발표로 바꿈",
+          "en": "Promise ledger: progress on the 480MW AI Cloud 2026 promise is now ~93MW per the 10-Q (Sep 30), and three ARR promises cite the Q1 FY27 release",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000066/iren-20260930.htm"
+        },
+        {
+          "ko": "소개 영상 마지막 자막의 계약 잔액이 옛 값 $16.6bn으로 나오던 것을 고침. 이제 최신 값 $20.3bn을 씀",
+          "en": "The intro video's closing card showed the old $16.6bn backlog; it now uses the latest $20.3bn",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
+        }
+      ]
+    },
+    {
       "date": "2026-11-06",
       "items": [
         {

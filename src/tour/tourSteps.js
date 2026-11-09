@@ -13,11 +13,12 @@ import { contractProgress } from '../data/contracts.js'
 import { growthPath } from '../data/outlook.js'
 import { milestonesAt } from '../data/research.js'
 import { fmtMw } from '../data/format.js'
+import { latestMetric } from '../data/reportedMetrics.js'
 
 const SEC = 1000
 
 // 회사 ARR 지표가 있으면 꺼냄 (companies.json 의 metrics[])
-const metric = (company, key) => company?.metrics?.find((m) => m.key === key)?.value ?? null
+const metric = (company, key) => latestMetric(company?.metrics, key)?.value ?? null   // 이력 중 가장 최근 값
 
 export function buildTourSteps(data, lang = 'ko') {
   const ko = lang === 'ko'

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { reportedMetricsAt } from './reportedMetrics.js'
+import { reportedMetricsAt, latestMetric } from './reportedMetrics.js'
 import { toMonth } from './timeline.js'
 const metrics = [
   { key: 'arr', value: 4, as_of: '2026-08' },
@@ -36,5 +36,17 @@ describe('지표를 보여 줄 자리', () => {
   })
   it('계약 탭 지표도 발표 전 시점엔 숨김 (그때 있던 KPI 지표가 섞이지 않게)', () => {
     expect(reportedMetricsAt(list, toMonth('2026-07'), 'contracts')).toEqual([])
+  })
+})
+
+// 영상 자막·투어처럼 날짜를 고르지 않는 곳은 지표 이력 중 가장 최근 값을 씀 (배열 첫 값이 아니라)
+describe('latestMetric — 이력 중 가장 최근 값', () => {
+  it('배열 순서와 관계없이 as_of 가 가장 늦은 값', () => {
+    expect(latestMetric([{ key: 'arr', value: 1, as_of: '2025-08' }, { key: 'arr', value: 4, as_of: '2026-08' }], 'arr').value).toBe(4)
+    expect(latestMetric(metrics, 'arr').value).toBe(4)
+  })
+  it('없는 지표나 빈 목록이면 undefined', () => {
+    expect(latestMetric(metrics, 'nope')).toBeUndefined()
+    expect(latestMetric(undefined, 'arr')).toBeUndefined()
   })
 })

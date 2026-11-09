@@ -24,8 +24,8 @@ describe('buildCards — 자료로 만든 자막', () => {
     const outro = ko.find((c) => c.kind === 'outro')
     expect(outro.title).toContain(`${Math.round(total.secured / 100) / 10}GW`)
     expect(outro.note).toContain(`${raw.as_of.replaceAll('-', '.')} 기준`)
-    expect(outro.stats.join(' ')).toContain('계약 ARR $4bn')
-    expect(outro.stats.join(' ')).toContain('계약 잔액 ~$16.6bn')
+    expect(outro.stats.join(' ')).toContain('계약 ARR >$4bn')
+    expect(outro.stats.join(' ')).toContain('계약 잔액 $20.3bn')
     expect(en.find((c) => c.kind === 'outro').note).toContain(`as of ${raw.as_of}`)
   })
   it('캠퍼스 숫자: 차일드레스 계통·변전소·채굴동, 스위트워터 1 계통·통전 달', () => {
