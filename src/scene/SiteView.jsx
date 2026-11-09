@@ -68,12 +68,10 @@ export default function SiteView({ site }) {
   const groundAt = useMemo(() => (landscape?.realTerrain ? (x, z) => groundY(x, z, layout.side, landscape.relief) : undefined), [landscape, layout.side])
 
   // 선택한 데이터홀의 추정 랙 수 → 그 건물 블록들에 나눠 그림 (Block 이 완성된 홀일 때만 속을 엶)
-  // 사람이 건물을 누를 때: 고르고(새 건물이면 카메라가 다가감), 그 건물에 그림이 있으면 그림 대화상자를 엶
+  // 건물 터치는 선택과 카메라 이동만; 설명 그림은 별도 단추로 엶
   //   같은 건물을 다시 누르면 선택만 풀림 (둘러보기·공유 링크로 고를 때는 그림을 열지 않음)
   const pickBuilding = (id, fly = id !== selectedId) => {
-    const fresh = id !== selectedId
     selectBuilding(id, fly)
-    if (fresh && byId[id]?.figure) openFigure(byId[id].figure)
   }
   const selectedEst = useMemo(() => (selectedId && byId[selectedId] ? estimateHall(byId[selectedId]) : null), [selectedId, byId])
   const selectedBlockCount = L.blocks.filter((b) => b.buildingId === selectedId).length || 1
@@ -128,7 +126,7 @@ export default function SiteView({ site }) {
           dimmed={!isStatusActive(activeStatuses, b.status) || !!zoneKey && customerKey(byId[b.buildingId]?.customer) !== zoneKey}
           onHover={(id) => setHover(id, '3d')}
           onLeave={(id) => useAppStore.getState().clearHover(id, '3d')}
-          onSelect={(id) => pickBuilding(id)} // 새 건물이면 카메라가 다가감(+ 그림이 있으면 엶), 같은 건물이면 선택 해제
+          onSelect={(id) => pickBuilding(id)} // 새 건물이면 카메라 이동, 같은 건물이면 선택 해제
         />
       ))}
 

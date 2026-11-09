@@ -2,7 +2,7 @@
 // App — 3D 캔버스(뒤) + HTML 오버레이(앞)
 // 오버레이 전체는 pointer-events:none 이고 패널만 클릭을 받습니다.
 // =============================================================
-import { useEffect, lazy, Suspense } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { useAppStore } from './store/useAppStore.js'
 import { loadSites } from './data/loadSites.js'
 import { useT } from './i18n/useT.js'
@@ -28,6 +28,8 @@ const TourPlayer = lazy(() => import('./ui/TourPlayer.jsx'))
 const PortfolioPage = lazy(() => import('./pages/PortfolioPage.jsx'))
 const StockPage = lazy(() => import('./pages/StockPage.jsx'))
 const NewsPage = lazy(() => import('./pages/NewsPage.jsx'))
+// 날짜 때문에 캠퍼스에서 지도로 나왔을 때만 보이는 안내 → 그때 받음 (첫 화면 용량 절약)
+const SiteGoneNotice = lazy(() => import('./ui/SiteGoneNotice.jsx'))
 // 경영진 발언 카드 (본사 3D 화면에서 말풍선·CEO 배지·옥상 간판을 누르면 가운데에 열림) — 처음 열 때 불러옴
 const StatementsCard = lazy(() => import('./ui/StatementsCard.jsx'))
 // 휴대폰 본사 화면: CEO 배지·말풍선을 화면 아래에 (넓은 화면에선 CSS 로 숨김 — 그땐 빌딩 옆 3D 위치에)
@@ -35,6 +37,7 @@ const HqDock = lazy(() => import('./ui/HqDock.jsx'))
 
 export default function App() {
   const t = useT()
+  const [metricsOpen, setMetricsOpen] = useState(false)
   const data = useAppStore((s) => s.data)
   const loadError = useAppStore((s) => s.loadError)
   const surface = useAppStore((s) => s.surface)
@@ -54,12 +57,13 @@ export default function App() {
   const panelCollapsed = useAppStore((s) => s.campusPanelCollapsed)
   const skyDark = useSkyDark() // 3D 배경이 밤하늘이면 캔버스 위 글자를 밝게
   const touring = useAppStore((s) => !!s.tour)
+  const siteGone = useAppStore((s) => !!s.siteGoneNotice)
   const page = useAppStore((s) => s.page)
   const month = useAppStore((s) => s.month)
   // 지도 화면엔 타임라인이 없으므로 늘 기준일 모습 — 3D·사업 현황 페이지에서 옮긴 날짜는 지도로 오면 기준일로 되돌림 (투어 중엔 그대로)
   useEffect(() => {
     const st = useAppStore.getState()
-    if (!st.data || st.tour || page || surface !== 'map' || st.month === st.asOfMonth) return
+    if (RECORD || !st.data || st.tour || page || surface !== 'map' || st.month === st.asOfMonth) return
     st.setPlaying(false)
     st.setMonth(st.asOfMonth)
   }, [surface, page, month, touring])
@@ -109,7 +113,8 @@ export default function App() {
         {page && <Suspense fallback={<div className="page-scroll panel"><div className="page-loading">{t.loading}</div></div>}>{page === 'portfolio' ? <PortfolioPage /> : page === 'stock' ? <StockPage /> : <NewsPage />}</Suspense>}
         {/* KPI 판은 3D 화면에만 (지도 화면의 포트폴리오 사업 현황은 "현황" 페이지로 옮김) */}
         {/* 본사 화면엔 KPI 판·범례·타임라인 없음 (캠퍼스 시설 숫자라 본사 건물과 상관없음) */}
-        {!page && data && surface === '3d' && view !== 'hq' && <Suspense fallback={null}><KpiBar /></Suspense>}
+        {/* 모바일에선 KPI 판을 '전력 현황' 단추로 펼침 (global.css .campus-metrics) */}
+        {!page && data && surface === '3d' && view !== 'hq' && <Suspense fallback={null}><div className={`campus-metrics${metricsOpen ? " is-open" : ""}`}><button className="metrics-toggle" aria-expanded={metricsOpen} onClick={() => setMetricsOpen(!metricsOpen)}>{lang === "ko" ? "전력 현황" : "Power summary"} {metricsOpen ? "−" : "+"}</button><KpiBar /></div></Suspense>}
         {!page && data && surface==='map' && <RegionControls/>}
         {!page && <div className="middle">
           {data && surface === 'map' && <MapSidebar />}
@@ -118,12 +123,14 @@ export default function App() {
         </div>}
         {!page && <div className="bottom">
           {/* 범례·타임라인은 한 번에 나타나도록 같은 Suspense 로 묶음. 지도 화면엔 타임라인 없음 (현황 페이지·3D 에 있음) */}
-          {data && surface === '3d' && view !== 'hq' && <Suspense fallback={null}><Legend /><TimelineSlider /></Suspense>}
+          {data && surface === '3d' && view !== 'hq' && <Suspense fallback={null}><details className="mobile-legend"><summary>{lang === "ko" ? "상태 범례" : "Legend"}</summary><Legend /></details><div className="desktop-legend"><Legend /></div><TimelineSlider /></Suspense>}
           {data && view === 'hq' && <Suspense fallback={null}><HqDock /></Suspense>}
           {surface==='3d'?<Footer />:<div className="geographic-note">{lang==='ko'?'비공식 리서치 · 현황은 확인 기록, 목표는 전망':'Independent research · Reported status and targets are separate'}</div>}
         </div>}
       </div>
 
+      {/* 날짜 때문에 캠퍼스에서 지도로 나왔을 때 이유 안내 (지도 화면에서만) */}
+      {data && !page && surface === 'map' && siteGone && <Suspense fallback={null}><SiteGoneNotice /></Suspense>}
       {data && touring && <Suspense fallback={null}><TourPlayer /></Suspense>}
       {data && view === 'hq' && hqCard && <Suspense fallback={null}><StatementsCard /></Suspense>}
       {!page && !data && !loadError && <div className="center-msg">{t.loading}</div>}

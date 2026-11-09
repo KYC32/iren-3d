@@ -374,3 +374,55 @@ describe('본사 3D 화면', () => {
     expect(window.history.replaceState).toHaveBeenLastCalledWith(null, '', '#hq=1&card=promises')
   })
 })
+
+describe('전환 종료와 모바일 건물 탐색', () => {
+  it('지도 복귀는 진행 중인 페이드와 요청을 함께 해제한다', () => {
+    state().setRaw(raw)
+    state().enterSite3D('sweetwater-1')
+    state().setMonth(toMonth('2024-01'))
+    state().setTransitioning(true)
+    state().goGlobe()
+    expect(state().surface).toBe('map')
+    expect(state().pending).toBeNull()
+    expect(state().transitioning).toBe(false)
+  })
+  it('모바일은 패널을 접고 진입하며 건물 선택으로 다시 펼치지 않는다', () => {
+    window.innerWidth = 390
+    state().setRaw(raw)
+    state().enterSite3D('childress')
+    expect(state().campusPanelCollapsed).toBe(true)
+    state().selectBuilding('horizon-1', true)
+    expect(state().selectedBuildingId).toBe('horizon-1')
+    expect(state().campusPanelCollapsed).toBe(true)
+    state().setCampusPanelCollapsed(false)
+    state().selectBuilding('horizon-2', true)
+    expect(state().campusPanelCollapsed).toBe(false)
+  })
+})
+
+describe('캠퍼스가 사라진 날짜로 이동했을 때 안내', () => {
+  it('보던 캠퍼스가 고른 날짜에 없으면 이유 안내를 남기고, 캠퍼스를 다시 열면 지움', () => {
+    state().setRaw(raw)
+    state().enterSite3D('sweetwater-1')
+    state().setMonth(toMonth('2024-03'))
+    expect(state().pending).toEqual({ type: 'globe' })
+    expect(state().siteGoneNotice).toEqual({ siteId: 'sweetwater-1', month: toMonth('2024-03') })
+    state().goGlobe() // 지도로 나가도 안내는 유지 (지도에서 보여 줘야 하므로)
+    expect(state().siteGoneNotice).not.toBeNull()
+    state().setMonth(state().asOfMonth)
+    state().enterSite3D('sweetwater-1')
+    expect(state().siteGoneNotice).toBeNull()
+  })
+  it('캠퍼스가 남아 있는 날짜 이동이나 투어 중에는 안내하지 않음', () => {
+    state().setRaw(raw)
+    state().enterSite3D('childress')
+    state().setMonth(state().asOfMonth - 1)
+    expect(state().siteGoneNotice).toBeNull()
+    state().enterSite3D('sweetwater-1')
+    setTouring()
+    state().setMonth(toMonth('2024-03'))
+    expect(state().siteGoneNotice).toBeNull()
+  })
+})
+// 투어 중 상태만 흉내 (실제 투어 대본은 필요 없음)
+function setTouring() { store.setState({ tour: { step: 0 } }) }

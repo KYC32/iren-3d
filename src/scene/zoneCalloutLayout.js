@@ -33,8 +33,9 @@ export function intersectsFootprint(rect, polygon, gap=8) {
 
 // items: 카드 목록 ({key, width, height, anchor:{x,y}} — anchor 는 카드가 가리킬 화면 지점)
 // footprint: 캠퍼스 바닥 다각형, safe: {left, right, top, bottom} 카드를 놓아도 되는 화면 범위
+// blocked: 카드가 덮으면 안 되는 화면 사각형들 (예: 모바일에서 3D 위에 떠 있는 '전력 현황' 단추)
 // 결과: 자리를 찾은 카드들 (원래 정보 + rect·side·score)
-export function placeZoneCallouts(items, footprint, safe) {
+export function placeZoneCallouts(items, footprint, safe, blocked = []) {
   const placed=[]
   // 화면 위쪽에 있는 구역부터 차례로 배치 (y 가 같으면 key 순서 → 매번 같은 결과)
   for(const item of [...items].sort((a,b)=>a.anchor.y-b.anchor.y||a.key.localeCompare(b.key))){
@@ -48,8 +49,8 @@ export function placeZoneCallouts(items, footprint, safe) {
         const rect={left,right:left+width,top,bottom:top+height}
         // 안전 영역을 벗어나면 탈락
         if(rect.left<safe.left||rect.right>safe.right||rect.top<safe.top||rect.bottom>safe.bottom)return
-        // 캠퍼스를 가리거나, 먼저 놓인 카드와 8px 이내로 붙으면 탈락
-        if(intersectsFootprint(rect,footprint)||placed.some(p=>overlap(rect,p.rect,8)))return
+        // 캠퍼스를 가리거나, 먼저 놓인 카드·떠 있는 단추와 8px 이내로 붙으면 탈락
+        if(intersectsFootprint(rect,footprint)||placed.some(p=>overlap(rect,p.rect,8))||blocked.some(b=>overlap(rect,b,8)))return
         // 점수 = 카드 중심과 anchor 사이 거리 (작을수록 좋음)
         candidates.push({rect,side,score:Math.hypot(left+width/2-anchor.x,top+height/2-anchor.y)})
       }

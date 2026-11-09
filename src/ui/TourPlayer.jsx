@@ -22,8 +22,8 @@ const saveVoice = (on) => { try { localStorage.setItem(VOICE_KEY, on ? '1' : '0'
 let voiceList = null
 const loadVoiceList = () => (voiceList ??= fetch('/audio/tour/manifest.json').then((r) => (r.ok ? r.json() : null)).catch(() => null))
 
-// 한 단계를 화면에 적용
-function applyStep(step) {
+// 한 단계를 화면에 적용 (테스트에서 직접 부르려고 export)
+export function applyStep(step) {
   const st = useAppStore.getState()
   st.setPlaying(false)
   st.setMonth(step.month ?? st.asOfMonth)
@@ -47,8 +47,11 @@ function applyStep(step) {
   else st.enterSite3D(step.site)
   if (step.zone) useAppStore.getState().selectZone(step.zone)
   if (step.building) useAppStore.getState().selectBuilding(step.building, true)
-  // 좁은 화면: 캠퍼스 패널이 3D 를 거의 다 가리므로 접어 둠 (건물 속 단계는 패널 카드를 보여 줘야 해서 그대로)
-  if (window.innerWidth < 768 && !step.building) useAppStore.getState().setCampusPanelCollapsed(true)
+  // 좁은 화면: 캠퍼스 패널이 3D 를 거의 다 가리므로 접어 둠.
+  // 건물 속 단계는 자막이 "패널 카드"를 가리키므로 반드시 펼침
+  //   (모바일에선 진입·건물 선택이 패널을 접은 채 두기 때문에 여기서 직접 펼쳐야 함)
+  if (step.building) useAppStore.getState().setCampusPanelCollapsed(false)
+  else if (window.innerWidth < 768) useAppStore.getState().setCampusPanelCollapsed(true)
 }
 
 export default function TourPlayer() {

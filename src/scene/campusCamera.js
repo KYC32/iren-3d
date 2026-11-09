@@ -81,9 +81,21 @@ export function campusViewport(width, height) {
     const r = el?.getBoundingClientRect()
     return r?.width && r?.height ? r : null
   }
-  const top = (box('.kpis')?.bottom ?? 150) + 18
   const panel = campusPanelLayout()
-  if (panel?.bottomDocked || width < 768) return { left: 18, right: width - 18, top, bottom: (panel?.rect.top ?? height - 8) - 14 }
+  // Compact metrics open as an overlay. Keep framing below the toggle so
+  // opening that overlay does not squeeze the campus into the remaining gap.
+  const compact = panel?.bottomDocked || width < 768
+  // 모바일 CSS 는 전력 현황 단추를 3D 위에 띄움(감싼 상자 높이 0). 이때 열린 지표판(.kpis)은
+  // 3D 위에 덮이는 것이므로 구도 계산에서 빼고, 단추 바로 아래부터 캠퍼스를 맞춤.
+  // (상단 바 바로 아래부터 맞추면 캠퍼스는 커지지만, 320px 화면에서 고객 구역 배지 놓을 자리가 없어 배지가 사라졌음)
+  const metricsEl = compact ? document.querySelector('.campus-metrics') : null
+  const metricsFloating = !!metricsEl && !metricsEl.getBoundingClientRect().height
+  const topEdge = metricsFloating
+    ? box('.metrics-toggle')?.bottom ?? box('.topbar')?.bottom
+    : (compact ? box('.campus-metrics')?.bottom : null) ?? box('.kpis')?.bottom ?? box('.topbar')?.bottom
+  const top = (topEdge ?? 150) + 18
+  if ((width < 768 || panel?.bottomDocked) && height <= 500) return { left: 18, right: panel?.collapsed ? panel.rect.left - 18 : width - 18, top: (box('.topbar')?.bottom ?? 110) + 12, bottom: (box('.bottom')?.top ?? height - 100) - 12 }
+  if (panel?.bottomDocked || width < 768) return { left: 18, right: width - 18, top, bottom: Math.min(panel?.rect.top ?? height - 8, box('.bottom')?.top ?? height - 8) - 14 }
   const bottom = box('.bottom')
   return { left: 24, right: panel && !panel.collapsed ? panel.rect.left - 18 : width - 24,
     top: panel?.collapsed ? Math.max(top, panel.rect.bottom + 14) : top,

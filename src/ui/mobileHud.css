@@ -1,0 +1,73 @@
+/* =============================================================
+   mobileHud.css — 휴대폰·터치 태블릿의 3D 화면 전용 배치
+   -------------------------------------------------------------
+   전력 현황 단추, 하단 날짜 띠·범례, 캠퍼스 패널 위치, 3D 라벨 터치 영역.
+   3D 화면에서만 필요해서 global.css(첫 화면 용량 예산 HTML UI 에 들어감)에서 떼어,
+   3D 하단 띠·KPI 판과 함께 지연 로딩되게 TimelineSlider.jsx·KpiBar.jsx 에서 불러옴.
+   기본으로 숨기는 규칙(.metrics-toggle 등 display:none)은 global.css 에 남김 → 이 파일을 받기 전에도 데스크톱이 깨지지 않음
+   ============================================================= */
+@media (max-width:767px), (max-width:1100px) and (pointer:coarse) {
+  .metrics-toggle { display:block; min-height:44px; border:1px solid #ccdcd4; border-radius:10px; background:#fff; color:#28594a; padding:8px 12px; }
+  /* 전력 현황 단추는 3D 위에 떠 있게 (height:0 = 자기 줄을 차지하지 않음).
+     비스듬한 캠퍼스는 마름모라 왼쪽 위 모서리가 비어 있어 단추가 건물을 거의 가리지 않음.
+     카메라 구도(campusCamera.js)는 이 단추 바로 아래부터 잡고, 펼친 지표판은 구도에서 뺌 */
+  .campus-metrics { position:relative; align-self:flex-start; height:0; overflow:visible; }
+  .campus-metrics > .kpis { display:none; }
+  .campus-metrics.is-open > .kpis { display:flex; position:absolute; top:46px; left:0; width:calc(100vw - 20px); z-index:70; }
+  /* 캠퍼스 3D(view-site)만 — 본사 3D(view-hq)의 하단 카드는 원래 배치 그대로 */
+  .surface-3d.view-site:not(.has-page) .bottom { display:flex; position:fixed; left:8px; right:8px; bottom:max(8px,env(safe-area-inset-bottom)); gap:4px; flex-direction:row; align-items:stretch; z-index:66; }
+  .surface-3d.view-site .bottom .footer, .desktop-legend { display:none; }
+  .mobile-legend { display:block; align-self:center; pointer-events:auto; }
+  .mobile-legend summary { display:flex; align-items:center; min-height:44px; padding:0 8px; background:#fff; border-radius:8px; font-size:12px; cursor:pointer; }
+  .mobile-legend .legend { position:absolute; bottom:100%; left:0; width:min(340px,calc(100vw - 16px)); max-height:45dvh; overflow:auto; }
+  .mobile-legend .legend-item { min-height:44px; padding:8px; }
+  .bottom .timeline { min-width:0; flex:1; margin:0; padding:6px; gap:6px; }
+  /* 날짜 단추와 '기준일·전망' 표시를 한 줄에 — 폭이 모자란 320px 에서만 두 줄로 내려감 (하단 띠 높이 절약) */
+  .bottom .tl-main { display:flex; flex-wrap:wrap; align-items:center; column-gap:6px; }
+  .bottom .tl-head { margin:0; }
+  .mobile-date-controls { display:flex; align-items:center; gap:2px; flex:1 1 170px; min-width:0; }
+  .mobile-date-controls button { min-height:44px; min-width:44px; border:0; background:#eef4f1; border-radius:6px; font-size:12px; }
+  .mobile-date-controls button:first-child { flex:1; }
+  .tl-head { flex-wrap:wrap; }
+  .tl-date { display:none; }
+  .tl-reset { margin:0; }
+  .tl-track, .tl-years { display:none; }
+  .tl-play { width:44px; height:44px; }
+  .mobile-date-picker { display:grid; gap:8px; padding:12px; background:#fff; border:1px solid #ccdcd4; border-radius:10px; }
+  .bottom .mobile-date-picker { position:absolute; bottom:100%; left:0; right:0; }
+  .mobile-date-picker input, .mobile-date-picker select { width:100%; min-width:0; min-height:44px; font-size:16px; }
+  .mobile-date-picker label { font-size:12px; }
+  .campus-panel.site-panel { bottom:calc(92px + env(safe-area-inset-bottom)); /* 하단 날짜 띠(58px, 320px 화면은 두 줄 75px) 바로 위 */ max-height:34dvh; }
+  .surface-map .campus-panel.site-panel { bottom:max(8px,env(safe-area-inset-bottom)); }
+  .campus-panel.is-collapsed .campus-heading { padding:0 10px 6px; }
+  .campus-panel.is-collapsed .campus-panel-handle { height:12px; }
+  .panel-size { display:inline-flex; align-items:center; justify-content:center; border:1px solid #ccdcd4; border-radius:8px; background:#fff; }
+  .campus-panel.site-panel.is-full { top:8px; bottom:calc(92px + env(safe-area-inset-bottom)); max-height:none; z-index:75; }
+  .surface-map .campus-panel.site-panel.is-full { bottom:8px; }
+}
+
+/* 가로 휴대폰: 패널은 오른쪽 좁은 칸, 펼치면 전체 화면 */
+@media (max-width:767px) and (max-height:500px), (max-width:1100px) and (pointer:coarse) and (max-height:500px) {
+  .campus-panel.site-panel { left:auto; width:250px; right:8px; max-height:calc(100dvh - 238px); }
+  .campus-panel.site-panel.is-collapsed { max-height:none; }
+  .campus-panel.site-panel.is-full { top:8px; bottom:8px; width:calc(100vw - 16px); max-height:none; }
+}
+
+@media (max-width:767px) and (max-height:500px), (max-width:1100px) and (pointer:coarse) and (max-height:500px) {
+  .campus-panel.site-panel:not(.is-collapsed) { left:8px; right:8px; top:8px; bottom:8px; width:auto; max-height:none; z-index:75; }
+  /* 가로 화면에선 펼친 패널이 이미 전체 화면이라 '크게/요약'이 할 일이 없음 → 숨김 */
+  .panel-size { display:none; }
+  .bottom .mobile-date-picker { max-height:calc(100dvh - 120px); overflow:auto; }
+}
+
+/* 터치 화면: 3D 안 라벨 단추·출처 링크는 겉모습(크기·겹침 계산)은 그대로 두고,
+   투명한 ::after 로 누를 수 있는 영역만 높이 44px 로 넓힘 */
+@media (max-width:767px), (max-width:1100px) and (pointer:coarse) {
+  /* zone-badge 는 이미 position:absolute 라 그대로 둠 (::after 의 기준 상자가 됨) */
+  .building-signal, .bld-label, .bld-figure, .hz-note-zoom, .kpi-sub a { position:relative; }
+  .building-signal::after, .bld-label::after, .bld-figure::after, .hz-note-zoom::after, .kpi-sub a::after, .zone-badge::after {
+    content:''; position:absolute; left:-4px; right:-4px; top:50%; height:44px; transform:translateY(-50%);
+  }
+}
+
+.mobile-date-controls button:disabled { opacity:.4; cursor:default; }

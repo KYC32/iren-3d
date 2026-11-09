@@ -78,11 +78,12 @@ export default function TopBar() {
       {inMap && data && <button className="lang-btn tour-btn" onClick={() => useAppStore.getState().startTour()} aria-label={t.tour.startTitle} title={t.tour.startTitle}>
         <Compass size={15} aria-hidden="true" /><span>{t.tour.start}</span>
       </button>}
-      <ShareButton lang={lang} title={view === 'site' && site ? pickName(site, lang) : isHq ? 'IREN HQ' : 'IREN'} />
+      <div className="desktop-secondary"><ShareButton lang={lang} title={view === 'site' && site ? pickName(site, lang) : isHq ? 'IREN HQ' : 'IREN'} />
       <button className="lang-btn" onClick={toggleLang} aria-label="language">
         <Languages size={15} /> {t.langToggle}
       </button>
-      <MenuButton t={t} />
+      </div>
+      <MenuButton t={t} lang={lang} title={view === 'site' && site ? pickName(site, lang) : isHq ? 'IREN HQ' : 'IREN'} />
       </div>
     </header>
   )
@@ -91,7 +92,8 @@ export default function TopBar() {
 // ≡ 메뉴 단추: 자주 보지 않는 것(갱신 기록·데이터·출처)을 오른쪽 서랍에 숨겨 둠 — AppMenu.jsx
 //   한 번 연 뒤로는 서랍을 붙여 둔 채 열고 닫기만 함 (다시 불러오지 않음)
 //   화면 아래 '데이터·출처' 링크는 menuEvents.openMenu('sources') 로 서랍을 열고 그 칸을 펼침
-function MenuButton({ t }) {
+//   lang·title: 휴대폰에서 메뉴 안에 넣는 공유·언어 단추용
+function MenuButton({ t, lang, title }) {
   const [open, setOpen] = useState(false)
   const [loaded, setLoaded] = useState(false) // 한 번이라도 열었나 (그 전엔 서랍 코드를 받지 않음)
   const [section, setSection] = useState(null) // 펼쳐 보여 줄 칸 (null = 서랍만)
@@ -106,7 +108,7 @@ function MenuButton({ t }) {
         aria-label={t.menu.open} title={t.menu.open} aria-haspopup="dialog" aria-expanded={open}>
         <Menu size={15} aria-hidden="true" />
       </button>
-      {loaded && <Suspense fallback={null}><AppMenu open={open} section={section} onClose={() => setOpen(false)} /></Suspense>}
+      {loaded && <Suspense fallback={null}><AppMenu open={open} section={section} onClose={() => setOpen(false)}><div className="mobile-menu-actions"><ShareButton lang={lang} title={title}/><button onClick={() => useAppStore.getState().toggleLang()}>{lang === "ko" ? "English로 변경" : "한국어로 변경"}</button></div></AppMenu></Suspense>}
     </>
   )
 }

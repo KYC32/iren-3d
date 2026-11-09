@@ -9,6 +9,8 @@ import { fmtMw, fmtMetric, energizeLabel } from '../data/format.js'
 import { reportedMetricsAt } from '../data/reportedMetrics.js'
 import { SINGLE_COMPANY } from '../config.js'
 import { growthPath } from '../data/outlook.js'
+// 휴대폰에선 KPI 판을 '전력 현황' 단추로 펼침 — 그 배치 CSS 를 이 판과 함께 받음 (TimelineSlider 와 공유)
+import './mobileHud.css'
 
 function MetricValue({ value }) {
   const parts = value.match(/^(.*?)\s+(MW|GW)$/)

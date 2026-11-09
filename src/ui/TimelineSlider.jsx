@@ -4,13 +4,15 @@
 // - 기준일(데이터 조사 날짜) 표시, 그 이후 구간은 빗금 = "회사 발표 목표 기준"
 // - 키보드 ←/→ 로 한 달씩
 // =============================================================
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Play, Pause, RotateCcw } from 'lucide-react'
 import { useAppStore, MONTH_MIN, MONTH_MAX } from '../store/useAppStore.js'
 import { useT } from '../i18n/useT.js'
-import { monthLabel } from '../data/timeline.js'
+import { monthLabel, monthKey, toMonth } from '../data/timeline.js'
 import { eventTicks } from '../data/events.js'
 import { advancePlayback } from './playback.js'
+// 휴대폰 3D 화면 배치 (하단 날짜 띠·패널 위치 등) — 이 컴포넌트와 함께 지연 로딩되어 첫 화면 용량에 안 들어감
+import './mobileHud.css'
 
 const STEP_MS = 200 // 재생 속도: 한 달에 0.2초 → 60개월 = 12초
 
@@ -39,8 +41,33 @@ function usePlayer() {
   }, [playing])
 }
 
+// 'YYYY-MM' 가 완성됐는지 (연도만 쓴 '2025' 나 쓰는 도중의 '2025-0' 은 아님)
+export const isCompleteMonth = (v) => /^\d{4}-(0[1-9]|1[0-2])$/.test(v)
+
+// 월 입력칸. type="month" 를 지원하지 않는 브라우저는 일반 글자 칸으로 보여 주므로,
+// 쓰는 도중의 값(draft)은 이 칸이 따로 들고 있다가 'YYYY-MM' 이 완성되고 범위 안일 때만 날짜를 바꿈.
+// (예전엔 칸 값을 날짜에 바로 묶어서, 쓰는 도중 값이 원래 날짜로 되돌아가 고칠 수 없었음)
+function MonthInput({ month, onPick }) {
+  const [draft, setDraft] = useState(monthKey(month))
+  // 다른 곳(−/+ 단추·일정 선택)에서 날짜가 바뀌면 칸도 따라감
+  useEffect(() => setDraft(monthKey(month)), [month])
+  return (
+    <input type="month" min={monthKey(MONTH_MIN)} max={monthKey(MONTH_MAX)} placeholder="YYYY-MM" value={draft}
+      onChange={(e) => {
+        const v = e.target.value
+        setDraft(v)
+        if (!isCompleteMonth(v)) return
+        const m = toMonth(v)
+        if (m >= MONTH_MIN && m <= MONTH_MAX) onPick(m)
+      }}
+      // 잘못된 값을 남긴 채 칸을 떠나면 지금 날짜로 되돌림
+      onBlur={() => setDraft(monthKey(month))} />
+  )
+}
+
 export default function TimelineSlider() {
   const t = useT()
+  const [datesOpen, setDatesOpen] = useState(false)
   const lang = useAppStore((s) => s.lang)
   const month = useAppStore((s) => s.month)
   const asOf = useAppStore((s) => s.asOfMonth)
@@ -60,7 +87,7 @@ export default function TimelineSlider() {
     const onKey = (e) => {
       if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return
       if (e.target instanceof Element && e.target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])')) return
-      if (e.target instanceof Element && e.target.closest('.maplibregl-map, .kpi-items, [role=tablist], dialog')) return
+      if (e.target instanceof Element && e.target.closest('.maplibregl-map, .kpi-items, .pf-table-wrap, [role=tablist], dialog')) return
       if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return
       e.preventDefault()
       const st = useAppStore.getState()
@@ -83,6 +110,27 @@ export default function TimelineSlider() {
         {playing ? <Pause size={16} /> : <Play size={16} />}
       </button>
       <div className="tl-main">
+        <div className="mobile-date-controls">
+          <button aria-expanded={datesOpen} onClick={() => setDatesOpen(!datesOpen)}>{monthLabel(month, lang)} ▾</button>
+          <button disabled={month <= MONTH_MIN} aria-label={lang === 'ko' ? '이전 달' : 'Previous month'} onClick={() => { setPlaying(false); setMonth(month - 1) }}>−</button>
+          <button disabled={month >= MONTH_MAX} aria-label={lang === 'ko' ? '다음 달' : 'Next month'} onClick={() => { setPlaying(false); setMonth(month + 1) }}>+</button>
+        </div>
+        {datesOpen && <div className="mobile-date-picker">
+          <label>{lang === 'ko' ? '날짜 선택' : 'Select date'}
+            <MonthInput month={month} onPick={(m) => { setPlaying(false); setMonth(m) }} />
+          </label>
+          <select aria-label={lang === 'ko' ? '일정으로 이동' : 'Jump to event'} value="" onChange={e => {
+            if (!e.target.value) return
+            setPlaying(false)
+            setMonth(Number(e.target.value))
+            setDatesOpen(false)
+          }}>
+            <option value="">{lang === 'ko' ? '일정으로 이동' : 'Jump to event'}</option>
+            {ticks.map(k => <option key={k.month} value={k.month}>
+              {monthLabel(k.month, lang)} · {k.events.map(e => lang === 'ko' ? e.title_ko : e.title_en).join(' / ')}
+            </option>)}
+          </select>
+        </div>}
         <div className="tl-head">
           <span className="tl-date">{monthLabel(month, lang)}</span>
           {future ? <span className="tl-badge future">{t.timeline.future}</span> : month === asOf ? <span className="tl-badge">{t.timeline.asOf}</span> : null}

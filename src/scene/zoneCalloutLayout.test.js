@@ -53,3 +53,19 @@ it('calloutEnd: 라벨 가장자리에서 4px 안쪽까지는 덮인 것으로 �
   const near = { left: 12, top: -5, right: 20, bottom: 5 }           // 모서리(10,0)에서 2px 떨어진 칩
   expect(calloutEnd(corners, { x: 0, y: 0 }, [near])).toEqual({ x: 30, y: 0 })
 })
+
+// 모바일에서 3D 위에 떠 있는 '전력 현황' 단추 자리에는 배지를 놓지 않음 (320px 에서 NVIDIA 배지가 단추 밑에 깔렸음)
+it('떠 있는 단추(blocked) 자리를 피해 배지를 놓음', () => {
+  const footprint = [{ x: 140, y: 250 }, { x: 200, y: 300 }, { x: 140, y: 350 }, { x: 80, y: 300 }]
+  const safe = { left: 18, right: 302, top: 202, bottom: 398 }
+  const item = { key: 'nv', anchor: { x: 60, y: 210 }, width: 80, height: 30 }
+  const free = placeZoneCallouts([item], footprint, safe)
+  const toggle = { left: 10, right: 109, top: 192, bottom: 236 }
+  // 피할 영역이 없으면 단추와 겹치는 왼쪽 위에 놓였을 자리
+  expect(free[0].rect.top).toBeLessThan(toggle.bottom)
+  const placed = placeZoneCallouts([item], footprint, safe, [toggle])
+  expect(placed).toHaveLength(1)
+  const r = placed[0].rect
+  const overlaps = r.left < toggle.right && r.right > toggle.left && r.top < toggle.bottom && r.bottom > toggle.top
+  expect(overlaps).toBe(false)
+})
