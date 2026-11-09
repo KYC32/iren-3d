@@ -43,7 +43,7 @@ describe('upcomingEvents', () => {
     const targets = up.filter((e) => e.kind === 'other' && e.basis === 'target' && e.title_ko.includes('GW(IT)'))
     expect(targets.map((e) => e.when)).toEqual(['2027-01', '2027-12'])
   })
-  it('Horizon 2 가동 목표(2026-Q4)와 Sweetwater 2 통전 목표가 들어 있음', () => {
+  it('Horizon 2 가동 목표(2027-01)와 Sweetwater 2 통전 목표가 들어 있음', () => {
     expect(up.some((e) => e.buildingId === 'horizon-2' && e.status === 'operating')).toBe(true)
     expect(up.some((e) => e.siteId === 'sweetwater-2' && e.kind === 'power')).toBe(true)
   })

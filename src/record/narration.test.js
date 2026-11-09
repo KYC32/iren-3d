@@ -15,7 +15,7 @@ describe('numbersOf — 글 속 숫자', () => {
     expect(numbersOf('1.4GW 변전소 통전 완료 (2026.05)')).toEqual([1.4, 2026, 5])
   })
   it('범위·단위·통화 기호가 붙어도 숫자만', () => {
-    expect(numbersOf('Horizon 2~4 — 2026년 4분기 납품 목표 (GB300)')).toEqual([2, 4, 2026, 4, 300])
+    expect(numbersOf('Horizon 2-4 — 2027년 1월 납품 목표 (GB300)')).toEqual([2, 4, 2027, 1, 300])   // '2-4'의 '-'는 음수 부호로 읽지 않음
     expect(numbersOf('수주잔고 $13bn+ · 확보 전력 5.6GW')).toEqual([13, 5.6])
   })
 })

@@ -66,7 +66,7 @@ export function buildCards(data, lang = 'ko') {
     { t0: 0.6, t1: 6.3, kind: 'title', title: 'IREN 데이터센터 현황', sub: `비트코인 채굴에서 AI 클라우드로 · ${f.sites}개 사이트 ${f.secured}` },
     { t0: 9.4, t1: 19.2, kind: 'header', title: place(f.ch), sub: `계통 ${f.chGrid} · 자사 변전소 ${f.chKv}` },
     { t0: 10.6, t1: 13.6, kind: 'caption', tone: 'operating', text: 'Horizon 1 가동 — Microsoft 인도 완료 (2026.08)' },
-    { t0: 13.6, t1: 16.6, kind: 'caption', tone: 'commissioning', text: 'Horizon 2~4 — 2026년 4분기 납품 목표 (GB300)' },
+    { t0: 13.6, t1: 16.6, kind: 'caption', tone: 'commissioning', text: 'Horizon 2-4 — 2027년 1월 납품 목표 (GB300)' },   // Q1 FY27(2026-11-05): Microsoft 요청 네트워크 설계 변경으로 2026년 4분기 → 2027년 1월
     { t0: 16.6, t1: 19.3, kind: 'caption', tone: 'planned', text: `채굴동 ${f.chMining} — 2026년 말 폐쇄, AI로 전환` },
     { t0: 19.9, t1: 27.8, kind: 'header', title: place(f.sw), sub: `${f.swGrid} 변전소 통전 완료 (${dotMonth(f.swOn)})` },
     { t0: 21.0, t1: 24.4, kind: 'caption', tone: 'under_construction', text: '1단계 300MW 건설중 — 2027년 4분기 납품 목표' },
@@ -76,7 +76,7 @@ export function buildCards(data, lang = 'ko') {
     { t0: 0.6, t1: 6.3, kind: 'title', title: 'IREN Data Center Map', sub: `From bitcoin mining to AI cloud · ${f.sites} sites, ${f.secured}` },
     { t0: 9.4, t1: 19.2, kind: 'header', title: place(f.ch), sub: `${f.chGrid} grid · own ${f.chKv} substation` },
     { t0: 10.6, t1: 13.6, kind: 'caption', tone: 'operating', text: 'Horizon 1 live — delivered to Microsoft (Aug 2026)' },
-    { t0: 13.6, t1: 16.6, kind: 'caption', tone: 'commissioning', text: 'Horizon 2–4 — Q4 2026 delivery target (GB300)' },
+    { t0: 13.6, t1: 16.6, kind: 'caption', tone: 'commissioning', text: 'Horizon 2–4 — Jan 2027 delivery target (GB300)' },
     { t0: 16.6, t1: 19.3, kind: 'caption', tone: 'planned', text: `Mining halls ${f.chMining} — wound down by end-2026` },
     { t0: 19.9, t1: 27.8, kind: 'header', title: place(f.sw), sub: `${f.swGrid} substation energized (${monthLabel(toMonth(f.swOn.slice(0, 7)), 'en')})` },
     { t0: 21.0, t1: 24.4, kind: 'caption', tone: 'under_construction', text: 'Phase 1, 300MW under construction — Q4 2027' },
@@ -102,7 +102,7 @@ export const NARRATION = {
   ko: [
     { t0: 0.7, t1: 6.4, say: '아이렌 데이터센터 현황입니다. 비트코인 채굴에서 AI 클라우드로 바뀌고 있습니다.' },
     { t0: 9.4, t1: 14.4, say: '차일드레스의 호라이즌 1은 마이크로소프트에 인도됐습니다.' },
-    { t0: 14.4, t1: 19.5, say: '호라이즌 2에서 4는 4분기 납품이 목표이고, 채굴동은 연말에 닫습니다.' },
+    { t0: 14.4, t1: 19.5, say: '호라이즌 2에서 4는 내년 1월 납품이 목표이고, 채굴동은 연말에 닫습니다.' },   // '2027년 1월'은 5.1초 칸에 1.15배로도 빠듯해 '내년'으로 줄임
     { t0: 19.9, t1: 27.9, say: '스위트워터 1은 1.4기가와트 변전소가 통전됐고, 1단계 300메가와트를 짓고 있습니다.' },
     { t0: 28.4, t1: DURATION, say: '확보 전력은 5.6기가와트입니다. 비공식 자료이며, 투자 조언이 아닙니다.' },
   ],

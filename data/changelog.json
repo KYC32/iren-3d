@@ -4,6 +4,11 @@
       "date": "2026-11-09",
       "items": [
         {
+          "ko": "소개 영상 자막과 내레이션의 Horizon 2-4 납품 목표를 2026년 4분기에서 2027년 1월로 고침. Microsoft 요청에 따른 네트워크 설계 변경 때문임",
+          "en": "The intro video's caption and narration now give Jan 2027, not Q4 2026, as the Horizon 2–4 delivery target, after a Microsoft-requested network design change",
+          "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
+        },
+        {
           "ko": "약속 장부: 2026년 AI 클라우드 480MW 약속의 진행값을 10-Q 기준 약 93MW(9/30)로, ARR 약속 3건의 진행 출처를 Q1 FY27 발표로 바꿈",
           "en": "Promise ledger: progress on the 480MW AI Cloud 2026 promise is now ~93MW per the 10-Q (Sep 30), and three ARR promises cite the Q1 FY27 release",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000066/iren-20260930.htm"
