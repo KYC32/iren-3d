@@ -12,6 +12,10 @@
           "ko": "소개 영상 마지막 자막의 계약 잔액이 옛 값 $16.6bn으로 나오던 것을 고침. 이제 최신 값 $20.3bn을 씀",
           "en": "The intro video's closing card showed the old $16.6bn backlog; it now uses the latest $20.3bn",
           "source": "https://www.sec.gov/Archives/edgar/data/1878848/000187884826000065/irenreportsq1-fy27result.htm"
+        },
+        {
+          "ko": "3D 부지 화면을 가볍게 함: 같이 움직이는 조각을 한 덩어리로 합쳐 차일드레스의 프레임당 그리기 호출이 695번에서 336번으로 줄어듦. 화면 모습은 그대로",
+          "en": "Lighter 3D campus view: parts that move together now draw as one mesh, cutting Childress draw calls per frame from 695 to 336. Same look"
         }
       ]
     },

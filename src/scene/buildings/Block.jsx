@@ -11,7 +11,7 @@
 // 완성된 데이터홀을 선택하면 지붕을 걷어 낸 단면으로 바뀌고 추정 GPU 랙이 줄지어 솟아오릅니다 (HallInterior).
 // 실제 모양 3D 모형(GLB)이 있는 건물(block.model — 차일드레스 Horizon 1~4)은 상자 대신 그 모형으로 그립니다 (HorizonHall).
 // =============================================================
-import { Component, Suspense, lazy, useLayoutEffect, useMemo, useRef } from 'react'
+import { Component, Suspense, lazy, useEffect, useLayoutEffect, useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { RoundedBox, Line } from '@react-three/drei'
 import { styleOf, PENDING_COLOR } from '../../data/statusStyle.js'
@@ -19,6 +19,9 @@ import { PhotoMiningHall } from './PhotoReferencedCampus.jsx'
 import { useReducedMotion } from '../useReducedMotion.js'
 import { nightMaterials } from '../nightLights.js'
 import HallInterior from './HallInterior.jsx'
+import { BoxGeometry, MeshStandardMaterial } from 'three'
+import { partOf } from '../mergeStatic.js'
+import MergedParts from '../MergedParts.jsx'
 
 // Horizon 3D 모형 + GLTFLoader·meshopt 해제기: 그 건물을 처음 그릴 때만 받음 (첫 3D 지도 예산에 안 들어감)
 const HorizonHall = lazy(() => import('./HorizonHall.jsx'))
@@ -26,6 +29,8 @@ const HorizonHall = lazy(() => import('./HorizonHall.jsx'))
 const BODY = '#eef1f5'      // 건물 외벽 (밝은 흰색)
 const CONCRETE = '#d9dde8'  // 슬래브
 const STEEL = '#8f99b3'     // 골조
+// 골조 기둥 재질: 모든 건설 중 블록이 같이 씀 (기둥끼리 합칠 때 재질이 하나면 그대로 둠)
+const STEEL_MAT = new MeshStandardMaterial({ color: STEEL })
 
 // 마우스 판정에서 빼는 표시 (불빛 웅덩이는 건물보다 넓어서, 판정에 넣으면 옆 빈 땅에서도 호버가 걸림)
 export const noHit = () => null
@@ -281,11 +286,15 @@ export function NightWindows({ w, d, h, material, rows = [0.34, 0.66] }) {
 function ConstructionHall({ w, d, h, progress = 0.3 }) {
   const st = styleOf('under_construction')
   const wallH = Math.max(0.15, h * progress)
-  // 기둥 위치: 네 모서리 + 긴 변 중간
-  const cols = [
-    [-w / 2, -d / 2], [w / 2, -d / 2], [-w / 2, d / 2], [w / 2, d / 2],
-    [-w / 2, 0], [w / 2, 0],
-  ]
+  // 기둥 위치: 네 모서리 + 긴 변 중간 → 같은 강철 재질 조각 6개 (MergedParts 가 하나로 합쳐 그림)
+  const columns = useMemo(() => {
+    const geometry = new BoxGeometry(0.16, h, 0.16)
+    return [
+      [-w / 2, -d / 2], [w / 2, -d / 2], [-w / 2, d / 2], [w / 2, d / 2],
+      [-w / 2, 0], [w / 2, 0],
+    ].map(([cx, cz]) => partOf(geometry, STEEL_MAT, { position: [cx * 0.97, h / 2, cz * 0.97], castShadow: true }))
+  }, [w, d, h])
+  useEffect(() => () => columns[0].geometry.dispose(), [columns]) // 원본 기둥 모양은 합친 뒤 필요 없으니 정리
   // 지붕 높이의 테두리 보 (선)
   const top = h
   const beam = [
@@ -297,12 +306,8 @@ function ConstructionHall({ w, d, h, progress = 0.3 }) {
         <boxGeometry args={[w + 0.3, 0.16, d + 0.3]} />
         <meshStandardMaterial color={CONCRETE} roughness={0.9} />
       </mesh>
-      {cols.map(([cx, cz], i) => (
-        <mesh key={i} position={[cx * 0.97, h / 2, cz * 0.97]} castShadow>
-          <boxGeometry args={[0.16, h, 0.16]} />
-          <meshStandardMaterial color={STEEL} />
-        </mesh>
-      ))}
+      {/* 기둥 6개를 메시 하나로 (건설 중 블록이 많은 캠퍼스에서 그리기 호출이 블록마다 10번 줄어듦) */}
+      <MergedParts parts={columns} />
       <Line points={beam} color={STEEL} lineWidth={1.5} />
       {/* 진행률만큼 올라온 벽 (반투명 코럴) */}
       <mesh position={[0, 0.16 + wallH / 2, 0]} castShadow>

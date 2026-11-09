@@ -8,6 +8,7 @@
 import { Box3, InstancedMesh, Matrix4, Object3D } from 'three'
 import { readJson } from '../horizonHall.js'
 import { loadPackedGlb } from './packedGlb.js'   // gzip GLB 받기·풀기·읽기 (캠퍼스 소품과 공용)
+import { mergeObjects, MERGE_ON } from '../mergeStatic.js' // 움직이지 않는 부품을 겉모습별로 합쳐 그리기 호출을 줄임
 
 const MODEL_URL = '/models/horizon-hall.glb.gz'
 const noHit = () => null   // 마우스 판정에서 뺌
@@ -34,6 +35,7 @@ function prepare(scene) {
   const racks = root.getObjectByName('HZ_racks')?.userData ?? {}
   const box = new Box3().setFromObject(root.getObjectByName('HZ_shell'))
   return {
+    root,                                       // 부품 좌표의 기준 틀 (캠퍼스용 합친 부품을 만들 때 씀)
     info: root.userData,                        // 근거 요약 (note_ko/en), 부지·건물 크기, 랙 수
     lot: readJson(root.userData.lot_m, [60, 90]),
     parts,
@@ -46,9 +48,23 @@ function prepare(scene) {
   }
 }
 
+// 캠퍼스용 합친 부품: 묶음(always·closed·open)마다 부품 수십 개를 메시 몇 개로 (모형 한 번에 한 번만 만듦)
+//   닫힌 Horizon 1동이 메시 39개 → 3개 (부품마다 하나씩이던 그리기 호출 + 그림자 호출이 줄어듦)
+//   상태색 띠(HZ_status)는 건물마다 색을 바꿔야 해서 따로 남음 (mergeStatic.js 의 규칙)
+function mergedParts(model) {
+  model.merged ??= {
+    always: [mergeObjects(model.parts.always, model.root)],
+    closed: [mergeObjects(model.parts.closed, model.root)],
+    open: [mergeObjects(model.parts.open, model.root)],
+  }
+  return model.merged
+}
+
 // 이 화면만의 사본: 기하·재질은 같이 쓰고, 상태색 띠 재질만 따로 (색을 바꾸려고)
-//   pickable = false (캠퍼스): 삼각형 수만 개를 마우스 판정에서 뺌 / true (확대 창): 부품을 눌러 고를 수 있게 둠
+//   pickable = false (캠퍼스): 합친 부품을 씀 + 삼각형 수만 개를 마우스 판정에서 뺌
+//   pickable = true (확대 창): 부품을 눌러 고를 수 있게 원래 부품을 그대로 둠
 export function cloneParts(model, { pickable = false } = {}) {
+  const source = pickable || !MERGE_ON ? model.parts : mergedParts(model)
   const status = []
   const copy = (list) => list.map((part) => {
     const c = part.clone(true)
@@ -63,7 +79,7 @@ export function cloneParts(model, { pickable = false } = {}) {
     })
     return c
   })
-  return { always: copy(model.parts.always), closed: copy(model.parts.closed), open: copy(model.parts.open), status }
+  return { always: copy(source.always), closed: copy(source.closed), open: copy(source.open), status }
 }
 
 // 랙 자리 하나의 행렬 (위치 + 세로축 회전)

@@ -5,13 +5,15 @@ import { useMemo, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Line, Instances, Instance } from '@react-three/drei'
 import { CampusLabel } from '../CampusLabel.jsx'
-import { CatmullRomCurve3, Vector3 } from 'three'
+import { BoxGeometry, CatmullRomCurve3, MeshStandardMaterial, Vector3 } from 'three'
 import { styleOf, PENDING_COLOR } from '../../data/statusStyle.js'
 import { fmtMw } from '../geo.js'
 import { energizeLabel } from '../../data/format.js'
 import { POWER_FLOW_COLOR } from '../powerFlow.js'
 import { useReducedMotion } from '../useReducedMotion.js'
 import { nightMaterials } from '../nightLights.js'
+import { partOf } from '../mergeStatic.js'
+import MergedParts from '../MergedParts.jsx'
 
 // ---------- 변전소 ----------
 export function Substation({ sub, t, showLabel = true, children }) {
@@ -66,6 +68,15 @@ export function Substation({ sub, t, showLabel = true, children }) {
 }
 
 // ---------- 타워 크레인 (건설중 표시) ----------
+// 크레인 지브(도는 팔) 조각: 모든 크레인이 같이 씀. 그림자를 드리우는 팔·평형추 / 드리우지 않는 갈고리 줄·갈고리
+const HOOK_MAT = new MeshStandardMaterial({ color: '#55627f' })
+const JIB_PARTS = [
+  partOf(new BoxGeometry(5.2, 0.22, 0.24), new MeshStandardMaterial({ color: PENDING_COLOR }), { position: [1.8, 0, 0], castShadow: true }), // 팔
+  partOf(new BoxGeometry(0.7, 0.45, 0.5), new MeshStandardMaterial({ color: '#6f7a95' }), { position: [-1.4, -0.15, 0], castShadow: true }), // 평형추
+  partOf(new BoxGeometry(0.03, 2.4, 0.03), HOOK_MAT, { position: [3.6, -1.2, 0] }),  // 갈고리 줄
+  partOf(new BoxGeometry(0.35, 0.2, 0.35), HOOK_MAT, { position: [3.6, -2.45, 0] }), // 갈고리
+]
+
 export function Crane({ x, z, seed = 0 }) {
   const jib = useRef()
   useFrame((_, delta) => { if (jib.current) jib.current.rotation.y += delta * 0.25 })
@@ -81,26 +92,11 @@ export function Crane({ x, z, seed = 0 }) {
         <sphereGeometry args={[0.15, 8, 6]} />
       </mesh>
       <group ref={jib} position={[0, H, 0]} rotation={[0, seed * 1.7, 0]}>
-        <mesh position={[1.8, 0, 0]} castShadow>
-          <boxGeometry args={[5.2, 0.22, 0.24]} />
-          <meshStandardMaterial color={PENDING_COLOR} />
-        </mesh>
-        <mesh position={[-1.4, -0.15, 0]} castShadow>
-          <boxGeometry args={[0.7, 0.45, 0.5]} />
-          <meshStandardMaterial color="#6f7a95" />
-        </mesh>
+        {/* 팔·평형추·갈고리 줄·갈고리: 함께 도는 조각이라 겉모습별로 합쳐 메시 2개로 (JIB_PARTS) */}
+        <MergedParts parts={JIB_PARTS} />
         {/* 밤에 깜빡이는 빨간 항공 장애등 (지브 끝) — 낮에는 재질이 꺼져 있음 */}
         <mesh position={[4.3, 0.2, 0]} material={nightMaterials().aviation} raycast={() => null}>
           <sphereGeometry args={[0.13, 8, 6]} />
-        </mesh>
-        {/* 갈고리 줄 */}
-        <mesh position={[3.6, -1.2, 0]}>
-          <boxGeometry args={[0.03, 2.4, 0.03]} />
-          <meshStandardMaterial color="#55627f" />
-        </mesh>
-        <mesh position={[3.6, -2.45, 0]}>
-          <boxGeometry args={[0.35, 0.2, 0.35]} />
-          <meshStandardMaterial color="#55627f" />
         </mesh>
       </group>
     </group>

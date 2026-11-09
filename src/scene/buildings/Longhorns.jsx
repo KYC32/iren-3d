@@ -12,6 +12,8 @@ import { useFrame } from '@react-three/fiber'
 import { CatmullRomCurve3, CircleGeometry, CylinderGeometry, MeshBasicMaterial, MeshStandardMaterial, SphereGeometry, TubeGeometry, Vector3 } from 'three'
 import { longhornPose } from '../longhornMotion.js'
 import { useReducedMotion } from '../useReducedMotion.js'
+import { partOf } from '../mergeStatic.js'
+import MergedParts from '../MergedParts.jsx'
 
 // 롱혼의 상징인 긴 뿔 (오른쪽 한 개). 왼쪽은 그릴 때 x 를 뒤집어(scale -1) 재사용
 function hornGeometry() {
@@ -61,53 +63,77 @@ function Longhorn({ index, side, relief, assets, reducedMotion }) {
     shadow.current.position.set(pose.x,pose.y-.045,pose.z)
     shadow.current.rotation.z = pose.heading
   })
-  // 몸 조각 하나 그리기 도우미: 공(sphere)을 늘려 타원체로 만듦 (기본 재질은 바탕색)
-  const part = (position,scale,material=coat,rotation) => <mesh geometry={assets.sphere} material={material} position={position} scale={scale} rotation={rotation} castShadow/>
+  // 부위(몸통·머리·다리·꼬리)마다 조각 목록. 같이 움직이는 조각이라 MergedParts 가 부위마다 메시 1개로 합쳐 그림
+  //   (전엔 소 1마리가 메시 34개 → 그림자까지 그리기 호출 약 67번, 지금은 메시 8개 → 약 15번)
+  const parts = useMemo(() => cowParts(assets, coat, patch), [assets, coat, patch])
   return <group name={`longhorn-${index}`}>
     {/* 바닥 그림자: 원을 눕히고 앞뒤로 길게(1.5배) 늘린 타원 */}
     <mesh ref={shadow} geometry={assets.shadowGeometry} material={assets.shadowMaterial} rotation={[-Math.PI/2,0,rest.heading]} position={[rest.x,rest.y-.045,rest.z]} scale={[.67*rest.scale,1.5*rest.scale,1]}/>
     <group ref={root} position={[rest.x,rest.y,rest.z]} rotation={[0,rest.heading,0]} scale={rest.scale}>
-      {/* 몸통 뒤쪽·어깨·가슴 아래 (z 가 + 쪽이 앞) */}
-      {part([0,1.22,-.1],[.55,.57,1.02])}
-      {part([0,1.31,.54],[.48,.59,.46])}
-      {part([0,.97,.68],[.26,.32,.33])}
-      {[-1,1].map(s=><group key={s}>
-        {/* 불규칙한 크림/적갈색 얼룩 덕분에 캠퍼스 전체 화면에서도 소로 알아볼 수 있음 */}
-        {part([s*.5,1.3,-.36],[.075,.33,.44],patch,[0,0,s*.12])}
-        {part([s*.49,1.16,.25],[.085,.26,.24],patch,[0,0,-s*.2])}
-      </group>)}
+      <MergedParts parts={parts.body}/>
       {/* 머리: 목덜미 위치를 축으로 숙였다 들었다 함 (풀 뜯기) */}
       <group ref={head} position={[0,1.28,.68]} rotation={[rest.head,0,0]}>
-        {/* 뒷머리·긴 얼굴·얼굴 줄무늬 얼룩·주둥이 */}
-        {part([0,-.02,.26],[.29,.34,.38])}
-        {part([0,-.2,.62],[.22,.25,.47],coat,[.22,0,0])}
-        {part([0,-.13,.59],[.12,.23,.4],patch,[.22,0,0])}
-        {part([0,-.32,1.01],[.26,.17,.2],assets.muzzle)}
-        {/* 좌우 대칭: 뿔(왼쪽은 x 를 뒤집어 재사용)·귀·눈·콧구멍 */}
-        {[-1,1].map(s=><group key={s}>
-          <group scale={[s,1,1]}><mesh geometry={assets.horn} material={assets.ivory} castShadow/></group>
-          {part([s*.42,.05,.24],[.24,.08,.12],coat,[0,0,s*.15])}
-          {part([s*.256,.04,.45],[.033,.04,.043],assets.dark)}
-          {part([s*.12,-.28,1.17],[.043,.025,.02],assets.dark)}
-        </group>)}
+        <MergedParts parts={parts.head}/>
       </group>
       {/* 다리 4개: s = 왼(-1)/오른(1), end = 뒤(-1)/앞(1). 번호 i = 0 왼뒤, 1 왼앞, 2 오른뒤, 3 오른앞 */}
-      {/* 다리 하나 = 허벅지(구) + 정강이(원기둥) + 짙은 발굽 */}
       {[-1,1].flatMap((s,j)=>[-1,1].map((end,k)=>{
         const i=j*2+k
         return <group key={i} ref={el=>{legs.current[i]=el}} position={[s*.36,.98,end*.67-.07]}>
-          {part([0,-.2,0],[.15,.3,.17])}
-          <mesh geometry={assets.cylinder} material={coat} position={[0,-.57,.025]} scale={[.085,.55,.085]} castShadow/>
-          {part([0,-.89,.045],[.12,.1,.16],assets.dark)}
+          <MergedParts parts={parts.leg}/>
         </group>
       }))}
-      {/* 꼬리: 가는 원기둥 + 끝의 짙은 털뭉치. 엉덩이 위를 축으로 좌우로 흔듦 */}
+      {/* 꼬리: 엉덩이 위를 축으로 좌우로 흔듦 */}
       <group ref={tail} position={[0,1.48,-1.01]}>
-        <mesh geometry={assets.cylinder} material={coat} position={[0,-.43,-.09]} scale={[.045,.9,.045]} rotation={[.18,0,0]} castShadow/>
-        {part([0,-.87,-.17],[.09,.18,.075],assets.dark)}
+        <MergedParts parts={parts.tail}/>
       </group>
     </group>
   </group>
+}
+
+// 소 한 마리의 부위별 조각 목록 (좌표는 각 부위 group 기준, z 가 + 쪽이 앞)
+//   coat = 바탕 털색, patch = 얼룩색. 몸 조각은 공(sphere)을 늘린 타원체, 정강이·꼬리는 원기둥
+function cowParts(assets, coat, patch) {
+  // 몸 조각 하나: 공을 늘려 타원체로 (기본 재질은 바탕색), 모두 그림자를 드리움
+  const part = (position,scale,material=coat,rotation) => partOf(assets.sphere, material, { position, scale, rotation, castShadow: true })
+  const both = (make) => [-1,1].flatMap(make) // 좌우 대칭 조각 한 쌍
+  return {
+    body: [
+      // 몸통 뒤쪽·어깨·가슴 아래
+      part([0,1.22,-.1],[.55,.57,1.02]),
+      part([0,1.31,.54],[.48,.59,.46]),
+      part([0,.97,.68],[.26,.32,.33]),
+      // 불규칙한 크림/적갈색 얼룩 덕분에 캠퍼스 전체 화면에서도 소로 알아볼 수 있음
+      ...both(s=>[
+        part([s*.5,1.3,-.36],[.075,.33,.44],patch,[0,0,s*.12]),
+        part([s*.49,1.16,.25],[.085,.26,.24],patch,[0,0,-s*.2]),
+      ]),
+    ],
+    head: [
+      // 뒷머리·긴 얼굴·얼굴 줄무늬 얼룩·주둥이
+      part([0,-.02,.26],[.29,.34,.38]),
+      part([0,-.2,.62],[.22,.25,.47],coat,[.22,0,0]),
+      part([0,-.13,.59],[.12,.23,.4],patch,[.22,0,0]),
+      part([0,-.32,1.01],[.26,.17,.2],assets.muzzle),
+      // 좌우 대칭: 뿔(왼쪽은 x 를 뒤집어 재사용)·귀·눈·콧구멍
+      ...both(s=>[
+        partOf(assets.horn, assets.ivory, { scale: [s,1,1], castShadow: true }),
+        part([s*.42,.05,.24],[.24,.08,.12],coat,[0,0,s*.15]),
+        part([s*.256,.04,.45],[.033,.04,.043],assets.dark),
+        part([s*.12,-.28,1.17],[.043,.025,.02],assets.dark),
+      ]),
+    ],
+    // 다리 하나 = 허벅지(구) + 정강이(원기둥) + 짙은 발굽
+    leg: [
+      part([0,-.2,0],[.15,.3,.17]),
+      partOf(assets.cylinder, coat, { position: [0,-.57,.025], scale: [.085,.55,.085], castShadow: true }),
+      part([0,-.89,.045],[.12,.1,.16],assets.dark),
+    ],
+    // 꼬리 = 가는 원기둥 + 끝의 짙은 털뭉치
+    tail: [
+      partOf(assets.cylinder, coat, { position: [0,-.43,-.09], scale: [.045,.9,.045], rotation: [.18,0,0], castShadow: true }),
+      part([0,-.87,-.17],[.09,.18,.075],assets.dark),
+    ],
+  }
 }
 
 // side: 캠퍼스 한 변 길이(월드 단위), relief: 지형 굴곡 정도
