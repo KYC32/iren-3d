@@ -41,7 +41,10 @@ export default function ZoneCallouts({zones,box,selectedKey,onSelect,lang}){
       if(anchor.z < -1 || anchor.z>1 || anchor.x<safe.left || anchor.x>safe.right || anchor.y<safe.top || anchor.y>safe.bottom)return []
       return [{key:zone.key,anchor,width:button.offsetWidth,height:button.offsetHeight}]
     })
-    const placed=placeZoneCallouts(items,footprint,safe)
+    // 모바일: '전력 현황' 단추가 3D 위에 떠 있으므로 배지가 그 밑에 깔리지 않게 피함 (캔버스 좌표로 바꿔 넘김)
+    const toggle=document.querySelector('.metrics-toggle')?.getBoundingClientRect()
+    const blocked=toggle?.width?[{left:toggle.left-canvas.left,right:toggle.right-canvas.left,top:toggle.top-canvas.top,bottom:toggle.bottom-canvas.top}]:[]
+    const placed=placeZoneCallouts(items,footprint,safe,blocked)
     for(const zone of zones){
       const button=buttons.current[zone.key],path=paths.current[zone.key],dot=dots.current[zone.key]
       if(!button||!path||!dot)continue

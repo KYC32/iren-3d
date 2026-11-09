@@ -1,4 +1,4 @@
-import { useEffect, useRef, lazy, Suspense } from 'react'
+import { useEffect, useState, useRef, lazy, Suspense } from 'react'
 import { ChevronRight, Box, Map as MapIcon, ArrowUpRight, X } from 'lucide-react' // MapIcon: 자바스크립트 기본 Map 과 이름 겹침 방지
 import { useAppStore, selectSelectedSite } from '../store/useAppStore.js'
 import { pickName, useT } from '../i18n/useT.js'
@@ -11,12 +11,11 @@ import { styleOf } from '../data/statusStyle.js'
 import EvidenceCard from './research/EvidenceCard.jsx'
 import PlanHistory from './research/PlanHistory.jsx'
 import PhotoGallery from './research/PhotoGallery.jsx'
-import { campusAppearance } from '../scene/campusAppearance.js'
-import { campusLandscape } from '../scene/campusLandscape.js'
 import { CustomerLogo, logoKeyOf } from './logos/index.jsx'
 import HallEstimateCard from './HallEstimateCard.jsx'
 // 전력·통신 이중화 · 현장 진척(제3자 관찰) 칸 — 따로 불러와 첫 화면 번들에 안 들어감
 const SiteFacts = lazy(() => import('./SiteFacts.jsx'))
+const ModelReference = lazy(() => import('./ModelReference.jsx')) // 3D 경관·출처 칸 (큰 경관 표를 첫 화면 번들에서 뺌)
 const FigureButton = lazy(() => import('./FigureButton.jsx')) // 고른 건물의 그림(전력 경로·홀 안) 단추
 const SiteNews = lazy(() => import('./SiteNews.jsx')) // 캠퍼스 최근 소식 목록 (현황 페이지와 같은 조각)
 const SiteRules = lazy(() => import('./SiteRules.jsx')) // 지역 규제 칸 (미국 부지 · 데이터센터 유예·제한, data/restrictions.json)
@@ -26,6 +25,8 @@ const TABS={overview:['현황','Overview'],history:['계획 이력','Plan histor
 export default function CampusPanel(){
   const site=useAppStore(selectSelectedSite), st=useAppStore(), t=useT(), panel=useRef(null)
   const {lang,month,detailTab,selectedBuildingId,selectedZoneKey,campusPanelCollapsed:collapsed}=st, ko=lang==='ko'
+  const [full, setFull]=useState(false)
+  useEffect(()=>setFull(false),[site?.id,collapsed])
   const gesture=useRef(null), dragged=useRef(false)
   const togglePanel=()=>st.setCampusPanelCollapsed(!collapsed)
   const panelAction=collapsed?(ko?'설명 패널 펼치기':'Expand details'):(ko?'설명 패널 접기':'Collapse details')
@@ -47,20 +48,18 @@ export default function CampusPanel(){
   }
   useEffect(()=>{panel.current?.scrollTo({top:0})},[site?.id,detailTab,selectedZoneKey,selectedBuildingId])
   if(!site)return null
-  const appearance=campusAppearance(site.id)
-  const landscape=campusLandscape(site.id)
   const research=st.data.raw.research??EMPTY_RESEARCH, location=locationFor(site,research)
   const rules=st.data.raw.restrictions?.sites.find(r=>r.site===site.id) // 지역 규제 요약 (미국 부지만 있음)
   const zones=customerZones(site,st.data.companies), zone=zones.find(z=>z.key===selectedZoneKey)
   const building=site.buildings.find(b=>b.id===selectedBuildingId), buildings=zone?.buildings??site.buildings
   const claims=claimsAt(research,site.id,month,selectedBuildingId).filter(c=>!zone||zone.buildings.some(b=>b.id===c.building))
   const targets=milestonesAt(research,site.id,month,selectedBuildingId).filter(m=>!m.completion&&(!zone||zone.buildings.some(b=>b.id===m.building)))
-  return <aside className={`site-panel panel campus-panel${collapsed?' is-collapsed':''}`} aria-label={ko?'캠퍼스 상세':'Campus details'}>
+  return <aside className={`site-panel panel campus-panel${collapsed?' is-collapsed':''}${full?' is-full':''}`} aria-label={ko?'캠퍼스 상세':'Campus details'}>
     <button className="campus-panel-handle" aria-label={ko?'설명 패널 손잡이':'Details panel handle'} title={ko?'누르거나 위아래로 끌어 펼치기·접기':'Tap or drag up/down to expand or collapse'} aria-expanded={!collapsed} aria-controls="campus-panel-content"
       onPointerDown={startDrag} onPointerUp={endDrag} onPointerCancel={()=>{gesture.current=null;dragged.current=false}}
       onClick={()=>{if(dragged.current){dragged.current=false;return}togglePanel()}}><span/></button>
     <div className="campus-heading"><div className="campus-heading-title"><small>{site.country} / {site.region}</small><h2 title={pickName(site,lang)}>{pickName(site,lang)}</h2></div>
-      <div className="campus-heading-actions"><button className="campus-panel-toggle" onClick={togglePanel} aria-label={panelAction} title={panelAction} aria-expanded={!collapsed} aria-controls="campus-panel-content"><ChevronRight size={15} aria-hidden="true"/><span>{collapsed?(ko?'펼치기':'Expand'):(ko?'접기':'Collapse')}</span></button><button className="close-small" onClick={st.requestGlobe} aria-label={ko?'캠퍼스 닫기':'Close campus'} title={ko?'캠퍼스 닫기':'Close campus'}><X size={14} aria-hidden="true"/></button></div>
+      <div className="campus-heading-actions">{!collapsed&&<button className="panel-size" aria-expanded={full} onClick={()=>setFull(!full)}>{full?(ko?"요약":"Summary"):(ko?"크게":"Expand")}</button>}<button className="campus-panel-toggle" onClick={togglePanel} aria-label={panelAction} title={panelAction} aria-expanded={!collapsed} aria-controls="campus-panel-content"><ChevronRight size={15} aria-hidden="true"/><span>{collapsed?(ko?'펼치기':'Expand'):(ko?'접기':'Collapse')}</span></button><button className="close-small" onClick={st.requestGlobe} aria-label={ko?'캠퍼스 닫기':'Close campus'} title={ko?'캠퍼스 닫기':'Close campus'}><X size={14} aria-hidden="true"/></button></div>
     </div>
     <div id="campus-panel-content" className="campus-panel-body" ref={panel} hidden={collapsed}>
     {/* 위치·근거 표시. 3D 화면이면 위치 표시 바로 옆에 작은 '지도에서 위치 보기' (같은 캠퍼스를 실제 지도 위에서)
@@ -76,7 +75,8 @@ export default function CampusPanel(){
     {building?.figure&&<Suspense fallback={null}><FigureButton name={building.figure} lang={lang} label={ko?'이 건물 안 자세히 보기':'Look inside this building'}/></Suspense>}
     {/* 선택한 데이터홀: MW → GPU·랙·계약 기준 연 매출 (추정과 가정을 함께) */}
     {building&&detailTab==='overview'&&<HallEstimateCard building={building}/>}
-    {st.surface==='3d'&&((appearance||landscape)?<details className="model-reference"><summary>{ko?'사진을 참고한 경관 · 출처':'Photo-informed setting · sources'}</summary>{appearance&&<p>{ko?appearance.notes_ko:appearance.notes_en}</p>}{landscape&&<p>{ko?landscape.notes_ko:landscape.notes_en} {ko?landscape.decoration_ko:landscape.decoration_en}</p>}{landscape?.terrain_ko&&<p>{ko?landscape.terrain_ko:landscape.terrain_en}</p>}<p>{ko?'건물·도로·경계의 위치와 규모는 용량을 설명하는 구성도입니다. 현장 실측·현재 공정률·계절을 재현하지 않습니다.':'Buildings, roads and boundaries illustrate capacity, not surveyed positions, current progress or seasons.'}</p><a href={landscape?.source??appearance.source} target="_blank" rel="noreferrer">{ko?'IREN 공식 자료':'IREN official reference'}<ArrowUpRight size={12} aria-hidden="true"/></a>{landscape?.regionalSource&&<a href={landscape.regionalSource} target="_blank" rel="noreferrer">{ko?'지역 경관 참고':'Regional landscape reference'}<ArrowUpRight size={12} aria-hidden="true"/></a>}{landscape?.terrain_ko&&<a href="https://mapterhorn.com/attribution" target="_blank" rel="noreferrer">{ko?'지형 자료 출처':'Terrain data attribution'}<ArrowUpRight size={12} aria-hidden="true"/></a>}</details>:<p className="research-note">{ko?'3D 사업 구성도 · 실제 건물 배치·공정률을 재현한 모형이 아닙니다.':'Business diagram · not a surveyed layout or measured construction model.'}</p>)}
+    {/* 경관·출처 칸: 3D 화면에서만, 따로 불러옴 (ModelReference.jsx) */}
+    {st.surface==='3d'&&<Suspense fallback={null}><ModelReference siteId={site.id} ko={ko}/></Suspense>}
     <div className="research-tabs" role="tablist" aria-label={ko?'상세 정보':'Detail tabs'}>{Object.entries(TABS).map(([key,names])=><button role="tab" key={key} id={`tab-${key}`} aria-controls="campus-tabpanel"  aria-selected={detailTab===key} onClick={()=>st.setDetailTab(key)}>{names[ko?0:1]}</button>)}</div>
     <div role="tabpanel" id="campus-tabpanel" aria-labelledby={`tab-${detailTab}`}>
     {detailTab==='overview'&&<>

@@ -791,3 +791,39 @@ button.zone-badge { cursor: pointer; pointer-events: auto; font-family: inherit;
 .page-loading { padding: 40px 0; text-align: center; color: var(--text-muted); font-size: 13px; }
 .has-page .maplibregl-ctrl, .has-page .map-marker, .has-page .map-list-launcher, .has-page .campus-map-marker { display: none !important; }
 @media (max-width: 767px) { .page-nav { margin-left: 0; } .page-nav button span { display: none; } .page-scroll { padding: 12px; } }
+
+/* Compact navigation and controls; details remain opt-in while exploring. */
+.desktop-secondary { display: contents; }
+.mobile-menu-actions, .metrics-toggle, .mobile-legend, .mobile-date-controls, .panel-size { display: none; }
+.mobile-date-picker { display: none; }
+.campus-metrics { min-width: 0; }
+.desktop-legend { display: contents; }
+@media (max-width:767px), (max-width:1100px) and (pointer:coarse) {
+  .topbar { display:grid; grid-template-columns:minmax(0,1fr) 44px; gap:4px; padding:6px 8px; }
+  .brand { grid-column:1; margin:0; min-height:44px; }
+  .brand-icon { display:none; }
+  .brand .subtitle { display:none; }
+  .topbar .page-nav, .surface-3d .topbar .page-nav { grid-column:1 / -1; grid-row:2; margin:0; display:flex; width:100%; }
+  .page-nav button { flex:1; gap:4px; }
+  .page-nav button span { display:inline; font-size:12px; }
+  .top-actions { grid-column:1 / -1; display:flex; flex-wrap:nowrap; justify-content:flex-start; gap:4px; min-width:0; margin:0; }
+  .top-actions:has(> .menu-btn:only-child) { height:0; }
+  .topbar .menu-btn, .surface-3d .topbar .menu-btn { position:absolute; top:6px; right:8px; }
+  .desktop-secondary { display:none; }
+  .mobile-menu-actions { display:flex; gap:8px; flex-wrap:wrap; margin:16px 0; }
+  .mobile-menu-actions button { min-height:44px; padding:8px 12px; }
+  .topbar button, .surface-3d .top-actions > .lang-btn, .surface-3d .top-actions > .camera-mode button,
+  .region-controls button, .zone-switch button, .research-tabs button, .campus-heading-actions button,
+  .kpi-path button, .tl-play, .tl-reset { min-width:44px; min-height:44px; }
+  .top-actions > .camera-mode button span { display:none; }
+  .sky-cycle .sky-live { display:none; }
+  .topbar .tour-btn { margin-left:auto; }
+}
+@media (max-width:767px) and (max-height:500px), (max-width:1100px) and (pointer:coarse) and (max-height:500px) {
+  .topbar { grid-template-columns:minmax(100px,1fr) minmax(260px,1fr) 44px; }
+  .topbar .page-nav,.surface-3d .topbar .page-nav { grid-column:2; grid-row:1; padding-right:0; }
+  .brand .title { font-size:12px; }
+  .top-actions { grid-row:2; }
+}
+
+.mobile-menu-actions .share-btn span { display:inline; }

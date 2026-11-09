@@ -53,7 +53,8 @@ export default function PortfolioPage() {
         : `${pending.length} company filing${pending.length > 1 ? 's' : ''} after the as-of date ${asOf} (latest ${pending[0].date} · ${pending[0].form}) — the numbers below may not include ${pending.length > 1 ? 'them' : 'it'} yet · `}
         <button type="button" className="news-chart-btn" onClick={() => setPage('news')}>{ko ? '뉴스에서 보기' : 'See in News'}</button></p>}
       <div className="portfolio-timeline"><TimelineSlider /></div>
-      <div className="pf-table-wrap">
+      <p className="table-scroll-hint">{ko ? "표를 좌우로 밀어 AI 가동·채굴·건설·계획을 확인하세요." : "Swipe the table to see AI live, mining, construction and plans."}</p>
+      <div className="pf-table-wrap" tabIndex={0} role="region" aria-label={ko ? "캠퍼스별 전력 현황" : "Campus power table"}>
         <table className="pf-table">
           <caption>{ko ? `캠퍼스별 · ${monthLabel(month, lang)} 기준 · 이름을 누르면 지도에서 열림` : `By campus · as of ${monthLabel(month, lang)} · click a name to open it on the map`}</caption>
           <thead><tr>

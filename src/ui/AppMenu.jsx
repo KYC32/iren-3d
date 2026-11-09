@@ -20,7 +20,7 @@ import ChangeLog from './ChangeLog.jsx'
 import DataSources from './DataSources.jsx'
 import './appMenu.css'
 
-export default function AppMenu({ open, section = null, onClose }) {
+export default function AppMenu({ open, section = null, onClose, children }) {
   const t = useT()
   const lang = useAppStore((s) => s.lang)
   const hq = hqText[lang === 'ko' ? 'ko' : 'en']
@@ -59,6 +59,8 @@ export default function AppMenu({ open, section = null, onClose }) {
             <X size={16} aria-hidden="true" />
           </button>
         </div>
+        {/* children: 휴대폰에서만 보이는 공유·언어 단추 (TopBar 의 MenuButton 이 넣어 줌) */}
+        {children}
         {/* 경영진 발언 바로가기: 서랍을 닫고 지도로 돌아와 시드니 본사 칸을 엶 */}
         <button type="button" className="app-menu-link" onClick={() => { onClose(); useAppStore.getState().showHq() }}>
           <Building2 size={16} aria-hidden="true" />

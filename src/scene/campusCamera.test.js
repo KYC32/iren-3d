@@ -6,6 +6,50 @@ import { layoutCampus } from './layoutCampus.js'
 
 afterEach(() => vi.unstubAllGlobals())
 
+it.each([[320, 568], [1024, 900]])('모바일 지표 오버레이를 열어도 캠퍼스 구도를 유지: %s × %s', (width, height) => {
+  let metricsOpen = false
+  const boxes = {
+    '.campus-panel': {
+      getBoundingClientRect: () => ({ left: 8, top: height - 192, bottom: height - 128, width: width - 16, height: 64 }),
+      classList: { contains: () => true },
+    },
+    '.campus-metrics': { getBoundingClientRect: () => ({ width: 100, height: 44, bottom: 236 }) },
+    '.kpis': { getBoundingClientRect: () => metricsOpen ? { width: width - 20, height: 104, bottom: 342 } : { width: 0, height: 0 } },
+    '.bottom': { getBoundingClientRect: () => ({ width, height: 77, top: height - 85 }) },
+  }
+  vi.stubGlobal('document', { querySelector: selector => boxes[selector] })
+  vi.stubGlobal('window', { getComputedStyle: () => ({ position: 'fixed' }) })
+  const closed = campusViewport(width, height)
+  metricsOpen = true
+  const opened = campusViewport(width, height)
+  expect(opened).toEqual(closed)
+  expect(opened.bottom - opened.top).toBeGreaterThan(100)
+})
+
+// 모바일에서 전력 현황 단추가 3D 위에 떠 있으면(감싼 상자 높이 0) 단추 바로 아래부터 구도를 잡고,
+// 지표판을 열어도(3D 위에 덮임) 구도가 그대로여야 함
+it('떠 있는 전력 현황 단추 아래부터 맞추고, 지표판을 열어도 구도 유지: 320 × 568', () => {
+  const width = 320, height = 568
+  let metricsOpen = false
+  const boxes = {
+    '.campus-panel': {
+      getBoundingClientRect: () => ({ left: 8, top: height - 192, bottom: height - 128, width: width - 16, height: 64 }),
+      classList: { contains: () => true },
+    },
+    '.topbar': { getBoundingClientRect: () => ({ width: width - 20, height: 170, bottom: 184 }) },
+    '.campus-metrics': { getBoundingClientRect: () => ({ width: 100, height: 0, bottom: 194 }) },
+    '.metrics-toggle': { getBoundingClientRect: () => ({ width: 99, height: 44, bottom: 236 }) },
+    '.kpis': { getBoundingClientRect: () => metricsOpen ? { width: width - 20, height: 93, bottom: 331 } : { width: 0, height: 0 } },
+    '.bottom': { getBoundingClientRect: () => ({ width, height: 52, top: height - 60 }) },
+  }
+  vi.stubGlobal('document', { querySelector: selector => boxes[selector] })
+  vi.stubGlobal('window', { getComputedStyle: () => ({ position: 'fixed' }) })
+  const closed = campusViewport(width, height)
+  expect(closed.top).toBe(236 + 18)
+  metricsOpen = true
+  expect(campusViewport(width, height)).toEqual(closed)
+})
+
 // 캠퍼스 처음 화면: 부지 판 전체가 아니라 "건물·변전소가 있는 곳"에 맞춤
 // (예전엔 판 전체 + 넉넉한 여백이라 1440×900 에서도 건물 영역이 가운데 약 350px 뿐이었음)
 it.each([

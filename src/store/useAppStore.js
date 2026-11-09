@@ -18,6 +18,7 @@ export const MONTH_MIN = toMonth('2024-01')
 export const MONTH_MAX = toMonth('2028-12')
 
 // 호버 해제 지연 (ms) — clearHover 참고
+const compactScreen = () => window.innerWidth < 768 || !!window.matchMedia?.("(max-width: 1100px) and (pointer: coarse)").matches
 const HOVER_CLEAR_MS = 80
 // 지금 호버를 "누가" 걸었는지('3d' = 캔버스 속 물체, 'dom' = 라벨·목록 같은 HTML)와 몇 번째 호버인지.
 // 라벨(HTML)이 R3F 이벤트 영역 안에 붙어 있어서, 라벨 위에서 움직이면 R3F 가 라벨 뒤를 다시 검사해
@@ -42,7 +43,9 @@ export const useAppStore = create((set, get) => ({
   selectedZoneKey: null,
   surface: initial.surface ?? (initial.hq && !initial.site ? '3d' : 'map'), // 본사 화면은 늘 3D
   detailTab: initial.tab ?? 'overview',
-  campusPanelCollapsed: false,
+  campusPanelCollapsed: compactScreen(),
+  // 날짜를 옮겨 보던 캠퍼스가 사라져 지도로 나왔을 때의 안내 { siteId, month } (SiteGoneNotice.jsx 가 표시)
+  siteGoneNotice: null,
   mapCamera: null,
   mapRegion: { country: 'NA', seq: 0 },
   cameraHomeSeq: 0,
@@ -89,7 +92,7 @@ export const useAppStore = create((set, get) => ({
     const data = snapshot(raw, m)
     const id = data.sites.some((s) => s.id === h.site) ? h.site : null
     set({ asOfMonth: asOf, month: m, data, events: buildEvents(raw),
-      selectedSiteId: id, view: id ? 'site' : h.hq ? 'hq' : 'globe', loadError: null, campusPanelCollapsed: false,
+      selectedSiteId: id, view: id ? 'site' : h.hq ? 'hq' : 'globe', loadError: null, campusPanelCollapsed: compactScreen(),
       surface: id ? h.surface ?? 'map' : h.hq ? '3d' : 'map', detailTab: h.tab ?? 'overview', // #hq=1 = 본사 3D 화면
       selectedBuildingId: data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? h.building : null,
       // 공유 링크(#building=)로 열면 카메라도 그 건물로 (전엔 선택만 되고 캠퍼스 전체 시점에 남았음)
@@ -118,11 +121,15 @@ export const useAppStore = create((set, get) => ({
     set({ month: mm, data: nextData,
       ...(!site || !customerZones(site, nextData.companies).some((z) => z.key === st.selectedZoneKey) ? { selectedZoneKey: null } : {}),
       ...(leaveSite && st.pending?.type !== 'globe' ? { pending: { type: 'globe' } } : {}),
+      // 보던 캠퍼스가 고른 날짜엔 아직 없어 지도로 나가게 될 때: 왜 나갔는지 안내 (투어 중엔 대본이 화면을 옮기므로 생략)
+      ...(leaveSite && !st.tour && st.view === 'site' && st.selectedSiteId
+        ? { siteGoneNotice: { siteId: st.selectedSiteId, month: mm } } : {}),
       ...(!site?.buildings.some((b) => b.id === st.selectedBuildingId)
         ? { selectedBuildingId: null, buildingFly: null } : {}),
     })
     if (!get().playing) get().syncHash()
   },
+  clearSiteGoneNotice: () => set({ siteGoneNotice: null }),
   setPlaying: (v) => {
     set({ playing: v })
     if (!v) get().syncHash()
@@ -155,8 +162,8 @@ export const useAppStore = create((set, get) => ({
       colorMode: h.color ?? 'status', skyMode: h.sky ?? 'live',
     })
     // 주소(해시)로 이동할 땐 카메라 전환 애니메이션 없이 바로 그 화면으로 (pending: null)
-    set({ surface: id ? h.surface ?? 'map' : h.hq ? '3d' : 'map', detailTab: h.tab ?? 'overview', selectedSiteId: id, view: id ? 'site' : h.hq ? 'hq' : 'globe', pending: null,
-      campusPanelCollapsed: false, hqCard: !id && h.hq && h.card ? { tab: h.card } : null,
+    set({ transitioning: false, surface: id ? h.surface ?? 'map' : h.hq ? '3d' : 'map', detailTab: h.tab ?? 'overview', selectedSiteId: id, view: id ? 'site' : h.hq ? 'hq' : 'globe', pending: null,
+      campusPanelCollapsed: compactScreen(), hqCard: !id && h.hq && h.card ? { tab: h.card } : null,
       // 본사 주소로 바뀌면 지역도 '본사'로 (본사 화면에서 지도로 돌아가면 시드니)
       ...(!id && h.hq && get().mapRegion.country !== 'HQ' ? { mapRegion: { country: 'HQ', seq: get().mapRegion.seq + 1 } } : {}),
       selectedBuildingId: next.data.sites.find((s)=>s.id===id)?.buildings.some((b)=>b.id===h.building) ? h.building : null,
@@ -164,14 +171,14 @@ export const useAppStore = create((set, get) => ({
       selectedZoneKey: customerZones(next.data.sites.find((s)=>s.id===id) ?? {buildings:[]},next.data.companies).some((z)=>z.key===h.zone) ? h.zone : null })
     get().syncHash()
   },
-  setSurface: (surface) => { if (surface === '3d' && !get().selectedSiteId) return; set({ surface, pending: null, transitioning: false }); get().syncHash() },
+  setSurface: (surface) => { if (surface === '3d' && !get().selectedSiteId) return; set({ surface, pending: null, transitioning: false, ...(surface === '3d' && compactScreen() ? { campusPanelCollapsed: true } : {}) }); get().syncHash() },
   // Map markers, co-located campus choices and the list all enter the same 3D view.
   // Set selection and surface atomically so no stale campus flashes during lazy loading.
   enterSite3D: (id) => {
     if (!get().data?.sites.some((site) => site.id === id)) return
     set({ surface: '3d', view: 'site', selectedSiteId: id, detailTab: 'overview',
       selectedBuildingId: null, selectedZoneKey: null, buildingFly: null, hoverId: null,
-      pending: null, transitioning: false, sheetOpen: false, campusPanelCollapsed: false })
+      pending: null, transitioning: false, sheetOpen: false, campusPanelCollapsed: compactScreen(), siteGoneNotice: null })
     get().syncHash()
   },
   setDetailTab: (detailTab) => { set({ detailTab }); get().syncHash() },
@@ -181,7 +188,7 @@ export const useAppStore = create((set, get) => ({
     if (!get().data?.sites.some(site=>site.id===id)) return
     set({surface:'map',view:'site',selectedSiteId:id,detailTab:'overview',sheetOpen:false,
       selectedBuildingId:null,selectedZoneKey:null,buildingFly:null,hoverId:null,
-      pending:null,transitioning:false,mapCamera:null,mapFocusSeq:get().mapFocusSeq+1,campusPanelCollapsed:false})
+      pending:null,transitioning:false,mapCamera:null,mapFocusSeq:get().mapFocusSeq+1,campusPanelCollapsed:compactScreen(),siteGoneNotice:null})
     get().syncHash()
   },
   setMapCamera: (mapCamera) => set({ mapCamera }),
@@ -237,7 +244,7 @@ export const useAppStore = create((set, get) => ({
     const next = id && st.selectedBuildingId === id && !fly ? null : id
     set({
       selectedBuildingId: next,
-      ...(next ? { campusPanelCollapsed: false } : {}),
+      ...(next && !compactScreen() ? { campusPanelCollapsed: false } : {}),
       selectedZoneKey: next && customerKey(selectSelectedSite(st)?.buildings.find((b) => b.id === next)?.customer) !== st.selectedZoneKey ? null : st.selectedZoneKey,
       buildingFly: fly && next ? { id: next, seq: (st.buildingFly?.seq ?? 0) + 1 } : st.buildingFly,
     })
@@ -247,7 +254,7 @@ export const useAppStore = create((set, get) => ({
     const st = get(), site = selectSelectedSite(st)
     if (st.pending || !site || !customerZones(site, st.data.companies).some((z) => z.key === key)) return
     if (st.selectedZoneKey === key) return st.requestCampusHome()
-    set({ selectedZoneKey: key, selectedBuildingId: null, buildingFly: null, hoverId: null, campusPanelCollapsed: false }); get().syncHash()
+    set({ selectedZoneKey: key, selectedBuildingId: null, buildingFly: null, hoverId: null, ...(!compactScreen() ? { campusPanelCollapsed: false } : {}) }); get().syncHash()
   },
   requestCampusHome: () => { if (!get().pending) { set({ cameraHomeSeq: get().cameraHomeSeq + 1, selectedBuildingId: null, buildingFly: null, hoverId: null, selectedZoneKey: null }); get().syncHash() } },
   // 페이지 전환: null(지도) | 'portfolio' | 'stock' | 'news'. at = 주가 차트 강조 날짜. 지도 상태(캠퍼스)는 그대로 둬서 돌아오면 복원
@@ -280,11 +287,11 @@ export const useAppStore = create((set, get) => ({
 
   // 사이트 선택 → 캠퍼스 뷰로 (CameraRig 가 애니메이션 도중에 호출) (URL 해시도 갱신해 공유 가능하게)
   selectSite: (id) => {
-    set({ detailTab: 'overview', sheetOpen: false, selectedSiteId: id, view: id ? 'site' : 'globe', hoverId: null, selectedBuildingId: null, buildingFly: null, selectedZoneKey: null, campusPanelCollapsed: false })
+    set({ detailTab: 'overview', sheetOpen: false, selectedSiteId: id, view: id ? 'site' : 'globe', hoverId: null, selectedBuildingId: null, buildingFly: null, selectedZoneKey: null, campusPanelCollapsed: compactScreen(), ...(id ? { siteGoneNotice: null } : {}) })
     get().syncHash()
   },
   goGlobe: () => {
-    set({ surface: 'map', detailTab: 'overview', view: 'globe', selectedSiteId: null, hoverId: null, selectedBuildingId: null, buildingFly: null, selectedZoneKey: null })
+    set({ pending: null, transitioning: false, surface: 'map', detailTab: 'overview', view: 'globe', selectedSiteId: null, hoverId: null, selectedBuildingId: null, buildingFly: null, selectedZoneKey: null })
     get().syncHash()
   },
 

@@ -35,7 +35,7 @@ export default function DilutionSection({ file, series, lang }) {
       </div>
       <SharesChart points={file.points} series={series} lang={lang} />
       <div className="dilution-tables">
-        <table className="dilution-table">
+        <div className="dilution-table-scroll" tabIndex={0}><table className="dilution-table">
           <caption>{ko ? '주식으로 조달한 돈 · 주당 평균가가 오를수록 같은 돈에 새 주식이 덜 늘어남' : 'Equity raised · a higher average price means fewer new shares per dollar'}</caption>
           <thead><tr><th>{ko ? '구분' : 'Program'}</th><th>{ko ? '기준' : 'As of'}</th><th>{ko ? '주식 수' : 'Shares'}</th><th>{ko ? '금액' : 'Gross'}</th><th>{ko ? '주당 평균' : 'Avg / share'}</th></tr></thead>
           <tbody>{raises.map((r) => <tr key={r.id}>
@@ -45,8 +45,8 @@ export default function DilutionSection({ file, series, lang }) {
             <td>{fmtUsd(r.gross)}{r.grossCalc && <i title={ko ? '주식 수 × 주당 가격으로 계산' : 'shares × price'}>*</i>}{r.usedPct != null && <small>{ko ? `한도의 ${r.usedPct.toFixed(0)}%` : `${r.usedPct.toFixed(0)}% of limit`}</small>}</td>
             <td>${r.avgPrice.toFixed(2)}</td>
           </tr>)}</tbody>
-        </table>
-        <table className="dilution-table">
+        </table></div>
+        <div className="dilution-table-scroll" tabIndex={0}><table className="dilution-table">
           <caption>{ko ? `전환사채 · ${converts[0]?.as_of ?? ''} 원금 기준, 최초 전환가로 모두 주식이 되면 (단순 계산)` : `Convertible notes · principal as of ${converts[0]?.as_of ?? ''}, if all convert at the initial price (simple calc)`}</caption>
           <thead><tr><th>{ko ? '만기' : 'Maturity'}</th><th>{ko ? '원금' : 'Principal'}</th><th>{ko ? '최초 전환가' : 'Conv. price'}</th><th>{ko ? '전환 시 주식' : 'Shares if converted'}</th></tr></thead>
           <tbody>{converts.map((c) => <tr key={c.id}>
@@ -55,8 +55,8 @@ export default function DilutionSection({ file, series, lang }) {
             <td>${c.conversion_price_usd.toFixed(2)}</td>
             <td>≈ {n(c.shares)}</td>
           </tr>)}</tbody>
-        </table>
-        {file.loans?.length > 0 && <table className="dilution-table">
+        </table></div>
+        {file.loans?.length > 0 && <div className="dilution-table-scroll" tabIndex={0}><table className="dilution-table">
           <caption>{ko ? '장비 담보 금융 · 주식이 늘지 않는 조달 (주요 건만)' : 'Equipment-backed financing · raises no new shares (major deals only)'}</caption>
           <thead><tr><th>{ko ? '구분' : 'Deal'}</th><th>{ko ? '날짜' : 'Date'}</th><th>{ko ? '금액' : 'Amount'}</th><th>{ko ? '금리' : 'Rate'}</th></tr></thead>
           <tbody>{[...file.loans].reverse().map((l) => <tr key={l.id}>
@@ -65,7 +65,7 @@ export default function DilutionSection({ file, series, lang }) {
             <td>{l.about ? '≈ ' : ''}{fmtUsd(l.amount_usd)}</td>
             <td>{ko ? l.rate_ko : l.rate_en}</td>
           </tr>)}</tbody>
-        </table>}
+        </table></div>}
       </div>
       <p className="page-note">
         {ko
@@ -85,7 +85,7 @@ function SharesChart({ points, series, lang }) {
   useEffect(() => {
     const el = wrap.current
     if (!el) return undefined
-    const ro = new ResizeObserver(([e]) => setWidth(Math.max(280, Math.round(e.contentRect.width))))
+    const ro = new ResizeObserver(([e]) => setWidth(Math.max(100, Math.round(e.contentRect.width))))
     ro.observe(el)
     return () => ro.disconnect()
   }, [])

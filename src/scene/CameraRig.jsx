@@ -161,7 +161,7 @@ export default function CameraRig() {
     }
     fit()
     const observer = new ResizeObserver(fit)
-    for (const selector of ['.site-panel', '.kpis', '.bottom']) {
+    for (const selector of ['.site-panel', '.campus-metrics', '.topbar', '.kpis', '.bottom']) {
       const el = document.querySelector(selector)
       if (el) observer.observe(el)
     }
@@ -253,26 +253,11 @@ export default function CameraRig() {
     }
 
     async function toGlobe() {
-      const prev = selectSelectedSite(st)
       st.setTransitioning(true)
       await sleep(FADE_MS)
       if (cancelled) return
       st.goGlobe()
-      applyLimits(c, 'globe')
-      applyFocalOffset(c, 'globe', 0, false)
-      c.minDistance = 0
-      // 방금 보던 사이트 바로 위에서 시작해 바깥으로 빠져나옴
-      const near = prev ? latLngToVec3(prev.lat, prev.lng, 0.7) : latLngToVec3(GLOBE_HOME.lat, GLOBE_HOME.lng, 0.7)
-      const target = prev ? latLngToVec3(prev.lat, prev.lng, 0) : latLngToVec3(GLOBE_HOME.lat, GLOBE_HOME.lng, 0)
-      c.setLookAt(near.x, near.y, near.z, target.x, target.y, target.z, false)
-      await sleep(30)
-      if (cancelled) return
-      st.setTransitioning(false)
-      const far = prev ? latLngToVec3(prev.lat, prev.lng, GLOBE_HOME.alt) : latLngToVec3(GLOBE_HOME.lat, GLOBE_HOME.lng, GLOBE_HOME.alt)
-      c.smoothTime = 0.5
-      await settle(c.setLookAt(far.x, far.y, far.z, 0, 0, 0, true), 1400)
-      if (cancelled) return
-      applyLimits(c, 'globe')
+      // The map replaces this canvas, so the camera transition ends here.
     }
 
     async function toRegion(lat, lng) {

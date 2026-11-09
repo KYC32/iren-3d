@@ -29,7 +29,7 @@ export default function StockChart({ series, events = [], log = false, showVolum
   useEffect(() => {
     const el = wrap.current
     if (!el) return
-    const ro = new ResizeObserver(([e]) => setWidth(Math.max(280, Math.round(e.contentRect.width))))
+    const ro = new ResizeObserver(([e]) => setWidth(Math.max(100, Math.round(e.contentRect.width))))
     ro.observe(el)
     return () => ro.disconnect()
   }, [])
