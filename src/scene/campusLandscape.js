@@ -38,6 +38,9 @@ export const CAMPUS_LANDSCAPES = {
     ...forest, mixed: true, source: official('prince-george'),
     notes_ko: '프린스조지 공식 현장 사진의 숲과 자갈 부지를 반영했습니다. 침엽수와 활엽수의 높이·밀도에 변화를 주었습니다.',
     notes_en: 'Woodland and gravel grounds follow official Prince George photos, with varied conifer and broadleaf heights and density.',
+    // 캐나다 자료는 Open Government Licence – Canada 라 정해진 출처 문구를 함께 적음
+    terrain_ko: '부지 밖 땅의 높낮이와 등고선(2.5 m 간격)은 실측 지형 자료(Mapterhorn, 캐나다 NRCan Canada DTM)로 그렸습니다. 높이는 실제 비율 그대로이고 부지 안 고도를 기준으로 맞췄습니다. Open Government Licence – Canada에 따른 정보를 포함합니다.',
+    terrain_en: 'Ground height and 2.5 m contours outside the site use measured terrain (Mapterhorn, NRCan Canada DTM) at true vertical scale, aligned to the site\'s own elevation. Contains information licensed under the Open Government Licence – Canada.',
   },
   mackenzie: {
     ...forest, trees: 130, source: official('mackenzie'),

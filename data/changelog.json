@@ -1,6 +1,16 @@
 {
   "entries": [
     {
+      "date": "2026-11-12",
+      "items": [
+        {
+          "ko": "프린스조지 3D 주변 땅을 실측 고도로 바꾸고 2.5 m 간격 등고선을 추가. 남쪽으로 약 40 m 높은 단구가 보이며 높이는 실제 비율 그대로",
+          "en": "Prince George 3D land now follows measured elevation with 2.5 m contours, showing the ~40 m terrace to the south at true scale",
+          "source": "https://mapterhorn.com/attribution"
+        }
+      ]
+    },
+    {
       "date": "2026-11-09",
       "items": [
         {

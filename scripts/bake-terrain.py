@@ -9,6 +9,9 @@
 #         고도 차가 큰 부지는 끝에 부지_반폭_미터를 더 줍니다. 부지 둘레 평균 고도를 pad_dm 으로 저장해서
 #         장면의 땅이 부지보다 높은 곳은 솟고 낮은 곳은 내려가게 합니다.
 #         python3 scripts/bake-terrain.py sweetwater-1 32.63963 -100.56003 59.6 3600 src/scene/terrain/sweetwater-1.json 1311
+#         부지가 비탈에 걸쳐 둘레 평균이 부지 높이와 크게 다르면 마지막에 inner 를 붙입니다.
+#         그러면 부지 안 격자 칸 고도의 중앙값을 기준 높이로 씁니다 (평평하게 고른 부지 단의 높이).
+#         python3 scripts/bake-terrain.py prince-george 53.9101 -122.70531 7.35 310 src/scene/terrain/prince-george.json 110 inner
 # =============================================================
 import io, json, math, sys, urllib.request
 import numpy as np
@@ -19,6 +22,7 @@ ZOOM, TILE, COLS = 13, 512, 65   # 원본 화소 약 8 m · 격자 65칸 (장면
 
 name, lat, lng, m_per_unit, half_m, out = sys.argv[1], *map(float, sys.argv[2:6]), sys.argv[6]
 pad_half_m = float(sys.argv[7]) if len(sys.argv) > 7 else None
+pad_inner = len(sys.argv) > 8 and sys.argv[8] == 'inner'   # 기준 높이를 부지 안 중앙값으로
 
 # 위도·경도 → 타일 번호 (소수까지)
 n = 2 ** ZOOM
@@ -47,10 +51,15 @@ grid = np.array(Image.fromarray(mosaic, mode='F').resize((COLS, COLS), Image.BOX
 low = float(grid.min())
 result = {'site': name, 'cols': COLS, 'half_m': half_m, 'm_per_unit': m_per_unit, 'base_m': round(low, 1)}
 if pad_half_m:
-    # 부지 경계에서 바깥쪽으로 부지 반폭의 35% 안에 있는 격자 칸만 골라 평균을 냄
     axis = np.linspace(-half_m, half_m, COLS)
     edge = np.maximum(*np.abs(np.meshgrid(axis, axis)))
-    result['pad_dm'] = round((float(grid[(edge >= pad_half_m) & (edge <= pad_half_m * 1.35)].mean()) - low) * 10)
+    if pad_inner:
+        # 부지 안 격자 칸의 중앙값: 일부가 비탈에 걸려도 평평한 단의 높이가 나옴
+        pad = float(np.median(grid[edge <= pad_half_m]))
+    else:
+        # 부지 경계에서 바깥쪽으로 부지 반폭의 35% 안에 있는 격자 칸만 골라 평균을 냄
+        pad = float(grid[(edge >= pad_half_m) & (edge <= pad_half_m * 1.35)].mean())
+    result['pad_dm'] = round((pad - low) * 10)
 result['dm'] = [round((v - low) * 10) for v in grid.ravel().tolist()]
 json.dump(result, open(out, 'w'), separators=(',', ':'))
 print(f'{name}: 고도 {low:.1f}-{float(grid.max()):.1f} m → {out}')

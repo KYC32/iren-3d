@@ -180,6 +180,37 @@ describe('실측 지형 격자', () => {
     const tower = groundY(powerLine.from[0], powerLine.from[1], side, relief)
     expect(tower).toBeCloseTo(terrainHeight(powerLine.from[0], powerLine.from[1], side, relief))
   })
+  it('Prince George: 부지 단 높이를 기준으로 남쪽 단구만 솟고 높이는 실제 비율(1배) 그대로', () => {
+    const layout = layoutCampus(sites.find(s => s.id === 'prince-george'))
+    const profile = withRealTerrain('prince-george', CAMPUS_LANDSCAPES['prince-george'])
+    const { side, road, powerLine } = layout, { relief, realTerrain: grid } = profile
+    // 기준 높이 = 부지 안 격자 칸 고도의 중앙값 (부지 남쪽 끝이 비탈에 걸려 둘레 평균은 부지보다 12 m 높음)
+    const axis = (i) => (i / (grid.cols - 1) * 2 - 1) * grid.half_m
+    const inner = grid.dm.filter((_, k) => Math.max(Math.abs(axis(k % grid.cols)), Math.abs(axis(Math.floor(k / grid.cols)))) <= side / 2 * grid.m_per_unit).sort((a, b) => a - b)
+    expect(grid.pad_dm).toBeCloseTo(inner[Math.floor(inner.length / 2)], -1)
+    // 1칸 = 7.35 m 라 2배로 키우면 비탈이 건물을 압도함 → 실제 비율
+    expect(relief(0, 30)).toBeCloseTo(realRelief(grid, 1)(0, 30))
+    expect(profile.contourM).toBe(2.5)
+    expect(CAMPUS_LANDSCAPES['prince-george'].terrain_ko).toContain('2.5 m')
+    expect(CAMPUS_LANDSCAPES['prince-george'].terrain_ko).toContain('NRCan')
+    expect(CAMPUS_LANDSCAPES['prince-george'].terrain_en).toContain('Open Government Licence')
+    expect(terrainHeight(layout.gate.x + 6, road.z, side, relief)).toBeCloseTo(-.28)
+    let south = -Infinity, northLow = Infinity, northHigh = -Infinity, lowest = Infinity
+    for (let x = -40; x <= 40; x += 2) for (let z = -40; z <= 40; z += 2) {
+      if (Math.hypot(x, z) > side * 1.25) continue   // 땅이 다 사라진 바깥은 안 봄 (landFade 가 1)
+      const y = terrainHeight(x, z, side, relief)
+      lowest = Math.min(lowest, y)
+      if (z >= 30) south = Math.max(south, y)
+      if (z <= -30) { northLow = Math.min(northLow, y); northHigh = Math.max(northHigh, y) }
+    }
+    expect(south).toBeGreaterThan(4)          // 남쪽 단구: 부지보다 약 40 m 높음 ÷ 7.35 m/칸
+    expect(south).toBeLessThan(7)
+    expect(northLow).toBeGreaterThan(-1.6)    // 북쪽: 부지와 비슷한 높이 (가장 낮은 곳 약 8 m 아래)
+    expect(northHigh).toBeLessThan(.6)
+    expect(lowest).toBeGreaterThan(profile.floorY)
+    const tower = groundY(powerLine.from[0], powerLine.from[1], side, relief)
+    expect(tower).toBeCloseTo(terrainHeight(powerLine.from[0], powerLine.from[1], side, relief))
+  })
   it('Sweetwater 2 는 Sweetwater 1 의 실측 지형 문구를 물려받지 않음', () => {
     expect(CAMPUS_LANDSCAPES['sweetwater-1'].terrain_ko).toContain('5 m')
     expect(CAMPUS_LANDSCAPES['sweetwater-2'].terrain_ko).toBeUndefined()

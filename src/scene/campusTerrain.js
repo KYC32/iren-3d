@@ -2,19 +2,24 @@
 import childress from './terrain/childress.json'
 import sweetwater1 from './terrain/sweetwater-1.json'
 import kiowa from './terrain/kiowa.json'
+import princeGeorge from './terrain/prince-george.json'
 import { realRelief, terrainHeight } from './campusLandscape.js'
 
-const GRIDS = { childress, 'sweetwater-1': sweetwater1, kiowa }
+const GRIDS = { childress, 'sweetwater-1': sweetwater1, kiowa, 'prince-george': princeGeorge }
 // 등고선 간격(m). 땅이 평평할수록 촘촘해야 읽힘
-const CONTOUR_M = { childress: 2.5, 'sweetwater-1': 5, kiowa: 5 }
+const CONTOUR_M = { childress: 2.5, 'sweetwater-1': 5, kiowa: 5, 'prince-george': 2.5 }
+// 높이 배율. 기본 2배 (넓은 부지는 1칸이 39-65 m 라 실제 비율이면 땅이 거의 평평해 보임)
+//   Prince George 는 12에이커라 1칸 = 7.35 m. 2배면 남쪽 40 m 비탈이 건물을 압도해서 실제 비율로 둠
+const EXAGGERATION = { 'prince-george': 1 }
 const cache = new Map()
 
 // 경관 설정에 실측 높이를 더해 돌려줌. 같은 객체를 다시 쓰므로 식생을 매번 다시 계산하지 않음
 export function withRealTerrain(siteId, profile) {
   if (!profile || !GRIDS[siteId]) return profile
+  const exaggeration = EXAGGERATION[siteId] ?? 2
   if (!cache.has(siteId)) cache.set(siteId, {
-    ...profile, relief: realRelief(GRIDS[siteId]), realTerrain: GRIDS[siteId],
-    contourM: CONTOUR_M[siteId], floorY: reliefFloorY(GRIDS[siteId]),
+    ...profile, relief: realRelief(GRIDS[siteId], exaggeration), realTerrain: GRIDS[siteId],
+    contourM: CONTOUR_M[siteId], floorY: reliefFloorY(GRIDS[siteId], exaggeration),
   })
   return cache.get(siteId)
 }
